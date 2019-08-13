@@ -19,7 +19,7 @@ This mod is a successor to Chisels & Bits by AlgorithmX2. After AlgorithmX2 deci
 <br/>
 
 ##### Temporary Differences
-The mod has also been rewritten from scratch, (although with major parts being copied over from the original mod) so there may be minor changes to various parts of the mod. More importantly, because of the rewrite not all features have been ported yet, but they will be ported eventually. These features include:
+The mod has been partially rewritten, 99% of the rendering code is still the same though, (because AlgorithmX2s rendering code is both already amazing and better than what I could make) so there may be minor changes to various parts of the mod. More importantly, because of the rewrite not all features have been ported yet, but they will be ported eventually. These features include:
 * Bit Saw
 * Colored Bit Bags
 * Wrench
