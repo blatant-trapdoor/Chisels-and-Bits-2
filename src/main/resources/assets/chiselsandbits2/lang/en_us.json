@@ -1,0 +1,11 @@
+{
+  "itemGroup.chiselsandbits2": "Chisels & Bits 2",
+
+  "item.chiselsandbits2.chisel": "Chisel",
+  "item.chiselsandbits2.chisel.help": "$ to chisel;Use $ to display menu",
+  "item.chiselsandbits2.pattern": "Pattern",
+
+  "block.chiselsandbits2.chiseled_block": "Chiseled Block",
+
+  "general.chiselsandbits2.no_keybinding": "No Key Bound"
+}
