@@ -2,30 +2,32 @@ package nl.dgoossens.chiselsandbits2.common.utils;
 
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.client.util.InputMappings;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.client.settings.KeyModifier;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 public final class ItemTooltipWriter {
     /**
      * Automatically builds the tooltip of an item by parsing the language entry.
-     * ; -> new line
-     * $ -> next keybinding name
+     * | -> new line
+     * $ -> next keybinding
      */
     public static void addItemInformation(List<ITextComponent> textComponents, String languageKey, KeyBinding... keys) {
         String fullString = I18n.format("item."+ChiselsAndBits2.MOD_ID+"."+languageKey);
         StringBuilder past = new StringBuilder();
         int j = 0;
         for(char c : fullString.toCharArray()) {
-            if(c==';') {
+            if(c=='|') {
                 //New line
-                StringTextComponent st = new StringTextComponent(past.toString());
-                st.getStyle().setColor(TextFormatting.GRAY);
-                textComponents.add(st);
+                append(textComponents, past.toString());
                 past = new StringBuilder();
                 continue;
             }
@@ -38,9 +40,16 @@ public final class ItemTooltipWriter {
             }
             past.append(c);
         }
-        StringTextComponent st = new StringTextComponent(past.toString());
-        st.getStyle().setColor(TextFormatting.GRAY);
-        textComponents.add(st);
+        append(textComponents, past.toString());
+    }
+
+    private static final int WRAP_LENGTH = 42; //The amount of characters to automatically cut off a tooltip line after.
+    private static void append(List<ITextComponent> textComponents, String toAdd) {
+        for(String t : WordUtils.wrap(toAdd, WRAP_LENGTH, "|", true).split("\\|")) {
+            StringTextComponent st = new StringTextComponent(t);
+            st.getStyle().setColor(TextFormatting.GRAY);
+            textComponents.add(st);
+        }
     }
 
     /**
@@ -48,7 +57,25 @@ public final class ItemTooltipWriter {
      */
     public static ITextComponent getKeyName(final KeyBinding keyBinding) {
         if(keyBinding==null) return new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".no_keybinding");
-        if(keyBinding.getKey().getKeyCode()==0 && keyBinding.getDefault().getKeyCode()!=0) return new TranslationTextComponent(keyBinding.getDefault().getTranslationKey());
-        return new TranslationTextComponent(keyBinding.getTranslationKey());
+        if(keyBinding.getKey().getKeyCode()==0 && keyBinding.getDefault().getKeyCode()!=0)
+            return new StringTextComponent(keyBinding.getKeyModifierDefault().getLocalizedComboName(keyBinding.getDefault(), () -> {
+            String s = keyBinding.getDefault().getTranslationKey();
+            int i = keyBinding.getDefault().getKeyCode();
+            String s1 = null;
+            switch(keyBinding.getDefault().getType()) {
+                case KEYSYM:
+                    s1 = InputMappings.func_216507_a(i);
+                    break;
+                case SCANCODE:
+                    s1 = InputMappings.func_216502_b(i);
+                    break;
+                case MOUSE:
+                    String s2 = I18n.format(s);
+                    s1 = Objects.equals(s2, s) ? I18n.format(InputMappings.Type.MOUSE.func_216500_a(), i + 1) : s2;
+            }
+
+            return s1 == null ? I18n.format(s) : s1;
+        })); //This is basically a copy of getLocalizedName but using the default instead.
+        return new StringTextComponent(keyBinding.getLocalizedName());
     }
 }

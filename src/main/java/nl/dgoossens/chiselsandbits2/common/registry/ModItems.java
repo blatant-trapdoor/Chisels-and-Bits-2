@@ -7,15 +7,22 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
-import nl.dgoossens.chiselsandbits2.common.items.PatternItem;
+import nl.dgoossens.chiselsandbits2.common.items.*;
 
 import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModItems {
     public final Item CHISEL = new ChiselItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+    //the pattern can change textures depending on the mode
     public final Item PATTERN = new PatternItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item BIT_BAG = new BitBagItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item SAW = new SawItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item TAPE_MEASURE = new TapeMeasureItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item WRENCH = new WrenchItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item PALETTE = new PaletteItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+    //the paintbrush can also look like a paint bucket
+    public final Item PAINTBRUSH = new PaintbrushItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
 
     @SubscribeEvent
     public static void onItemRegistry(final RegistryEvent.Register<Item> e) {

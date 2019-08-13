@@ -4,6 +4,8 @@ This mod is a successor to Chisels & Bits by AlgorithmX2. After AlgorithmX2 deci
 
 This mod is currently in very early alpha phases. This means that here is currently no support for any other mods, including optifine. You can always report issues that you're having but compatbility with other mods is currently not the focus.
 
+Note: The current textures for the paintbrush and palette aren't that pretty and I'd like to replace them. If anyone'd like to make some pretty textures that fit the original mod I'd love to use them.
+
 <br/>
 <br/>
 
@@ -23,11 +25,14 @@ This mod is currently in very early alpha phases. This means that here is curren
 ##### Temporary Differences
 The mod has been partially rewritten, 99% of the rendering code is still the same though, (because AlgorithmX2s rendering code is both already amazing and better than what I could make) so there may be minor changes to various parts of the mod. More importantly, because of the rewrite not all features have been ported yet, but they will be ported eventually. These features include:
 * Bit Saw
+* Patterns
 * Colored Bit Bags
 * Wrench
-* Mirrored Chisel Designs
 * Liquid Bits (will be re-added after the forge liquid API is done)
 * Chiseled Blocks giving off light equal to the percentage of glowing blocks used.
-* Most of the customisability, API and configuration options.
+* Most of the configuration options
+* The entire old API/addon and IMC (this is probably all going to be completely different)
 * The various languages that the original mod supported
 * The commands and debug features
+* Cross-world model exporting
+* Compatibility with worlds with C&B1 (this might not happen at all)

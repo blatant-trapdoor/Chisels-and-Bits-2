@@ -55,8 +55,9 @@ public class ChiselItem extends Item implements IItemScrollWheel {
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "chisel.help",
-                Minecraft.getInstance().gameSettings.keyBindAttack
-                );
+                Minecraft.getInstance().gameSettings.keyBindAttack,
+                ChiselsAndBits2.getKeybindings().modeMenu
+        );
     }
 
     /**

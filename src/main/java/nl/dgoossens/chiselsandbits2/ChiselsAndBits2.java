@@ -17,6 +17,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.registry.ModConfiguration;
 import nl.dgoossens.chiselsandbits2.common.registry.ModBlocks;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
+import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 
@@ -33,6 +34,7 @@ public class ChiselsAndBits2 {
     private final ClientSide CLIENT = new ClientSide();
     private final ModConfiguration CONFIGURATION = new ModConfiguration();
     private final NetworkRouter NETWORK_ROUTER = new NetworkRouter();
+    private final ModKeybindings KEYBINDINGS = new ModKeybindings();
     private final SmartModelManager SMART_MODEL_MANAGER;
 
     public ChiselsAndBits2() {
@@ -50,6 +52,7 @@ public class ChiselsAndBits2 {
     public static ModBlocks getBlocks() { return getInstance().BLOCKS; }
     public static ClientSide getClient() { return getInstance().CLIENT; }
     public static ModConfiguration getConfig() { return getInstance().CONFIGURATION; }
+    public static ModKeybindings getKeybindings() { return getInstance().KEYBINDINGS; }
 
     // Ran after all registry events have finished.
     private void setup(final FMLCommonSetupEvent event) {

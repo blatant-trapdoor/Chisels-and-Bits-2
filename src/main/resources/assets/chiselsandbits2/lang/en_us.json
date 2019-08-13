@@ -2,8 +2,21 @@
   "itemGroup.chiselsandbits2": "Chisels & Bits 2",
 
   "item.chiselsandbits2.chisel": "Chisel",
-  "item.chiselsandbits2.chisel.help": "$ to chisel;Use $ to display menu",
+  "item.chiselsandbits2.chisel.help": "$ to chisel|$ to display menu",
   "item.chiselsandbits2.pattern": "Pattern",
+  "item.chiselsandbits2.pattern.help": "$ to place|$ to copy|$ to display menu",
+  "item.chiselsandbits2.bit_bag": "Bit Bag",
+  "item.chiselsandbits2.bit_bag.help": "Automatically re-stocks; stores bits",
+  "item.chiselsandbits2.saw": "Saw",
+  "item.chiselsandbits2.saw.help": "$ to saw blocks in half|$ to display menu",
+  "item.chiselsandbits2.tape_measure": "Tape Measure",
+  "item.chiselsandbits2.tape_measure.help": "$ to drag and measure spaces|$ to clear previous measurements|$ to display modes",
+  "item.chiselsandbits2.wrench": "Wrench",
+  "item.chiselsandbits2.wrench.help": "$ to rotate around axis of face clicked on",
+  "item.chiselsandbits2.palette": "Palette",
+  "item.chiselsandbits2.palette.help": "Colour your world; use to pick the colour to paint",
+  "item.chiselsandbits2.paintbrush": "Paintbrush",
+  "item.chiselsandbits2.paintbrush.help": "$ to paint|$ to display menu",
 
   "block.chiselsandbits2.chiseled_block": "Chiseled Block",
 
