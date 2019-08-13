@@ -1,6 +1,6 @@
 # Chisels & Bits 2
 
-This mod is a successor to Chisels & Bits by AlgorithmX2. After AlgorithmX2 decided to retire from minecraft modding in july of 2019 work on this successor was started to fill the blocky bit-shaped gap it left behind for future versions of minecraft.
+This mod is a successor to Chisels & Bits by AlgorithmX2. After AlgorithmX2 decided to retire from minecraft modding in july of 2019 work on this successor for future versions of minecraft was started to fill the blocky bit-shaped gap it left behind.
 
 <br/>
 <br/>
