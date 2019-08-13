@@ -23,17 +23,18 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
 import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.modes.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 import nl.dgoossens.chiselsandbits2.common.utils.MathUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.TooltipUtil;
 import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.network.packets.PacketChisel;
 import org.apache.commons.lang3.text.WordUtils;
@@ -44,20 +45,18 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ChiselItem extends Item implements IItemScrollWheel {
-    private static boolean registeredBus = false;
     public ChiselItem(Item.Properties builder) {
         super(builder);
-        if(!registeredBus) { //Avoid duplicate registration.
-            ChiselsAndBits2.registerWithBus(this);
-            registeredBus = true;
-        }
     }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        TooltipUtil.addItemInformation(tooltip, "chisel.help", Minecraft.getInstance().gameSettings.keyBindAttack);
+        ItemTooltipWriter.addItemInformation(tooltip, "chisel.help",
+                Minecraft.getInstance().gameSettings.keyBindAttack
+                );
     }
 
     /**
@@ -68,10 +67,13 @@ public class ChiselItem extends Item implements IItemScrollWheel {
     private static Map<UUID, Long> lastClick = new ConcurrentHashMap<>();
 
     @SubscribeEvent
-    public void onLeftClick(PlayerInteractEvent.LeftClickBlock e) {
+    public static void onLeftClick(PlayerInteractEvent.LeftClickBlock e) {
         if(e.getCancellationResult()==ActionResultType.FAIL) return;
         if(!(e.getItemStack().getItem() instanceof ChiselItem)) return;
-        e.setCanceled(startChiselingBlock(e.getPos(), ItemMode.getChiselMode(e.getItemStack()), e.getPlayer()));
+        if(startChiselingBlock(e.getPos(), ItemMode.getChiselMode(e.getItemStack()), e.getPlayer())) {
+            if(e.getPlayer().abilities.isCreativeMode) e.setCanceled(true);
+            else e.setUseItem(Event.Result.DENY);
+        }
     }
 
     /**

@@ -11,6 +11,7 @@ import net.minecraft.util.math.shapes.ISelectionContext;
 /**
  * Largely copied from https://github.com/AlgorithmX2/Chisels-and-Bits/blob/1.12/src/main/java/mod/chiselsandbits/helpers/ModUtil.java
  */
+@Deprecated
 public class MathUtil {
     private final static float DEG_TO_RAD = 0.017453292f;
 

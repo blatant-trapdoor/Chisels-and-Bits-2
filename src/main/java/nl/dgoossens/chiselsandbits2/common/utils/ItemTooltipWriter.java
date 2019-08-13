@@ -10,14 +10,14 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 
 import java.util.List;
 
-public class TooltipUtil {
+public final class ItemTooltipWriter {
     /**
      * Automatically builds the tooltip of an item by parsing the language entry.
      * ; -> new line
      * $ -> next keybinding name
      */
     public static void addItemInformation(List<ITextComponent> textComponents, String languageKey, KeyBinding... keys) {
-        String fullString = I18n.format(getLanguagePrefix("item")+languageKey);
+        String fullString = I18n.format("item."+ChiselsAndBits2.MOD_ID+"."+languageKey);
         StringBuilder past = new StringBuilder();
         int j = 0;
         for(char c : fullString.toCharArray()) {
@@ -44,17 +44,10 @@ public class TooltipUtil {
     }
 
     /**
-     * Gets the prefix for in language files.
-     * @param start The first word, e.g. if "item" then this method will return
-     *              "item.chiselsandbits2."
-     */
-    public static String getLanguagePrefix(String start) { return start+"."+ChiselsAndBits2.MOD_ID+"."; }
-
-    /**
      * Gets the showable display name for a keybind for item tooltips or other places.
      */
     public static ITextComponent getKeyName(final KeyBinding keyBinding) {
-        if(keyBinding==null) return new TranslationTextComponent(getLanguagePrefix("general")+"no_keybinding");
+        if(keyBinding==null) return new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".no_keybinding");
         if(keyBinding.getKey().getKeyCode()==0 && keyBinding.getDefault().getKeyCode()!=0) return new TranslationTextComponent(keyBinding.getDefault().getTranslationKey());
         return new TranslationTextComponent(keyBinding.getTranslationKey());
     }

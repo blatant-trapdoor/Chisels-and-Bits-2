@@ -2,6 +2,8 @@
 
 This mod is a successor to Chisels & Bits by AlgorithmX2. After AlgorithmX2 decided to retire from minecraft modding in july of 2019 work on this successor for future versions of minecraft was started to fill the blocky bit-shaped gap it left behind.
 
+This mod is currently in very early alpha phases. This means that here is currently no support for any other mods, including optifine. You can always report issues that you're having but compatbility with other mods is currently not the focus.
+
 <br/>
 <br/>
 
@@ -25,6 +27,7 @@ The mod has been partially rewritten, 99% of the rendering code is still the sam
 * Wrench
 * Mirrored Chisel Designs
 * Liquid Bits (will be re-added after the forge liquid API is done)
+* Chiseled Blocks giving off light equal to the percentage of glowing blocks used.
 * Most of the customisability, API and configuration options.
 * The various languages that the original mod supported
 * The commands and debug features

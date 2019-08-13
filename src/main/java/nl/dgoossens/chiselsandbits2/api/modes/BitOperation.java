@@ -5,5 +5,6 @@ package nl.dgoossens.chiselsandbits2.api.modes;
  */
 public enum BitOperation {
     PLACE,
-    REMOVE
+    REMOVE,
+    REPLACE
 }

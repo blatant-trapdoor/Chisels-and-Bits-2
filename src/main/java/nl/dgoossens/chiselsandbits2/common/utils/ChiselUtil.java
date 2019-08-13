@@ -4,6 +4,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.GrassBlock;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelType;
 
@@ -26,6 +28,13 @@ public class ChiselUtil {
         if(block.getBlock() instanceof ChiseledBlock) return true; //TODO also if instance of little tiles or mc multipart block
         //TODO add test to see if a block can be chiselled and then add it to the list
         return supportedBlocks.contains(block.getBlock());
+    }
+
+    /**
+     * Check if a block at a given position is already chiseled.
+     */
+    public static boolean isBlockChiseled(BlockPos position, IBlockReader world) {
+        return world.getBlockState(position).getBlock() instanceof ChiseledBlock;
     }
 
     /**

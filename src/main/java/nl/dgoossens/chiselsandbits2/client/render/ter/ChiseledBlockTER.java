@@ -25,11 +25,13 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.render.ChiselLayer;
 import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockBaked;
 import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
+import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import org.lwjgl.opengl.GL11;
 
 import java.util.LinkedList;
@@ -39,6 +41,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 @OnlyIn(Dist.CLIENT)
 public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity> {
     private final static Random RAND = new Random();
@@ -71,7 +74,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
 
         if(rc.vboRenderer == null) {
             //Rebuild!
-            final int dynamicTess = instance.getMaxTessalators();
+            final int dynamicTess = getMaxTessalators();
             if(pendingTess.get() < dynamicTess && rc.future == null) {
                 try {
                     final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(16, 16, 16));
@@ -184,13 +187,10 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
     //--- STATIC PARTS ---
     public final static AtomicInteger pendingTess = new AtomicInteger(0);
     public final static AtomicInteger activeTess = new AtomicInteger(0);
-    static ChiseledBlockTER instance;
-    private final ThreadPoolExecutor pool;
-    private static long memory;
+    private static ThreadPoolExecutor pool;
 
-    public ChiseledBlockTER() {
-        instance = this;
-        ChiselsAndBits2.registerWithBus(this);
+    public ChiseledBlockTER() { //Only one instance is ever initialised
+        if(pool != null) throw new UnsupportedOperationException("ChiseledBlockTER was initialised a second time!");
         final ThreadFactory threadFactory = (r) -> {
             final Thread t = new Thread(r);
             t.setPriority(Thread.NORM_PRIORITY - 1);
@@ -199,15 +199,13 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         };
 
         int processors = Runtime.getRuntime().availableProcessors();
-        memory = Runtime.getRuntime().maxMemory() / (1024 * 1024); // mb
-        if(memory < 1200) processors = 1; //Low memory mode
+        if(ModUtil.isLowMemoryMode()) processors = 1;
         pool = new ThreadPoolExecutor(1, processors, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(64), threadFactory);
         pool.allowCoreThreadTimeOut(false);
     }
-    public int getMaxTessalators() {
-        int dynamicTess = 32; //TODO add config
-        if(memory < 1200) //Low Memory mode!
-            dynamicTess = Math.min(2, dynamicTess);
+    protected static int getMaxTessalators() {
+        int dynamicTess = ChiselsAndBits2.getConfig().dynamicMaxConcurrentTessalators.get();
+        if(ModUtil.isLowMemoryMode()) dynamicTess = Math.min(2, dynamicTess);
         return dynamicTess;
     }
 
@@ -225,9 +223,9 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         return worldTrackers.get(ChiselsAndBits2.getClient().getPlayer().world);
     }
 
-    public static void addNextFrameTask(final Runnable r) { getTracker().nextFrameTasks.offer(r); }
-    private void addFutureTracker(final RenderCache renderCache) { getTracker().futureTrackers.add(renderCache); }
-    private boolean handleFutureTracker(final RenderCache renderCache) {
+    protected static void addNextFrameTask(final Runnable r) { getTracker().nextFrameTasks.offer(r); }
+    private static  void addFutureTracker(final RenderCache renderCache) { getTracker().futureTrackers.add(renderCache); }
+    private static boolean handleFutureTracker(final RenderCache renderCache) {
         if(renderCache.future != null && renderCache.future.isDone()) {
             try {
                 final Tessellator t = renderCache.future.get();
@@ -244,9 +242,9 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         return false;
     }
 
-    boolean lastFancy = false;
+    private static boolean lastFancy = false;
     @SubscribeEvent
-    public void nextFrame(final RenderWorldLastEvent e) {
+    public static void nextFrame(final RenderWorldLastEvent e) {
         runJobs(getTracker().nextFrameTasks);
         uploadVBOs();
 
@@ -257,19 +255,18 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         }
     }
 
-    private void uploadVBOs() {
+    private static void uploadVBOs() {
         final WorldTracker tracker = getTracker();
-        tracker.futureTrackers.removeIf(this::handleFutureTracker);
+        tracker.futureTrackers.removeIf(ChiseledBlockTER::handleFutureTracker);
         final Stopwatch w = Stopwatch.createStarted();
-        final int maxMillisecondsUploadingPerFrame = 15;
-        do {
+        do { //We always upload one, no matter how many ms you want us to do it for.
             final UploadTracker t = tracker.uploaders.poll();
             if(t == null) return;
             uploadVBO(t);
-        } while(w.elapsed(TimeUnit.MILLISECONDS) < maxMillisecondsUploadingPerFrame);
+        } while(w.elapsed(TimeUnit.MILLISECONDS) < ChiselsAndBits2.getConfig().maxMillisecondsUploadingPerFrame.get());
     }
 
-    private void uploadVBO(final UploadTracker t) {
+    private static void uploadVBO(final UploadTracker t) {
         final Tessellator tx = t.getTessellator();
         if(t.renderCache.vboRenderer == null)
             t.renderCache.vboRenderer = GfxRenderState.getNewState(tx.getBuffer().getVertexCount());
@@ -278,7 +275,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         t.submitForReuse();
     }
 
-    private void runJobs(final Queue<Runnable> tasks) {
+    private static void runJobs(final Queue<Runnable> tasks) {
         do {
             final Runnable x = tasks.poll();
             if(x == null) break;

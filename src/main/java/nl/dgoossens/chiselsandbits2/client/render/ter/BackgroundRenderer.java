@@ -92,7 +92,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
             // no previous queues?
             if(tessellator == null) {
                 synchronized(CBTessellator.class) {
-                    if(ChiseledBlockTER.activeTess.get() < ChiseledBlockTER.instance.getMaxTessalators())
+                    if(ChiseledBlockTER.activeTess.get() < ChiseledBlockTER.getMaxTessalators())
                         tessellator = new CBTessellator(2109952);
                     else Thread.sleep(10);
                 }

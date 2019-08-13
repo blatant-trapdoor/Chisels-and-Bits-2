@@ -12,7 +12,7 @@ logoFile="chiselsandbits2.png"
 credits="Original mod created by AlgorithmX2"
 authors="Aeltumn, AlgorithmX2"
 description='''
-The spiritual successor to the original Chisels and Bits mod for minecraft 1.12. A mod about sculpting, decorating and aesthetics.
+The successor to the original Chisels and Bits mod for minecraft 1.12. A mod about sculpting, decorating and aesthetics.
 '''
 [[dependencies.chiselsandbits2]]
     modId="forge"
