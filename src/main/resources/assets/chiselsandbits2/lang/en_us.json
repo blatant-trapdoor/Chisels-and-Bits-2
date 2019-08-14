@@ -20,5 +20,28 @@
 
   "block.chiselsandbits2.chiseled_block": "Chiseled Block",
 
-  "general.chiselsandbits2.no_keybinding": "No Key Bound"
+  "general.chiselsandbits2.no_keybinding": "No Key Bound",
+
+  "general.chiselsandbits2.itemmode.single": "Single Bit",
+  "general.chiselsandbits2.itemmode.snap2": "Grid Snapped 1/2 Size Cube",
+  "general.chiselsandbits2.itemmode.snap4": "Grid Snapped 1/4 Size Cube",
+  "general.chiselsandbits2.itemmode.snap8": "Grid Snapped 1/8 Size Cube",
+  "general.chiselsandbits2.itemmode.line": "Line",
+  "general.chiselsandbits2.itemmode.plane": "Plane",
+  "general.chiselsandbits2.itemmode.connected_plane": "Connected Plane",
+  "general.chiselsandbits2.itemmode.cube3": "Small Cube",
+  "general.chiselsandbits2.itemmode.cube5": "Medium Cube",
+  "general.chiselsandbits2.itemmode.cube7": "Large Cube",
+  "general.chiselsandbits2.itemmode.same_material": "Same Material",
+  "general.chiselsandbits2.itemmode.drawn_region": "Drawn Region",
+  "general.chiselsandbits2.itemmode.connected_material": "Connected Material",
+
+  "general.chiselsandbits2.itemmode.replace": "Replace",
+  "general.chiselsandbits2.itemmode.additive": "Additive",
+  "general.chiselsandbits2.itemmode.replacement": "Replacement",
+  "general.chiselsandbits2.itemmode.impose": "Impose",
+
+  "general.chiselsandbits2.itemmode.bit": "Bit",
+  "general.chiselsandbits2.itemmode.block": "Block",
+  "general.chiselsandbits2.itemmode.distance": "Distance"
 }

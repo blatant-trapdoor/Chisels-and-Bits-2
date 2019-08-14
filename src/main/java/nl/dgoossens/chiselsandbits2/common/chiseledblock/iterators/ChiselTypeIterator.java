@@ -37,7 +37,7 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 	{
 		full_size = dim;
 		max_dim = dim - 1;
-		mode = ItemMode.CHISEL_DRAW_REGION;
+		mode = ItemMode.CHISEL_DRAWN_REGION;
 		this.side = side;
 
 		x_range = x_size;
@@ -204,7 +204,7 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 				parts = x_range * y_range * z_range;
 				break;
 
-			case CHISEL_DRAW_REGION:
+			case CHISEL_DRAWN_REGION:
 			case CHISEL_SINGLE:
 				parts = 1;
 				break;

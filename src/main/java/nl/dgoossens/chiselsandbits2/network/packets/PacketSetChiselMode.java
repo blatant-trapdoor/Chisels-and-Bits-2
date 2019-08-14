@@ -35,14 +35,12 @@ public class PacketSetChiselMode implements NetworkRouter.ModPacket {
             ctx.get().enqueueWork(() -> {
                 ServerPlayerEntity player = ctx.get().getSender();
                 final ItemStack ei = player.getHeldItemMainhand();
-                if ( ei != null && ei.getItem() instanceof ChiselItem)
-                {
+                if(ei != null && ei.getItem() instanceof ChiselItem) {
                     final ItemMode originalMode = ItemMode.getMode( ei );
                     pkt.newMode.setMode( ei );
 
-                    if ( originalMode != pkt.newMode) {
+                    if(originalMode != pkt.newMode)
                         Minecraft.getInstance().player.sendStatusMessage( new StringTextComponent(ei.getItem().getHighlightTip(ei, ei.getDisplayName().getFormattedText())), true );
-                    }
                 }
             });
         }

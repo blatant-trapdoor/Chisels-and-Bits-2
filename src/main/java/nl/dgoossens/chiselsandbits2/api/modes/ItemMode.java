@@ -1,11 +1,13 @@
 package nl.dgoossens.chiselsandbits2.api.modes;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.StringNBT;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.items.PatternItem;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,28 +17,42 @@ import java.util.stream.Stream;
  */
 public enum ItemMode {
     CHISEL_SINGLE,
-    CHISEL_SNAP2,
-    CHISEL_SNAP4,
-    CHISEL_SNAP8,
     CHISEL_LINE,
     CHISEL_PLANE,
     CHISEL_CONNECTED_PLANE,
+    CHISEL_CONNECTED_MATERIAL,
+    CHISEL_DRAWN_REGION,
+    CHISEL_SAME_MATERIAL,
+    CHISEL_SNAP8,
+    CHISEL_SNAP4,
+    CHISEL_SNAP2,
     CHISEL_CUBE3,
     CHISEL_CUBE5,
     CHISEL_CUBE7,
-    CHISEL_SAME_MATERIAL,
-    CHISEL_DRAW_REGION,
-    CHISEL_CONNECTED_MATERIAL,
 
-    PATTERN_REPLACE, //DG: I've actually rarely used patterns myself so I'll go experiment with them once I get around to them, then I'll probably add some more modes.
+    PATTERN_REPLACE, //I've actually rarely used patterns myself so I'll go experiment with them once I get around to them, then I'll probably add some more modes.
     PATTERN_ADDITIVE,
-    PATTERN_REPLACENT,
+    PATTERN_REPLACEMENT,
     PATTERN_IMPOSE,
 
     TAPEMEASURE_BIT,
     TAPEMEASURE_BLOCK,
     TAPEMEASURE_DISTANCE,
     ;
+
+    /**
+     * Get the localized key from this Item Mode.
+     */
+    public String getLocalizedName() {
+        return I18n.format("general.chiselsandbits2.itemmode."+getTypelessName());
+    }
+
+    /**
+     * Return this enum's name() but without the type in front.
+     */
+    public String getTypelessName() {
+        return name().substring(getType().name().length()+1).toLowerCase();
+    }
 
     public static enum Type {
         //Type names must be identical to the startsWith() of the ItemMode!
@@ -50,6 +66,14 @@ public enum ItemMode {
          */
         public Set<ItemMode> getItemModes() {
             return Stream.of(ItemMode.values()).filter(f -> f.name().startsWith(name())).collect(Collectors.toSet());
+        }
+
+        /**
+         * Get all item modes associated with this type.
+         * Keep them sorted the same way they are in the enum is.
+         */
+        public List<ItemMode> getSortedItemModes() {
+            return Stream.of(ItemMode.values()).filter(f -> f.name().startsWith(name())).collect(Collectors.toList());
         }
     }
 

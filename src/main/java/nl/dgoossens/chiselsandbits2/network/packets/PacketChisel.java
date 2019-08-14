@@ -3,7 +3,6 @@ package nl.dgoossens.chiselsandbits2.network.packets;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -23,7 +22,6 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIte
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
-import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 
@@ -271,7 +269,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 			final IVoxelSrc vb,
 			final BlockPos pos,
 			final BitOperation place ) {
-		if(mode == ItemMode.CHISEL_DRAW_REGION) {
+		if(mode == ItemMode.CHISEL_DRAWN_REGION) {
 			final int bitX = pos.getX() == from.blockPos.getX() ? from.bitX : 0;
 			final int bitY = pos.getY() == from.blockPos.getY() ? from.bitY : 0;
 			final int bitZ = pos.getZ() == from.blockPos.getZ() ? from.bitZ : 0;

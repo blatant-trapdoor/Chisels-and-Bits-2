@@ -62,8 +62,9 @@ public class ChiselsAndBits2 {
 
         //Register event busses
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(SMART_MODEL_MANAGER);
         MinecraftForge.EVENT_BUS.register(NETWORK_ROUTER);
+
+        FMLJavaModLoadingContext.get().getModEventBus().register(SMART_MODEL_MANAGER);
     }
 
     //TODO this all needs someplaceelse to live

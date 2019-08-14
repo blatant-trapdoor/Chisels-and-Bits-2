@@ -40,7 +40,7 @@ public class TapeMeasureItem extends Item implements IItemScrollWheel, IItemMenu
      */
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        return displayName + " - " + WordUtils.capitalizeFully(ItemMode.getMode(item).name());
+        return displayName + " - " + ItemMode.getMode(item).getLocalizedName();
     }
 
     /**

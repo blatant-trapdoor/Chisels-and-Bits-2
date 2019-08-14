@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -13,6 +14,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -20,6 +22,7 @@ import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.SpriteIconPositioning;
 import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
 import nl.dgoossens.chiselsandbits2.api.modes.MenuAction;
+import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import org.apache.commons.lang3.text.WordUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.lwjgl.opengl.GL11;
@@ -41,17 +44,21 @@ public class RadialMenu extends Screen {
     private boolean clicked = false;
     private MainWindow window;
 
-    public RadialMenu() { super(new StringTextComponent("Radial Menu")); }
-    public void configure(final MainWindow window) {
-        this.window=window;
-        width = window.getWidth();
-        height = window.getHeight();
+    public RadialMenu() {
+        super(new StringTextComponent("Radial Menu"));
+        minecraft = Minecraft.getInstance();
+        font = Minecraft.getInstance().fontRenderer;
     }
+    public void configure(final MainWindow window) { this.window = window; }
 
     @Override
     @NonNull
-    public Minecraft getMinecraft() { //For some reason super.getMinecraft() can be null which is really useless.
+    public Minecraft getMinecraft() {
         return minecraft==null ? Minecraft.getInstance() : minecraft;
+    }
+    @NonNull
+    public FontRenderer getFontRenderer() {
+        return font==null ? Minecraft.getInstance().fontRenderer : font;
     }
     private float clampVis(final float f) {
         return Math.max( 0.0f, Math.min( 1.0f, f ) );
@@ -137,7 +144,7 @@ public class RadialMenu extends Screen {
         final int start = (int) ( visibility * 98 ) << 24;
         final int end = (int) ( visibility * 128 ) << 24;
 
-        fillGradient( 0, 0, width, height, start, end );
+        fillGradient( 0, 0, window.getWidth(), window.getHeight(), start, end );
 
         GlStateManager.disableTexture();
         GlStateManager.enableBlend();
@@ -149,8 +156,8 @@ public class RadialMenu extends Screen {
 
         buffer.begin( GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR );
 
-        final double vecX = mouseX - width / 2;
-        final double vecY = mouseY - height / 2;
+        final double vecX = mouseX - ((double) window.getWidth()) / 4;
+        final double vecY = mouseY - ((double) window.getHeight()) / 4;
         double radians = Math.atan2( vecY, vecX );
 
         final double ring_inner_edge = 20;
@@ -163,13 +170,13 @@ public class RadialMenu extends Screen {
             radians = radians + Math.PI * 2;
         }
 
-        final double middle_x = width / 2;
-        final double middle_y = height / 2;
+        final double middle_x = ((double) window.getWidth()) / 4;
+        final double middle_y = ((double) window.getHeight()) / 4;
 
         final ArrayList<MenuRegion> modes = new ArrayList<>();
         //TODO final ArrayList<MenuButton> btns = new ArrayList<>();
         //Setup mode regions
-        for(ItemMode m : ItemMode.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getItemModes())
+        for(ItemMode m : ItemMode.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getSortedItemModes())
             modes.add(new MenuRegion(m));
 
         switchTo = null;
@@ -246,7 +253,7 @@ public class RadialMenu extends Screen {
                 final double x = ( mnuRgn.x1 + mnuRgn.x2 ) * 0.5 * ( ring_outer_edge * 0.6 + 0.4 * ring_inner_edge );
                 final double y = ( mnuRgn.y1 + mnuRgn.y2 ) * 0.5 * ( ring_outer_edge * 0.6 + 0.4 * ring_inner_edge );
 
-                final SpriteIconPositioning sip = ChiselsAndBits2.getClient().getIconForMode( mnuRgn.mode );
+                final SpriteIconPositioning sip = ClientSide.getIconForMode( mnuRgn.mode );
                 if(sip==null) continue;
 
                 final double scalex = 15 * sip.width * 0.5;
@@ -281,18 +288,18 @@ public class RadialMenu extends Screen {
 
                     int fixed_x = (int) ( x * text_distnace );
                     final int fixed_y = (int) ( y * text_distnace );
-                    final String text = WordUtils.capitalizeFully(mnuRgn.mode.name());
+                    final String text = mnuRgn.mode.getLocalizedName();
 
                     if ( x <= -0.2 )
                     {
-                        fixed_x -= font.getStringWidth( text );
+                        fixed_x -= getFontRenderer().getStringWidth( text );
                     }
                     else if ( -0.2 <= x && x <= 0.2 )
                     {
-                        fixed_x -= font.getStringWidth( text ) / 2;
+                        fixed_x -= getFontRenderer().getStringWidth( text ) / 2;
                     }
 
-                    font.drawStringWithShadow( text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, 0xffffffff );
+                    getFontRenderer().drawStringWithShadow( text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, 0xffffffff );
                 }
             }
 
@@ -325,17 +332,15 @@ public class RadialMenu extends Screen {
     //For whatever reason this method never gets called, thanks 1.14.
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        System.out.println("CLICKED MOUSE EVENT");
         if(mouseButton==0) setClicked(true);
         return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
-    @SubscribeEvent //Backup event, or permanent if noone cares about click events.
-    public static void onClickGUI(GuiScreenEvent.MouseClickedEvent e) {
-        System.out.println("CLICK!");
-        if(e.getGui() instanceof RadialMenu) {
+    /*@SubscribeEvent //TODO Backup event, that isn't even PR'd in yet.
+    public static void onClickWithGuiOpen(InputEvent.ClickInputEvent e) {
+        if(ChiselsAndBits2.getClient().getRadialMenu().isVisible()) {
             ChiselsAndBits2.getClient().getRadialMenu().setClicked(true);
             e.setCanceled(true);
         }
-    }
+    }*/
 }

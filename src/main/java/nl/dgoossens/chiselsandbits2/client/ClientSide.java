@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.client;
 
+import com.mojang.blaze3d.platform.TextureUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
@@ -10,6 +11,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
@@ -17,10 +19,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
@@ -30,6 +30,7 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
@@ -42,23 +43,89 @@ import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import org.apache.commons.io.IOUtils;
+import sun.nio.ch.IOUtil;
 
 import javax.annotation.Nonnull;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.HashMap;
 
 @OnlyIn(Dist.CLIENT)
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientSide {
     //--- GENERAL SETUP ---
     public void setup() {
         ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, new ChiseledBlockTER());
         Minecraft.getInstance().getBlockColors().register(new BlockColorChiseled(), ChiselsAndBits2.getBlocks().CHISELED_BLOCK);
+
+        //We've got both normal and mod event bus events.
+        MinecraftForge.EVENT_BUS.register(getClass());
+        FMLJavaModLoadingContext.get().getModEventBus().register(getClass());
     }
 
     //--- SPRITES ---
-    private final HashMap<ItemMode, SpriteIconPositioning> chiselModeIcons = new HashMap<>();
-    public SpriteIconPositioning getIconForMode(final ItemMode mode) {
+    private static final HashMap<ItemMode, SpriteIconPositioning> chiselModeIcons = new HashMap<>();
+    public static SpriteIconPositioning getIconForMode(final ItemMode mode) {
         return chiselModeIcons.get(mode);
+    }
+
+    @SubscribeEvent
+    public static void registerIconTextures(final TextureStitchEvent.Pre e) {
+        for(final ItemMode itemMode : ItemMode.values()) {
+            final SpriteIconPositioning sip = new SpriteIconPositioning();
+
+            final ResourceLocation sprite = new ResourceLocation( ChiselsAndBits2.MOD_ID, "icons/" + itemMode.getTypelessName().toLowerCase() );
+            final ResourceLocation png = new ResourceLocation( ChiselsAndBits2.MOD_ID, "textures/icons/" + itemMode.getTypelessName().toLowerCase() + ".png" );
+
+            sip.sprite = e.getMap().getSprite( sprite );
+
+            try {
+                final IResource iresource = Minecraft.getInstance().getResourceManager().getResource(png);
+                final BufferedImage bi;
+                try {
+                    bi = ImageIO.read(iresource.getInputStream());
+                } finally {
+                    IOUtils.closeQuietly(iresource.getInputStream());
+                }
+
+                int bottom = 0;
+                int right = 0;
+                sip.left = bi.getWidth();
+                sip.top = bi.getHeight();
+
+                for ( int x = 0; x < bi.getWidth(); x++ )
+                {
+                    for ( int y = 0; y < bi.getHeight(); y++ )
+                    {
+                        final int color = bi.getRGB( x, y );
+                        final int a = color >> 24 & 0xff;
+                        if ( a > 0 )
+                        {
+                            sip.left = Math.min( sip.left, x );
+                            right = Math.max( right, x );
+
+                            sip.top = Math.min( sip.top, y );
+                            bottom = Math.max( bottom, y );
+                        }
+                    }
+                }
+
+                sip.height = bottom - sip.top + 1;
+                sip.width = right - sip.left + 1;
+
+                sip.left /= bi.getWidth();
+                sip.width /= bi.getWidth();
+                sip.top /= bi.getHeight();
+                sip.height /= bi.getHeight();
+            } catch(final IOException ex) {
+                sip.height = 1;
+                sip.width = 1;
+                sip.left = 0;
+                sip.top = 0;
+            }
+            chiselModeIcons.put(itemMode, sip);
+        }
     }
 
     //--- UTILITY METHODS ---
@@ -149,6 +216,7 @@ public class ClientSide {
     @OnlyIn(Dist.CLIENT)
     public static void drawLast(final RenderGameOverlayEvent.Post e) {
         if(e.getType() == RenderGameOverlayEvent.ElementType.ALL) {
+
             Minecraft.getInstance().getProfiler().startSection("chiselsandbit2-radialmenu");
             final PlayerEntity player = Minecraft.getInstance().player;
             if(player.getHeldItemMainhand().getItem() instanceof IItemMenu) {
@@ -160,10 +228,11 @@ public class ClientSide {
                     if(radialMenu.getMinecraft().isGameFocused())
                         KeyBinding.unPressAllKeys();
 
-                    final long k1 = Math.round(radialMenu.getMinecraft().mouseHelper.getMouseX()) * window.getScaledWidth() / window.getWidth();
-                    final long l1 = window.getScaledHeight() - Math.round(radialMenu.getMinecraft().mouseHelper.getMouseY()) * window.getScaledHeight() / window.getHeight();
+                    int i = (int)(radialMenu.getMinecraft().mouseHelper.getMouseX() * (double)window.getScaledWidth() / (double)window.getWidth());
+                    int j = (int)(radialMenu.getMinecraft().mouseHelper.getMouseY() * (double)window.getScaledHeight() / (double)window.getHeight());
 
-                    net.minecraftforge.client.ForgeHooksClient.drawScreen(radialMenu, (int) k1, (int) l1, e.getPartialTicks() );
+                    //This comment makes note that the code below is horrible from a forge perspective, but it's great.
+                    ForgeHooksClient.drawScreen(radialMenu, i, j, e.getPartialTicks());
                 }
             }
             Minecraft.getInstance().getProfiler().endSection();
