@@ -7,25 +7,19 @@ import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.network.packets.PacketSetChiselMode;
 
 public class ChiselModeManager {
-    public static void changeChiselMode(
-            final ItemMode newMode)
-    {
+    public static void changeChiselMode(final ItemMode newMode) {
         final PacketSetChiselMode packet = new PacketSetChiselMode(newMode);
         NetworkRouter.sendToServer( packet );
     }
 
-    public static void scrollOption(
-            final ItemMode.Type tool,
-            ItemMode currentMode,
-            final int dwheel )
-    {
+    public static void scrollOption(final ItemMode.Type tool, ItemMode currentMode, final double dwheel) {
         int offset = currentMode.ordinal();
         do {
             offset = testOffset(offset + ( dwheel < 0 ? -1 : 1 ));
             currentMode = ItemMode.values()[offset];
         } while(currentMode.getType()!=tool);
 
-        changeChiselMode( currentMode );
+        changeChiselMode(currentMode);
     }
 
     private static int testOffset(int offset) {

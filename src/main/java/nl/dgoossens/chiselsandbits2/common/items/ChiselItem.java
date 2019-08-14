@@ -35,6 +35,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 import nl.dgoossens.chiselsandbits2.common.utils.MathUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.network.packets.PacketChisel;
 import org.apache.commons.lang3.text.WordUtils;
@@ -45,7 +46,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ChiselItem extends Item implements IItemScrollWheel {
     public ChiselItem(Item.Properties builder) {
         super(builder);
@@ -61,38 +61,17 @@ public class ChiselItem extends Item implements IItemScrollWheel {
     }
 
     /**
-     * We track the last time the player clicked to chisel to determine when 150ms have passed before
-     * we allow another click. Static to be sure we don't waste memory if two item instances are
-     * ever created somehow.
-     */
-    private static Map<UUID, Long> lastClick = new ConcurrentHashMap<>();
-
-    @SubscribeEvent
-    public static void onLeftClick(PlayerInteractEvent.LeftClickBlock e) {
-        if(e.getCancellationResult()==ActionResultType.FAIL) return;
-        if(!(e.getItemStack().getItem() instanceof ChiselItem)) return;
-        if(startChiselingBlock(e.getPos(), ItemMode.getChiselMode(e.getItemStack()), e.getPlayer())) {
-            if(e.getPlayer().abilities.isCreativeMode) e.setCanceled(true);
-            else e.setUseItem(Event.Result.DENY);
-        }
-    }
-
-    /**
      * Handle the block chiselling on left click.
      */
-    public static boolean startChiselingBlock(final BlockPos pos, final ItemMode mode, final PlayerEntity player) {
-        if(!player.world.isRemote) return true; //We only want to run this on the client.
+    public static boolean startChiselingBlock(final BlockRayTraceResult rayTrace, final ItemMode mode, final PlayerEntity player) {
+        if(!player.world.isRemote) throw new UnsupportedOperationException("Block chiseling can only be started on the client-side.");
 
-        if(System.currentTimeMillis()-lastClick.getOrDefault(player.getUniqueID(), 0L) < 300) return true;
-        lastClick.put(player.getUniqueID(), System.currentTimeMillis());
-
+        final BlockPos pos = rayTrace.getPos();
         final BlockState state = player.world.getBlockState(pos);
         if(!ChiselUtil.canChiselBlock(state)) return true;
-        final RayTraceResult rtr = MathUtil.getRayTraceResult(state, pos, player);
-        if(rtr != null && rtr.getType() == RayTraceResult.Type.BLOCK) {
-            Vec3d hitBit = rtr.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
-            useChisel(BitOperation.REMOVE, mode, player, player.world, pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
-        }
+        if(!player.canPlayerEdit(pos, rayTrace.getFace(), player.getHeldItemMainhand())) return true;
+        Vec3d hitBit = rayTrace.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
+        useChisel(BitOperation.REMOVE, mode, player, player.world, pos, rayTrace.getFace(), hitBit);
         return true;
     }
 
@@ -105,10 +84,11 @@ public class ChiselItem extends Item implements IItemScrollWheel {
         if(context.getWorld().isRemote) {
             final BlockPos pos = context.getPos();
             final BlockState state = context.getWorld().getBlockState(pos);
+            //TODO move this into the click event to skip the custom raytracing
             final RayTraceResult rtr = MathUtil.getRayTraceResult(state, pos, context.getPlayer());
             if(rtr != null && rtr.getType() == RayTraceResult.Type.BLOCK) {
                 Vec3d hitBit = rtr.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
-                useChisel(BitOperation.PLACE, ItemMode.getChiselMode(item), context.getPlayer(), context.getWorld(), pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
+                useChisel(BitOperation.PLACE, ItemMode.getMode(ItemMode.Type.CHISEL, item), context.getPlayer(), context.getWorld(), pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
             }
         }
         return ActionResultType.SUCCESS;
@@ -116,14 +96,14 @@ public class ChiselItem extends Item implements IItemScrollWheel {
 
     /**
      * Uses the chisel on a specific bit of a specific block.
-     * Does everything short of updating the voxel data. (and updating the durability)
+     * Does everything short of updating the voxel data. (and updating the durability of the used tool)
      */
     static void useChisel(final BitOperation operation, final ItemMode mode, final PlayerEntity player, final World world, final BlockPos pos, final Direction side, final Vec3d hitBit) {
         final BitLocation location = new BitLocation(new BlockRayTraceResult(hitBit, side, pos, false), false, operation);
         final PacketChisel pc = new PacketChisel(operation, location, side, mode);
         final int modifiedBits = pc.doAction( player );
         if(modifiedBits != 0) {
-            ChiselsAndBits2.getClient().breakSound(world, pos, modifiedBits);
+            ChiselsAndBits2.getClient().breakSound(world, pos, ModUtil.getStateById(modifiedBits));
             NetworkRouter.sendToServer(pc);
         }
     }
@@ -170,18 +150,21 @@ public class ChiselItem extends Item implements IItemScrollWheel {
         return multimap;
     }
 
+    /**
+     * Display the chisel mode in the highlight tip.
+     */
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        return displayName + " - " + WordUtils.capitalizeFully(ItemMode.getChiselMode( item ).name());
+        return displayName + " - " + WordUtils.capitalizeFully(ItemMode.getMode(ItemMode.Type.CHISEL, item).name());
     }
 
+    /**
+     * Scrolling on the chisel scrolls through the possible chisel modes, alternative to the menu.
+     */
     @Override
-    public void scroll(
-            final PlayerEntity player,
-            final ItemStack stack,
-            final int dwheel )
-    {
-        final ItemMode mode = ChiselModeManager.getMode( player );
-        ChiselModeManager.scrollOption( ItemMode.Type.CHISEL, mode, dwheel );
+    public boolean scroll(final PlayerEntity player, final ItemStack stack, final double dwheel) {
+        final ItemMode mode = ChiselModeManager.getMode(player);
+        ChiselModeManager.scrollOption(ItemMode.Type.CHISEL, mode, dwheel);
+        return true;
     }
 }

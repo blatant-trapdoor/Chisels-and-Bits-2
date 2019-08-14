@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.client;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.SoundType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.player.PlayerEntity;
@@ -39,17 +40,13 @@ public class ClientSide {
     public TextureAtlasSprite getMissingIcon() {
         return Minecraft.getInstance().getTextureMap().getSprite(new ResourceLocation("")); //The missing sprite is returned when an error occurs whilst searching for the texture.
     }
-    public void breakSound(
-            final World world,
-            final BlockPos pos,
-            final int extractedState )
-    {
-        final BlockState state = ModUtil.getStateById( extractedState );
+    public void breakSound(final World world, final BlockPos pos, final BlockState state) {
         final Block block = state.getBlock();
+        final SoundType soundType = block.getSoundType(state, world, pos, getPlayer());
         world.playSound( pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                block.getSoundType(state).getBreakSound(), SoundCategory.BLOCKS,
-                (block.getSoundType(state).getVolume() + 1.0F) / 16.0F,
-                block.getSoundType(state).getPitch() * 0.9F, false );
+                soundType.getBreakSound(), SoundCategory.BLOCKS,
+                (soundType.getVolume() + 1.0F) / 16.0F,
+                soundType.getPitch() * 0.9F, false);
     }
 
     //--- DRAW LAST ---
@@ -71,7 +68,7 @@ public class ClientSide {
     }
 
     //--- ITEM SCROLL ---
-    /*@SubscribeEvent
+    /*@SubscribeEvent  Waiting for Forge PR...
     @OnlyIn(Dist.CLIENT)
     public void wheelEvent(final InputEvent.MouseScrollEvent me) {
         final int dwheel = me.getScrollDelta() < 0 ? -1 : me.getScrollDelta() > 0 ? 1 : 0;
@@ -93,17 +90,9 @@ public class ClientSide {
     private BitLocation drawStart;
     private ItemMode lastTool;
 
-    public BitLocation getStartPos()
-    {
-        return drawStart;
-    }
-
-    public void pointAt(
-            @Nonnull final ItemMode type,
-            @Nonnull final BitLocation pos )
-    {
-        if ( drawStart == null )
-        {
+    public BitLocation getStartPos() { return drawStart; }
+    public void pointAt(@Nonnull final ItemMode type, @Nonnull final BitLocation pos) {
+        if (drawStart == null) {
             drawStart = pos;
             lastTool = type;
         }

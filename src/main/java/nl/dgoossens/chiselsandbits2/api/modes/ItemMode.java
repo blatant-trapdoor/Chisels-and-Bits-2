@@ -24,13 +24,21 @@ public enum ItemMode {
     CHISEL_DRAW_REGION,
     CHISEL_CONNECTED_MATERIAL,
 
-    PATTERN_REPLACE,
+    PATTERN_REPLACE, //DG: I've actually rarely used patterns myself so I'll go experiment with them once I get around to them, then I'll probably add some more modes.
+    PATTERN_ADDITIVE,
+    PATTERN_REPLACENT,
+    PATTERN_IMPOSE,
 
+    TAPEMEASURE_BIT,
+    TAPEMEASURE_BLOCK,
+    TAPEMEASURE_DISTANCE,
     ;
 
     public static enum Type {
+        //Type names must be identical to the startsWith() of the ItemMode!
         CHISEL,
-        PATTERN
+        PATTERN,
+        TAPEMEASURE
     }
 
     /**
@@ -40,8 +48,10 @@ public enum ItemMode {
 
     /**
      * Fetch the item mode associated with this item.
+     * Type is required for the returned value when no
+     * mode is found!
      */
-    public static ItemMode getChiselMode(final ItemStack stack) {
+    public static ItemMode getMode(final Type type, final ItemStack stack) {
         if(stack != null) {
             try {
                 final CompoundNBT nbt = stack.getTag();
@@ -52,7 +62,7 @@ public enum ItemMode {
             catch ( final Exception e ) { e.printStackTrace(); }
         }
 
-        return CHISEL_SINGLE;
+        return type == Type.CHISEL ? CHISEL_SINGLE : type == Type.PATTERN ? PATTERN_REPLACE : TAPEMEASURE_BIT;
     }
 
     /**

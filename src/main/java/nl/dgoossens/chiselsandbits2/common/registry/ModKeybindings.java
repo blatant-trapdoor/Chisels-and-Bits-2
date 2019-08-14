@@ -18,7 +18,7 @@ public class ModKeybindings {
         @Override
         public boolean conflicts(IKeyConflictContext other) {
             return true; //For some reason true means that everything is fine. Instead of true meaning there's a conflict, alright.
-        }
+        } //TODO fix issue where despite these being non-conflicting there are still red markings
     };
     private static final String CATEGORY = "Chisels & Bits 2";
 

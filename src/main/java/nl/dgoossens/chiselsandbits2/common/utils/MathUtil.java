@@ -15,6 +15,10 @@ import net.minecraft.util.math.shapes.ISelectionContext;
 public class MathUtil {
     private final static float DEG_TO_RAD = 0.017453292f;
 
+    /**
+     * Should no longer be needed as we get the ray trace from the InputEvent.ClickInputEvent
+     */
+    @Deprecated
     public static RayTraceResult getRayTraceResult(final BlockState state, final BlockPos pos, final PlayerEntity playerIn) {
         double reachDistance = playerIn.getAttribute(PlayerEntity.REACH_DISTANCE).getValue();
 

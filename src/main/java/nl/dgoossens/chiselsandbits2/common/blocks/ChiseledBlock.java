@@ -35,6 +35,8 @@ public class ChiseledBlock extends Block implements BaseBlock, IMultiStateBlock 
     @Nullable
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) { return new ChiseledBlockTileEntity(); }
+    @Override //Our rendering shape is identical to the collision shape.
+    public VoxelShape getRenderShape(BlockState state, IBlockReader worldIn, BlockPos pos) { return getCollisionShape(state, worldIn, pos, ISelectionContext.dummy()); }
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
         TileEntity te = worldIn.getTileEntity(pos);
@@ -44,25 +46,19 @@ public class ChiseledBlock extends Block implements BaseBlock, IMultiStateBlock 
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
         TileEntity te = worldIn.getTileEntity(pos);
-        if(!(te instanceof ChiseledBlockTileEntity)) return VoxelShapes.empty();
+        if(!(te instanceof ChiseledBlockTileEntity)) return VoxelShapes.empty(); //TODO really need to make this a util especially with multipart
         else return ((ChiseledBlockTileEntity) te).getCachedShape();
     }
-    public BlockState getPrimaryState(
-            IBlockReader world,
-            BlockPos pos) {
-        TileEntity te = world.getTileEntity(pos);
+    public BlockState getPrimaryState(IBlockReader world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos); //TODO pls fix
         if(te==null) return null;
         return ModUtil.getStateById(((ChiseledBlockTileEntity) te).getPrimaryBlock() );
     }
 
     @Override
-    public boolean canRenderInLayer(BlockState state, BlockRenderLayer layer) {
-        return true;
-    }
+    public boolean canRenderInLayer(BlockState state, BlockRenderLayer layer) { return true; }
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.ENTITYBLOCK_ANIMATED;
-    }
+    public BlockRenderType getRenderType(BlockState state) { return BlockRenderType.ENTITYBLOCK_ANIMATED; }
 
     public static class ReplaceWithChiseledValue {
         public boolean success = false;
