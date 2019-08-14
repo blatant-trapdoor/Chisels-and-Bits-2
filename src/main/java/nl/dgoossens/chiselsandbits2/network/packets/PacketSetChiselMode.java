@@ -37,7 +37,7 @@ public class PacketSetChiselMode implements NetworkRouter.ModPacket {
                 final ItemStack ei = player.getHeldItemMainhand();
                 if ( ei != null && ei.getItem() instanceof ChiselItem)
                 {
-                    final ItemMode originalMode = ItemMode.getChiselMode( ei );
+                    final ItemMode originalMode = ItemMode.getMode( ei );
                     pkt.newMode.setMode( ei );
 
                     if ( originalMode != pkt.newMode) {

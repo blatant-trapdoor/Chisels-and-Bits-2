@@ -3,7 +3,11 @@ package nl.dgoossens.chiselsandbits2.api.modes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.StringNBT;
+import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
+import nl.dgoossens.chiselsandbits2.common.items.PatternItem;
 
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -38,7 +42,15 @@ public enum ItemMode {
         //Type names must be identical to the startsWith() of the ItemMode!
         CHISEL,
         PATTERN,
-        TAPEMEASURE
+        TAPEMEASURE,
+        ;
+
+        /**
+         * Get all item modes associated with this type.
+         */
+        public Set<ItemMode> getItemModes() {
+            return Stream.of(ItemMode.values()).filter(f -> f.name().startsWith(name())).collect(Collectors.toSet());
+        }
     }
 
     /**
@@ -51,18 +63,15 @@ public enum ItemMode {
      * Type is required for the returned value when no
      * mode is found!
      */
-    public static ItemMode getMode(final Type type, final ItemStack stack) {
-        if(stack != null) {
-            try {
-                final CompoundNBT nbt = stack.getTag();
-                if (nbt != null && nbt.contains( "mode" ))
-                    return valueOf(nbt.getString( "mode" ));
-            }
-            catch ( final IllegalArgumentException iae ) {} //nope!
-            catch ( final Exception e ) { e.printStackTrace(); }
-        }
+    public static ItemMode getMode(final ItemStack stack) {
+        try {
+            final CompoundNBT nbt = stack.getTag();
+            if (nbt != null && nbt.contains( "mode" ))
+                return valueOf(nbt.getString( "mode" ));
+        } catch ( final IllegalArgumentException iae ) { //nope!
+        } catch ( final Exception e ) { e.printStackTrace(); }
 
-        return type == Type.CHISEL ? CHISEL_SINGLE : type == Type.PATTERN ? PATTERN_REPLACE : TAPEMEASURE_BIT;
+        return (stack.getItem() instanceof ChiselItem) ? CHISEL_SINGLE : (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE : TAPEMEASURE_BIT;
     }
 
     /**

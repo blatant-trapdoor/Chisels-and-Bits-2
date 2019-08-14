@@ -1,7 +1,9 @@
 package nl.dgoossens.chiselsandbits2;
 
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -56,12 +58,7 @@ public class ChiselsAndBits2 {
 
     // Ran after all registry events have finished.
     private void setup(final FMLCommonSetupEvent event) {
-        if(FMLEnvironment.dist.isClient()) {
-            CLIENT.setup(event);
-
-            //Register client-only event busses
-            MinecraftForge.EVENT_BUS.register(CLIENT);
-        }
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> CLIENT::setup);
 
         //Register event busses
         MinecraftForge.EVENT_BUS.register(this);
@@ -69,6 +66,7 @@ public class ChiselsAndBits2 {
         MinecraftForge.EVENT_BUS.register(NETWORK_ROUTER);
     }
 
+    //TODO this all needs someplaceelse to live
     boolean idsHaveBeenMapped = false;
     List<ICacheClearable> cacheClearables = new ArrayList<>();
 

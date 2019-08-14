@@ -1,6 +1,5 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

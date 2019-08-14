@@ -10,6 +10,8 @@ public class ModConfiguration {
     public ForgeConfigSpec.IntValue maxMillisecondsUploadingPerFrame;
     public ForgeConfigSpec.IntValue dynamicMaxConcurrentTessalators;
 
+    public ForgeConfigSpec.DoubleValue radialMenuVolume;
+
     // --- SERVER VALUES ---
     public ForgeConfigSpec.DoubleValue maxDrawnRegionSize;
 
@@ -20,6 +22,15 @@ public class ModConfiguration {
         //CLIENT
         {
             ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+            builder.comment("General Settings");
+            builder.push("general");
+
+            radialMenuVolume = builder
+                    .comment("How loud should the radial menu sound be?")
+                    .defineInRange("radialMenuVolume", 0.15, 0.0, 2.0);
+
+            builder.pop();
+
             builder.comment("Performance Settings");
             builder.push("performance");
 

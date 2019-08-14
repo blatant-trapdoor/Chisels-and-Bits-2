@@ -27,6 +27,7 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
 import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.modes.ChiselModeManager;
@@ -46,11 +47,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ChiselItem extends Item implements IItemScrollWheel {
+public class ChiselItem extends Item implements IItemScrollWheel, IItemMenu {
     public ChiselItem(Item.Properties builder) {
         super(builder);
     }
 
+    @Override
+    public ItemMode.Type getAssociatedType() {
+        return ItemMode.Type.CHISEL;
+    }
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
@@ -88,7 +93,7 @@ public class ChiselItem extends Item implements IItemScrollWheel {
             final RayTraceResult rtr = MathUtil.getRayTraceResult(state, pos, context.getPlayer());
             if(rtr != null && rtr.getType() == RayTraceResult.Type.BLOCK) {
                 Vec3d hitBit = rtr.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
-                useChisel(BitOperation.PLACE, ItemMode.getMode(ItemMode.Type.CHISEL, item), context.getPlayer(), context.getWorld(), pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
+                useChisel(BitOperation.PLACE, ItemMode.getMode(item), context.getPlayer(), context.getWorld(), pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
             }
         }
         return ActionResultType.SUCCESS;
@@ -155,7 +160,7 @@ public class ChiselItem extends Item implements IItemScrollWheel {
      */
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        return displayName + " - " + WordUtils.capitalizeFully(ItemMode.getMode(ItemMode.Type.CHISEL, item).name());
+        return displayName + " - " + WordUtils.capitalizeFully(ItemMode.getMode(item).name());
     }
 
     /**

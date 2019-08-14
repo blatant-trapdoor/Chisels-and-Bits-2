@@ -39,10 +39,6 @@ public class ChiselModeManager {
             final PlayerEntity player )
     {
         final ItemStack ei = player.getHeldItemMainhand();
-        if ( ei != null && ei.getItem() instanceof ChiselItem)
-        {
-            return ItemMode.getChiselMode( ei );
-        }
-        return ItemMode.CHISEL_SINGLE;
+        return ItemMode.getMode( ei );
     }
 }

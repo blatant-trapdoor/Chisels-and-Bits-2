@@ -36,3 +36,4 @@ The mod has been partially rewritten, 99% of the rendering code is still the sam
 * The commands and debug features
 * Cross-world model exporting
 * Compatibility with worlds with C&B1 (this might not happen at all)
+* Tape measure coloured bounding boxes (really low priority)
