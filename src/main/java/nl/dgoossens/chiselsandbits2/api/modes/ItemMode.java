@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.StringNBT;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.items.PatternItem;
+import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
 
 import java.util.List;
 import java.util.Set;
@@ -39,6 +40,10 @@ public enum ItemMode {
     TAPEMEASURE_BIT,
     TAPEMEASURE_BLOCK,
     TAPEMEASURE_DISTANCE,
+
+    WRENCH_ROTATE,
+    WRENCH_NUDGE_BIT,
+    WRENCH_NUDGE_BLOCK,
     ;
 
     /**
@@ -60,6 +65,7 @@ public enum ItemMode {
         CHISEL,
         PATTERN,
         TAPEMEASURE,
+        WRENCH,
         ;
 
         /**
@@ -96,7 +102,10 @@ public enum ItemMode {
         } catch ( final IllegalArgumentException iae ) { //nope!
         } catch ( final Exception e ) { e.printStackTrace(); }
 
-        return (stack.getItem() instanceof ChiselItem) ? CHISEL_SINGLE : (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE : TAPEMEASURE_BIT;
+        return (stack.getItem() instanceof ChiselItem) ? CHISEL_SINGLE :
+               (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
+               (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
+               WRENCH_ROTATE;
     }
 
     /**

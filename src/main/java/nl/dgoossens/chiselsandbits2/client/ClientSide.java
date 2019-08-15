@@ -192,14 +192,14 @@ public class ClientSide {
     public static void onTick(final TickEvent.ClientTickEvent e) {
         final PlayerEntity player = Minecraft.getInstance().player;
         if(player==null) return; //We're not in-game yet if this happens..
-        if(player.getHeldItemMainhand().getItem() instanceof IItemMenu) {
-            RadialMenu radialMenu = ChiselsAndBits2.getClient().getRadialMenu();
+        RadialMenu radialMenu = ChiselsAndBits2.getClient().getRadialMenu();
+        if((player.getHeldItemMainhand().getItem() instanceof IItemMenu) || radialMenu.isVisible()) { //Also decrease visibility if you've scrolled of the item.
             //If you've recently clicked (click = force close) but you're not pressing the button anymore we can reset the click state.
             if(radialMenu.hasClicked() && !radialMenu.isPressingButton())
                 radialMenu.setClicked(false);
 
             radialMenu.setPressingButton(ChiselsAndBits2.getKeybindings().modeMenu.isKeyDown());
-            if(radialMenu.isPressingButton() && !radialMenu.hasClicked()) {
+            if(radialMenu.isPressingButton() && !radialMenu.hasClicked() && (player.getHeldItemMainhand().getItem() instanceof IItemMenu)) {
                 //While the key is down, increase the visibility
                 radialMenu.setActionUsed(false);
                 radialMenu.raiseVisibility();
@@ -254,7 +254,9 @@ public class ClientSide {
                 radialMenu.decreaseVisibility();
             }
         }
+        radialMenu.updateGameFocus();
 
+        //TODO move these to InputEvent
         if(ChiselsAndBits2.getKeybindings().undo.isPressed())
             System.out.println("UNDO");
 
@@ -272,12 +274,10 @@ public class ClientSide {
     public static void drawLast(final RenderGameOverlayEvent.Post e) {
         if(e.getType() == RenderGameOverlayEvent.ElementType.ALL) {
             Minecraft.getInstance().getProfiler().startSection("chiselsandbit2-radialmenu");
-            final PlayerEntity player = Minecraft.getInstance().player;
-            if(player.getHeldItemMainhand().getItem() instanceof IItemMenu) {
-                RadialMenu radialMenu = ChiselsAndBits2.getClient().getRadialMenu();
+            RadialMenu radialMenu = ChiselsAndBits2.getClient().getRadialMenu();
+            if(radialMenu.isVisible()) { //Render if it's visible.
                 final MainWindow window = e.getWindow();
                 radialMenu.configure(window); //Setup the height/width scales
-                radialMenu.updateGameFocus();
                 if(radialMenu.isVisible()) {
                     if(radialMenu.getMinecraft().isGameFocused())
                         KeyBinding.unPressAllKeys();
@@ -304,7 +304,7 @@ public class ClientSide {
 
                         GlStateManager.color4f( 1, 1, 1, 1.0f );
                         Minecraft.getInstance().getTextureManager().bindTexture( AtlasTexture.LOCATION_BLOCKS_TEXTURE );
-                        final TextureAtlasSprite sprite = chiselModeIcons.get( mode ) == null ? ChiselsAndBits2.getClient().getMissingIcon() : chiselModeIcons.get( mode ).sprite;
+                        final TextureAtlasSprite sprite = chiselModeIcons.get(mode) == null ? ChiselsAndBits2.getClient().getMissingIcon() : chiselModeIcons.get( mode ).sprite;
 
                         GlStateManager.enableBlend();
                         int blitOffset = 0;

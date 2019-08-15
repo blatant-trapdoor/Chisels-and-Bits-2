@@ -14,19 +14,26 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class WrenchItem extends Item {
+public class WrenchItem extends TypedItem {
     public WrenchItem(Properties builder) { super(builder); }
 
+    @Override
+    public ItemMode.Type getAssociatedType() {
+        return ItemMode.Type.WRENCH;
+    }
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "wrench.help",
-                Minecraft.getInstance().gameSettings.keyBindUseItem
+                Minecraft.getInstance().gameSettings.keyBindUseItem,
+                ChiselsAndBits2.getKeybindings().modeMenu
         );
     }
 

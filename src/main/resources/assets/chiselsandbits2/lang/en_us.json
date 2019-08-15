@@ -12,7 +12,7 @@
   "item.chiselsandbits2.tape_measure": "Tape Measure",
   "item.chiselsandbits2.tape_measure.help": "$ to drag and measure spaces|$ to clear previous measurements|$ to display modes",
   "item.chiselsandbits2.wrench": "Wrench",
-  "item.chiselsandbits2.wrench.help": "$ to rotate around axis of face clicked on",
+  "item.chiselsandbits2.wrench.help": "$ to use|$ to display menu",
   "item.chiselsandbits2.palette": "Palette",
   "item.chiselsandbits2.palette.help": "Colour your world; use to pick the colour to paint",
   "item.chiselsandbits2.paintbrush": "Paintbrush",
@@ -44,6 +44,10 @@
   "general.chiselsandbits2.itemmode.bit": "Bit",
   "general.chiselsandbits2.itemmode.block": "Block",
   "general.chiselsandbits2.itemmode.distance": "Distance",
+
+  "general.chiselsandbits2.itemmode.rotate": "Rotate",
+  "general.chiselsandbits2.itemmode.nudge_bit": "Nudge Bit",
+  "general.chiselsandbits2.itemmode.nudge_block": "Nudge Block",
 
   "general.chiselsandbits2.menuaction.undo": "Undo",
   "general.chiselsandbits2.menuaction.redo": "Redo",

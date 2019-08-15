@@ -245,7 +245,7 @@ public class RadialMenu extends Screen {
                 final double y1m2 = Math.sin(begin_rad + fragment2) * ring_outer_edge;
                 final double y2m2 = Math.sin(end_rad - fragment2) * ring_outer_edge;
 
-                final float a = 0.5f;
+                final float a = 0.5f*visibility;
                 float f = 0f;
 
                 final boolean quad = inTriangle(
@@ -275,7 +275,7 @@ public class RadialMenu extends Screen {
 
         for(final MenuButton btn : btns) {
             {
-                final float a = 0.5f;
+                final float a = 0.5f*visibility;
                 float f = 0f;
 
                 if(btn.x1 <= vecX && btn.x2 >= vecX && btn.y1 <= vecY && btn.y2 >= vecY) {
@@ -293,7 +293,7 @@ public class RadialMenu extends Screen {
             //Temporary flat colour drawing because we have no white sprite.
             {
                 final float f = switchTo == null ? 1.0f : 0.5f;
-                final float a = 1.0f;
+                final float a = 1.0f*visibility;
 
                 final double u1 = 0;
                 final double u2 = 16;
@@ -348,7 +348,7 @@ public class RadialMenu extends Screen {
             final TextureAtlasSprite sprite = sip.sprite;
 
             final float f = 1.0f;
-            final float a = 1.0f;
+            final float a = 1.0f*visibility;
 
             final double u1 = sip.left * 16.0;
             final double u2 = (sip.left + sip.width) * 16.0;
@@ -363,7 +363,7 @@ public class RadialMenu extends Screen {
 
         for(final MenuButton btn : btns) {
             final float f = switchTo == null ? 1.0f : 0.5f;
-            final float a = 1.0f;
+            final float a = 1.0f*visibility;
 
             final double u1 = 0;
             final double u2 = 16;
