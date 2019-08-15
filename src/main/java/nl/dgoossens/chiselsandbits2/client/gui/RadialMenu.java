@@ -6,6 +6,7 @@ import com.sun.prism.TextureMap;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.IngameGui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -164,8 +165,11 @@ public class RadialMenu extends Screen {
 
         buffer.begin( GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR );
 
-        final double vecX = mouseX - ((double) window.getWidth()) / 4;
-        final double vecY = mouseY - ((double) window.getHeight()) / 4;
+
+        final double middle_x = ((double) window.getScaledWidth()) / 2;
+        final double middle_y = ((double) window.getScaledHeight()) / 2;
+        final double vecX = mouseX - middle_x;
+        final double vecY = mouseY - middle_y;
         double radians = Math.atan2( vecY, vecX );
 
         final double ring_inner_edge = 20;
@@ -177,9 +181,6 @@ public class RadialMenu extends Screen {
         {
             radians = radians + Math.PI * 2;
         }
-
-        final double middle_x = ((double) window.getWidth()) / 4;
-        final double middle_y = ((double) window.getHeight()) / 4;
 
         final ArrayList<MenuRegion> modes = new ArrayList<>();
         final ArrayList<MenuButton> btns = new ArrayList<>();
@@ -273,19 +274,48 @@ public class RadialMenu extends Screen {
         }
 
         for(final MenuButton btn : btns) {
-            final float a = 0.5f;
-            float f = 0f;
+            {
+                final float a = 0.5f;
+                float f = 0f;
 
-            if(btn.x1 <= vecX && btn.x2 >= vecX && btn.y1 <= vecY && btn.y2 >= vecY) {
-                f = 1;
-                btn.highlighted = true;
-                doAction = btn.action;
+                if(btn.x1 <= vecX && btn.x2 >= vecX && btn.y1 <= vecY && btn.y2 >= vecY) {
+                    f = 1;
+                    btn.highlighted = true;
+                    doAction = btn.action;
+                }
+
+                buffer.pos(middle_x + btn.x1, middle_y + btn.y1, blitOffset).color(f, f, f, a).endVertex();
+                buffer.pos(middle_x + btn.x1, middle_y + btn.y2, blitOffset).color(f, f, f, a).endVertex();
+                buffer.pos(middle_x + btn.x2, middle_y + btn.y2, blitOffset).color(f, f, f, a).endVertex();
+                buffer.pos(middle_x + btn.x2, middle_y + btn.y1, blitOffset).color(f, f, f, a).endVertex();
             }
 
-            buffer.pos(middle_x + btn.x1, middle_y + btn.y1, blitOffset).color(f, f, f, a).endVertex();
-            buffer.pos(middle_x + btn.x1, middle_y + btn.y2, blitOffset).color(f, f, f, a).endVertex();
-            buffer.pos(middle_x + btn.x2, middle_y + btn.y2, blitOffset).color(f, f, f, a).endVertex();
-            buffer.pos(middle_x + btn.x2, middle_y + btn.y1, blitOffset).color(f, f, f, a).endVertex();
+            //Temporary flat colour drawing because we have no white sprite.
+            {
+                final float f = switchTo == null ? 1.0f : 0.5f;
+                final float a = 1.0f;
+
+                final double u1 = 0;
+                final double u2 = 16;
+                final double v1 = 0;
+                final double v2 = 16;
+
+                final double btnx1 = btn.x1 + 1;
+                final double btnx2 = btn.x2 - 1;
+                final double btny1 = btn.y1 + 1;
+                final double btny2 = btn.y2 - 1;
+
+                final float red = f * ((btn.color >> 16 & 0xff) / 255.0f);
+                final float green = f * ((btn.color >> 8 & 0xff) / 255.0f);
+                final float blue = f * ((btn.color & 0xff) / 255.0f);
+
+                if(btn.icon==null) {
+                    buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).color(red, green, blue, a).endVertex();
+                    buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).color(red, green, blue, a).endVertex();
+                    buffer.pos(middle_x + btnx2, middle_y + btny2, blitOffset).color(red, green, blue, a).endVertex();
+                    buffer.pos(middle_x + btnx2, middle_y + btny1, blitOffset).color(red, green, blue, a).endVertex();
+                }
+            }
         }
 
         tessellator.draw();
@@ -340,9 +370,6 @@ public class RadialMenu extends Screen {
             final double v1 = 0;
             final double v2 = 16;
 
-            //ModelLoader.White.INSTANCE
-            final TextureAtlasSprite sprite = btn.icon == null ? ChiselsAndBits2.getClient().getMissingIcon() : btn.icon;
-
             final double btnx1 = btn.x1 + 1;
             final double btnx2 = btn.x2 - 1;
             final double btny1 = btn.y1 + 1;
@@ -352,10 +379,12 @@ public class RadialMenu extends Screen {
             final float green = f * ((btn.color >> 8 & 0xff) / 255.0f);
             final float blue = f * ((btn.color & 0xff) / 255.0f);
 
-            buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
-            buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
-            buffer.pos(middle_x + btnx2, middle_y + btny2, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
-            buffer.pos(middle_x + btnx2, middle_y + btny1, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
+            if(btn.icon!=null) {
+                buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).tex(btn.icon.getInterpolatedU(u1), btn.icon.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
+                buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).tex(btn.icon.getInterpolatedU(u1), btn.icon.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
+                buffer.pos(middle_x + btnx2, middle_y + btny2, blitOffset).tex(btn.icon.getInterpolatedU(u2), btn.icon.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
+                buffer.pos(middle_x + btnx2, middle_y + btny1, blitOffset).tex(btn.icon.getInterpolatedU(u2), btn.icon.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
+            }
         }
 
         tessellator.draw();
