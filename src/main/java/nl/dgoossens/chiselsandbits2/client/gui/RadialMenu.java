@@ -2,20 +2,23 @@ package nl.dgoossens.chiselsandbits2.client.gui;
 
 import com.google.common.base.Stopwatch;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.sun.prism.TextureMap;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.item.DyeColor;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
@@ -23,12 +26,14 @@ import nl.dgoossens.chiselsandbits2.api.SpriteIconPositioning;
 import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
 import nl.dgoossens.chiselsandbits2.api.modes.MenuAction;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
-import org.apache.commons.lang3.text.WordUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.lwjgl.opengl.GL11;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class RadialMenu extends Screen {
@@ -92,10 +97,13 @@ public class RadialMenu extends Screen {
         if((gameFocused && isVisible()) || (!gameFocused && !isVisible())) {
             gameFocused = !gameFocused;
             getMinecraft().setGameFocused(gameFocused);
-            if(!gameFocused)
+            if(!gameFocused) {
                 getMinecraft().mouseHelper.ungrabMouse();
-            else
+                if(ChiselsAndBits2.getConfig().enableVivecraftCompatibility.get()) getMinecraft().currentScreen = this;
+            } else {
                 getMinecraft().mouseHelper.grabMouse();
+                if(ChiselsAndBits2.getConfig().enableVivecraftCompatibility.get()) getMinecraft().displayGuiScreen(null);
+            }
         }
     }
 
@@ -109,13 +117,13 @@ public class RadialMenu extends Screen {
         String name;
         Direction textSide;
 
-        public MenuButton(final String name, final MenuAction action, final double x, final double y, final TextureAtlasSprite ico, final Direction textSide) {
-            this(name, action, x, y, 0xffffff, textSide);
+        public MenuButton(final MenuAction action, final double x, final double y, final TextureAtlasSprite ico, final Direction textSide) {
+            this(action, x, y, 0xffffff, textSide);
             this.icon = ico;
         }
 
-        public MenuButton(final String name, final MenuAction action, final double x, final double y, final int col, final Direction textSide) {
-            this.name = name;
+        public MenuButton(final MenuAction action, final double x, final double y, final int col, final Direction textSide) {
+            this.name = action.getLocalizedName();
             this.action = action;
             x1 = x;
             x2 = x + 18;
@@ -162,7 +170,7 @@ public class RadialMenu extends Screen {
 
         final double ring_inner_edge = 20;
         final double ring_outer_edge = 50;
-        final double text_distnace = 65;
+        final double text_distance = 65;
         final double quarterCircle = Math.PI / 2.0;
 
         if ( radians < -quarterCircle )
@@ -174,16 +182,44 @@ public class RadialMenu extends Screen {
         final double middle_y = ((double) window.getHeight()) / 4;
 
         final ArrayList<MenuRegion> modes = new ArrayList<>();
-        //TODO final ArrayList<MenuButton> btns = new ArrayList<>();
+        final ArrayList<MenuButton> btns = new ArrayList<>();
         //Setup mode regions
         for(ItemMode m : ItemMode.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getSortedItemModes())
             modes.add(new MenuRegion(m));
+
+        //Setup buttons
+        btns.add(new MenuButton(MenuAction.UNDO, text_distance, -20, ClientSide.undoIcon, Direction.EAST));
+        btns.add(new MenuButton(MenuAction.REDO, text_distance, 4, ClientSide.redoIcon, Direction.EAST));
+
+        ItemMode.Type tool = ItemMode.getMode(getMinecraft().player.getHeldItemMainhand()).getType();
+        if(tool == ItemMode.Type.PATTERN) {
+            btns.add(new MenuButton(MenuAction.ROLL_X, -text_distance - 18, -20, ClientSide.roll_x, Direction.WEST));
+            btns.add(new MenuButton(MenuAction.ROLL_Z, -text_distance - 18, 4, ClientSide.roll_z, Direction.WEST));
+        }
+
+        if(tool == ItemMode.Type.TAPEMEASURE) {
+            final int colorSize = DyeColor.values().length / 4 * 24 - 4;
+            double underring = -ring_outer_edge - 34;
+            double bntPos = -colorSize;
+            final int bntSize = 24;
+            Direction textSide = Direction.UP;
+            for(final DyeColor color : DyeColor.values()) {
+                final MenuAction action = MenuAction.valueOf(color.name());
+                if(bntPos > colorSize) {
+                    underring = ring_outer_edge;
+                    bntPos = -colorSize;
+                    textSide = Direction.DOWN;
+                }
+                btns.add(new MenuButton(action, bntPos, underring, action.getColour(), textSide));
+                bntPos += bntSize;
+            }
+        }
 
         switchTo = null;
         doAction = null;
 
         if(!modes.isEmpty()) {
-            final int totalModes = Math.max( 3, modes.size() );
+            final int totalModes = Math.max(3, modes.size());
             int currentMode = 0;
             final double fragment = Math.PI * 0.005;
             final double fragment2 = Math.PI * 0.0025;
@@ -191,22 +227,22 @@ public class RadialMenu extends Screen {
 
             for(final MenuRegion mnuRgn : modes) {
                 final double begin_rad = currentMode * perObject - quarterCircle;
-                final double end_rad = ( currentMode + 1 ) * perObject - quarterCircle;
+                final double end_rad = (currentMode + 1) * perObject - quarterCircle;
 
-                mnuRgn.x1 = Math.cos( begin_rad );
-                mnuRgn.x2 = Math.cos( end_rad );
-                mnuRgn.y1 = Math.sin( begin_rad );
-                mnuRgn.y2 = Math.sin( end_rad );
+                mnuRgn.x1 = Math.cos(begin_rad);
+                mnuRgn.x2 = Math.cos(end_rad);
+                mnuRgn.y1 = Math.sin(begin_rad);
+                mnuRgn.y2 = Math.sin(end_rad);
 
-                final double x1m1 = Math.cos( begin_rad + fragment ) * ring_inner_edge;
-                final double x2m1 = Math.cos( end_rad - fragment ) * ring_inner_edge;
-                final double y1m1 = Math.sin( begin_rad + fragment ) * ring_inner_edge;
-                final double y2m1 = Math.sin( end_rad - fragment ) * ring_inner_edge;
+                final double x1m1 = Math.cos(begin_rad + fragment) * ring_inner_edge;
+                final double x2m1 = Math.cos(end_rad - fragment) * ring_inner_edge;
+                final double y1m1 = Math.sin(begin_rad + fragment) * ring_inner_edge;
+                final double y2m1 = Math.sin(end_rad - fragment) * ring_inner_edge;
 
-                final double x1m2 = Math.cos( begin_rad + fragment2 ) * ring_outer_edge;
-                final double x2m2 = Math.cos( end_rad - fragment2 ) * ring_outer_edge;
-                final double y1m2 = Math.sin( begin_rad + fragment2 ) * ring_outer_edge;
-                final double y2m2 = Math.sin( end_rad - fragment2 ) * ring_outer_edge;
+                final double x1m2 = Math.cos(begin_rad + fragment2) * ring_outer_edge;
+                final double x2m2 = Math.cos(end_rad - fragment2) * ring_outer_edge;
+                final double y1m2 = Math.sin(begin_rad + fragment2) * ring_outer_edge;
+                final double y2m2 = Math.sin(end_rad - fragment2) * ring_outer_edge;
 
                 final float a = 0.5f;
                 float f = 0f;
@@ -215,96 +251,150 @@ public class RadialMenu extends Screen {
                         x1m1, y1m1,
                         x2m2, y2m2,
                         x2m1, y2m1,
-                        vecX, vecY ) || inTriangle(
+                        vecX, vecY) || inTriangle(
                         x1m1, y1m1,
                         x1m2, y1m2,
                         x2m2, y2m2,
-                        vecX, vecY );
+                        vecX, vecY);
 
-                if ( begin_rad <= radians && radians <= end_rad && quad )
-                {
+                if(begin_rad <= radians && radians <= end_rad && quad) {
                     f = 1;
                     mnuRgn.highlighted = true;
                     switchTo = mnuRgn.mode;
                 }
 
-                buffer.pos( middle_x + x1m1, middle_y + y1m1, blitOffset ).color( f, f, f, a ).endVertex();
-                buffer.pos( middle_x + x2m1, middle_y + y2m1, blitOffset ).color( f, f, f, a ).endVertex();
-                buffer.pos( middle_x + x2m2, middle_y + y2m2, blitOffset ).color( f, f, f, a ).endVertex();
-                buffer.pos( middle_x + x1m2, middle_y + y1m2, blitOffset ).color( f, f, f, a ).endVertex();
+                buffer.pos(middle_x + x1m1, middle_y + y1m1, blitOffset).color(f, f, f, a).endVertex();
+                buffer.pos(middle_x + x2m1, middle_y + y2m1, blitOffset).color(f, f, f, a).endVertex();
+                buffer.pos(middle_x + x2m2, middle_y + y2m2, blitOffset).color(f, f, f, a).endVertex();
+                buffer.pos(middle_x + x1m2, middle_y + y1m2, blitOffset).color(f, f, f, a).endVertex();
 
                 currentMode++;
             }
+        }
 
-            tessellator.draw();
+        for(final MenuButton btn : btns) {
+            final float a = 0.5f;
+            float f = 0f;
 
-            GlStateManager.shadeModel( GL11.GL_FLAT );
-
-            GlStateManager.translatef( 0.0F, 0.0F, 5.0F );
-            GlStateManager.enableTexture();
-            GlStateManager.color4f( 1, 1, 1, 1.0f );
-            GlStateManager.disableBlend();
-            GlStateManager.enableAlphaTest();
-            GlStateManager.bindTexture( Minecraft.getInstance().getTextureMap().getGlTextureId() );
-
-            buffer.begin( GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR );
-
-            for(final MenuRegion mnuRgn : modes) {
-                final double x = ( mnuRgn.x1 + mnuRgn.x2 ) * 0.5 * ( ring_outer_edge * 0.6 + 0.4 * ring_inner_edge );
-                final double y = ( mnuRgn.y1 + mnuRgn.y2 ) * 0.5 * ( ring_outer_edge * 0.6 + 0.4 * ring_inner_edge );
-
-                final SpriteIconPositioning sip = ClientSide.getIconForMode( mnuRgn.mode );
-                if(sip==null) continue;
-
-                final double scalex = 15 * sip.width * 0.5;
-                final double scaley = 15 * sip.height * 0.5;
-                final double x1 = x - scalex;
-                final double x2 = x + scalex;
-                final double y1 = y - scaley;
-                final double y2 = y + scaley;
-
-                final TextureAtlasSprite sprite = sip.sprite;
-
-                final float f = 1.0f;
-                final float a = 1.0f;
-
-                final double u1 = sip.left * 16.0;
-                final double u2 = ( sip.left + sip.width ) * 16.0;
-                final double v1 = sip.top * 16.0;
-                final double v2 = ( sip.top + sip.height ) * 16.0;
-
-                buffer.pos( middle_x + x1, middle_y + y1, blitOffset ).tex( sprite.getInterpolatedU( u1 ), sprite.getInterpolatedV( v1 ) ).color( f, f, f, a ).endVertex();
-                buffer.pos( middle_x + x1, middle_y + y2, blitOffset ).tex( sprite.getInterpolatedU( u1 ), sprite.getInterpolatedV( v2 ) ).color( f, f, f, a ).endVertex();
-                buffer.pos( middle_x + x2, middle_y + y2, blitOffset ).tex( sprite.getInterpolatedU( u2 ), sprite.getInterpolatedV( v2 ) ).color( f, f, f, a ).endVertex();
-                buffer.pos( middle_x + x2, middle_y + y1, blitOffset ).tex( sprite.getInterpolatedU( u2 ), sprite.getInterpolatedV( v1 ) ).color( f, f, f, a ).endVertex();
+            if(btn.x1 <= vecX && btn.x2 >= vecX && btn.y1 <= vecY && btn.y2 >= vecY) {
+                f = 1;
+                btn.highlighted = true;
+                doAction = btn.action;
             }
 
-            tessellator.draw();
+            buffer.pos(middle_x + btn.x1, middle_y + btn.y1, blitOffset).color(f, f, f, a).endVertex();
+            buffer.pos(middle_x + btn.x1, middle_y + btn.y2, blitOffset).color(f, f, f, a).endVertex();
+            buffer.pos(middle_x + btn.x2, middle_y + btn.y2, blitOffset).color(f, f, f, a).endVertex();
+            buffer.pos(middle_x + btn.x2, middle_y + btn.y1, blitOffset).color(f, f, f, a).endVertex();
+        }
 
-            for (final MenuRegion mnuRgn : modes) {
-                if(mnuRgn.highlighted) {
-                    final double x = ( mnuRgn.x1 + mnuRgn.x2 ) * 0.5;
-                    final double y = ( mnuRgn.y1 + mnuRgn.y2 ) * 0.5;
+        tessellator.draw();
 
-                    int fixed_x = (int) ( x * text_distnace );
-                    final int fixed_y = (int) ( y * text_distnace );
-                    final String text = mnuRgn.mode.getLocalizedName();
+        GlStateManager.shadeModel(GL11.GL_FLAT);
 
-                    if ( x <= -0.2 )
-                    {
-                        fixed_x -= getFontRenderer().getStringWidth( text );
-                    }
-                    else if ( -0.2 <= x && x <= 0.2 )
-                    {
-                        fixed_x -= getFontRenderer().getStringWidth( text ) / 2;
-                    }
+        GlStateManager.translatef(0.0F, 0.0F, 5.0F);
+        GlStateManager.enableTexture();
+        GlStateManager.color4f(1, 1, 1, 1.0f);
+        GlStateManager.disableBlend();
+        GlStateManager.enableAlphaTest();
+        GlStateManager.bindTexture(Minecraft.getInstance().getTextureMap().getGlTextureId());
 
-                    getFontRenderer().drawStringWithShadow( text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, 0xffffffff );
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
+
+        for(final MenuRegion mnuRgn : modes) {
+            final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (ring_outer_edge * 0.6 + 0.4 * ring_inner_edge);
+            final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (ring_outer_edge * 0.6 + 0.4 * ring_inner_edge);
+
+            final SpriteIconPositioning sip = ClientSide.getIconForMode(mnuRgn.mode);
+            if(sip == null) continue;
+
+            final double scalex = 15 * sip.width * 0.5;
+            final double scaley = 15 * sip.height * 0.5;
+            final double x1 = x - scalex;
+            final double x2 = x + scalex;
+            final double y1 = y - scaley;
+            final double y2 = y + scaley;
+
+            final TextureAtlasSprite sprite = sip.sprite;
+
+            final float f = 1.0f;
+            final float a = 1.0f;
+
+            final double u1 = sip.left * 16.0;
+            final double u2 = (sip.left + sip.width) * 16.0;
+            final double v1 = sip.top * 16.0;
+            final double v2 = (sip.top + sip.height) * 16.0;
+
+            buffer.pos(middle_x + x1, middle_y + y1, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v1)).color(f, f, f, a).endVertex();
+            buffer.pos(middle_x + x1, middle_y + y2, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v2)).color(f, f, f, a).endVertex();
+            buffer.pos(middle_x + x2, middle_y + y2, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v2)).color(f, f, f, a).endVertex();
+            buffer.pos(middle_x + x2, middle_y + y1, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v1)).color(f, f, f, a).endVertex();
+        }
+
+        for(final MenuButton btn : btns) {
+            final float f = switchTo == null ? 1.0f : 0.5f;
+            final float a = 1.0f;
+
+            final double u1 = 0;
+            final double u2 = 16;
+            final double v1 = 0;
+            final double v2 = 16;
+
+            //ModelLoader.White.INSTANCE
+            final TextureAtlasSprite sprite = btn.icon == null ? ChiselsAndBits2.getClient().getMissingIcon() : btn.icon;
+
+            final double btnx1 = btn.x1 + 1;
+            final double btnx2 = btn.x2 - 1;
+            final double btny1 = btn.y1 + 1;
+            final double btny2 = btn.y2 - 1;
+
+            final float red = f * ((btn.color >> 16 & 0xff) / 255.0f);
+            final float green = f * ((btn.color >> 8 & 0xff) / 255.0f);
+            final float blue = f * ((btn.color & 0xff) / 255.0f);
+
+            buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
+            buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
+            buffer.pos(middle_x + btnx2, middle_y + btny2, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
+            buffer.pos(middle_x + btnx2, middle_y + btny1, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
+        }
+
+        tessellator.draw();
+
+        for(final MenuRegion mnuRgn : modes) {
+            if(mnuRgn.highlighted) {
+                final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5;
+                final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5;
+
+                int fixed_x = (int) (x * text_distance);
+                final int fixed_y = (int) (y * text_distance);
+                final String text = mnuRgn.mode.getLocalizedName();
+
+                if(x <= -0.2) {
+                    fixed_x -= getFontRenderer().getStringWidth(text);
+                } else if(-0.2 <= x && x <= 0.2) {
+                    fixed_x -= getFontRenderer().getStringWidth(text) / 2;
+                }
+
+                getFontRenderer().drawStringWithShadow(text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, 0xffffffff);
+            }
+        }
+
+        for(final MenuButton btn : btns) {
+            if(btn.highlighted) {
+                final String text = btn.name;
+                if(btn.textSide == Direction.WEST) {
+                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + btn.x1 - 8) - getFontRenderer().getStringWidth(text), (int) (middle_y + btn.y1 + 6), 0xffffffff);
+                } else if(btn.textSide == Direction.EAST) {
+                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + btn.x2 + 8), (int) (middle_y + btn.y1 + 6), 0xffffffff);
+                } else if(btn.textSide == Direction.UP) {
+                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + (btn.x1 + btn.x2) * 0.5 - getFontRenderer().getStringWidth(text) * 0.5), (int) (middle_y + btn.y1 - 14), 0xffffffff);
+                } else if(btn.textSide == Direction.DOWN) {
+                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + (btn.x1 + btn.x2) * 0.5 - getFontRenderer().getStringWidth(text) * 0.5), (int) (middle_y + btn.y1 + 24), 0xffffffff);
                 }
             }
-
-            GlStateManager.popMatrix();
         }
+
+        GlStateManager.popMatrix();
     }
 
     private boolean inTriangle(
@@ -329,10 +419,10 @@ public class RadialMenu extends Screen {
         return n > 0 ? 1 : -1;
     }
 
-    //For whatever reason this method never gets called, thanks 1.14.
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        if(mouseButton==0) setClicked(true);
+        if(mouseButton == 0)
+            setClicked(true);
         return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 

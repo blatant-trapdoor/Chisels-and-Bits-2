@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ChiselItem extends Item implements IItemScrollWheel, IItemMenu {
+public class ChiselItem extends TypedItem {
     public ChiselItem(Item.Properties builder) {
         super(builder);
     }
@@ -153,23 +153,5 @@ public class ChiselItem extends Item implements IItemScrollWheel, IItemMenu {
             multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, () -> "Tool modifier", -2, AttributeModifier.Operation.ADDITION));
         }
         return multimap;
-    }
-
-    /**
-     * Display the chisel mode in the highlight tip.
-     */
-    @Override
-    public String getHighlightTip(ItemStack item, String displayName) {
-        return displayName + " - " + ItemMode.getMode(item).getLocalizedName();
-    }
-
-    /**
-     * Scrolling on the chisel scrolls through the possible chisel modes, alternative to the menu.
-     */
-    @Override
-    public boolean scroll(final PlayerEntity player, final ItemStack stack, final double dwheel) {
-        final ItemMode mode = ChiselModeManager.getMode(player);
-        ChiselModeManager.scrollOption(ItemMode.Type.CHISEL, mode, dwheel);
-        return true;
     }
 }

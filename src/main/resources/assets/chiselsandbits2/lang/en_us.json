@@ -43,5 +43,28 @@
 
   "general.chiselsandbits2.itemmode.bit": "Bit",
   "general.chiselsandbits2.itemmode.block": "Block",
-  "general.chiselsandbits2.itemmode.distance": "Distance"
+  "general.chiselsandbits2.itemmode.distance": "Distance",
+
+  "general.chiselsandbits2.menuaction.undo": "Undo",
+  "general.chiselsandbits2.menuaction.redo": "Redo",
+
+  "general.chiselsandbits2.menuaction.roll_x": "Rotate X Clockwise",
+  "general.chiselsandbits2.menuaction.roll_z": "Rotate Z Clockwise",
+
+  "general.chiselsandbits2.menuaction.white": "White",
+  "general.chiselsandbits2.menuaction.black": "Black",
+  "general.chiselsandbits2.menuaction.cyan": "Cyan",
+  "general.chiselsandbits2.menuaction.light_blue": "Light Blue",
+  "general.chiselsandbits2.menuaction.yellow": "Yellow",
+  "general.chiselsandbits2.menuaction.pink": "Pink",
+  "general.chiselsandbits2.menuaction.gray": "Gray",
+  "general.chiselsandbits2.menuaction.brown": "Brown",
+  "general.chiselsandbits2.menuaction.light_gray": "Light Gray",
+  "general.chiselsandbits2.menuaction.red": "Red",
+  "general.chiselsandbits2.menuaction.magenta": "Magenta",
+  "general.chiselsandbits2.menuaction.orange": "Orange",
+  "general.chiselsandbits2.menuaction.lime": "Lime",
+  "general.chiselsandbits2.menuaction.purple": "Purple",
+  "general.chiselsandbits2.menuaction.blue": "Blue",
+  "general.chiselsandbits2.menuaction.green": "Green"
 }

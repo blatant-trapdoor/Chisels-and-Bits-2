@@ -7,8 +7,7 @@ import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.network.packets.PacketChisel;
-import nl.dgoossens.chiselsandbits2.network.packets.PacketSetChiselMode;
+import nl.dgoossens.chiselsandbits2.network.packets.*;
 
 public class NetworkRouter
 {
@@ -25,6 +24,7 @@ public class NetworkRouter
 		int disc = 0;
 		HANDLER.registerMessage(disc++, PacketChisel.class, PacketChisel::encode, PacketChisel::decode, PacketChisel.Handler::handle);
 		HANDLER.registerMessage(disc++, PacketSetChiselMode.class, PacketSetChiselMode::encode, PacketSetChiselMode::decode, PacketSetChiselMode.Handler::handle);
+		HANDLER.registerMessage(disc++, PacketSetColour.class, PacketSetColour::encode, PacketSetColour::decode, PacketSetColour.Handler::handle);
 	}
 
 	/**

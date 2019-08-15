@@ -11,6 +11,9 @@ public class ModConfiguration {
     public ForgeConfigSpec.IntValue dynamicMaxConcurrentTessalators;
 
     public ForgeConfigSpec.DoubleValue radialMenuVolume;
+    public ForgeConfigSpec.BooleanValue enableToolbarIcons;
+
+    public ForgeConfigSpec.BooleanValue enableVivecraftCompatibility;
 
     // --- SERVER VALUES ---
     public ForgeConfigSpec.DoubleValue maxDrawnRegionSize;
@@ -29,6 +32,10 @@ public class ModConfiguration {
                     .comment("How loud should the radial menu sound be?")
                     .defineInRange("radialMenuVolume", 0.15, 0.0, 2.0);
 
+            enableToolbarIcons = builder
+                    .comment("Enables selection ghosts in the toolbar next to your tool item")
+                    .define("enableToolbarIcons", true);
+
             builder.pop();
 
             builder.comment("Performance Settings");
@@ -41,6 +48,15 @@ public class ModConfiguration {
             dynamicMaxConcurrentTessalators = builder
                     .comment("How many block models can get rendered at the same time. This will automatically be set to 2 if less than 1256 MB in memory is detected.")
                     .defineInRange("dynamicMaxConcurrentTessalators", 32, 1, 256);
+
+            builder.pop();
+
+            builder.comment("Integration Settings");
+            builder.push("integration");
+
+            enableVivecraftCompatibility = builder
+                    .comment("Turn on compatibility with Vivecraft, this turns the radial menu into an actual GUI instead of an overlay that can only be closed by clicking an option.")
+                    .define("enableVivecraftCompatibility", false);
 
             builder.pop();
 

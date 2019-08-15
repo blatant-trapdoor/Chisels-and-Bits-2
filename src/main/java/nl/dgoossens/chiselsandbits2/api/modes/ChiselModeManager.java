@@ -5,10 +5,15 @@ import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.network.packets.PacketSetChiselMode;
+import nl.dgoossens.chiselsandbits2.network.packets.PacketSetColour;
 
 public class ChiselModeManager {
     public static void changeChiselMode(final ItemMode newMode) {
         final PacketSetChiselMode packet = new PacketSetChiselMode(newMode);
+        NetworkRouter.sendToServer( packet );
+    }
+    public static void changeColourMode(final MenuAction newAction) {
+        final PacketSetColour packet = new PacketSetColour(newAction);
         NetworkRouter.sendToServer( packet );
     }
 

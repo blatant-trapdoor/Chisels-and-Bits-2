@@ -1,6 +1,7 @@
 package nl.dgoossens.chiselsandbits2.api.modes;
 
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.DyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.StringNBT;
@@ -103,5 +104,27 @@ public enum ItemMode {
      */
     public void setMode(final ItemStack stack) {
         if (stack != null) stack.setTagInfo( "mode", new StringNBT( name() ) );
+    }
+
+    /**
+     * Fetch the colour associated with this item. The color
+     * can be changed using MenuAction's.
+     */
+    public static MenuAction getColour(final ItemStack stack) {
+        try {
+            final CompoundNBT nbt = stack.getTag();
+            if (nbt != null && nbt.contains( "colour" ))
+                return MenuAction.valueOf(nbt.getString( "colour" ));
+        } catch ( final IllegalArgumentException iae ) { //nope!
+        } catch ( final Exception e ) { e.printStackTrace(); }
+
+        return MenuAction.WHITE;
+    }
+
+    /**
+     * Set the mode of this itemstack to this enum value.
+     */
+    public static void setColour(final ItemStack stack, final DyeColor color) {
+        if (stack != null) stack.setTagInfo( "colour", new StringNBT( color.name() ) );
     }
 }

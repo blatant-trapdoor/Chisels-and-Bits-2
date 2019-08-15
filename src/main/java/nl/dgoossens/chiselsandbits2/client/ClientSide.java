@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.client;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -7,15 +8,20 @@ import net.minecraft.block.SoundType;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
+import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resources.IResource;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -35,6 +41,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
 import nl.dgoossens.chiselsandbits2.api.SpriteIconPositioning;
+import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.modes.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
@@ -42,14 +49,17 @@ import nl.dgoossens.chiselsandbits2.client.render.overlay.BlockColorChiseled;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
+import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import org.apache.commons.io.IOUtils;
-import sun.nio.ch.IOUtil;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 
 @OnlyIn(Dist.CLIENT)
@@ -66,19 +76,36 @@ public class ClientSide {
 
     //--- SPRITES ---
     private static final HashMap<ItemMode, SpriteIconPositioning> chiselModeIcons = new HashMap<>();
+    public static TextureAtlasSprite undoIcon;
+    public static TextureAtlasSprite redoIcon;
+    public static TextureAtlasSprite trashIcon;
+    public static TextureAtlasSprite sortIcon;
+    public static TextureAtlasSprite swapIcon;
+    public static TextureAtlasSprite placeIcon;
+
+    public static TextureAtlasSprite roll_x;
+    public static TextureAtlasSprite roll_z;
     public static SpriteIconPositioning getIconForMode(final ItemMode mode) {
         return chiselModeIcons.get(mode);
     }
 
-    @SubscribeEvent
+    /*@SubscribeEvent   TODO waiting for PR https://github.com/MinecraftForge/MinecraftForge/pull/6032
     public static void registerIconTextures(final TextureStitchEvent.Pre e) {
+        swapIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/swap"));
+        placeIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/place"));
+        undoIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/undo"));
+        redoIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/redo"));
+        trashIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/trash"));
+        sortIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/sort"));
+        roll_x = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/roll_x"));
+        roll_z = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID,"icons/roll_z"));
+
         for(final ItemMode itemMode : ItemMode.values()) {
             final SpriteIconPositioning sip = new SpriteIconPositioning();
 
-            final ResourceLocation sprite = new ResourceLocation( ChiselsAndBits2.MOD_ID, "icons/" + itemMode.getTypelessName().toLowerCase() );
             final ResourceLocation png = new ResourceLocation( ChiselsAndBits2.MOD_ID, "textures/icons/" + itemMode.getTypelessName().toLowerCase() + ".png" );
 
-            sip.sprite = e.getMap().getSprite( sprite );
+            sip.sprite = e.getMap().addSprite( new ResourceLocation( ChiselsAndBits2.MOD_ID, "icons/" + itemMode.getTypelessName().toLowerCase() ) );
 
             try {
                 final IResource iresource = Minecraft.getInstance().getResourceManager().getResource(png);
@@ -126,7 +153,7 @@ public class ClientSide {
             }
             chiselModeIcons.put(itemMode, sip);
         }
-    }
+    }*/
 
     //--- UTILITY METHODS ---
     public PlayerEntity getPlayer() { return Minecraft.getInstance().player; }
@@ -195,6 +222,30 @@ public class ClientSide {
                             case REDO:
                                 System.out.println("REDO"); //TODO add undo/redo buttons
                                 break;
+                            case ROLL_X:
+                                System.out.println("ROLL_X");
+                                break;
+                            case ROLL_Z:
+                                System.out.println("ROLL_Z");
+                                break;
+                            case BLACK:
+                            case WHITE:
+                            case BLUE:
+                            case BROWN:
+                            case CYAN:
+                            case GRAY:
+                            case GREEN:
+                            case LIGHT_BLUE:
+                            case LIGHT_GRAY:
+                            case LIME:
+                            case MAGENTA:
+                            case ORANGE:
+                            case PINK:
+                            case PURPLE:
+                            case RED:
+                            case YELLOW:
+                                ChiselModeManager.changeColourMode(radialMenu.getAction());
+                                break;
                         }
                     }
                 }
@@ -204,7 +255,11 @@ public class ClientSide {
             }
         }
 
-        //TODO if undo/redo is pressed, do undo/redo
+        if(ChiselsAndBits2.getKeybindings().undo.isPressed())
+            System.out.println("UNDO");
+
+        if(ChiselsAndBits2.getKeybindings().redo.isPressed())
+            System.out.println("REDO");
     }
 
     /**
@@ -216,7 +271,6 @@ public class ClientSide {
     @OnlyIn(Dist.CLIENT)
     public static void drawLast(final RenderGameOverlayEvent.Post e) {
         if(e.getType() == RenderGameOverlayEvent.ElementType.ALL) {
-
             Minecraft.getInstance().getProfiler().startSection("chiselsandbit2-radialmenu");
             final PlayerEntity player = Minecraft.getInstance().player;
             if(player.getHeldItemMainhand().getItem() instanceof IItemMenu) {
@@ -236,6 +290,63 @@ public class ClientSide {
                 }
             }
             Minecraft.getInstance().getProfiler().endSection();
+        }
+
+        if(e.getType() == RenderGameOverlayEvent.ElementType.HOTBAR && ChiselsAndBits2.getConfig().enableToolbarIcons.get()) {
+            Minecraft.getInstance().getProfiler().startSection("chiselsandbit2-toolbaricons");
+            final PlayerEntity player = Minecraft.getInstance().player;
+            if(!player.isSpectator()) {
+                for(int slot = 8; slot >= 0; --slot) {
+                    if(player.inventory.mainInventory.get(slot).getItem() instanceof IItemMenu) {
+                        final ItemMode mode = ItemMode.getMode(player.inventory.mainInventory.get(slot));
+                        final int x = e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + 2;
+                        final int y = e.getWindow().getScaledHeight() - 16 - 3;
+
+                        GlStateManager.color4f( 1, 1, 1, 1.0f );
+                        Minecraft.getInstance().getTextureManager().bindTexture( AtlasTexture.LOCATION_BLOCKS_TEXTURE );
+                        final TextureAtlasSprite sprite = chiselModeIcons.get( mode ) == null ? ChiselsAndBits2.getClient().getMissingIcon() : chiselModeIcons.get( mode ).sprite;
+
+                        GlStateManager.enableBlend();
+                        int blitOffset = 0;
+                        try {
+                            Field f = AbstractGui.class.getDeclaredField("blitOffset");
+                            f.setAccessible(true);
+                            blitOffset = (int) f.get(Minecraft.getInstance().ingameGUI);
+                        } catch(Exception rx) { rx.printStackTrace(); }
+                        AbstractGui.blit( x + 1, y + 1, blitOffset, 8, 8, sprite );
+                        GlStateManager.disableBlend();
+                    }
+                }
+            }
+            Minecraft.getInstance().getProfiler().endSection();
+        }
+    }
+
+    /**
+     * For drawing the bit highlights.
+     */
+    @SubscribeEvent
+    @OnlyIn(Dist.CLIENT)
+    public static void drawHighlights(final DrawBlockHighlightEvent e) {
+        final PlayerEntity player = Minecraft.getInstance().player;
+        if(player.getHeldItemMainhand().getItem() instanceof ChiselItem) {
+            final RayTraceResult mop = Minecraft.getInstance().objectMouseOver;
+            if(mop==null || mop.getType()!=RayTraceResult.Type.BLOCK) return;
+
+            final World world = Minecraft.getInstance().world;
+            final BitLocation location = new BitLocation((BlockRayTraceResult)  mop, true, BitOperation.PLACE); //TODO add the other bit operations
+            boolean showBox = true;
+            if(world.getWorldBorder().contains(location.blockPos)) {
+                final TileEntity data = world.getTileEntity(location.blockPos);
+                final BlockState state = world.getBlockState(location.blockPos);
+                final ItemMode mode = ItemMode.getMode(player.getHeldItemMainhand());
+
+                final VoxelRegionSrc region = new VoxelRegionSrc( world, location.blockPos, 1 );
+                final VoxelBlob vb = data != null && data instanceof ChiseledBlockTileEntity ? ((ChiseledBlockTileEntity) data).getBlob() : new VoxelBlob();
+                vb.fill(1);
+                //TODO draw region
+            }
+            if(!showBox) e.setCanceled(true);
         }
     }
 
