@@ -20,6 +20,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -888,5 +889,25 @@ public final class VoxelBlob implements IVoxelSrc {
 		{
 			throw new RuntimeException( e );
 		}
+	}
+
+	/**
+	 * Creates a voxelblob filled with type.
+	 */
+	public static VoxelBlob full(final BlockState type) {
+		return new VoxelBlob().fill(ModUtil.getStateId(type));
+	}
+
+	/**
+	 * Creates a voxel blob from a shape.
+	 */
+	public static VoxelBlob shape(final BlockState type, final VoxelShape shape) {
+		return new VoxelBlob().fill(ModUtil.getStateId(type));
+	}
+
+	@Override
+	public VoxelBlob clone() {
+		//TODO add cloning!
+		return this;
 	}
 }

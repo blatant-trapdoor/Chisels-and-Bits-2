@@ -17,6 +17,7 @@ The design goal for C&B2 is to create a worthy successor to the original C&B by 
 * Bit Bags are much larger, each slot can store 16 blocks worth of bits. (65536 bits)
 * New paint palette and paint buckets, this adds the functionality of the old Flat Colored Blocks mod, they allow you to freely color any bit to be any color. This will also mean that bits can support being an argb color or a blockstate, or a fluidstate.
 * Paintbrush item which allows you to easily replace the top layer of a wall block into a colored bit giving you a painted wall.
+* You can now start chiselling from any cuboid block shape, not just full blocks!
 * Internally the chiseled block is different, instead of there being different blocks for each material (rock, cloth, etc.) the chiseled block will mimic most of the functionality of the dominant block. (the original mod already did this to some extent, but I'd like to add to it by also mimicing tile entities that do not store any data, e.g. crafting table, enchantment table, anvil)
 * Compatibility with the new multipart API in forge which will allow even more mods than ever before to be compatible with chisels & bits, for example being able to put power cables in the same space as C&B bits.
 * Finishing C&B's original 'Project Blueprint': (https://github.com/AlgorithmX2/Chisels-and-Bits/issues/337)

@@ -22,30 +22,18 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.IItemMenu;
-import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
 import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.modes.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
-import nl.dgoossens.chiselsandbits2.common.utils.MathUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.network.packets.PacketChisel;
-import org.apache.commons.lang3.text.WordUtils;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ChiselItem extends TypedItem {
     public ChiselItem(Item.Properties builder) {
@@ -74,7 +62,7 @@ public class ChiselItem extends TypedItem {
         final BlockPos pos = rayTrace.getPos();
         final BlockState state = player.world.getBlockState(pos);
         if(!ChiselUtil.canChiselBlock(state)) return true;
-        if(!player.canPlayerEdit(pos, rayTrace.getFace(), player.getHeldItemMainhand())) return true;
+        if(!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return true;
         Vec3d hitBit = rayTrace.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
         useChisel(BitOperation.REMOVE, mode, player, player.world, pos, rayTrace.getFace(), hitBit);
         return true;
@@ -85,12 +73,16 @@ public class ChiselItem extends TypedItem {
      */
     @Override
     public ActionResultType onItemUseFirst(ItemStack item, ItemUseContext context) {
-        if(!context.getPlayer().canPlayerEdit(context.getPos(), context.getFace(), item)) return ActionResultType.FAIL;
+        final BlockPos pos = context.getPos();
+
+        if(!ChiselUtil.canChiselBlock(context.getWorld().getBlockState(pos)))
+            return ActionResultType.FAIL;
+
+        if(context.getPlayer()==null || !ChiselUtil.canChiselPosition(pos, context.getPlayer(), context.getWorld().getBlockState(pos), context.getFace()))
+            return ActionResultType.FAIL;
+
         if(context.getWorld().isRemote) {
-            final BlockPos pos = context.getPos();
-            final BlockState state = context.getWorld().getBlockState(pos);
-            //TODO move this into the click event to skip the custom raytracing
-            final RayTraceResult rtr = MathUtil.getRayTraceResult(state, pos, context.getPlayer());
+            final RayTraceResult rtr = Minecraft.getInstance().objectMouseOver;
             if(rtr != null && rtr.getType() == RayTraceResult.Type.BLOCK) {
                 Vec3d hitBit = rtr.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
                 useChisel(BitOperation.PLACE, ItemMode.getMode(item), context.getPlayer(), context.getWorld(), pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
@@ -106,7 +98,7 @@ public class ChiselItem extends TypedItem {
     static void useChisel(final BitOperation operation, final ItemMode mode, final PlayerEntity player, final World world, final BlockPos pos, final Direction side, final Vec3d hitBit) {
         final BitLocation location = new BitLocation(new BlockRayTraceResult(hitBit, side, pos, false), false, operation);
         final PacketChisel pc = new PacketChisel(operation, location, side, mode);
-        final int modifiedBits = pc.doAction( player );
+        final int modifiedBits = pc.doAction(player);
         if(modifiedBits != 0) {
             ChiselsAndBits2.getClient().breakSound(world, pos, ModUtil.getStateById(modifiedBits));
             NetworkRouter.sendToServer(pc);
