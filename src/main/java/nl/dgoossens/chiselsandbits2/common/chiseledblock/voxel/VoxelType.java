@@ -13,6 +13,10 @@ public enum VoxelType {
     private int bt;
     VoxelType(int b) { bt=b; }
 
+    public boolean isSolid() {
+        return this==SOLID_BLOCKSTATE||this==TRANSLUCENT||this==COLOURED;
+    }
+
     /**
      * Get the voxel type that corresponds to this bit.
      */

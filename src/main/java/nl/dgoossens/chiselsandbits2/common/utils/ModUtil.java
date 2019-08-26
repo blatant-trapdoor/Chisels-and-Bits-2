@@ -13,15 +13,17 @@ public class ModUtil {
 
     /**
      * Get the blockstate corresponding to an id.
+     * @deprecated Bit ids will no longer exclusively turn into BlockState's in the future!
      */
+    @Deprecated
     public static BlockState getStateById(final int blockStateID) {
-        return Block.getStateById(blockStateID);
+        return Block.getStateById(blockStateID); //TODO add coloured/translucent/fluid state stoo
     }
 
     /**
      * Get a blockstate's id.
      */
-    public static int getStateId(final BlockState state) {
+    public static int getStateId(final BlockState state) { //TODO add SOLID identifier or TRANSLUCENT identifier
         return Math.max(0, Block.getStateId(state));
     }
 

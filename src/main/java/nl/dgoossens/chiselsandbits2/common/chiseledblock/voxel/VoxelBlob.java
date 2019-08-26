@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
@@ -37,7 +40,9 @@ public final class VoxelBlob implements IVoxelSrc {
 	public final static int ARRAY_SIZE = DIMENSION3;
 	public final static int DIMENSION_MINUS_ONE = DIMENSION - 1;
 
+
 	private final int[] values = new int[ARRAY_SIZE];
+	private int best_buffer_size = 26;
 	//Every int in the values map is used as follows:
 	//  00000000000000000000000000000000
 	// 11111111 = 255
@@ -236,12 +241,36 @@ public final class VoxelBlob implements IVoxelSrc {
 	public int getMostCommonStateId() {
 		return getBlockSums().entrySet().parallelStream()
 				.filter(f -> f.getKey()!=0) //We ignore air in the calculation.
-				.max(Comparator.comparing(Entry::getValue)).map(Entry::getKey)
+				.max(Comparator.comparing(e -> e.getValue().intValue())).map(Entry::getKey)
 				.orElse(0); //There needs to be handling downstream if this happens. This also means the block is empty.
 	}
 
-	//--- ACTION METHODS ---
+	/**
+	 * Returns a map with bit-count sums of all bits in this
+	 * voxelblob.
+	 * LongAdder is used to allow for multithreaded counting.
+	 */
+	public Map<Integer, LongAdder> getBlockSums() {
+		final Map<Integer, LongAdder> counts = new ConcurrentHashMap<>();
+		Arrays.stream(values).parallel()
+				.forEach(f -> {
+					if(!counts.containsKey(f)) counts.put(f, new LongAdder());
+					counts.get(f).increment();
+				});
+		return counts;
+	}
 
+	/**
+	 * Get the state counters.
+	 */
+	public List<StateCount> getStateCounts() {
+		final Map<Integer, LongAdder> count = getBlockSums();
+		final List<StateCount> out = new ArrayList<>(count.size());
+		count.forEach((k, v) -> out.add(new StateCount(k, v.intValue())));
+		return out;
+	}
+
+	//--- ACTION METHODS ---
 	/**
 	 * Get the voxel type of a bit at a position.
 	 */
@@ -282,7 +311,6 @@ public final class VoxelBlob implements IVoxelSrc {
 	}
 
 	//--- STATIC CONSTRUCTION METHODS ---
-
 	/**
 	 * Creates a voxelblob filled with type.
 	 */
@@ -291,7 +319,6 @@ public final class VoxelBlob implements IVoxelSrc {
 	}
 
 	//--- OBJECT OVERWRITE METHODS ---
-
 	@Override
 	public VoxelBlob clone() {
 		return new VoxelBlob(this);
@@ -306,7 +333,7 @@ public final class VoxelBlob implements IVoxelSrc {
 		return false;
 	}
 
-	//TODO --- REMAINDER OF THE FILE, UNORGANISED ---
+	//--- INTERNAL LOGIC METHODS ---
 
 	public static class VisibleFace {
 		public boolean isEdge;
@@ -314,103 +341,31 @@ public final class VoxelBlob implements IVoxelSrc {
 		public int state;
 	}
 
-	public void updateVisibleFace(
-			final Direction face,
-			int x,
-			int y,
-			int z,
-			final VisibleFace dest,
-			final VoxelBlob secondBlob,
-			final ICullTest cullVisTest )
-	{
-		final int mySpot = get( x, y, z );
+	/**
+	 * Updates the visible faces.
+	 */
+	public void updateVisibleFace(final Direction face, int x, int y, int z, final VisibleFace dest, final VoxelBlob secondBlob, final ICullTest cullVisTest ) {
+		final int mySpot = get(x, y, z);
 		dest.state = mySpot;
 
 		x += face.getXOffset();
 		y += face.getYOffset();
 		z += face.getZOffset();
 
-		if(x >= 0 && x < DIMENSION && y >= 0 && y < DIMENSION && z >= 0 && z < DIMENSION)
-		{
+		if(x >= 0 && x < DIMENSION && y >= 0 && y < DIMENSION && z >= 0 && z < DIMENSION) {
 			dest.isEdge = false;
-			dest.visibleFace = cullVisTest.isVisible( mySpot, get( x, y, z ) );
-		}
-		else if ( secondBlob != null )
-		{
+			dest.visibleFace = cullVisTest.isVisible(mySpot, get(x, y, z));
+		} else {
 			dest.isEdge = true;
-			dest.visibleFace = cullVisTest.isVisible(mySpot, secondBlob.get(x - face.getXOffset() * DIMENSION, y - face.getYOffset() * DIMENSION, z - face.getZOffset() * DIMENSION));
-		}
-		else
-		{
-			dest.isEdge = true;
-			dest.visibleFace = mySpot != 0;
+			dest.visibleFace = (secondBlob==null ? (mySpot != 0) :
+					(cullVisTest.isVisible(mySpot, secondBlob.get(x - face.getXOffset() * DIMENSION, y - face.getYOffset() * DIMENSION, z - face.getZOffset() * DIMENSION))));
 		}
 	}
 
-	public Map<Integer, Integer> getBlockSums()
-	{
-		final Map<Integer, Integer> counts = new HashMap<>();
-
-		int lastType = values[0];
-		int firstOfType = 0;
-
-		for(int x = 1; x < ARRAY_SIZE; x++)
-		{
-			final int v = values[x];
-
-			if ( lastType != v )
-			{
-				final Integer sumx = counts.get( lastType );
-
-				if ( sumx == null )
-				{
-					counts.put( lastType, x - firstOfType );
-				}
-				else
-				{
-					counts.put( lastType, sumx + ( x - firstOfType ) );
-				}
-
-				// new count.
-				firstOfType = x;
-				lastType = v;
-			}
-		}
-
-		final Integer sumx = counts.get( lastType );
-
-		if ( sumx == null )
-		{
-			counts.put(lastType, ARRAY_SIZE - firstOfType);
-		}
-		else
-		{
-			counts.put(lastType, sumx + (ARRAY_SIZE - firstOfType));
-		}
-
-		return counts;
-	}
-
-	public List<StateCount> getStateCounts()
-	{
-		final Map<Integer, Integer> count = getBlockSums();
-
-		final List<StateCount> out;
-		out = new ArrayList<StateCount>( count.size() );
-
-		for ( final Entry<Integer, Integer> o : count.entrySet() )
-		{
-			out.add( new StateCount( o.getKey(), o.getValue() ) );
-		}
-		return out;
-	}
-
-	@OnlyIn( Dist.CLIENT )
-	public List<String> listContents(
-			final List<String> details )
-	{
-		final HashMap<Integer, Integer> states = new HashMap<Integer, Integer>();
-		final HashMap<String, Integer> contents = new HashMap<String, Integer>();
+	/*@OnlyIn(Dist.CLIENT)
+	public List<String> listContents(final List<String> details) {
+		final HashMap<Integer, Integer> states = new HashMap<>();
+		final HashMap<String, Integer> contents = new HashMap<>();
 
 		final BitIterator bi = new BitIterator();
 		while ( bi.hasNext() )
@@ -469,73 +424,48 @@ public final class VoxelBlob implements IVoxelSrc {
 		}
 
 		return details;
-	}
+	}*/
 
-	public int getSideFlags(
-			final int minRange,
-			final int maxRange,
-			final int totalRequired )
-	{
+	/**
+	 * Special internal method for getting sideflags.
+	 */
+	public int getSideFlags(final int minRange, final int maxRange, final int totalRequired) {
 		int output = 0x00;
 
-		for ( final Direction face : Direction.values() )
-		{
+		for(final Direction face : Direction.values()) {
 			final int edge = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 15 : 0;
 			int required = totalRequired;
 
-			switch ( face.getAxis() )
-			{
+			switch (face.getAxis()) {
 				case X:
-					for ( int z = minRange; z <= maxRange; z++ )
-					{
-						for ( int y = minRange; y <= maxRange; y++ )
-						{
-							if ( getVoxelType( edge, y, z ) == VoxelType.SOLID_BLOCKSTATE)
-							{
-								required--;
-							}
+					for(int z = minRange; z <= maxRange; z++ ) {
+						for(int y = minRange; y <= maxRange; y++ ) {
+							if(getVoxelType( edge, y, z).isSolid()) required--;
 						}
 					}
 					break;
 				case Y:
-					for ( int z = minRange; z <= maxRange; z++ )
-					{
-						for ( int x = minRange; x <= maxRange; x++ )
-						{
-							if ( getVoxelType( x, edge, z ) == VoxelType.SOLID_BLOCKSTATE)
-							{
-								required--;
-							}
+					for(int z = minRange; z <= maxRange; z++ ) {
+						for(int x = minRange; x <= maxRange; x++ ) {
+							if(getVoxelType( x, edge, z).isSolid()) required--;
 						}
 					}
 					break;
 				case Z:
-					for ( int y = minRange; y <= maxRange; y++ )
-					{
-						for ( int x = minRange; x <= maxRange; x++ )
-						{
-							if ( getVoxelType( x, y, edge ) == VoxelType.SOLID_BLOCKSTATE)
-							{
-								required--;
-							}
+					for(int y = minRange; y <= maxRange; y++ ) {
+						for(int x = minRange; x <= maxRange; x++ ) {
+							if(getVoxelType( x, y, edge).isSolid()) required--;
 						}
 					}
 					break;
-				default:
-					throw new NullPointerException();
 			}
 
-			if ( required <= 0 )
-			{
-				output |= 1 << face.ordinal();
-			}
+			if(required <= 0) output |= 1 << face.ordinal();
 		}
-
 		return output;
 	}
 
 	//--- FILTERING ---
-
 	/*
 	public boolean filterFluids(
 			final boolean wantsFluids )
@@ -591,117 +521,109 @@ public final class VoxelBlob implements IVoxelSrc {
 	}*/
 
 	//--- SERIALIZATION ---
-
-	public void blobFromBytes(
-			final byte[] bytes ) throws IOException
-	{
-		final ByteArrayInputStream out = new ByteArrayInputStream( bytes );
-		read( out );
+	/**
+	 * Builds a blob from a byte array.
+	 */
+	public void blobFromBytes(final byte[] bytes) throws IOException {
+		final ByteArrayInputStream out = new ByteArrayInputStream(bytes);
+		read(out);
 	}
 
-	private void read(
-			final ByteArrayInputStream o ) throws IOException, RuntimeException
-	{
+	/**
+	 * Reads this voxelblobs values from the supplied
+	 * ByteArrayInputStream.
+	 */
+	private void read(final ByteArrayInputStream o) throws IOException, RuntimeException {
 		final InflaterInputStream w = new InflaterInputStream( o );
 		final ByteBuffer bb = BlobSerilizationCache.getCacheBuffer();
 
 		int usedBytes = 0;
 		int rv = 0;
 
-		do
-		{
+		do {
 			usedBytes += rv;
 			rv = w.read( bb.array(), usedBytes, bb.limit() - usedBytes );
-		}
-		while ( rv > 0 );
+		} while (rv > 0);
+		w.close();
 
-		final PacketBuffer header = new PacketBuffer( Unpooled.wrappedBuffer( bb ) );
-
+		final PacketBuffer header = new PacketBuffer(Unpooled.wrappedBuffer(bb));
 		final int version = header.readVarInt();
 		VoxelVersions versions = VoxelVersions.getVersion(version);
-		if(versions==VoxelVersions.ANY) throw new RuntimeException( "Invalid Version: " + version );
+		if(versions==VoxelVersions.ANY) throw new RuntimeException("Invalid Version: " + version);
 
 		try {
 			VoxelSerializer bs = versions.getWorker();
+			if(bs==null) throw new RuntimeException("Invalid VoxelVersion: " + version+", worker was null");
 			bs.inflate(header);
 
 			final int byteOffset = header.readVarInt();
 			final int bytesOfInterest = header.readVarInt();
 
-			final BitStream bits = BitStream.valueOf( byteOffset, ByteBuffer.wrap( bb.array(), header.readerIndex(), bytesOfInterest ) );
+			final BitStream bits = BitStream.valueOf(byteOffset, ByteBuffer.wrap( bb.array(), header.readerIndex(), bytesOfInterest));
 			for(int x = 0; x < ARRAY_SIZE; x++)
-			{
-				values[x] = bs.readVoxelStateID( bits );// src.get();
-			}
+				values[x] = bs.readVoxelStateID(bits);
 		} catch(Exception x) { x.printStackTrace(); }
-
-		w.close();
 	}
 
-	private static int bestBufferSize = 26;
+	/**
+	 * Creates a byte array representing this blob.
+	 */
 	public byte[] blobToBytes(final int version) {
-		final ByteArrayOutputStream out = new ByteArrayOutputStream(bestBufferSize);
-		write( out, getSerializer(version) );
+		final ByteArrayOutputStream out = new ByteArrayOutputStream(best_buffer_size);
+		write(out, getSerializer(version));
 		final byte[] o = out.toByteArray();
-
-		if(bestBufferSize < o.length) bestBufferSize = o.length;
+		if(best_buffer_size < o.length) best_buffer_size = o.length;
 		return o;
 	}
 
+	/**
+	 * Get the serializer to use to serialize this
+	 * blob with the specified version.
+	 */
 	@Nullable
-	private VoxelSerializer getSerializer(
-			final int version )
-	{
+	private VoxelSerializer getSerializer(final int version) {
 		VoxelVersions ret = VoxelVersions.getVersion(version);
-		if(ret==VoxelVersions.ANY) throw new RuntimeException( "Invalid Version: " + version );
+		if(ret==VoxelVersions.ANY) throw new RuntimeException("Invalid Version: " + version);
 		try {
 			VoxelSerializer worker = ret.getWorker();
+			if(worker==null) return null;
 			worker.deflate(this);
 			return worker;
 		} catch(Exception x) { x.printStackTrace(); }
 		return null;
 	}
 
-	private void write(
-			final ByteArrayOutputStream o,
-			final VoxelSerializer bs )
-	{
-		try
-		{
+	/**
+	 * Write this blob to a ByteArrayOutputStream.
+	 */
+	private void write(final ByteArrayOutputStream o, @Nullable final VoxelSerializer bs) {
+		if(bs==null) return;
+		try {
 			final Deflater def = BlobSerilizationCache.getCacheDeflater();
-			final DeflaterOutputStream w = new DeflaterOutputStream( o, def, bestBufferSize );
+			final DeflaterOutputStream w = new DeflaterOutputStream(o, def, best_buffer_size);
 
 			final PacketBuffer pb = BlobSerilizationCache.getCachePacketBuffer();
-			pb.writeVarInt( bs.getVersion().getId() );
-			bs.write( pb );
+			pb.writeVarInt(bs.getVersion().getId());
+			bs.write(pb);
 
 			final BitStream set = BlobSerilizationCache.getCacheBitStream();
 			for(int x = 0; x < ARRAY_SIZE; x++)
-			{
-				bs.writeVoxelState( values[x], set );
-			}
+				bs.writeVoxelState(values[x], set);
 
 			final byte[] arrayContents = set.toByteArray();
 			final int bytesToWrite = arrayContents.length;
 			final int byteOffset = set.byteOffset();
 
-			pb.writeVarInt( byteOffset );
-			pb.writeVarInt( bytesToWrite - byteOffset );
+			pb.writeVarInt(byteOffset);
+			pb.writeVarInt(bytesToWrite - byteOffset);
 
-			w.write( pb.array(), 0, pb.writerIndex() );
-
-			w.write( arrayContents, byteOffset, bytesToWrite - byteOffset );
+			w.write(pb.array(), 0, pb.writerIndex());
+			w.write(arrayContents, byteOffset, bytesToWrite - byteOffset);
 
 			w.finish();
 			w.close();
-
 			def.reset();
-
 			o.close();
-		}
-		catch ( final IOException e )
-		{
-			throw new RuntimeException( e );
-		}
+		} catch (final IOException e) { throw new RuntimeException(e); }
 	}
 }
