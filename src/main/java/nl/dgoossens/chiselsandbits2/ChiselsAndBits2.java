@@ -85,7 +85,7 @@ public class ChiselsAndBits2 {
                 clearable.clearCache();
 
             //TODO addClearable(UndoTracker.getInstance());
-            VoxelBlob.clearCache();
+            //VoxelBlob.clearCache();
         }
     }
 

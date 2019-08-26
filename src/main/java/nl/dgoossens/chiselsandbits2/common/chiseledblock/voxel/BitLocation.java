@@ -10,7 +10,7 @@ import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
 
 public class BitLocation implements IBitLocation
 {
-	private static final double One32nd = 0.5 / VoxelBlob.dim;
+	private static final double One32nd = 0.5 / VoxelBlob.DIMENSION;
 
 	@Nonnull
 	public final BlockPos blockPos;
@@ -60,22 +60,22 @@ public class BitLocation implements IBitLocation
 		{
 			blockPos = mop.getPos();
 
-			bitX = snapToValid( (int) Math.floor( crds.getX() * VoxelBlob.dim ) );
-			bitY = snapToValid( (int) Math.floor( crds.getY() * VoxelBlob.dim ) );
-			bitZ = snapToValid( (int) Math.floor( crds.getZ() * VoxelBlob.dim ) );
+			bitX = snapToValid( (int) Math.floor( crds.getX() * VoxelBlob.DIMENSION) );
+			bitY = snapToValid( (int) Math.floor( crds.getY() * VoxelBlob.DIMENSION) );
+			bitZ = snapToValid( (int) Math.floor( crds.getZ() * VoxelBlob.DIMENSION) );
 		}
 		else
 		{
-			final int bitXi = (int) Math.floor( crds.getX() * VoxelBlob.dim );
-			final int bitYi = (int) Math.floor( crds.getY() * VoxelBlob.dim );
-			final int bitZi = (int) Math.floor( crds.getZ() * VoxelBlob.dim );
+			final int bitXi = (int) Math.floor( crds.getX() * VoxelBlob.DIMENSION);
+			final int bitYi = (int) Math.floor( crds.getY() * VoxelBlob.DIMENSION);
+			final int bitZi = (int) Math.floor( crds.getZ() * VoxelBlob.DIMENSION);
 
-			if ( bitXi < 0 || bitYi < 0 || bitZi < 0 || bitXi >= VoxelBlob.dim || bitYi >= VoxelBlob.dim || bitZi >= VoxelBlob.dim )
+			if ( bitXi < 0 || bitYi < 0 || bitZi < 0 || bitXi >= VoxelBlob.DIMENSION || bitYi >= VoxelBlob.DIMENSION || bitZi >= VoxelBlob.DIMENSION)
 			{
 				blockPos = mop.getPos().offset( mop.getFace() );
-				bitX = snapToValid( bitXi - mop.getFace().getXOffset() * VoxelBlob.dim );
-				bitY = snapToValid( bitYi - mop.getFace().getYOffset() * VoxelBlob.dim );
-				bitZ = snapToValid( bitZi - mop.getFace().getZOffset() * VoxelBlob.dim );
+				bitX = snapToValid( bitXi - mop.getFace().getXOffset() * VoxelBlob.DIMENSION);
+				bitY = snapToValid( bitYi - mop.getFace().getYOffset() * VoxelBlob.DIMENSION);
+				bitZ = snapToValid( bitZi - mop.getFace().getZOffset() * VoxelBlob.DIMENSION);
 			}
 			else
 			{

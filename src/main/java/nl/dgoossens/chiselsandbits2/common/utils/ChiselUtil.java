@@ -58,11 +58,12 @@ public class ChiselUtil {
         VoxelShape shape = block.getCollisionShape(dummyWorld, BlockPos.ZERO);
         shape.simplify();
         for(AxisAlignedBB bb : shape.toBoundingBoxList()) {
+            //TODO we can't do this because wooden slabs, wooden stairs etc. would all be seen as different bit types and we'd need to make a unique shape for each stair variant for example
             if(bb.getXSize() * 16 % 1 != 0) return; //If the bounding boxes are all made of parts of 1/16th it should be usable.
             if(bb.getYSize() * 16 % 1 != 0) return;
             if(bb.getZSize() * 16 % 1 != 0) return;
         }
-        defaultShapes.put(blk, VoxelBlob.shape(block, shape));
+        defaultShapes.put(blk, VoxelBlob.full(block));
     }
 
     /**

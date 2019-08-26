@@ -84,33 +84,21 @@ public class ChiselMaterialIterator extends BaseChiselIterator implements Chisel
 		final BitIterator bi = new BitIterator();
 		while ( bi.hasNext() )
 		{
-			if ( source.getSafe( bi.x - tx, bi.y - ty, bi.z - tz ) == target )
-			{
-				final int xx = placeoffsetX + bi.x - tx;
-				final int yy = placeoffsetY + bi.y - ty;
-				final int zz = placeoffsetZ + bi.z - tz;
-
-				if ( xx >= 0 && xx < VoxelBlob.dim &&
-						yy >= 0 && yy < VoxelBlob.dim &&
-						zz >= 0 && zz < VoxelBlob.dim )
-				{
-					selectedpositions.add( createPos( xx, yy, zz ) );
-				}
+			int xx = -1, yy = -1, zz = -1;
+			if (source.getSafe( bi.x, bi.y, bi.z ) == target) {
+				xx = placeoffsetX + bi.x;
+				yy = placeoffsetY + bi.y;
+				zz = placeoffsetZ + bi.z;
+			} else if (source.getSafe( bi.x - tx, bi.y - ty, bi.z - tz ) == target) {
+				xx = placeoffsetX + bi.x - tx;
+				yy = placeoffsetY + bi.y - ty;
+				zz = placeoffsetZ + bi.z - tz;
 			}
 
-			if ( source.getSafe( bi.x, bi.y, bi.z ) == target )
-			{
-				final int xx = placeoffsetX + bi.x;
-				final int yy = placeoffsetY + bi.y;
-				final int zz = placeoffsetZ + bi.z;
-
-				if ( xx >= 0 && xx < VoxelBlob.dim &&
-						yy >= 0 && yy < VoxelBlob.dim &&
-						zz >= 0 && zz < VoxelBlob.dim )
-				{
-					selectedpositions.add( createPos( xx, yy, zz ) );
-				}
-			}
+			if ( xx >= 0 && xx < VoxelBlob.DIMENSION &&
+					yy >= 0 && yy < VoxelBlob.DIMENSION &&
+					zz >= 0 && zz < VoxelBlob.DIMENSION)
+				selectedpositions.add( createPos( xx, yy, zz ) );
 		}
 
 		// we are done, drop the list and keep an iterator.

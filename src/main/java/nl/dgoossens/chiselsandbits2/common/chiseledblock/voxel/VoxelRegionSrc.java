@@ -71,9 +71,9 @@ public class VoxelRegionSrc implements IVoxelSrc
 		return 0; //TODO Fix!
 	}
 	/*
-		x += actingCenter.getX() * VoxelBlob.dim;
-		y += actingCenter.getY() * VoxelBlob.dim;
-		z += actingCenter.getZ() * VoxelBlob.dim;
+		x += actingCenter.getX() * VoxelBlob.DIMENSION;
+		y += actingCenter.getY() * VoxelBlob.DIMENSION;
+		z += actingCenter.getZ() * VoxelBlob.DIMENSION;
 
 		final int bitPosX = x & 0xf;
 		final int bitPosY = y & 0xf;

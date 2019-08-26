@@ -278,10 +278,10 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 			final int scaleY = (pos.getY() == to.blockPos.getY() ? to.bitY : 15) - bitY + 1;
 			final int scaleZ = (pos.getZ() == to.blockPos.getZ() ? to.bitZ : 15) - bitZ + 1;
 
-			return new ChiselTypeIterator(VoxelBlob.dim, bitX, bitY, bitZ, scaleX, scaleY, scaleZ, side);
+			return new ChiselTypeIterator(VoxelBlob.DIMENSION, bitX, bitY, bitZ, scaleX, scaleY, scaleZ, side);
 		}
 
-		return ChiselTypeIterator.create(VoxelBlob.dim, from.bitX, from.bitY, from.bitZ, vb, mode, side, place.equals(BitOperation.PLACE));
+		return ChiselTypeIterator.create(VoxelBlob.DIMENSION, from.bitX, from.bitY, from.bitZ, vb, mode, side, place.equals(BitOperation.PLACE));
 	}
 
 	private static BitLocation readBitLoc(

@@ -1,13 +1,9 @@
 package nl.dgoossens.chiselsandbits2.client.render.models.helpers;
 
-import java.util.Arrays;
-
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 
-public class ModelUVReader extends BaseModelReader
+public class ModelUVReader extends ModelReader
 {
 
 	final float minU;
@@ -35,8 +31,7 @@ public class ModelUVReader extends BaseModelReader
 		vCoord = vFaceCoord;
 	}
 
-	private float pos[];
-	private float uv[];
+
 	public int corners;
 
 	@Override
@@ -44,20 +39,9 @@ public class ModelUVReader extends BaseModelReader
 			final int element,
 			final float... data )
 	{
-		final VertexFormat format = getVertexFormat();
-		final VertexFormatElement ele = format.getElement( element );
+		super.put(element, data);
 
-		if ( ele.getUsage() == VertexFormatElement.Usage.UV && ele.getIndex() != 1 )
-		{
-			uv = Arrays.copyOf( data, data.length );
-		}
-
-		else if ( ele.getUsage() == VertexFormatElement.Usage.POSITION )
-		{
-			pos = Arrays.copyOf( data, data.length );
-		}
-
-		if ( element == format.getElementCount() - 1 )
+		if ( element == getVertexFormat().getElementCount() - 1 )
 		{
 			if ( ModelUtil.isZero( pos[uCoord] ) && ModelUtil.isZero( pos[vCoord] ) )
 			{

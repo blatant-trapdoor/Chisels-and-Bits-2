@@ -24,7 +24,6 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelNeighborRend
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.*;
 
 public class ChiseledBlockSmartModel extends BaseSmartModel implements ICacheClearable {
@@ -70,10 +69,10 @@ public class ChiseledBlockSmartModel extends BaseSmartModel implements ICacheCle
                 final VoxelBlob blob = ref.getVoxelBlob();
 
                 // ignore non-solid, and fluids.
-                blob.filter( BlockRenderLayer.SOLID );
+                //blob.filter( BlockRenderLayer.SOLID );
                 //TODO blob.filterFluids( false );
 
-                out = blob.getSideFlags( 0, VoxelBlob.dim_minus_one, VoxelBlob.dim2 );
+                out = blob.getSideFlags( 0, VoxelBlob.DIMENSION_MINUS_ONE, VoxelBlob.DIMENSION2);
                 sideCache.put( ref.getInstance(), out );
             }
         }

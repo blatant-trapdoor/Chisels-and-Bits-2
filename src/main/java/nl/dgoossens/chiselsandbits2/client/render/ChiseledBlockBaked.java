@@ -176,7 +176,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
         if ( originalModel != null && data != null )
         {
             final VoxelBlob vb = data.getVoxelBlob();
-            if ( vb != null && layer.filter( vb ) )
+            if ( vb != null) //&& layer.filter( vb ) )
             {
                 final ChiseledModelBuilder builder = new ChiseledModelBuilder();
                 generateFaces( builder, vb, mrs );
@@ -425,22 +425,22 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
         final IStateRef nextToState = mrs != null && myLayer != ChiselLayer.SOLID ? mrs.get(myFace) : null;
         VoxelBlob nextTo = nextToState == null ? null : nextToState.getVoxelBlob();
 
-        if(!myLayer.filter(nextTo)) {
+        /*if(!myLayer.filter(nextTo)) {
             nextTo = null;
-        }
+        }*/
 
         //Z: z, y, x
         //Y: y, z, x
         //X: x, z, y
-        for(int first = 0; first < blob.detail; first++) {
+        for(int first = 0; first < blob.DIMENSION; first++) {
             if(regions == null) {
                 regions = new ArrayList<>(16);
             }
 
-            for(int second = 0; second < blob.detail; second++) {
+            for(int second = 0; second < blob.DIMENSION; second++) {
                 FaceRegion currentFace = null;
 
-                for(int third = 0; third < blob.detail; third++) {
+                for(int third = 0; third < blob.DIMENSION; third++) {
                     FaceRegion region;
                     if(myFace==Direction.NORTH || myFace==Direction.SOUTH) //Z faces
                         region = getRegion(blob, myFace, third, second, first, visFace, nextTo, test);

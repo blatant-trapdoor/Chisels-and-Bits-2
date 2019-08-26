@@ -5,8 +5,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 public class BitCollisionIterator extends BitIterator
 {
 
-	public final static float One16thf = 1.0f / VoxelBlob.dim;
-	public final static AxisAlignedBB[] cachedBoxes = new AxisAlignedBB[VoxelBlob.full_size];
+	public final static float One16thf = 1.0f / VoxelBlob.DIMENSION;
+	public final static AxisAlignedBB[] cachedBoxes = new AxisAlignedBB[VoxelBlob.DIMENSION3];
 
 	public float physicalX;
 	public float physicalY;

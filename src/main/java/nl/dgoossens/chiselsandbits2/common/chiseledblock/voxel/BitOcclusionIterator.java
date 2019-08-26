@@ -94,38 +94,30 @@ public class BitOcclusionIterator extends BitCollisionIterator
 		o.add( newBox );
 	}
 
-	private boolean isNextTo(
-			final AxisAlignedBB newBox,
-			final AxisAlignedBB lastBox )
-	{
-		final boolean sameX = newBox.minX == lastBox.minX && newBox.maxX == lastBox.maxX;
-		final boolean sameY = newBox.minY == lastBox.minY && newBox.maxY == lastBox.maxY;
+	private boolean isNextTo(final AxisAlignedBB newBox, final AxisAlignedBB lastBox) {
 		final double touchingZ = newBox.minZ - lastBox.maxZ;
-		return sameX && sameY && touchingZ < epsilonGap;
+		if(touchingZ >= epsilonGap) return false;
+		return bbTest(newBox, lastBox);
 	}
 
-	private boolean isBelow(
-			final AxisAlignedBB newBox,
-			final AxisAlignedBB lastBox )
-	{
+	private boolean isBelow(final AxisAlignedBB newBox, final AxisAlignedBB lastBox) {
+		final double touchingY = newBox.minY - lastBox.maxY;
+		if(touchingY >= 0.001) return false;
+		return bbTest(newBox, lastBox);
+	}
+
+	private boolean bbTest(final AxisAlignedBB newBox, final AxisAlignedBB lastBox) {
 		final boolean sameX = newBox.minX == lastBox.minX && newBox.maxX == lastBox.maxX;
 		final boolean sameZ = newBox.minZ == lastBox.minZ && newBox.maxZ == lastBox.maxZ;
-		final double touchingY = newBox.minY - lastBox.maxY;
-		return sameX && sameZ && touchingY < 0.001;
+		return sameX && sameZ;
 	}
 
-	public void add()
-	{
-		if ( !lastSetting )
-		{
+	public void add() {
+		if (!lastSetting) {
 			physicalStartX = physicalX;
 			lastSetting = true;
 		}
 	}
 
-	public void drop()
-	{
-		addCurrentBox( 0 );
-	}
-
+	public void drop() { addCurrentBox(0); }
 }

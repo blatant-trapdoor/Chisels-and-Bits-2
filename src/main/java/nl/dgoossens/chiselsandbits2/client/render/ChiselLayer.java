@@ -22,7 +22,7 @@ public enum ChiselLayer {
 		this.layer = layer; this.type = type;
 	}
 
-	public boolean filter(
+	/*public boolean filter(
 			final VoxelBlob vb )
 	{
 		if ( vb == null )
@@ -40,7 +40,7 @@ public enum ChiselLayer {
 			return true;
 		}
 		return false;
-	}
+	}*/
 
 	public static ChiselLayer fromLayer(
 			final BlockRenderLayer layerInfo,

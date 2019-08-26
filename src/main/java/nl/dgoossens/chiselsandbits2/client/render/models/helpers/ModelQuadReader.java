@@ -1,13 +1,9 @@
 package nl.dgoossens.chiselsandbits2.client.render.models.helpers;
 
-import java.util.Arrays;
-
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.Direction;
 
-public class ModelQuadReader extends BaseModelReader
+public class ModelQuadReader extends ModelReader
 {
 
 	int minX = 16;
@@ -39,8 +35,6 @@ public class ModelQuadReader extends BaseModelReader
 		this.cull = cull;
 	}
 
-	float[] pos;
-	float[] uv;
 	int index = 0;
 
 	@Override
@@ -48,20 +42,9 @@ public class ModelQuadReader extends BaseModelReader
 			final int element,
 			final float... data )
 	{
-		final VertexFormat format = getVertexFormat();
-		final VertexFormatElement ele = format.getElement( element );
+		super.put(element, data);
 
-		if ( ele.getUsage() == VertexFormatElement.Usage.UV && ele.getIndex() != 1 )
-		{
-			uv = Arrays.copyOf( data, data.length );
-		}
-
-		else if ( ele.getUsage() == VertexFormatElement.Usage.POSITION )
-		{
-			pos = Arrays.copyOf( data, data.length );
-		}
-
-		if ( element == format.getElementCount() - 1 )
+		if ( element == getVertexFormat().getElementCount() - 1 )
 		{
 			pos_uv[index][0] = Math.round( pos[0] * 16 );
 			pos_uv[index][1] = Math.round( pos[1] * 16 );
@@ -112,17 +95,16 @@ public class ModelQuadReader extends BaseModelReader
 			V2 = tempV;
 		}
 
+		StringBuilder sb = new StringBuilder( "{ \"from\": [" ).append( minX ).append( "," ).append( minY ).append( "," ).append( minZ ).append( "], \"to\": [" ).append( maxX ).append( "," ).append( maxY ).append( "," ).append( maxZ )
+				.append( "], \"faces\": { \"" ).append( face.getName() ).append( "\":  { \"uv\": [" ).append( U1 ).append( "," ).append( V1 ).append( "," ).append( U2 ).append( "," ).append( V2 ).append( "], \"texture\": \"" )
+				.append( texture );
 		if ( cull == null )
 		{
-			return new StringBuilder( "{ \"from\": [" ).append( minX ).append( "," ).append( minY ).append( "," ).append( minZ ).append( "], \"to\": [" ).append( maxX ).append( "," ).append( maxY ).append( "," ).append( maxZ )
-					.append( "], \"faces\": { \"" ).append( face.getName() ).append( "\":  { \"uv\": [" ).append( U1 ).append( "," ).append( V1 ).append( "," ).append( U2 ).append( "," ).append( V2 ).append( "], \"texture\": \"" )
-					.append( texture ).append( "\" } } },\n" ).toString();
+			return sb.append( "\" } } },\n" ).toString();
 		}
 		else
 		{
-			return new StringBuilder( "{ \"from\": [" ).append( minX ).append( "," ).append( minY ).append( "," ).append( minZ ).append( "], \"to\": [" ).append( maxX ).append( "," ).append( maxY ).append( "," ).append( maxZ )
-					.append( "], \"faces\": { \"" ).append( face.getName() ).append( "\":  { \"uv\": [" ).append( U1 ).append( "," ).append( V1 ).append( "," ).append( U2 ).append( "," ).append( V2 ).append( "], \"texture\": \"" )
-					.append( texture ).append( "\", \"cullface\": \"" ).append( cull.getName() ).append( "\" } } },\n" ).toString();
+			return sb.append( "\", \"cullface\": \"" ).append( cull.getName() ).append( "\" } } },\n" ).toString();
 		}
 	}
 

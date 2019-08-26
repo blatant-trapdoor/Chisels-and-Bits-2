@@ -2,37 +2,19 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
 import net.minecraft.util.Direction;
 
-public final class IntegerBox
-{
-	public IntegerBox(
-			final int x1,
-			final int y1,
-			final int z1,
-			final int x2,
-			final int y2,
-			final int z2 )
-	{
+public final class IntegerBox {
+	public int minX, minY, minZ, maxX, maxY, maxZ;
+
+	public IntegerBox(final int x1, final int y1, final int z1, final int x2, final int y2, final int z2) {
 		minX = x1;
 		maxX = x2;
-
 		minY = y1;
 		maxY = y2;
-
 		minZ = z1;
 		maxZ = z2;
 	}
 
-	public int minX;
-	public int minY;
-	public int minZ;
-	public int maxX;
-	public int maxY;
-	public int maxZ;
-
-	public void move(
-			final Direction side,
-			final int scale )
-	{
+	public void move(final Direction side, final int scale) {
 		minX += side.getXOffset() * scale;
 		maxX += side.getXOffset() * scale;
 		minY += side.getYOffset() * scale;
@@ -41,8 +23,7 @@ public final class IntegerBox
 		maxZ += side.getZOffset() * scale;
 	}
 
-	public boolean isBadBitPositions()
-	{
+	public boolean extendsOutsideAllowedBB() {
 		return minX < 0 || minY < 0 || minZ < 0 || maxX >= 16 || maxY >= 16 || maxZ >= 16;
 	}
 }

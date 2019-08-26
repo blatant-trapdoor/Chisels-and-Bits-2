@@ -32,9 +32,9 @@ public class BitIterator
 		yMinOffset = 0;
 		xMin = 0;
 		yMin = 0;
-		xMax = VoxelBlob.dim;
-		yMax = yInc * VoxelBlob.dim;
-		zMax = zInc * VoxelBlob.dim;
+		xMax = VoxelBlob.DIMENSION;
+		yMax = yInc * VoxelBlob.DIMENSION;
+		zMax = zInc * VoxelBlob.DIMENSION;
 	}
 
 	public BitIterator(

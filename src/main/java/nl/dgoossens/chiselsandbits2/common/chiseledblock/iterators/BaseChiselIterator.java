@@ -56,7 +56,7 @@ public abstract class BaseChiselIterator implements ChiselIterator
 			final VoxelBlob NULL_BLOB,
 			final boolean boundSolids )
 	{
-		final float One16thf = 1.0f / NULL_BLOB.detail;
+		final float One16thf = 1.0f / NULL_BLOB.DIMENSION;
 		final IntegerBox box = getVoxelBox(NULL_BLOB, boundSolids );
 
 		if ( box != null )
