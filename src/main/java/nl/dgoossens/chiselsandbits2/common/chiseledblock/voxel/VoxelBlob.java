@@ -246,6 +246,13 @@ public final class VoxelBlob implements IVoxelSrc {
 	}
 
 	/**
+	 * Returns a set of all bit ids in this voxel blob.
+	 */
+	public Set<Integer> listContents() {
+		return Arrays.stream(values).parallel().distinct().boxed().collect(Collectors.toSet());
+	}
+
+	/**
 	 * Returns a map with bit-count sums of all bits in this
 	 * voxelblob.
 	 * LongAdder is used to allow for multithreaded counting.

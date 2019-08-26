@@ -2,7 +2,11 @@ package nl.dgoossens.chiselsandbits2.common.registry;
 
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+
+import java.util.Collections;
+import java.util.Comparator;
 
 public class ModItemGroups {
     /**

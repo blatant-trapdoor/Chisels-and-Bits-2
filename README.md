@@ -30,7 +30,6 @@ The design goal for C&B2 is to create a worthy successor to the original C&B by 
 
 ##### Temporary Differences
 The mod has been partially rewritten, 99% of the rendering code is still the same though, (because AlgorithmX2s rendering code is both already amazing and better than what I could make) so there may be minor changes to various parts of the mod. More importantly, because of the rewrite not all features have been ported yet, but they will be ported eventually. These features include:
-* Coloured Bit Bags
 * Liquid Bits (will be re-added after the forge liquid API is done)
 * Chiseled Blocks giving off light equal to the percentage of glowing blocks used.
 * Most of the configuration options

@@ -3,6 +3,8 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.atomic.LongAdder;
 
 import net.minecraft.network.PacketBuffer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -21,15 +23,15 @@ public class BlobSerializer implements VoxelSerializer
 	public void deflate(
 			final VoxelBlob toDeflate )
 	{
-		final Map<Integer, Integer> entries = toDeflate.getBlockSums();
+		final Set<Integer> entries = toDeflate.listContents();
 
 		index = new HashMap<>( types = entries.size() );
 		palette = new int[types];
 
 		int offset = 0;
-		for ( final Entry<Integer, Integer> o : entries.entrySet() )
+		for ( final int o : entries )
 		{
-			final int stateID = o.getKey();
+			final int stateID = o;
 			palette[offset] = stateID;
 			index.put( stateID, offset++ );
 		}

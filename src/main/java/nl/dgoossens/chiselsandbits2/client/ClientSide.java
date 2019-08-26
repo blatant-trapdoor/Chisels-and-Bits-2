@@ -46,12 +46,14 @@ import nl.dgoossens.chiselsandbits2.api.modes.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.BlockColorChiseled;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.ItemColorBitBag;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
+import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import org.apache.commons.io.IOUtils;
 
@@ -68,6 +70,11 @@ public class ClientSide {
     public void setup() {
         ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, new ChiseledBlockTER());
         Minecraft.getInstance().getBlockColors().register(new BlockColorChiseled(), ChiselsAndBits2.getBlocks().CHISELED_BLOCK);
+        final ModItems i = ChiselsAndBits2.getItems();
+        Minecraft.getInstance().getItemColors().register(new ItemColorBitBag(),
+                i.WHITE_BIT_BAG, i.BLACK_BIT_BAG, i.BLUE_BIT_BAG, i.BROWN_BIT_BAG, i.CYAN_BIT_BAG, i.GRAY_BIT_BAG,
+                i.GREEN_BIT_BAG, i.LIGHT_BLUE_BIT_BAG, i.LIGHT_GRAY_BIT_BAG, i.LIME_BIT_BAG, i.MAGENTA_BIT_BAG,
+                i.ORANGE_BIT_BAG, i.PINK_BIT_BAG, i.PURPLE_BIT_BAG, i.RED_BIT_BAG, i.YELLOW_BIT_BAG);
 
         //We've got both normal and mod event bus events.
         MinecraftForge.EVENT_BUS.register(getClass());
