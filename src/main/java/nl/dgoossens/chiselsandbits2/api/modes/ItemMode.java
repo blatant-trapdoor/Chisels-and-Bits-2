@@ -5,9 +5,7 @@ import net.minecraft.item.DyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.StringNBT;
-import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
-import nl.dgoossens.chiselsandbits2.common.items.PatternItem;
-import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
+import nl.dgoossens.chiselsandbits2.common.items.*;
 
 import java.util.List;
 import java.util.Set;
@@ -44,6 +42,10 @@ public enum ItemMode {
     WRENCH_ROTATE,
     WRENCH_NUDGE_BIT,
     WRENCH_NUDGE_BLOCK,
+
+    BLUEPRINT_UNKNOWN,
+
+    MALLET_UNKNOWN,
     ;
 
     /**
@@ -66,6 +68,8 @@ public enum ItemMode {
         PATTERN,
         TAPEMEASURE,
         WRENCH,
+        BLUEPRINT,
+        MALLET,
         ;
 
         /**
@@ -105,7 +109,9 @@ public enum ItemMode {
         return (stack.getItem() instanceof ChiselItem) ? CHISEL_SINGLE :
                (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
                (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
-               WRENCH_ROTATE;
+               (stack.getItem() instanceof WrenchItem) ? WRENCH_ROTATE :
+               (stack.getItem() instanceof BlueprintItem) ? BLUEPRINT_UNKNOWN :
+               MALLET_UNKNOWN;
     }
 
     /**

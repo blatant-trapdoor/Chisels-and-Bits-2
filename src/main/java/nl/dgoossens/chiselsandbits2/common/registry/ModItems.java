@@ -23,8 +23,6 @@ public class ModItems {
     public final Item SAW = new SawItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
     public final Item TAPE_MEASURE = new TapeMeasureItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
     public final Item WRENCH = new WrenchItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item PALETTE = new PaletteItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item PAINTBRUSH = new PaintbrushItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
 
     //all of the coloured bit bags
     public final Item BIT_BAG = new BitBagItem();
@@ -44,6 +42,13 @@ public class ModItems {
     public final Item GREEN_BIT_BAG = new BitBagItem();
     public final Item RED_BIT_BAG = new BitBagItem();
     public final Item BLACK_BIT_BAG = new BitBagItem();
+
+    //Some more regular items (we put these after the bit bags because they are new and people who know C&B will notice them)
+    public final Item MALLET = new MalletItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item BLUEPRINT = new BlueprintItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item PALETTE = new PaletteItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item PAINTBRUSH = new PaintbrushItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+
 
     /**
      * Get the colour of the bit bag, we hijack MenuAction's colour values.
