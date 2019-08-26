@@ -3,14 +3,13 @@ package nl.dgoossens.chiselsandbits2.client.render;
 import net.minecraft.util.BlockRenderLayer;
 import nl.dgoossens.chiselsandbits2.api.ICullTest;
 import nl.dgoossens.chiselsandbits2.client.culling.MCCullTest;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelType;
 
 import java.security.InvalidParameterException;
 
 public enum ChiselLayer {
-	SOLID(BlockRenderLayer.SOLID, VoxelType.SOLID),
-	SOLID_FLUID(BlockRenderLayer.SOLID, VoxelType.FLUID),
+	SOLID(BlockRenderLayer.SOLID, VoxelType.SOLID_BLOCKSTATE),
+	SOLID_FLUID(BlockRenderLayer.SOLID, VoxelType.FLUIDSTATE),
 	CUTOUT(BlockRenderLayer.CUTOUT, null),
 	CUTOUT_MIPPED(BlockRenderLayer.CUTOUT_MIPPED, null),
 	TRANSLUCENT(BlockRenderLayer.TRANSLUCENT, null);
@@ -34,7 +33,7 @@ public enum ChiselLayer {
 		{
 			//TODO if ( type != null )
 			//{
-			//	return vb.filterFluids( type == VoxelType.FLUID );
+			//	return vb.filterFluids( type == VoxelType.FLUIDSTATE );
 			//}
 
 			return true;

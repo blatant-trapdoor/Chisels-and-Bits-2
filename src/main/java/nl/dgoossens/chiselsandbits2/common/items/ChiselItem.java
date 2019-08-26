@@ -85,6 +85,7 @@ public class ChiselItem extends TypedItem {
             final RayTraceResult rtr = Minecraft.getInstance().objectMouseOver;
             if(rtr != null && rtr.getType() == RayTraceResult.Type.BLOCK) {
                 Vec3d hitBit = rtr.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
+                //TODO place in the bit in front instead of in the bit selected, also re-do checks if the block can be changed
                 useChisel(BitOperation.PLACE, ItemMode.getMode(item), context.getPlayer(), context.getWorld(), pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
             }
         }

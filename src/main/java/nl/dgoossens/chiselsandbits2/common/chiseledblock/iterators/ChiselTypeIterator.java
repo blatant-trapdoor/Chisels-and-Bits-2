@@ -219,23 +219,19 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 	}
 
 	@Override
-	public boolean hasNext()
-	{
-		if ( ++offset != 0 )
-		{
+	public boolean hasNext() {
+		if ( ++offset != 0 ) {
 
 			++x;
 
 			boolean x_up = false;
-			if ( x >= x_range )
-			{
+			if ( x >= x_range ) {
 				++y;
 				x = 0;
 				x_up = true;
 			}
 
-			if ( y >= y_range && x_up )
-			{
+			if ( y >= y_range && x_up ) {
 				++z;
 				y = 0;
 			}
@@ -246,26 +242,22 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 	}
 
 	@Override
-	public int x()
-	{
+	public int x() {
 		return Math.max( 0, Math.min( max_dim, original_x + x ) );
 	}
 
 	@Override
-	public int y()
-	{
+	public int y() {
 		return Math.max( 0, Math.min( max_dim, original_y + y ) );
 	}
 
 	@Override
-	public int z()
-	{
+	public int z() {
 		return Math.max( 0, Math.min( max_dim, original_z + z ) );
 	}
 
 	@Override
-	public Direction side()
-	{
+	public Direction side() {
 		return side;
 	}
 

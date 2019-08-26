@@ -1,7 +1,25 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
+import java.util.stream.Stream;
+
 public enum VoxelType {
-    AIR, SOLID, FLUID;
+    SOLID_BLOCKSTATE(0b11),
+    TRANSLUCENT(0b00),
+    COLOURED(0b10),
+    FLUIDSTATE(0b01),
+    AIR(0b0),
+    ;
+
+    private int bt;
+    VoxelType(int b) { bt=b; }
+
+    /**
+     * Get the voxel type that corresponds to this bit.
+     */
+    public static VoxelType getType(int bit) {
+        if(bit==VoxelBlob.AIR_BIT) return AIR;
+        return Stream.of(values()).parallel().filter(f -> bit << 30 == f.bt).findAny().orElse(VoxelType.AIR);
+    }
 
     /**
      * Whether or not the other voxeltype can be seen through this

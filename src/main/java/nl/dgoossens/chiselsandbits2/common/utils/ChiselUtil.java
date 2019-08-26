@@ -1,19 +1,14 @@
 package nl.dgoossens.chiselsandbits2.common.utils;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
@@ -28,7 +23,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class ChiselUtil {
     private static Set<Block> testedBlocks = new CopyOnWriteArraySet<>();
     private static Map<Block, VoxelBlob> defaultShapes = new ConcurrentHashMap<>();
-    private static Set<Integer> fluidStates = new CopyOnWriteArraySet<>();
 
     /**
      * Checks whether or not a given block can be chiseled.
@@ -94,9 +88,8 @@ public class ChiselUtil {
 
     /**
      * Get the voxel type of an given blockstate's id.
+     * @deprecated Just use {@link VoxelType#getType(int)}
      */
-    public static VoxelType getTypeFromStateID(final int bit) {
-        if(bit == 0) return VoxelType.AIR;
-        return fluidStates.contains(bit) ? VoxelType.FLUID : VoxelType.SOLID;
-    }
+    @Deprecated
+    public static VoxelType getTypeFromStateID(final int bit) { return VoxelType.getType(bit); }
 }

@@ -3,7 +3,6 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.api.distmarker.Dist;
@@ -23,11 +22,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 public final class VoxelBlob implements IVoxelSrc {
+	public final static int AIR_BIT = 0;
+
 	public final static int DIMENSION = 16;
 	public final static int DIMENSION2 = DIMENSION * DIMENSION;
 	public final static int DIMENSION3 = DIMENSION2 * DIMENSION;
@@ -36,7 +38,20 @@ public final class VoxelBlob implements IVoxelSrc {
 	public final static int DIMENSION_MINUS_ONE = DIMENSION - 1;
 
 	private final int[] values = new int[ARRAY_SIZE];
+	//Every int in the values map is used as follows:
+	//  00000000000000000000000000000000
+	// 11111111 = 255
 
+	// The integer's 2 MSB determine the type:
+	// 00 -> translucent (cutout is treated as transparent)
+	// 01 -> fluidstate
+	// 10 -> colouredstate
+	// 11 -> blockstate
+
+	// Each type has it's own usage of the remaining 30 bits
+	// Coloured State -> 30: 6 - 8 - 8 - 8
+	// which leaves 64 possible alpha's and 255 for R, G and B
+	// the alpha value is retrieved by multiplying the value from the 6 bits by 4
 
 	//--- CONSTRUCTORS ---
 	public VoxelBlob() {}
@@ -44,6 +59,10 @@ public final class VoxelBlob implements IVoxelSrc {
 		for(int x = 0; x < values.length; ++x)
 			values[x] = vb.values[x];
 	}
+
+	//--- PROTECTED METHODS ---
+	protected int getBit(final int offset) { return values[offset]; }
+	protected void putBit(final int offset, final int newValue) { values[offset] = newValue; }
 
 	//--- MODIFICATION METHODS ---
 	/**
@@ -65,7 +84,7 @@ public final class VoxelBlob implements IVoxelSrc {
 		VoxelBlob out = new VoxelBlob();
 		final BitIterator bi = new BitIterator();
 		while(bi.hasNext()) {
-			if(bi.getNext(this) != 0) {
+			if(bi.getNext(this) != AIR_BIT) {
 				switch(axis) {
 					case X:
 						out.set(DIMENSION_MINUS_ONE - bi.x, bi.y, bi.z, bi.getNext(this));
@@ -82,6 +101,64 @@ public final class VoxelBlob implements IVoxelSrc {
 		return out;
 	}
 
+	/**
+	 * Offsets the voxel blob.
+	 */
+	public VoxelBlob offset(final int xx, final int yy, final int zz ) {
+		final VoxelBlob out = new VoxelBlob();
+		for(int z = 0; z < DIMENSION; z++) {
+			for(int y = 0; y < DIMENSION; y++) {
+				for(int x = 0; x < DIMENSION; x++)
+					out.set(x, y, z, getSafe( x - xx, y - yy, z - zz ));
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * Spin the voxel blob along the axis by 90
+	 * clockwise.
+	 */
+	public VoxelBlob spin(final Direction.Axis axis) {
+		final VoxelBlob out = new VoxelBlob();
+		//Rotate by -90 Degrees: x' = y y' = - x
+
+		final BitIterator bi = new BitIterator();
+		while(bi.hasNext()) {
+			switch(axis) {
+				case X:
+					out.set(bi.x, DIMENSION_MINUS_ONE - bi.z, bi.y, bi.getNext(this));
+					break;
+				case Y:
+					out.set(bi.z, bi.y, DIMENSION_MINUS_ONE - bi.x, bi.getNext(this));
+					break;
+				case Z:
+					out.set(DIMENSION_MINUS_ONE - bi.y, bi.x, bi.z, bi.getNext(this));
+					break;
+				default:
+					throw new NullPointerException();
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * Fills this voxelbob
+	 */
+	public VoxelBlob fill(final int value) {
+		for(int x = 0; x < ARRAY_SIZE; x++)
+			values[x] = value;
+		return this;
+	}
+
+	/**
+	 * Clears this voxelblob, fills it with air.
+	 */
+	public VoxelBlob clear() {
+		fill(AIR_BIT);
+		return this;
+	}
+
 	//--- LOOKUP METHODS ---
 	/**
 	 * Will return true if for every bit in the voxelblob
@@ -90,7 +167,7 @@ public final class VoxelBlob implements IVoxelSrc {
 	 */
 	public boolean canMerge(final VoxelBlob second) {
 		for(int x = 0; x < values.length; ++x)
-			if(values[x] != 0 && second.values[x] != 0) return false;
+			if(values[x] != AIR_BIT && second.values[x] != AIR_BIT) return false;
 
 		return true;
 	}
@@ -104,7 +181,7 @@ public final class VoxelBlob implements IVoxelSrc {
 	}
 
 	/**
-	 * G
+	 * Gets the bounding box around this voxel blob.
 	 */
 	public IntegerBox getBounds() {
 		boolean found = false;
@@ -113,7 +190,7 @@ public final class VoxelBlob implements IVoxelSrc {
 
 		final BitIterator bi = new BitIterator();
 		while (bi.hasNext()) {
-			if(bi.getNext(this) != 0) {
+			if(bi.getNext(this) != AIR_BIT) {
 				if (found) {
 					min_x = Math.min(min_x, bi.x);
 					min_y = Math.min(min_y, bi.y);
@@ -138,176 +215,104 @@ public final class VoxelBlob implements IVoxelSrc {
 		return found ? new IntegerBox( min_x, min_y, min_z, max_x, max_y, max_z ) : null;
 	}
 
-	public VoxelBlob spin(
-			final Direction.Axis axis )
-	{
-		final VoxelBlob d = new VoxelBlob();
-
-		/*
-		 * Rotate by -90 Degrees: x' = y y' = - x
-		 */
-
-		final BitIterator bi = new BitIterator();
-		while ( bi.hasNext() )
-		{
-			switch ( axis )
-			{
-				case X:
-					d.set(bi.x, DIMENSION_MINUS_ONE - bi.z, bi.y, bi.getNext(this));
-					break;
-				case Y:
-					d.set(bi.z, bi.y, DIMENSION_MINUS_ONE - bi.x, bi.getNext(this));
-					break;
-				case Z:
-					d.set(DIMENSION_MINUS_ONE - bi.y, bi.x, bi.z, bi.getNext(this));
-					break;
-				default:
-					throw new NullPointerException();
-			}
-		}
-
-		return d;
+	/**
+	 * Returns the amount of bits that's equal to air in this blob.
+	 */
+	public long air() {
+		return Arrays.stream(values).parallel().filter(f -> f==0).count();
 	}
 
-	public VoxelBlob fill(
-			final int value )
-	{
-		for(int x = 0; x < ARRAY_SIZE; x++)
-		{
-			values[x] = value;
-		}
-		return this;
+	/**
+	 * Returns the amount of bits that's not air.
+	 */
+	public long filled() {
+		return Arrays.stream(values).parallel().filter(f -> f!=0).count();
 	}
 
-	public VoxelBlob fill(
-			final VoxelBlob src )
-	{
-		for(int x = 0; x < ARRAY_SIZE; x++)
-		{
-			values[x] = src.values[x];
-		}
-		return this;
+	/**
+	 * Get the state id of the most common blockstate.
+	 * Will return 0 if the block is empty.
+	 */
+	public int getMostCommonStateId() {
+		return getBlockSums().entrySet().parallelStream()
+				.filter(f -> f.getKey()!=0) //We ignore air in the calculation.
+				.max(Comparator.comparing(Entry::getValue)).map(Entry::getKey)
+				.orElse(0); //There needs to be handling downstream if this happens. This also means the block is empty.
 	}
 
-	public VoxelBlob clear()
-	{
-		fill( 0 );
-		return this;
+	//--- ACTION METHODS ---
+
+	/**
+	 * Get the voxel type of a bit at a position.
+	 */
+	public VoxelType getVoxelType(final int x, final int y, final int z) {
+		return VoxelType.getType(get(x, y, z));
 	}
 
-	public int air()
-	{
-		int p = 0;
-
-		for(int x = 0; x < ARRAY_SIZE; x++)
-		{
-			if ( values[x] == 0 )
-			{
-				p++;
-			}
-		}
-
-		return p;
-	}
-
-	public void binaryReplacement(
-			final int airReplacement,
-			final int solidReplacement )
-	{
-		for(int x = 0; x < ARRAY_SIZE; x++)
-		{
-			values[x] = values[x] == 0 ? airReplacement : solidReplacement;
-		}
-	}
-
-	public int filled()
-	{
-		int p = 0;
-
-		for(int x = 0; x < ARRAY_SIZE; x++)
-		{
-			if ( values[x] != 0 )
-			{
-				p++;
-			}
-		}
-
-		return p;
-	}
-
-	protected int getBit(
-			final int offset )
-	{
-		return values[offset];
-	}
-
-	protected void putBit(
-			final int offset,
-			final int newValue )
-	{
-		values[offset] = newValue;
-	}
-
-	public int get(
-			final int x,
-			final int y,
-			final int z )
-	{
+	/**
+	 * Gets a pit at a given position.
+	 */
+	public int get(final int x, final int y, final int z) {
 		return getBit( x | y << 4 | z << 8 );
 	}
 
-	public VoxelType getVoxelType(
-			final int x,
-			final int y,
-			final int z )
-	{
-		int i = get( x, y, z );
-		return i==0 ? VoxelType.AIR : VoxelType.SOLID; //Add FLUID possibility
-	}
-
-	public void set(
-			final int x,
-			final int y,
-			final int z,
-			final int value )
-	{
+	/**
+	 * Sets a bit at a given x/y/z to a value.
+	 */
+	public void set(final int x, final int y, final int z, final int value) {
 		putBit( x | y << 4 | z << 8, value );
 	}
 
-	public void clear(
-			final int x,
-			final int y,
-			final int z )
-	{
-		putBit( x | y << 4 | z << 8, 0 );
+	/**
+	 * Sets a bit to air a given position.
+	 */
+	public void clear(final int x, final int y, final int z ) {
+		putBit(x | y << 4 | z << 8, AIR_BIT);
 	}
 
-	private int fixShorts(
-			final short s )
-	{
-		return s & 0xffff;
+	/**
+	 * Get the bit at a given location. Doesn't throw errors when
+	 * the coordinates are not in this voxel blob.
+	 */
+	@Override
+	public int getSafe(final int x, final int y, final int z) {
+		if(x >= 0 && x < DIMENSION && y >= 0 && y < DIMENSION && z >= 0 && z < DIMENSION)
+			return get( x, y, z );
+		return AIR_BIT;
+	}
+
+	//--- STATIC CONSTRUCTION METHODS ---
+
+	/**
+	 * Creates a voxelblob filled with type.
+	 */
+	public static VoxelBlob full(final BlockState type) {
+		return new VoxelBlob().fill(ModUtil.getStateId(type));
+	}
+
+	//--- OBJECT OVERWRITE METHODS ---
+
+	@Override
+	public VoxelBlob clone() {
+		return new VoxelBlob(this);
 	}
 
 	@Override
-	public int getSafe(
-			final int x,
-			final int y,
-			final int z )
-	{
-		if(x >= 0 && x < DIMENSION && y >= 0 && y < DIMENSION && z >= 0 && z < DIMENSION)
-		{
-			return get( x, y, z );
+	public boolean equals(final Object obj) {
+		if(obj instanceof VoxelBlob) {
+			final VoxelBlob a = (VoxelBlob) obj;
+			return Arrays.equals(a.values, values);
 		}
-
-		return 0;
+		return false;
 	}
 
-	public static class VisibleFace
-	{
+	//TODO --- REMAINDER OF THE FILE, UNORGANISED ---
+
+	public static class VisibleFace {
 		public boolean isEdge;
 		public boolean visibleFace;
 		public int state;
-	};
+	}
 
 	public void updateVisibleFace(
 			final Direction face,
@@ -344,7 +349,7 @@ public final class VoxelBlob implements IVoxelSrc {
 
 	public Map<Integer, Integer> getBlockSums()
 	{
-		final Map<Integer, Integer> counts = new HashMap<Integer, Integer>();
+		final Map<Integer, Integer> counts = new HashMap<>();
 
 		int lastType = values[0];
 		int firstOfType = 0;
@@ -397,37 +402,6 @@ public final class VoxelBlob implements IVoxelSrc {
 		{
 			out.add( new StateCount( o.getKey(), o.getValue() ) );
 		}
-		return out;
-	}
-
-	/**
-	 * Get the state id of the most common blockstate.
-	 * Will return 0 if the block is empty.
-	 */
-	public int getMostCommonStateId() {
-		return getBlockSums().entrySet().parallelStream()
-				.filter(f -> f.getKey()!=0) //We ignore air in the calculation.
-				.max(Comparator.comparing(Entry::getValue)).map(Entry::getKey)
-				.orElse(0); //There needs to be handling downstream if this happens. This also means the block is empty.
-	}
-
-	public VoxelBlob offset(
-			final int xx,
-			final int yy,
-			final int zz )
-	{
-		final VoxelBlob out = new VoxelBlob();
-
-		for(int z = 0; z < DIMENSION; z++) {
-			for(int y = 0; y < DIMENSION; y++)
-			{
-				for(int x = 0; x < DIMENSION; x++)
-				{
-					out.set( x, y, z, getSafe( x - xx, y - yy, z - zz ) );
-				}
-			}
-		}
-
 		return out;
 	}
 
@@ -516,7 +490,7 @@ public final class VoxelBlob implements IVoxelSrc {
 					{
 						for ( int y = minRange; y <= maxRange; y++ )
 						{
-							if ( getVoxelType( edge, y, z ) == VoxelType.SOLID )
+							if ( getVoxelType( edge, y, z ) == VoxelType.SOLID_BLOCKSTATE)
 							{
 								required--;
 							}
@@ -528,7 +502,7 @@ public final class VoxelBlob implements IVoxelSrc {
 					{
 						for ( int x = minRange; x <= maxRange; x++ )
 						{
-							if ( getVoxelType( x, edge, z ) == VoxelType.SOLID )
+							if ( getVoxelType( x, edge, z ) == VoxelType.SOLID_BLOCKSTATE)
 							{
 								required--;
 							}
@@ -540,7 +514,7 @@ public final class VoxelBlob implements IVoxelSrc {
 					{
 						for ( int x = minRange; x <= maxRange; x++ )
 						{
-							if ( getVoxelType( x, y, edge ) == VoxelType.SOLID )
+							if ( getVoxelType( x, y, edge ) == VoxelType.SOLID_BLOCKSTATE)
 							{
 								required--;
 							}
@@ -560,12 +534,9 @@ public final class VoxelBlob implements IVoxelSrc {
 		return output;
 	}
 
-	/*public static boolean isFluid(
-			final int ref )
-	{
-		return fluidFilterState.get( ref & 0xffff );
-	}
+	//--- FILTERING ---
 
+	/*
 	public boolean filterFluids(
 			final boolean wantsFluids )
 	{
@@ -591,7 +562,7 @@ public final class VoxelBlob implements IVoxelSrc {
 
 		return hasValues;
 	}*/
-
+ //TODO add a new filter method which returns only one voxel type
 	/*public boolean filter(
 			final BlockRenderLayer layer )
 	{
@@ -618,6 +589,8 @@ public final class VoxelBlob implements IVoxelSrc {
 
 		return hasValues;
 	}*/
+
+	//--- SERIALIZATION ---
 
 	public void blobFromBytes(
 			final byte[] bytes ) throws IOException
@@ -730,30 +703,5 @@ public final class VoxelBlob implements IVoxelSrc {
 		{
 			throw new RuntimeException( e );
 		}
-	}
-
-	//--- STATIC CONSTRUCTION METHODS ---
-
-	/**
-	 * Creates a voxelblob filled with type.
-	 */
-	public static VoxelBlob full(final BlockState type) {
-		return new VoxelBlob().fill(ModUtil.getStateId(type));
-	}
-
-	//--- OBJECT OVERWRITE METHODS ---
-
-	@Override
-	public VoxelBlob clone() {
-		return new VoxelBlob(this);
-	}
-
-	@Override
-	public boolean equals(final Object obj) {
-		if(obj instanceof VoxelBlob) {
-			final VoxelBlob a = (VoxelBlob) obj;
-			return Arrays.equals(a.values, values);
-		}
-		return false;
 	}
 }
