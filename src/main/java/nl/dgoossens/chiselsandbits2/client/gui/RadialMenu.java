@@ -8,6 +8,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.ItemRenderer;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -387,6 +388,7 @@ public class RadialMenu extends Screen {
 
         final ItemRenderer ir = Minecraft.getInstance().getItemRenderer();
         final double w = 8;
+        RenderHelper.enableGUIStandardItemLighting();
         for(final MenuRegion mnuRgn : modes) {
             if(mnuRgn.highlighted) {
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5;
@@ -413,6 +415,7 @@ public class RadialMenu extends Screen {
                 ir.renderItemIntoGUI(((SelectedBlockItemMode) mnuRgn.mode).getStack(), (int)Math.round(middle_x + x - w), (int)Math.round(middle_y + y - w));
             }
         }
+        RenderHelper.disableStandardItemLighting();
 
         for(final MenuButton btn : btns) {
             if(btn.highlighted) {

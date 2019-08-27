@@ -7,7 +7,7 @@
   "item.chiselsandbits2.pattern.help": "$ to place|$ to copy|$ to display menu",
 
   "item.chiselsandbits2.bit_bag": "Bit Bag",
-  "item.chiselsandbits2.bit_bag.help": "Automatically re-stocks; stores bits|$ to pick a bit",
+  "item.chiselsandbits2.bit_bag.help": "$ to open|$ to display quick menu",
   "item.chiselsandbits2.white_bit_bag": "White Bit Bag",
   "item.chiselsandbits2.purple_bit_bag": "Purple Bit Bag",
   "item.chiselsandbits2.orange_bit_bag": "Orange Bit Bag",
@@ -44,6 +44,7 @@
 
   "general.chiselsandbits2.no_keybinding": "No Key Bound",
   "general.chiselsandbits2.empty_slot": "Empty Slot",
+  "general.chiselsandbits2.none": "None",
 
   "general.chiselsandbits2.itemmode.single": "Single Bit",
   "general.chiselsandbits2.itemmode.snap2": "Grid Snapped 1/2 Size Cube",

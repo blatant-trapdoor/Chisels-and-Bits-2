@@ -24,7 +24,6 @@ public class ChiselModeManager {
      */
     public static void changeItemMode(final IItemMode newMode) {
         final PacketSetItemMode packet = new PacketSetItemMode(newMode);
-        if(newMode.equals(SelectedBlockItemMode.NONE)) return; //None's aren't sent!
         NetworkRouter.sendToServer( packet );
     }
 

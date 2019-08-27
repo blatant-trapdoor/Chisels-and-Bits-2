@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -24,6 +25,7 @@ public class BitBagItem extends TypedItem {
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "bit_bag.help",
+                Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getKeybindings().modeMenu);
     }
 }

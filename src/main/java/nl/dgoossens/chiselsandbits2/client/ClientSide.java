@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.renderer.ItemRenderer;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.settings.KeyBinding;
@@ -289,11 +290,11 @@ public class ClientSide {
             final PlayerEntity player = Minecraft.getInstance().player;
             if(!player.isSpectator()) {
                 final ItemRenderer ir = Minecraft.getInstance().getItemRenderer();
-                final double w = -1;
-                GlStateManager.translatef(0, 0, 350);
+                GlStateManager.translatef(0, 0, 50);
                 GlStateManager.scalef(0.5f, 0.5f, 1);
                 GlStateManager.color4f(1, 1, 1, 1.0f);
                 Minecraft.getInstance().getTextureManager().bindTexture( AtlasTexture.LOCATION_BLOCKS_TEXTURE );
+                RenderHelper.enableGUIStandardItemLighting();
                 for(int slot = 8; slot >= 0; --slot) {
                     if(player.inventory.mainInventory.get(slot).getItem() instanceof IItemMenu) {
                         final IItemMode mode = ChiselModeManager.getMode(player.inventory.mainInventory.get(slot));
@@ -303,7 +304,7 @@ public class ClientSide {
                         final TextureAtlasSprite sprite = chiselModeIcons.get(mode) == null ? ChiselsAndBits2.getClient().getMissingIcon() : chiselModeIcons.get( mode ).sprite;
                         if(mode instanceof SelectedBlockItemMode) {
                             if(mode.equals(SelectedBlockItemMode.NONE)) continue;
-                            ir.renderItemIntoGUI(((SelectedBlockItemMode) mode).getStack(), (int)Math.round(x - w), (int)Math.round(y - w));
+                            ir.renderItemIntoGUI(((SelectedBlockItemMode) mode).getStack(), x, y);
                         } else {
                             GlStateManager.enableBlend();
                             int blitOffset = 0;
@@ -318,7 +319,8 @@ public class ClientSide {
                     }
                 }
                 GlStateManager.scalef(2, 2, 1);
-                GlStateManager.translatef(0, 0, -350);
+                GlStateManager.translatef(0, 0, -50);
+                RenderHelper.disableStandardItemLighting();
             }
             Minecraft.getInstance().getProfiler().endSection();
         }

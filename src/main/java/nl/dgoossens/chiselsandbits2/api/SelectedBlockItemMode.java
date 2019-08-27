@@ -16,6 +16,7 @@ public class SelectedBlockItemMode implements IItemMode {
     }
 
     public static SelectedBlockItemMode fromName(final String key) {
+        if(key.equalsIgnoreCase("null")) return NONE;
         return new SelectedBlockItemMode(ResourceLocation.create(key, ':'));
     }
     public static SelectedBlockItemMode fromBlock(final Block blk) {
@@ -30,7 +31,7 @@ public class SelectedBlockItemMode implements IItemMode {
     public String getTypelessName() { return getName(); }
 
     public String getName() {
-        return key==null ? null : key.toString();
+        return key==null ? "null" : key.toString();
     }
 
     public ItemModeType getType() {
