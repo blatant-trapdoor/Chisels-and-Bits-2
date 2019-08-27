@@ -39,7 +39,14 @@ public enum ItemModeType {
             ArrayList<IItemMode> sorted = new ArrayList<>();
             sorted.add(SelectedBlockItemMode.fromBlock(Blocks.STONE));
             sorted.add(SelectedBlockItemMode.fromBlock(Blocks.CYAN_CONCRETE));
-            for(int j = 2; j < ChiselsAndBits2.getConfig().typeSlotsPerBag.get(); j++) {
+            sorted.add(SelectedBlockItemMode.fromBlock(Blocks.RED_SAND));
+            sorted.add(SelectedBlockItemMode.fromBlock(Blocks.LIME_CONCRETE_POWDER));
+            sorted.add(SelectedBlockItemMode.fromBlock(Blocks.STRIPPED_ACACIA_WOOD));
+            sorted.add(SelectedBlockItemMode.fromBlock(Blocks.CRAFTING_TABLE));
+            sorted.add(SelectedBlockItemMode.fromBlock(Blocks.BIRCH_LOG));
+            sorted.add(SelectedBlockItemMode.fromBlock(Blocks.MAGENTA_WOOL));
+            sorted.add(SelectedBlockItemMode.fromBlock(Blocks.WET_SPONGE));
+            for(int j = 9; j < ChiselsAndBits2.getConfig().typeSlotsPerBag.get(); j++) {
                sorted.add(SelectedBlockItemMode.NONE); //Fill up remaining slots with the none slot.
             }
             return sorted;

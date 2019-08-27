@@ -8,6 +8,7 @@ import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.settings.KeyBinding;
@@ -74,13 +75,7 @@ public class ClientSide {
 
     public static TextureAtlasSprite roll_x;
     public static TextureAtlasSprite roll_z;
-    public static SpriteIconPositioning getIconForMode(final IItemMode mode) {
-        if(mode instanceof SelectedBlockItemMode) {
-            if(mode.equals(SelectedBlockItemMode.NONE)) return null;
-            
-        }
-        return chiselModeIcons.get(mode);
-    }
+    public static SpriteIconPositioning getIconForMode(final IItemMode mode) { return chiselModeIcons.get(mode); }
 
     @SubscribeEvent   //TODO waiting for PR https://github.com/MinecraftForge/MinecraftForge/pull/6032
     public static void registerIconTextures(final TextureStitchEvent.Pre e) {
@@ -293,27 +288,37 @@ public class ClientSide {
             Minecraft.getInstance().getProfiler().startSection("chiselsandbit2-toolbaricons");
             final PlayerEntity player = Minecraft.getInstance().player;
             if(!player.isSpectator()) {
+                final ItemRenderer ir = Minecraft.getInstance().getItemRenderer();
+                final double w = -1;
+                GlStateManager.translatef(0, 0, 350);
+                GlStateManager.scalef(0.5f, 0.5f, 1);
+                GlStateManager.color4f(1, 1, 1, 1.0f);
+                Minecraft.getInstance().getTextureManager().bindTexture( AtlasTexture.LOCATION_BLOCKS_TEXTURE );
                 for(int slot = 8; slot >= 0; --slot) {
                     if(player.inventory.mainInventory.get(slot).getItem() instanceof IItemMenu) {
                         final IItemMode mode = ChiselModeManager.getMode(player.inventory.mainInventory.get(slot));
-                        final int x = e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + 2;
-                        final int y = e.getWindow().getScaledHeight() - 16 - 3;
+                        final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + 2)*2;
+                        final int y = (e.getWindow().getScaledHeight() - 16 - 3)*2;
 
-                        GlStateManager.color4f( 1, 1, 1, 1.0f );
-                        Minecraft.getInstance().getTextureManager().bindTexture( AtlasTexture.LOCATION_BLOCKS_TEXTURE );
                         final TextureAtlasSprite sprite = chiselModeIcons.get(mode) == null ? ChiselsAndBits2.getClient().getMissingIcon() : chiselModeIcons.get( mode ).sprite;
-
-                        GlStateManager.enableBlend();
-                        int blitOffset = 0;
-                        try {
-                            Field f = AbstractGui.class.getDeclaredField("blitOffset");
-                            f.setAccessible(true);
-                            blitOffset = (int) f.get(Minecraft.getInstance().ingameGUI);
-                        } catch(Exception rx) { rx.printStackTrace(); }
-                        AbstractGui.blit( x + 1, y + 1, blitOffset, 8, 8, sprite );
-                        GlStateManager.disableBlend();
+                        if(mode instanceof SelectedBlockItemMode) {
+                            if(mode.equals(SelectedBlockItemMode.NONE)) continue;
+                            ir.renderItemIntoGUI(((SelectedBlockItemMode) mode).getStack(), (int)Math.round(x - w), (int)Math.round(y - w));
+                        } else {
+                            GlStateManager.enableBlend();
+                            int blitOffset = 0;
+                            try {
+                                Field f = AbstractGui.class.getDeclaredField("blitOffset");
+                                f.setAccessible(true);
+                                blitOffset = (int) f.get(Minecraft.getInstance().ingameGUI);
+                            } catch(Exception rx) { rx.printStackTrace(); }
+                            AbstractGui.blit( x + 2, y + 2, blitOffset, 16, 16, sprite );
+                            GlStateManager.disableBlend();
+                        }
                     }
                 }
+                GlStateManager.scalef(2, 2, 1);
+                GlStateManager.translatef(0, 0, -350);
             }
             Minecraft.getInstance().getProfiler().endSection();
         }

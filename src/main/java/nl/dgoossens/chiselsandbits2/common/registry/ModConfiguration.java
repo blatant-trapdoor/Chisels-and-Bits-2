@@ -78,7 +78,7 @@ public class ModConfiguration {
 
             typeSlotsPerBag = builder
                     .comment("How many slots for unique blocks does the bit bag have")
-                    .defineInRange("typeSlotsPerBag", 16, 3, 16);
+                    .defineInRange("typeSlotsPerBag", 12, 3, 12);
 
             bitsPerTypeSlot = builder
                     .comment("How many bits fit in each slot of the bit bag")

@@ -2,7 +2,9 @@ package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 
 public class SelectedBlockItemMode implements IItemMode {
@@ -19,9 +21,10 @@ public class SelectedBlockItemMode implements IItemMode {
     public static SelectedBlockItemMode fromBlock(final Block blk) {
         return new SelectedBlockItemMode(blk.getRegistryName());
     }
+    public ItemStack getStack() { return new ItemStack(ForgeRegistries.BLOCKS.getValue(key)); }
 
     public String getLocalizedName() {
-        return key==null ? I18n.format("general."+ ChiselsAndBits2.MOD_ID +".empty_slot") : I18n.format("item.");
+        return key==null ? I18n.format("general."+ ChiselsAndBits2.MOD_ID +".empty_slot") : I18n.format("block."+key.getNamespace()+"."+key.getPath());
     }
 
     public String getTypelessName() { return getName(); }

@@ -7,10 +7,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.DyeColor;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
@@ -383,6 +385,8 @@ public class RadialMenu extends Screen {
 
         tessellator.draw();
 
+        final ItemRenderer ir = Minecraft.getInstance().getItemRenderer();
+        final double w = 8;
         for(final MenuRegion mnuRgn : modes) {
             if(mnuRgn.highlighted) {
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5;
@@ -399,6 +403,14 @@ public class RadialMenu extends Screen {
                 }
 
                 getFontRenderer().drawStringWithShadow(text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, 0xffffffff);
+            }
+            if(mnuRgn.mode instanceof SelectedBlockItemMode) {
+                if(mnuRgn.mode.equals(SelectedBlockItemMode.NONE)) continue;
+
+                //Selectable blocks should render the item that's inside!
+                final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (ring_outer_edge * 0.6 + 0.4 * ring_inner_edge);
+                final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (ring_outer_edge * 0.6 + 0.4 * ring_inner_edge);
+                ir.renderItemIntoGUI(((SelectedBlockItemMode) mnuRgn.mode).getStack(), (int)Math.round(middle_x + x - w), (int)Math.round(middle_y + y - w));
             }
         }
 
