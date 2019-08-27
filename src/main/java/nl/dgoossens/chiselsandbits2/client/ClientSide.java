@@ -75,12 +75,16 @@ public class ClientSide {
     public static TextureAtlasSprite roll_x;
     public static TextureAtlasSprite roll_z;
     public static SpriteIconPositioning getIconForMode(final IItemMode mode) {
+        if(mode instanceof SelectedBlockItemMode) {
+            if(mode.equals(SelectedBlockItemMode.NONE)) return null;
+            
+        }
         return chiselModeIcons.get(mode);
     }
 
-    /*@SubscribeEvent   TODO waiting for PR https://github.com/MinecraftForge/MinecraftForge/pull/6032
+    @SubscribeEvent   //TODO waiting for PR https://github.com/MinecraftForge/MinecraftForge/pull/6032
     public static void registerIconTextures(final TextureStitchEvent.Pre e) {
-        swapIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/swap"));
+        /*swapIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/swap"));
         placeIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/place"));
         undoIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/undo"));
         redoIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/redo"));
@@ -141,8 +145,8 @@ public class ClientSide {
                 sip.top = 0;
             }
             chiselModeIcons.put(itemMode, sip);
-        }
-    }*/
+        }*/
+    }
 
     //--- UTILITY METHODS ---
     public PlayerEntity getPlayer() { return Minecraft.getInstance().player; }

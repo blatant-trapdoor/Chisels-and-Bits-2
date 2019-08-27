@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.api;
 
+import net.minecraft.block.Blocks;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 
 import java.util.ArrayList;
@@ -36,7 +37,9 @@ public enum ItemModeType {
     public List<IItemMode> getSortedItemModes() {
         if(this==SELECTED_BLOCK) {
             ArrayList<IItemMode> sorted = new ArrayList<>();
-            for(int j = 0; j < ChiselsAndBits2.getConfig().typeSlotsPerBag.get(); j++) {
+            sorted.add(SelectedBlockItemMode.fromBlock(Blocks.STONE));
+            sorted.add(SelectedBlockItemMode.fromBlock(Blocks.CYAN_CONCRETE));
+            for(int j = 2; j < ChiselsAndBits2.getConfig().typeSlotsPerBag.get(); j++) {
                sorted.add(SelectedBlockItemMode.NONE); //Fill up remaining slots with the none slot.
             }
             return sorted;
