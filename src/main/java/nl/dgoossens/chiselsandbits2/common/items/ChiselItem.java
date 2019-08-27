@@ -23,9 +23,12 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
@@ -41,14 +44,16 @@ public class ChiselItem extends TypedItem {
     }
 
     @Override
-    public ItemMode.Type getAssociatedType() {
-        return ItemMode.Type.CHISEL;
+    public ItemModeType getAssociatedType() {
+        return ItemModeType.CHISEL;
     }
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "chisel.help",
                 Minecraft.getInstance().gameSettings.keyBindAttack,
+                Minecraft.getInstance().gameSettings.keyBindUseItem,
+                ChiselsAndBits2.getKeybindings().selectBitType,
                 ChiselsAndBits2.getKeybindings().modeMenu
         );
     }
@@ -86,7 +91,7 @@ public class ChiselItem extends TypedItem {
             if(rtr != null && rtr.getType() == RayTraceResult.Type.BLOCK) {
                 Vec3d hitBit = rtr.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
                 //TODO place in the bit in front instead of in the bit selected, also re-do checks if the block can be changed
-                useChisel(BitOperation.PLACE, ItemMode.getMode(item), context.getPlayer(), context.getWorld(), pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
+                useChisel(BitOperation.PLACE, ChiselModeManager.getMode(item), context.getPlayer(), context.getWorld(), pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
             }
         }
         return ActionResultType.SUCCESS;
@@ -96,7 +101,7 @@ public class ChiselItem extends TypedItem {
      * Uses the chisel on a specific bit of a specific block.
      * Does everything short of updating the voxel data. (and updating the durability of the used tool)
      */
-    static void useChisel(final BitOperation operation, final ItemMode mode, final PlayerEntity player, final World world, final BlockPos pos, final Direction side, final Vec3d hitBit) {
+    static void useChisel(final BitOperation operation, final IItemMode mode, final PlayerEntity player, final World world, final BlockPos pos, final Direction side, final Vec3d hitBit) {
         final BitLocation location = new BitLocation(new BlockRayTraceResult(hitBit, side, pos, false), false, operation);
         final PacketChisel pc = new PacketChisel(operation, location, side, mode);
         final int modifiedBits = pc.doAction(player);

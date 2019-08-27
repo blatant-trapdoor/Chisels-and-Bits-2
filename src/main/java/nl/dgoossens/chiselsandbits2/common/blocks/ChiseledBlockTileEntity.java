@@ -14,7 +14,6 @@ import net.minecraft.world.IBlockReader;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.modes.BoxType;
 import nl.dgoossens.chiselsandbits2.client.render.ter.RenderCache;
 import nl.dgoossens.chiselsandbits2.client.render.ter.TileChunk;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
@@ -92,21 +91,12 @@ public class ChiseledBlockTileEntity extends TileEntity {
     public void recalculateShape() {
         VoxelShape base = VoxelShapes.empty();
         if(getVoxelReference()!=null)
-            for(AxisAlignedBB box : getVoxelReference().getBoxes(BoxType.SOLID))
+            for(AxisAlignedBB box : getVoxelReference().getInstance().getBoxes())
                 base = VoxelShapes.combine(base, VoxelShapes.create(box), IBooleanFunction.OR);
         collisionShape = base.simplify();
 
-        double minX = 0.5, minY = 0.5, minZ = 0.5, maxX = 0.5, maxY = 0.5, maxZ = 0.5;
         if(getVoxelReference()!=null)
-            for(AxisAlignedBB box : getVoxelReference().getBoxes(BoxType.BOTH)) {
-                minX = Math.min(box.minX, minX);
-                minY = Math.min(box.minY, minY);
-                minZ = Math.min(box.minZ, minZ);
-                maxX = Math.max(box.maxX, maxX);
-                maxY = Math.max(box.maxY, maxY);
-                maxZ = Math.max(box.maxZ, maxZ);
-            }
-        cachedShape = VoxelShapes.create(minX, minY, minZ, maxX, maxY, maxZ);
+            cachedShape = VoxelShapes.create(getVoxelReference().getVoxelBlob().getBounds().toBoundingBox());
     }
 
     /**
@@ -245,24 +235,24 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     public boolean readChiselData(final CompoundNBT tag) {
-        final NBTBlobConverter converter = new NBTBlobConverter( this );
-        return converter.readChiselData( tag, VoxelVersions.getDefault() );
+        final NBTBlobConverter converter = new NBTBlobConverter(this);
+        return converter.readChiselData(tag, VoxelVersions.getDefault());
     }
 
     public void writeChiselData(final CompoundNBT tag) {
-        new NBTBlobConverter( this ).writeChiselData( tag );
+        new NBTBlobConverter(this).writeChiselData(tag);
     }
 
     @Override
     public CompoundNBT write(final CompoundNBT compound) {
-        super.write( compound );
-        writeChiselData( compound );
+        super.write(compound);
+        writeChiselData(compound);
         return compound;
     }
 
     @Override
     public void read(final CompoundNBT compound) {
-        super.read( compound );
-        readChiselData( compound );
+        super.read(compound);
+        readChiselData(compound);
     }
 }

@@ -5,9 +5,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import nl.dgoossens.chiselsandbits2.api.modes.BoxType;
 import nl.dgoossens.chiselsandbits2.api.IStateRef;
 
 public final class VoxelBlobStateReference implements IStateRef {
@@ -74,7 +72,5 @@ public final class VoxelBlobStateReference implements IStateRef {
 	}
 	@Override
 	public int hashCode() { return data.hash; }
-
-	public Collection<AxisAlignedBB> getBoxes(final BoxType type ) { return data.getBoxes( type ); }
 	public int getFormat() { return data.getFormat(); }
 }

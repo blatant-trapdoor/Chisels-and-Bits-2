@@ -90,7 +90,7 @@ public class VoxelRegionSrc implements IVoxelSrc
 			return 0;
 		}
 
-		return blobs[idx].get( bitPosX, bitPosY, bitPosZ );
+		return blobs[idx].fromName( bitPosX, bitPosY, bitPosZ );
 	}
 
 	public VoxelBlob getBlobAt(

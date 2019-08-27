@@ -10,12 +10,11 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLModIdMappingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLPaths;
+import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.client.render.ICacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.SmartModelManager;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.impl.ChiselsAndBitsAPIImpl;
 import nl.dgoossens.chiselsandbits2.common.registry.ModConfiguration;
 import nl.dgoossens.chiselsandbits2.common.registry.ModBlocks;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
@@ -37,6 +36,7 @@ public class ChiselsAndBits2 {
     private final ModConfiguration CONFIGURATION = new ModConfiguration();
     private final NetworkRouter NETWORK_ROUTER = new NetworkRouter();
     private final ModKeybindings KEYBINDINGS = new ModKeybindings();
+    private final ChiselsAndBitsAPI API = new ChiselsAndBitsAPIImpl();
     private final SmartModelManager SMART_MODEL_MANAGER;
 
     public ChiselsAndBits2() {
@@ -50,6 +50,7 @@ public class ChiselsAndBits2 {
     }
 
     public static ChiselsAndBits2 getInstance() { return instance; }
+    public static ChiselsAndBitsAPI getAPI() { return getInstance().API; }
     public static ModItems getItems() { return getInstance().ITEMS; }
     public static ModBlocks getBlocks() { return getInstance().BLOCKS; }
     public static ClientSide getClient() { return getInstance().CLIENT; }
@@ -90,7 +91,7 @@ public class ChiselsAndBits2 {
     }
 
     /**
-     * Adds an IClearable to get cleared when clearCache() is called.
+     * Adds an IClearable to fromName cleared when clearCache() is called.
      */
     public void addClearable(final ICacheClearable cache) {
         if(!cacheClearables.contains(cache)) cacheClearables.add(cache);

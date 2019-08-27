@@ -12,11 +12,10 @@ import net.minecraftforge.event.ForgeEventFactory;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class ChiselUtil {
     private static Map<Block, Boolean> supportedBlocks = new ConcurrentHashMap<>();

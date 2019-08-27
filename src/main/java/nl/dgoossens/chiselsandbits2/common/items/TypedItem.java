@@ -3,10 +3,8 @@ package nl.dgoossens.chiselsandbits2.common.items;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import nl.dgoossens.chiselsandbits2.api.IItemMenu;
-import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
-import nl.dgoossens.chiselsandbits2.api.modes.ChiselModeManager;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 
 public abstract class TypedItem extends Item implements IItemScrollWheel, IItemMenu {
     public TypedItem(Item.Properties builder) { super(builder); }
@@ -16,7 +14,7 @@ public abstract class TypedItem extends Item implements IItemScrollWheel, IItemM
      */
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        return displayName + " - " + ItemMode.getMode(item).getLocalizedName() + (getAssociatedType() == ItemMode.Type.TAPEMEASURE ? " - " + ItemMode.getColour(item).getLocalizedName() : "");
+        return displayName + " - " + ChiselModeManager.getMode(item).getLocalizedName() + ((getAssociatedType() == ItemModeType.TAPEMEASURE || getAssociatedType() == ItemModeType.CHISEL) ? " - " + ChiselModeManager.getMenuActionMode(item).getLocalizedName() : "");
     }
 
     /**
@@ -24,8 +22,8 @@ public abstract class TypedItem extends Item implements IItemScrollWheel, IItemM
      */
     @Override
     public boolean scroll(final PlayerEntity player, final ItemStack stack, final double dwheel) {
-        final ItemMode mode = ChiselModeManager.getMode(player);
-        ChiselModeManager.scrollOption(getAssociatedType(), mode, dwheel);
+        final IItemMode mode = ChiselModeManager.getMode(player);
+        ChiselModeManager.scrollOption(mode, dwheel);
         return true;
     }
 }

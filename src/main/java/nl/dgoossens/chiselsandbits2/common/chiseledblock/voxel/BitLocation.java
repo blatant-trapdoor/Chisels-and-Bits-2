@@ -5,10 +5,9 @@ import javax.annotation.Nonnull;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import nl.dgoossens.chiselsandbits2.api.IBitLocation;
-import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.BitOperation;
 
-public class BitLocation implements IBitLocation
+public class BitLocation
 {
 	private static final double One32nd = 0.5 / VoxelBlob.DIMENSION;
 
@@ -16,25 +15,21 @@ public class BitLocation implements IBitLocation
 	public final BlockPos blockPos;
 	public final int bitX, bitY, bitZ;
 
-	@Override
 	public BlockPos getBlockPos()
 	{
 		return blockPos;
 	}
 
-	@Override
 	public int getBitX()
 	{
 		return bitX;
 	}
 
-	@Override
 	public int getBitY()
 	{
 		return bitY;
 	}
 
-	@Override
 	public int getBitZ()
 	{
 		return bitZ;

@@ -23,6 +23,7 @@ public class ModKeybindings {
     private static final String CATEGORY = "Chisels & Bits 2";
 
     public KeyBinding
+            selectBitType = new KeyBinding("Select Bit Type", CONFLICT, InputMappings.Type.MOUSE.getOrMakeInput(2), CATEGORY), //Middle Mouseclick
             undo = new KeyBinding("Undo", CONFLICT, KeyModifier.CONTROL, getKey(90), CATEGORY), //Ctrl+Z
             redo = new KeyBinding("Redo", CONFLICT, KeyModifier.CONTROL, getKey(89), CATEGORY), //Ctrl+Y
             offgridPlacement = new KeyBinding("Offgrid Placement", CONFLICT, KeyModifier.NONE, getKey(340), CATEGORY), //Left Shift

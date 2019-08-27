@@ -23,8 +23,8 @@ public class NetworkRouter
 	public NetworkRouter() {
 		int disc = 0;
 		HANDLER.registerMessage(disc++, PacketChisel.class, PacketChisel::encode, PacketChisel::decode, PacketChisel.Handler::handle);
-		HANDLER.registerMessage(disc++, PacketSetChiselMode.class, PacketSetChiselMode::encode, PacketSetChiselMode::decode, PacketSetChiselMode.Handler::handle);
-		HANDLER.registerMessage(disc++, PacketSetColour.class, PacketSetColour::encode, PacketSetColour::decode, PacketSetColour.Handler::handle);
+		HANDLER.registerMessage(disc++, PacketSetItemMode.class, PacketSetItemMode::encode, PacketSetItemMode::decode, PacketSetItemMode.Handler::handle);
+		HANDLER.registerMessage(disc++, PacketSetMenuActionMode.class, PacketSetMenuActionMode::encode, PacketSetMenuActionMode::decode, PacketSetMenuActionMode.Handler::handle);
 	}
 
 	/**

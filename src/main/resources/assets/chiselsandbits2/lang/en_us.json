@@ -2,11 +2,12 @@
   "itemGroup.chiselsandbits2": "Chisels & Bits 2",
 
   "item.chiselsandbits2.chisel": "Chisel",
-  "item.chiselsandbits2.chisel.help": "$ to chisel|$ to display menu",
+  "item.chiselsandbits2.chisel.help": "$ to chisel|$ to (re)place|$ to select|$ to display menu",
   "item.chiselsandbits2.pattern": "Pattern",
   "item.chiselsandbits2.pattern.help": "$ to place|$ to copy|$ to display menu",
+
   "item.chiselsandbits2.bit_bag": "Bit Bag",
-  "item.chiselsandbits2.bit_bag.help": "Automatically re-stocks; stores bits",
+  "item.chiselsandbits2.bit_bag.help": "Automatically re-stocks; stores bits|$ to pick a bit",
   "item.chiselsandbits2.white_bit_bag": "White Bit Bag",
   "item.chiselsandbits2.purple_bit_bag": "Purple Bit Bag",
   "item.chiselsandbits2.orange_bit_bag": "Orange Bit Bag",
@@ -23,6 +24,7 @@
   "item.chiselsandbits2.brown_bit_bag": "Brown Bit Bag",
   "item.chiselsandbits2.yellow_bit_bag": "Yellow Bit Bag",
   "item.chiselsandbits2.cyan_bit_bag": "Cyan Bit Bag",
+
   "item.chiselsandbits2.saw": "Saw",
   "item.chiselsandbits2.saw.help": "$ to saw blocks in half|$ to display menu",
   "item.chiselsandbits2.tape_measure": "Tape Measure",
@@ -41,6 +43,7 @@
   "block.chiselsandbits2.chiseled_block": "Chiseled Block",
 
   "general.chiselsandbits2.no_keybinding": "No Key Bound",
+  "general.chiselsandbits2.empty_slot": "Empty Slot",
 
   "general.chiselsandbits2.itemmode.single": "Single Bit",
   "general.chiselsandbits2.itemmode.snap2": "Grid Snapped 1/2 Size Cube",
@@ -74,6 +77,9 @@
 
   "general.chiselsandbits2.menuaction.roll_x": "Rotate X Clockwise",
   "general.chiselsandbits2.menuaction.roll_z": "Rotate Z Clockwise",
+
+  "general.chiselsandbits2.menuaction.place": "Place",
+  "general.chiselsandbits2.menuaction.replace": "Replace",
 
   "general.chiselsandbits2.menuaction.white": "White",
   "general.chiselsandbits2.menuaction.black": "Black",

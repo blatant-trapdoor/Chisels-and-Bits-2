@@ -18,6 +18,9 @@ public class ModConfiguration {
     // --- SERVER VALUES ---
     public ForgeConfigSpec.DoubleValue maxDrawnRegionSize;
 
+    public ForgeConfigSpec.IntValue typeSlotsPerBag;
+    public ForgeConfigSpec.LongValue bitsPerTypeSlot;
+
     /**
      * Initialise all configuration values.
      */
@@ -46,7 +49,7 @@ public class ModConfiguration {
                     .defineInRange("maxMillisecondsUploadingPerFrame", 15, 1, 1000);
 
             dynamicMaxConcurrentTessalators = builder
-                    .comment("How many block models can get rendered at the same time. This will automatically be set to 2 if less than 1256 MB in memory is detected.")
+                    .comment("How many block models can fromName rendered at the same time. This will automatically be set to 2 if less than 1256 MB in memory is detected.")
                     .defineInRange("dynamicMaxConcurrentTessalators", 32, 1, 256);
 
             builder.pop();
@@ -72,6 +75,14 @@ public class ModConfiguration {
             maxDrawnRegionSize = builder
                     .comment("At how many blocks the width/length of the drawn region selection should be capped")
                     .defineInRange("maxDrawnRegionSize", 4.0, 1.0, 16.0);
+
+            typeSlotsPerBag = builder
+                    .comment("How many slots for unique blocks does the bit bag have")
+                    .defineInRange("typeSlotsPerBag", 16, 3, 16);
+
+            bitsPerTypeSlot = builder
+                    .comment("How many bits fit in each slot of the bit bag")
+                    .defineInRange("bitsPerTypeSlot", 131072, 1, 9223372036854775807L);
 
             builder.pop();
 

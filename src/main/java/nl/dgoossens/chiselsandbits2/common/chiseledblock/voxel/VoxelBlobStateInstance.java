@@ -6,7 +6,6 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.zip.InflaterInputStream;
 
@@ -14,7 +13,6 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.block.Blocks;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.AxisAlignedBB;
-import nl.dgoossens.chiselsandbits2.api.modes.BoxType;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 public final class VoxelBlobStateInstance implements Comparable<VoxelBlobStateInstance>
@@ -111,7 +109,7 @@ public final class VoxelBlobStateInstance implements Comparable<VoxelBlobStateIn
 		return new VoxelBlob( vb );
 	}
 
-	private AxisAlignedBB[] getBoxType(
+	/*private AxisAlignedBB[] getBoxType(
 			final int type )
 	{
 		// if they are not generated, then generate them.
@@ -120,7 +118,7 @@ public final class VoxelBlobStateInstance implements Comparable<VoxelBlobStateIn
 			switch ( type )
 			{
 				//TODO fluids
-				/*case HAS_FLUIDS:
+				*case HAS_FLUIDS:
 
 					final VoxelBlob fluidBlob = getVoxelReference();
 					generated |= HAS_FLUIDS;
@@ -134,7 +132,7 @@ public final class VoxelBlobStateInstance implements Comparable<VoxelBlobStateIn
 
 					fluidBoxes = null;
 					return null;
-				*/
+				*
 				case HAS_SOLIDS:
 
 					final VoxelBlob solidBlob = getBlob();
@@ -165,7 +163,7 @@ public final class VoxelBlobStateInstance implements Comparable<VoxelBlobStateIn
 					return null;
 				}
 
-				out = fluidBoxes.get();
+				out = fluidBoxes.fromName();
 				break;
 
 			case HAS_SOLIDS:
@@ -175,7 +173,7 @@ public final class VoxelBlobStateInstance implements Comparable<VoxelBlobStateIn
 					return null;
 				}
 
-				out = solidBoxes.get();
+				out = solidBoxes.fromName();
 				break;
 		}
 
@@ -188,25 +186,10 @@ public final class VoxelBlobStateInstance implements Comparable<VoxelBlobStateIn
 		// regenerate boxes...
 		generated = generated & ~type;
 		return getBoxType( type );
-	}
+	}*/
 
-	public Collection<AxisAlignedBB> getBoxes(
-			final BoxType type )
-	{
-		switch ( type )
-		{
-			case SOLID:
-				return new BoxCollection( getBoxType( HAS_SOLIDS ) );
-
-			case BOTH:
-				return new BoxCollection( getBoxType( HAS_SOLIDS ), getBoxType( HAS_FLUIDS ) );
-
-			case LIQUID:
-				return new BoxCollection( getBoxType( HAS_FLUIDS ) );
-
-		}
-
-		return Collections.emptyList();
+	public Collection<AxisAlignedBB> getBoxes() {
+		return Arrays.asList(generateBoxes(getBlob()));
 	}
 
 	private AxisAlignedBB[] generateBoxes(

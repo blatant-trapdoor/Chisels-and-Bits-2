@@ -1,7 +1,6 @@
 package nl.dgoossens.chiselsandbits2.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.TextureUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
@@ -13,8 +12,6 @@ import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.resources.IResource;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
@@ -27,23 +24,14 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.*;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.IItemMenu;
-import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
-import nl.dgoossens.chiselsandbits2.api.SpriteIconPositioning;
-import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.modes.ChiselModeManager;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.BlockColorChiseled;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.ItemColorBitBag;
@@ -54,13 +42,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
-import org.apache.commons.io.IOUtils;
 
-import javax.annotation.Nonnull;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
@@ -82,7 +64,7 @@ public class ClientSide {
     }
 
     //--- SPRITES ---
-    private static final HashMap<ItemMode, SpriteIconPositioning> chiselModeIcons = new HashMap<>();
+    private static final HashMap<IItemMode, SpriteIconPositioning> chiselModeIcons = new HashMap<>();
     public static TextureAtlasSprite undoIcon;
     public static TextureAtlasSprite redoIcon;
     public static TextureAtlasSprite trashIcon;
@@ -92,7 +74,7 @@ public class ClientSide {
 
     public static TextureAtlasSprite roll_x;
     public static TextureAtlasSprite roll_z;
-    public static SpriteIconPositioning getIconForMode(final ItemMode mode) {
+    public static SpriteIconPositioning getIconForMode(final IItemMode mode) {
         return chiselModeIcons.get(mode);
     }
 
@@ -219,7 +201,7 @@ public class ClientSide {
                     }
 
                     if(radialMenu.hasSwitchTo())
-                        ChiselModeManager.changeChiselMode(radialMenu.getSwitchTo());
+                        ChiselModeManager.changeItemMode(radialMenu.getSwitchTo());
 
                     if(radialMenu.hasAction()) {
                         switch(radialMenu.getAction()) {
@@ -234,6 +216,10 @@ public class ClientSide {
                                 break;
                             case ROLL_Z:
                                 System.out.println("ROLL_Z");
+                                break;
+                            case PLACE:
+                            case REPLACE:
+                                ChiselModeManager.changeMenuActionMode(radialMenu.getAction());
                                 break;
                             case BLACK:
                             case WHITE:
@@ -251,7 +237,7 @@ public class ClientSide {
                             case PURPLE:
                             case RED:
                             case YELLOW:
-                                ChiselModeManager.changeColourMode(radialMenu.getAction());
+                                ChiselModeManager.changeMenuActionMode(radialMenu.getAction());
                                 break;
                         }
                     }
@@ -305,7 +291,7 @@ public class ClientSide {
             if(!player.isSpectator()) {
                 for(int slot = 8; slot >= 0; --slot) {
                     if(player.inventory.mainInventory.get(slot).getItem() instanceof IItemMenu) {
-                        final ItemMode mode = ItemMode.getMode(player.inventory.mainInventory.get(slot));
+                        final IItemMode mode = ChiselModeManager.getMode(player.inventory.mainInventory.get(slot));
                         final int x = e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + 2;
                         final int y = e.getWindow().getScaledHeight() - 16 - 3;
 
@@ -346,7 +332,7 @@ public class ClientSide {
             if(world.getWorldBorder().contains(location.blockPos)) {
                 final TileEntity data = world.getTileEntity(location.blockPos);
                 final BlockState state = world.getBlockState(location.blockPos);
-                final ItemMode mode = ItemMode.getMode(player.getHeldItemMainhand());
+                final IItemMode mode = ChiselModeManager.getMode(player.getHeldItemMainhand());
 
                 final VoxelRegionSrc region = new VoxelRegionSrc( world, location.blockPos, 1 );
                 final VoxelBlob vb = data instanceof ChiseledBlockTileEntity ? ((ChiseledBlockTileEntity) data).getBlob() : new VoxelBlob();
@@ -384,18 +370,6 @@ public class ClientSide {
         {
             ( (IItemScrollWheel) is.getItem() ).scroll( player, is, dwheel );
             me.setCanceled( true );
-        }
-    }*/
-
-    //--- DRAW START / START POS ---
-    /*private BitLocation drawStart;
-    private ItemMode lastTool;
-
-    public BitLocation getStartPos() { return drawStart; }
-    public void pointAt(@Nonnull final ItemMode type, @Nonnull final BitLocation pos) {
-        if (drawStart == null) {
-            drawStart = pos;
-            lastTool = type;
         }
     }*/
 }

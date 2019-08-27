@@ -1,9 +1,17 @@
-package nl.dgoossens.chiselsandbits2.api.modes;
+package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.DyeColor;
 
+/**
+ * An enum representing the various actions that can be activated
+ * through buttons in the radial menu's. Also occasionally used as
+ * a reference to a given colour. (as the tint values are also stored here)
+ */
 public enum MenuAction {
+    PLACE,
+    REPLACE,
+
     UNDO,
     REDO,
 
@@ -40,5 +48,23 @@ public enum MenuAction {
      */
     public String getLocalizedName() {
         return I18n.format("general.chiselsandbits2.menuaction."+name().toLowerCase());
+    }
+
+    /**
+     * Get the item mode type associated with this menu option, if any.
+     */
+    public ItemModeType getAssociatedType() {
+        switch(this) {
+            case ROLL_X:
+            case ROLL_Z:
+                return ItemModeType.PATTERN;
+            case PLACE:
+            case REPLACE:
+                return ItemModeType.CHISEL;
+            case UNDO:
+            case REDO:
+                return null; //Undo/redo are universal.
+            default: return ItemModeType.TAPEMEASURE; //For all the colours
+        }
     }
 }

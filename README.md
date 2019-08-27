@@ -14,7 +14,7 @@ The design goal for C&B2 is to create a worthy successor to the original C&B by 
 
 * No more tiered chisels, there's only one type of chisel now which can break any block that is supported to be chiseled. The saw is also no longer diamond.
 * Patterns will be merged into a single item and they'll get some new functionality/modes probably.
-* Bit Bags are much larger, each slot can store 16 blocks worth of bits. (65536 bits)
+* Bit Bags are larger, each slot can store 32 blocks worth of bits. (131072 bits)
 * New paint palette and paint buckets, this adds the functionality of the old Flat Colored Blocks mod, they allow you to freely color any bit to be any color. This will also mean that bits can support being an argb color or a blockstate, or a fluidstate.
 * Paintbrush item which allows you to easily replace the top layer of a wall block into a colored bit giving you a painted wall.
 * Internally the chiseled block is different, instead of there being different blocks for each material (rock, cloth, etc.) the chiseled block will mimic most of the functionality of the dominant block. (the original mod already did this to some extent, but I'd like to add to it by also mimicing tile entities that do not store any data, e.g. crafting table, enchantment table, anvil)
@@ -23,7 +23,17 @@ The design goal for C&B2 is to create a worthy successor to the original C&B by 
 
 <br/>
 
-* Bits as an item will probably no longer exist, you can select the block you want to use by right clicking with a chisel or in the bit bag. The way coloured and fluid bits will likely be implemented makes it hard to add bit items for those. Aditionally, adding a new item for each block is also not really in line with the flattening that happened in 1.13 where item damage values were removed. I'm still looking into the best way to create these bit items and I'll update this list when I've got the plans finalised.
+_The biggest change to the way you use Chisels & Bits is in the removal/replacement of bits as an item. In C&B1 you'd have a stack of bits in your inventory for every block you're building with and the bit bags would be ordinary GUI's that can store the bits._
+
+Let's start with the chisel, left clicking still chisels a bit but right clicking with the chisel now places a bit.
+
+Selecting which bit you want to place is done through the bags. Bags now have a radial menu where all the types of blocks inside of the bag are shown, in this radial menu you can select which type of bit you want to use.
+
+You can also press the middle mouse button whilst holding a chisel to attempt to select the bit type of the block you're looking at. If any bag in your inventory contains the bit type you're looking at that bag will automatically select it.
+
+Coloured bits won't go in the bit bags, instead the paint palette has a radial menu too where you can choose favourited colours.
+
+Both the palette and bit bag will still have GUI's where you can manage which items are in which bag/where you can freely mix rgba colours and favourite them. (the blocks shown in the bags won't be real items and you can't have them in your inventory, but you can merge them into full blocks and take them out)
 
 <br/>
 <br/>

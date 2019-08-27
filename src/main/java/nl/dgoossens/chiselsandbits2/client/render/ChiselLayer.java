@@ -3,7 +3,7 @@ package nl.dgoossens.chiselsandbits2.client.render;
 import net.minecraft.util.BlockRenderLayer;
 import nl.dgoossens.chiselsandbits2.api.ICullTest;
 import nl.dgoossens.chiselsandbits2.client.culling.MCCullTest;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
 
 import java.security.InvalidParameterException;
 

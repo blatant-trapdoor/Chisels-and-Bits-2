@@ -216,7 +216,7 @@ public class ModelUtil implements ICacheClearable {
                 cache.put(cacheV, mp);
             }
 
-            return cache.get(cacheVal);
+            return cache.fromName(cacheVal);
         }*/
 
         final HashMap<Direction, ArrayList<ModelQuadLayer.ModelQuadLayerBuilder>> tmp = new HashMap<>();
@@ -322,7 +322,7 @@ public class ModelUtil implements ICacheClearable {
         // didn't work? ok lets try scanning for the texture in the
         /*if ( blockToTexture[blockToWork].containsKey( BlockRef ) )
         {
-            final ResourceLocation textureName = blockToTexture[blockToWork].get( BlockRef );
+            final ResourceLocation textureName = blockToTexture[blockToWork].fromName( BlockRef );
             return Minecraft.getInstance().getTextureManager().getTexture( textureName );
         }*/
 
@@ -344,7 +344,7 @@ public class ModelUtil implements ICacheClearable {
             }
         }
 
-        // who knows if that worked.. now lets try to get a texture...
+        // who knows if that worked.. now lets try to fromName a texture...
         if(isMissing(texture)) {
             try {
                 if(model != null) {
@@ -483,7 +483,7 @@ public class ModelUtil implements ICacheClearable {
     {
         try
         {
-            // try to get block model...
+            // try to fromName block model...
             return model.getQuads( state, f, rand );
         }
         catch ( final Throwable t )
@@ -493,7 +493,7 @@ public class ModelUtil implements ICacheClearable {
 
         try
         {
-            // try to get item model?
+            // try to fromName item model?
             return model.getQuads( null, f, rand );
         }
         catch ( final Throwable t )

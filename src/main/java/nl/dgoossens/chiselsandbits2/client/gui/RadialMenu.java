@@ -2,39 +2,28 @@ package nl.dgoossens.chiselsandbits2.client.gui;
 
 import com.google.common.base.Stopwatch;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.sun.prism.TextureMap;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.IngameGui;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.DyeColor;
-import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.IItemMenu;
-import nl.dgoossens.chiselsandbits2.api.SpriteIconPositioning;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
-import nl.dgoossens.chiselsandbits2.api.modes.MenuAction;
+import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
+import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class RadialMenu extends Screen {
@@ -42,7 +31,7 @@ public class RadialMenu extends Screen {
 
     private float visibility = 0.0f;
     private Stopwatch lastChange = Stopwatch.createStarted();
-    private ItemMode switchTo = null;
+    private IItemMode switchTo = null;
     private MenuAction doAction = null;
     private boolean actionUsed = false;
     private boolean gameFocused = true;
@@ -82,8 +71,8 @@ public class RadialMenu extends Screen {
 
     public boolean isVisible() { return visibility > 0.001; }
     public boolean hasSwitchTo() { return switchTo!=null; }
-    public ItemMode getSwitchTo() { return switchTo; }
-    public void setSwitchTo(ItemMode d) { switchTo=d; }
+    public IItemMode getSwitchTo() { return switchTo; }
+    public void setSwitchTo(IItemMode d) { switchTo=d; }
     public void setActionUsed(boolean b) { actionUsed=b; }
     public boolean isActionUsed() { return actionUsed; }
     public boolean hasAction() { return doAction!=null; }
@@ -136,12 +125,12 @@ public class RadialMenu extends Screen {
     }
 
     static class MenuRegion {
-        public final ItemMode mode;
+        public final IItemMode mode;
         public double x1, x2;
         public double y1, y2;
         public boolean highlighted;
 
-        public MenuRegion(final ItemMode mode) { this.mode = mode; }
+        public MenuRegion(final IItemMode mode) { this.mode = mode; }
     }
 
     @Override
@@ -185,20 +174,25 @@ public class RadialMenu extends Screen {
         final ArrayList<MenuRegion> modes = new ArrayList<>();
         final ArrayList<MenuButton> btns = new ArrayList<>();
         //Setup mode regions
-        for(ItemMode m : ItemMode.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getSortedItemModes())
+        for(IItemMode m : ChiselModeManager.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getSortedItemModes())
             modes.add(new MenuRegion(m));
 
         //Setup buttons
         btns.add(new MenuButton(MenuAction.UNDO, text_distance, -20, ClientSide.undoIcon, Direction.EAST));
         btns.add(new MenuButton(MenuAction.REDO, text_distance, 4, ClientSide.redoIcon, Direction.EAST));
 
-        ItemMode.Type tool = ItemMode.getMode(getMinecraft().player.getHeldItemMainhand()).getType();
-        if(tool == ItemMode.Type.PATTERN) {
+        ItemModeType tool = ChiselModeManager.getMode(getMinecraft().player.getHeldItemMainhand()).getType();
+        if(tool == ItemModeType.PATTERN) {
             btns.add(new MenuButton(MenuAction.ROLL_X, -text_distance - 18, -20, ClientSide.roll_x, Direction.WEST));
             btns.add(new MenuButton(MenuAction.ROLL_Z, -text_distance - 18, 4, ClientSide.roll_z, Direction.WEST));
         }
 
-        if(tool == ItemMode.Type.TAPEMEASURE) {
+        if(tool == ItemModeType.CHISEL) {
+            btns.add(new MenuButton(MenuAction.PLACE, -text_distance - 18, -20, ClientSide.roll_x, Direction.WEST));
+            btns.add(new MenuButton(MenuAction.REPLACE, -text_distance - 18, 4, ClientSide.roll_z, Direction.WEST));
+        }
+
+        if(tool == ItemModeType.TAPEMEASURE) {
             final int colorSize = DyeColor.values().length / 4 * 24 - 4;
             double underring = -ring_outer_edge - 34;
             double bntPos = -colorSize;

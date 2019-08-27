@@ -1,8 +1,9 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators;
 
 import net.minecraft.util.Direction;
+import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.ItemMode;
 
 public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIterator
 {
@@ -20,7 +21,7 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 	private final int original_y;
 	private final int original_z;
 	public final Direction side;
-	final ItemMode mode;
+	final IItemMode mode;
 
 	private final int parts;
 	private int offset = -1;
@@ -56,11 +57,11 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 			final int y,
 			final int z,
 			final IVoxelSrc source,
-			final ItemMode mode,
+			final IItemMode mode,
 			final Direction side,
 			final boolean place )
 	{
-		if ( mode == ItemMode.CHISEL_CONNECTED_MATERIAL )
+		if (mode.equals(ItemMode.CHISEL_CONNECTED_MATERIAL))
 		{
 			return new ChiselExtrudeIterator.ChiselExtrudeMaterialIterator( dim, x, y, z, source, mode, side, place );
 		}
@@ -84,7 +85,7 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 			int y,
 			int z,
 			final IVoxelSrc source,
-			final ItemMode mode,
+			final IItemMode mode,
 			final Direction side )
 	{
 		int offset = 0;
@@ -94,124 +95,126 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 		this.side = side;
 		this.mode = mode;
 
-		switch ( mode )
-		{
-			case CHISEL_CUBE3:
-				x_range = 3;
-				y_range = 3;
-				z_range = 3;
-				offset = -1;
-				parts = x_range * y_range * z_range;
-				break;
+		if(mode instanceof ItemMode) {
+			switch ((ItemMode) mode)
+			{
+				case CHISEL_CUBE3:
+					x_range = 3;
+					y_range = 3;
+					z_range = 3;
+					offset = -1;
+					parts = x_range * y_range * z_range;
+					break;
 
-			case CHISEL_SNAP2:
-				x -= x % 2;
-				y -= y % 2;
-				z -= z % 2;
-				x_range = 2;
-				y_range = 2;
-				z_range = 2;
-				parts = x_range * y_range * z_range;
-				break;
+				case CHISEL_SNAP2:
+					x -= x % 2;
+					y -= y % 2;
+					z -= z % 2;
+					x_range = 2;
+					y_range = 2;
+					z_range = 2;
+					parts = x_range * y_range * z_range;
+					break;
 
-			case CHISEL_SNAP4:
-				x -= x % 4;
-				y -= y % 4;
-				z -= z % 4;
-				x_range = 4;
-				y_range = 4;
-				z_range = 4;
-				parts = x_range * y_range * z_range;
-				break;
+				case CHISEL_SNAP4:
+					x -= x % 4;
+					y -= y % 4;
+					z -= z % 4;
+					x_range = 4;
+					y_range = 4;
+					z_range = 4;
+					parts = x_range * y_range * z_range;
+					break;
 
-			case CHISEL_SNAP8:
-				x -= x % 8;
-				y -= y % 8;
-				z -= z % 8;
-				x_range = 8;
-				y_range = 8;
-				z_range = 8;
-				parts = x_range * y_range * z_range;
-				break;
+				case CHISEL_SNAP8:
+					x -= x % 8;
+					y -= y % 8;
+					z -= z % 8;
+					x_range = 8;
+					y_range = 8;
+					z_range = 8;
+					parts = x_range * y_range * z_range;
+					break;
 
-			case CHISEL_LINE:
-				parts = full_size;
-				switch ( side )
-				{
-					case DOWN:
-					case UP:
-						y = 0;
-						y_range = full_size;
-						break;
-					case NORTH:
-					case SOUTH:
-						z = 0;
-						z_range = full_size;
-						break;
-					case WEST:
-					case EAST:
-						x = 0;
-						x_range = full_size;
-						break;
-					default:
-						throw new NullPointerException();
-				}
-				break;
+				case CHISEL_LINE:
+					parts = full_size;
+					switch ( side )
+					{
+						case DOWN:
+						case UP:
+							y = 0;
+							y_range = full_size;
+							break;
+						case NORTH:
+						case SOUTH:
+							z = 0;
+							z_range = full_size;
+							break;
+						case WEST:
+						case EAST:
+							x = 0;
+							x_range = full_size;
+							break;
+						default:
+							throw new NullPointerException();
+					}
+					break;
 
-			case CHISEL_PLANE:
-				parts = full_size * full_size;
-				switch ( side )
-				{
-					case DOWN:
-					case UP:
-						x = 0;
-						z = 0;
-						x_range = full_size;
-						z_range = full_size;
-						break;
-					case NORTH:
-					case SOUTH:
-						x = 0;
-						y = 0;
-						x_range = full_size;
-						y_range = full_size;
-						break;
-					case WEST:
-					case EAST:
-						y = 0;
-						z = 0;
-						y_range = full_size;
-						z_range = full_size;
-						break;
-					default:
-						throw new NullPointerException();
-				}
-				break;
+				case CHISEL_PLANE:
+					parts = full_size * full_size;
+					switch ( side )
+					{
+						case DOWN:
+						case UP:
+							x = 0;
+							z = 0;
+							x_range = full_size;
+							z_range = full_size;
+							break;
+						case NORTH:
+						case SOUTH:
+							x = 0;
+							y = 0;
+							x_range = full_size;
+							y_range = full_size;
+							break;
+						case WEST:
+						case EAST:
+							y = 0;
+							z = 0;
+							y_range = full_size;
+							z_range = full_size;
+							break;
+						default:
+							throw new NullPointerException();
+					}
+					break;
 
-			case CHISEL_CUBE5:
-				x_range = 5;
-				y_range = 5;
-				z_range = 5;
-				offset = -2;
-				parts = x_range * y_range * z_range;
-				break;
+				case CHISEL_CUBE5:
+					x_range = 5;
+					y_range = 5;
+					z_range = 5;
+					offset = -2;
+					parts = x_range * y_range * z_range;
+					break;
 
-			case CHISEL_CUBE7:
-				x_range = 7;
-				y_range = 7;
-				z_range = 7;
-				offset = -3;
-				parts = x_range * y_range * z_range;
-				break;
+				case CHISEL_CUBE7:
+					x_range = 7;
+					y_range = 7;
+					z_range = 7;
+					offset = -3;
+					parts = x_range * y_range * z_range;
+					break;
 
-			case CHISEL_DRAWN_REGION:
-			case CHISEL_SINGLE:
-				parts = 1;
-				break;
+				case CHISEL_DRAWN_REGION:
+				case CHISEL_SINGLE:
+					parts = 1;
+					break;
 
-			default:
-				throw new NullPointerException();
-		}
+				default:
+					throw new NullPointerException();
+			}
+		} else throw new NullPointerException();
 
 		original_x = Math.max( 0, Math.min( full_size - x_range, x + offset ) );
 		original_y = Math.max( 0, Math.min( full_size - y_range, y + offset ) );

@@ -13,7 +13,6 @@ import net.minecraft.util.math.shapes.*;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.IMultiStateBlock;
 import nl.dgoossens.chiselsandbits2.common.items.ChiseledBlockItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
@@ -21,7 +20,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ChiseledBlock extends Block implements BaseBlock, IMultiStateBlock {
+public class ChiseledBlock extends Block implements BaseBlock {
     public ChiseledBlock(Properties properties) { super(properties); }
 
     @Override
@@ -49,16 +48,23 @@ public class ChiseledBlock extends Block implements BaseBlock, IMultiStateBlock 
         if(!(te instanceof ChiseledBlockTileEntity)) return VoxelShapes.empty(); //TODO really need to make this a util especially with multipart
         else return ((ChiseledBlockTileEntity) te).getCachedShape();
     }
-    public BlockState getPrimaryState(IBlockReader world, BlockPos pos) {
-        TileEntity te = world.getTileEntity(pos); //TODO pls fix
-        if(te==null) return null;
-        return ModUtil.getStateById(((ChiseledBlockTileEntity) te).getPrimaryBlock() );
-    }
-
     @Override
     public boolean canRenderInLayer(BlockState state, BlockRenderLayer layer) { return true; }
     @Override
     public BlockRenderType getRenderType(BlockState state) { return BlockRenderType.ENTITYBLOCK_ANIMATED; }
+
+    /**
+     * Get the blockstate of the block that this chiseled block
+     * is mainly made of.
+     */
+    public BlockState getPrimaryState(IBlockReader world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        if(te==null) return null;
+        return ModUtil.getStateById(((ChiseledBlockTileEntity) te).getPrimaryBlock());
+    }
+
+    /*@Override
+    public IBlockSlot getSlot(BlockState state) { return ChiselsAndBits2.getAPI().getChiselsAndBitsSlot(); }*/
 
     public static class ReplaceWithChiseledValue {
         public boolean success = false;

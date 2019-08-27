@@ -5,11 +5,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import nl.dgoossens.chiselsandbits2.api.ICullTest;
 import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
-import nl.dgoossens.chiselsandbits2.api.StateCount;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BitStream;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BlobSerilizationCache;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.VoxelSerializer;
@@ -25,7 +23,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -217,7 +214,7 @@ public final class VoxelBlob implements IVoxelSrc {
 				}
 			}
 		}
-		return found ? new IntegerBox( min_x, min_y, min_z, max_x, max_y, max_z ) : null;
+		return found ? new IntegerBox( min_x, min_y, min_z, max_x, max_y, max_z ) : IntegerBox.NULL;
 	}
 
 	/**
@@ -265,16 +262,6 @@ public final class VoxelBlob implements IVoxelSrc {
 					counts.get(f).increment();
 				});
 		return counts;
-	}
-
-	/**
-	 * Get the state counters.
-	 */
-	public List<StateCount> getStateCounts() {
-		final Map<Integer, LongAdder> count = getBlockSums();
-		final List<StateCount> out = new ArrayList<>(count.size());
-		count.forEach((k, v) -> out.add(new StateCount(k, v.intValue())));
-		return out;
 	}
 
 	//--- ACTION METHODS ---
@@ -383,7 +370,7 @@ public final class VoxelBlob implements IVoxelSrc {
 				continue;
 			}
 
-			Integer count = states.get( state );
+			Integer count = states.fromName( state );
 
 			if ( count == null )
 			{
@@ -406,7 +393,7 @@ public final class VoxelBlob implements IVoxelSrc {
 				continue;
 			}
 
-			Integer count = contents.get( name );
+			Integer count = contents.fromName( name );
 
 			if ( count == null )
 			{
@@ -487,7 +474,7 @@ public final class VoxelBlob implements IVoxelSrc {
 				continue;
 			}
 
-			if ( fluidFilterState.get( ref & 0xffff ) != wantsFluids )
+			if ( fluidFilterState.fromName( ref & 0xffff ) != wantsFluids )
 			{
 				values[x] = 0;
 			}
@@ -503,7 +490,7 @@ public final class VoxelBlob implements IVoxelSrc {
 	/*public boolean filter(
 			final BlockRenderLayer layer )
 	{
-		final BitSet layerFilterState = layerFilters.get( layer );
+		final BitSet layerFilterState = layerFilters.fromName( layer );
 		boolean hasValues = false;
 
 		for(int x = 0; x < ARRAY_SIZE; x++)
@@ -514,7 +501,7 @@ public final class VoxelBlob implements IVoxelSrc {
 				continue;
 			}
 
-			if ( !layerFilterState.get( ref ) )
+			if ( !layerFilterState.fromName( ref ) )
 			{
 				values[x] = 0;
 			}

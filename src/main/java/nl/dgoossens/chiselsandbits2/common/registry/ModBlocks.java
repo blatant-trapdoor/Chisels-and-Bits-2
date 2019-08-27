@@ -20,6 +20,12 @@ public class ModBlocks {
     public final Block CHISELED_BLOCK = new ChiseledBlock(Block.Properties.create(Material.ROCK).hardnessAndResistance(50.0F, 1200.0F));
     public final TileEntityType<ChiseledBlockTileEntity> CHISELED_BLOCK_TILE = TileEntityType.Builder.create(ChiseledBlockTileEntity::new, CHISELED_BLOCK).build(null);
 
+    /*@SubscribeEvent //TODO uncomment when amadornes' multipart API gets PR'd in
+    public static void onSlotRegistry(final RegistryEvent.Register<IBlockSlot> e) {
+        //Register our block slot.
+        e.getRegistry().register(ChiselsAndBits2.getAPI().getChiselsAndBitsSlot());
+    }*/
+
     @SubscribeEvent
     public static void onBlockRegistry(final RegistryEvent.Register<Block> e) {
         //Register all blocks in this class automatically.

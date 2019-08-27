@@ -7,8 +7,9 @@ import java.util.List;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Direction.Axis;
 import net.minecraft.util.Direction.AxisDirection;
+import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 
@@ -54,7 +55,7 @@ public class ChiselMaterialIterator extends BaseChiselIterator implements Chisel
 			final int sy,
 			final int sz,
 			final IVoxelSrc source,
-			final ItemMode mode,
+			final IItemMode mode,
 			final Direction side,
 			final boolean place )
 	{

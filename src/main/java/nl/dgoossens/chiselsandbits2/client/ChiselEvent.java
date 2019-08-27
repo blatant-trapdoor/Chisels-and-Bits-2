@@ -1,18 +1,8 @@
 package nl.dgoossens.chiselsandbits2.client;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -25,6 +15,7 @@ public class ChiselEvent {
 
     /*@SubscribeEvent Waiting for Forge PR...
     public static void onClick(InputEvent.ClickInputEvent e) {
+        //TODO cancel middle click when holding chisel for pick block functionality (check if the keybind wasn't changed)
         if(e.isRightClick()) return;
         if(e.getRaytrace() == null || e.getRaytrace().getType() != RayTraceResult.Type.BLOCK) return;
         final PlayerEntity player = ChiselsAndBits2.getClient().getPlayer();

@@ -12,9 +12,10 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
+import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
-import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
@@ -22,6 +23,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIte
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
+import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 
@@ -37,7 +39,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 
 	private BitOperation place;
 	private Direction side;
-	private ItemMode mode;
+	private IItemMode mode;
 
 	private PacketChisel() {}
 	public PacketChisel(
@@ -45,7 +47,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 			final BitLocation from,
 			final BitLocation to,
 			final Direction side,
-			final ItemMode mode)
+			final IItemMode mode)
 	{
 		this.place = place;
 		this.from = BitLocation.min( from, to );
@@ -58,7 +60,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 			final BitOperation place,
 			final BitLocation location,
 			final Direction side,
-			final ItemMode mode)
+			final IItemMode mode)
 	{
 		this.place = place;
 		from = to = location;
@@ -307,7 +309,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 
 		buf.writeEnumValue( msg.place );
 		buf.writeVarInt( msg.side.ordinal() );
-		buf.writeVarInt( msg.mode.ordinal() );
+		buf.writeString( msg.mode.getName() );
 	}
 
 	public static PacketChisel decode(PacketBuffer buffer)
@@ -318,7 +320,9 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 
 		pc.place = buffer.readEnumValue( BitOperation.class );
 		pc.side = Direction.values()[buffer.readVarInt()];
-		pc.mode = ItemMode.values()[buffer.readVarInt()];
+		try {
+			pc.mode = ChiselModeManager.resolveMode(buffer.readString());
+		} catch(Exception x) { x.printStackTrace(); }
 		return pc;
 	}
 

@@ -1,8 +1,8 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators;
 
 import net.minecraft.util.Direction;
+import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +27,7 @@ public class ChiselExtrudeIterator extends BaseChiselIterator implements ChiselI
 				final int sy,
 				final int sz,
 				final IVoxelSrc source,
-				final ItemMode mode,
+				final IItemMode mode,
 				final Direction side,
 				final boolean place )
 		{
@@ -95,7 +95,7 @@ public class ChiselExtrudeIterator extends BaseChiselIterator implements ChiselI
 			final int sy,
 			final int sz,
 			final IVoxelSrc source,
-			final ItemMode mode,
+			final IItemMode mode,
 			final Direction side,
 			final boolean place )
 	{
