@@ -4,33 +4,30 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraftforge.event.ForgeEventFactory;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelType;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class ChiselUtil {
-    private static Set<Block> testedBlocks = new CopyOnWriteArraySet<>();
-    private static Map<Block, VoxelBlob> defaultShapes = new ConcurrentHashMap<>();
+    private static Map<Block, Boolean> supportedBlocks = new ConcurrentHashMap<>();
 
     /**
      * Checks whether or not a given block can be chiseled.
      */
     public static boolean canChiselBlock(final BlockState block) {
         if(block.getBlock() instanceof ChiseledBlock) return true;
-        if(!testedBlocks.contains(block.getBlock())) testBlock(block);
-        return defaultShapes.containsKey(block.getBlock());
+        if(!supportedBlocks.containsKey(block.getBlock())) testBlock(block);
+        return supportedBlocks.getOrDefault(block.getBlock(), false);
     }
 
     /**
@@ -41,7 +38,7 @@ public class ChiselUtil {
     private static void testBlock(final BlockState block) {
         //We determine if a block can be chiseled by whether or not the shape of it can be turned into a VoxelBlob.
         final Block blk = block.getBlock();
-        if(blk.hasTileEntity(block)) return; //TODO support tile entities!
+        if(blk.hasTileEntity(block)) return;
         DummyEnvironmentWorldReader dummyWorld = new DummyEnvironmentWorldReader() {
             @Override
             public BlockState getBlockState(BlockPos pos) {
@@ -50,22 +47,8 @@ public class ChiselUtil {
             }
         };
         VoxelShape shape = block.getCollisionShape(dummyWorld, BlockPos.ZERO);
-        shape.simplify();
-        for(AxisAlignedBB bb : shape.toBoundingBoxList()) {
-            //TODO we can't do this because wooden slabs, wooden stairs etc. would all be seen as different bit types and we'd need to make a unique shape for each stair variant for example
-            if(bb.getXSize() * 16 % 1 != 0) return; //If the bounding boxes are all made of parts of 1/16th it should be usable.
-            if(bb.getYSize() * 16 % 1 != 0) return;
-            if(bb.getZSize() * 16 % 1 != 0) return;
-        }
-        defaultShapes.put(blk, VoxelBlob.full(block));
-    }
-
-    /**
-     * Get the voxelblob to use as a shape when the blockstate is
-     * turned into a chiseled block.
-     */
-    public static VoxelBlob getShape(final BlockState block) {
-        return defaultShapes.getOrDefault(block.getBlock(), VoxelBlob.full(block)).clone();
+        if(!shape.equals(VoxelShapes.fullCube())) return; //You can only chisel blocks without a special shape.
+        supportedBlocks.put(blk, true);
     }
 
     /**

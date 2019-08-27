@@ -338,7 +338,7 @@ public class ClientSide {
         final PlayerEntity player = Minecraft.getInstance().player;
         if(player.getHeldItemMainhand().getItem() instanceof ChiselItem) {
             final RayTraceResult mop = Minecraft.getInstance().objectMouseOver;
-            if(mop==null || mop.getType()!=RayTraceResult.Type.BLOCK) return;
+            if(mop==null || mop.getType() != RayTraceResult.Type.BLOCK) return;
 
             final World world = Minecraft.getInstance().world;
             final BitLocation location = new BitLocation((BlockRayTraceResult)  mop, true, BitOperation.PLACE); //TODO add the other bit operations
@@ -349,7 +349,7 @@ public class ClientSide {
                 final ItemMode mode = ItemMode.getMode(player.getHeldItemMainhand());
 
                 final VoxelRegionSrc region = new VoxelRegionSrc( world, location.blockPos, 1 );
-                final VoxelBlob vb = data != null && data instanceof ChiseledBlockTileEntity ? ((ChiseledBlockTileEntity) data).getBlob() : new VoxelBlob();
+                final VoxelBlob vb = data instanceof ChiseledBlockTileEntity ? ((ChiseledBlockTileEntity) data).getBlob() : new VoxelBlob();
                 vb.fill(1);
                 //TODO draw region
             }
