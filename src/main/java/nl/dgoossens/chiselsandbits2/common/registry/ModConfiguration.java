@@ -12,6 +12,7 @@ public class ModConfiguration {
 
     public ForgeConfigSpec.DoubleValue radialMenuVolume;
     public ForgeConfigSpec.BooleanValue enableToolbarIcons;
+    public ForgeConfigSpec.BooleanValue enableModeScrolling;
 
     public ForgeConfigSpec.BooleanValue enableVivecraftCompatibility;
 
@@ -38,6 +39,10 @@ public class ModConfiguration {
             enableToolbarIcons = builder
                     .comment("Enables selection ghosts in the toolbar next to your tool item")
                     .define("enableToolbarIcons", true);
+
+            enableModeScrolling = builder
+                    .comment("When enabled the mode of a tool will be changed when using the scroll wheel whilst shifting and holding the item")
+                    .define("enableModeScrolling", true);
 
             builder.pop();
 

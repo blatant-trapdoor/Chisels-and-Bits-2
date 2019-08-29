@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
@@ -306,6 +307,7 @@ public class ClientSide {
                             if(mode.equals(SelectedBlockItemMode.NONE)) continue;
                             ir.renderItemIntoGUI(((SelectedBlockItemMode) mode).getStack(), x, y);
                         } else {
+                            GlStateManager.translatef(0, 0, 200); //The item models are also rendered 150 higher
                             GlStateManager.enableBlend();
                             int blitOffset = 0;
                             try {
@@ -315,6 +317,7 @@ public class ClientSide {
                             } catch(Exception rx) { rx.printStackTrace(); }
                             AbstractGui.blit( x + 2, y + 2, blitOffset, 16, 16, sprite );
                             GlStateManager.disableBlend();
+                            GlStateManager.translatef(0, 0, -200);
                         }
                     }
                 }
@@ -366,21 +369,18 @@ public class ClientSide {
     }
 
     //--- ITEM SCROLL ---
-    /*@SubscribeEvent  Waiting for Forge PR...
+    @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void wheelEvent(final InputEvent.MouseScrollEvent me) {
         final int dwheel = me.getScrollDelta() < 0 ? -1 : me.getScrollDelta() > 0 ? 1 : 0;
-        if ( me.isCanceled() || dwheel == 0 ) {
-            return;
-        }
+        if(me.isCanceled() || dwheel == 0) return;
 
-        final PlayerEntity player = getPlayer();
+        final PlayerEntity player = ChiselsAndBits2.getClient().getPlayer();
         final ItemStack is = player.getHeldItemMainhand();
 
-        if ( dwheel != 0 && is != null && is.getItem() instanceof IItemScrollWheel && player.isSneaking() )
-        {
-            ( (IItemScrollWheel) is.getItem() ).scroll( player, is, dwheel );
-            me.setCanceled( true );
+        if(is.getItem() instanceof IItemScrollWheel && player.isSneaking()) {
+            ((IItemScrollWheel) is.getItem()).scroll(player, is, dwheel);
+            me.setCanceled(true);
         }
-    }*/
+    }
 }

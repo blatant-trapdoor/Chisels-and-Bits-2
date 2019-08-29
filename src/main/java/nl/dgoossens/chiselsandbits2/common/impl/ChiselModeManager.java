@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.StringNBT;
 import static nl.dgoossens.chiselsandbits2.api.ItemMode.*;
 
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.ItemMode;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
@@ -42,23 +43,18 @@ public class ChiselModeManager {
      * on which direction was scrolled in.
      */
     public static void scrollOption(IItemMode currentMode, final double dwheel) {
+        if(!ChiselsAndBits2.getConfig().enableModeScrolling.get()) return;
         if(currentMode instanceof ItemMode) {
             int offset = ((ItemMode) currentMode).ordinal();
             do {
-                offset = testOffset(offset + ( dwheel < 0 ? -1 : 1 ));
-                currentMode = ItemMode.values()[offset];
-            } while(currentMode.getType()!=currentMode.getType());
-
-            changeItemMode(currentMode);
+                offset += (dwheel < 0 ? -1 : 1);
+                if(offset >= values().length) offset = 0;
+                if(offset < 0) offset = values().length - 1;
+            } while(ItemMode.values()[offset].getType()!=currentMode.getType());
+            changeItemMode(ItemMode.values()[offset]);
         } else {
             //TODO implement bit bag scroll
         }
-    }
-
-    private static int testOffset(int offset) {
-        if(offset >= ItemMode.values().length) return 0;
-        if(offset < 0) return ItemMode.values().length - 1;
-        return offset;
     }
 
     /**
