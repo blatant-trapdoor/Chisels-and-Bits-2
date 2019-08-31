@@ -23,10 +23,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.ItemMode;
-import nl.dgoossens.chiselsandbits2.api.ItemModeType;
+import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
@@ -56,59 +53,6 @@ public class ChiselItem extends TypedItem {
                 ChiselsAndBits2.getKeybindings().selectBitType,
                 ChiselsAndBits2.getKeybindings().modeMenu
         );
-    }
-
-    /**
-     * Handle the block chiselling on left click.
-     */
-    public static boolean startChiselingBlock(final BlockRayTraceResult rayTrace, final ItemMode mode, final PlayerEntity player) {
-        if(!player.world.isRemote) throw new UnsupportedOperationException("Block chiseling can only be started on the client-side.");
-
-        final BlockPos pos = rayTrace.getPos();
-        final BlockState state = player.world.getBlockState(pos);
-        if(!ChiselUtil.canChiselBlock(state)) return true;
-        if(!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return true;
-        Vec3d hitBit = rayTrace.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
-        useChisel(BitOperation.REMOVE, mode, player, player.world, pos, rayTrace.getFace(), hitBit);
-        return true;
-    }
-
-     /**
-     * Handle placement on right click.
-     */
-    @Override
-    public ActionResultType onItemUseFirst(ItemStack item, ItemUseContext context) {
-        final BlockPos pos = context.getPos();
-
-        if(!ChiselUtil.canChiselBlock(context.getWorld().getBlockState(pos)))
-            return ActionResultType.FAIL;
-
-        if(context.getPlayer()==null || !ChiselUtil.canChiselPosition(pos, context.getPlayer(), context.getWorld().getBlockState(pos), context.getFace()))
-            return ActionResultType.FAIL;
-
-        if(context.getWorld().isRemote) {
-            final RayTraceResult rtr = Minecraft.getInstance().objectMouseOver;
-            if(rtr != null && rtr.getType() == RayTraceResult.Type.BLOCK) {
-                Vec3d hitBit = rtr.getHitVec().subtract(pos.getX(), pos.getY(), pos.getZ());
-                //TODO place in the bit in front instead of in the bit selected, also re-do checks if the block can be changed
-                useChisel(BitOperation.PLACE, ChiselModeManager.getMode(item), context.getPlayer(), context.getWorld(), pos, ((BlockRayTraceResult) rtr).getFace(), hitBit);
-            }
-        }
-        return ActionResultType.SUCCESS;
-    }
-
-    /**
-     * Uses the chisel on a specific bit of a specific block.
-     * Does everything short of updating the voxel data. (and updating the durability of the used tool)
-     */
-    static void useChisel(final BitOperation operation, final IItemMode mode, final PlayerEntity player, final World world, final BlockPos pos, final Direction side, final Vec3d hitBit) {
-        final BitLocation location = new BitLocation(new BlockRayTraceResult(hitBit, side, pos, false), false, operation);
-        final PacketChisel pc = new PacketChisel(operation, location, side, mode);
-        final int modifiedBits = pc.doAction(player);
-        if(modifiedBits != 0) {
-            ChiselsAndBits2.getClient().breakSound(world, pos, ModUtil.getStateById(modifiedBits));
-            NetworkRouter.sendToServer(pc);
-        }
     }
 
     /**
