@@ -4,10 +4,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.bitbag.BagCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItemGroups;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
@@ -27,5 +30,10 @@ public class BitBagItem extends TypedItem {
         ItemTooltipWriter.addItemInformation(tooltip, "bit_bag.help",
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getKeybindings().modeMenu);
+    }
+
+    @Override
+    public ICapabilityProvider initCapabilities(final ItemStack stack, final CompoundNBT nbt) {
+        return new BagCapabilityProvider();
     }
 }

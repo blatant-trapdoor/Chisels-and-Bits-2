@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -14,6 +15,9 @@ import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.client.render.ICacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.SmartModelManager;
+import nl.dgoossens.chiselsandbits2.common.bitbag.BagCapability;
+import nl.dgoossens.chiselsandbits2.api.BagStorage;
+import nl.dgoossens.chiselsandbits2.common.bitbag.BagStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselsAndBitsAPIImpl;
 import nl.dgoossens.chiselsandbits2.common.registry.ModConfiguration;
 import nl.dgoossens.chiselsandbits2.common.registry.ModBlocks;
@@ -66,6 +70,7 @@ public class ChiselsAndBits2 {
         MinecraftForge.EVENT_BUS.register(NETWORK_ROUTER);
 
         FMLJavaModLoadingContext.get().getModEventBus().register(SMART_MODEL_MANAGER);
+        CapabilityManager.INSTANCE.register(BagStorage.class, new BagCapability(), BagStorageImpl::new);
     }
 
     //TODO this all needs someplaceelse to live

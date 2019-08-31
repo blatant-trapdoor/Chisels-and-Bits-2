@@ -177,7 +177,7 @@ public class RadialMenu extends Screen {
         final ArrayList<MenuRegion> modes = new ArrayList<>();
         final ArrayList<MenuButton> btns = new ArrayList<>();
         //Setup mode regions
-        for(IItemMode m : ChiselModeManager.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getSortedItemModes())
+        for(IItemMode m : ChiselModeManager.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getItemModes(ChiselsAndBits2.getClient().getPlayer().getHeldItemMainhand()))
             modes.add(new MenuRegion(m));
 
         //Setup buttons
