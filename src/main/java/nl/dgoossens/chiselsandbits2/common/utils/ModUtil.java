@@ -22,7 +22,9 @@ public class ModUtil {
 
     /**
      * Get a blockstate's id.
+     * @deprecated Will get replaced eventually.
      */
+    @Deprecated
     public static int getStateId(final BlockState state) { //TODO add SOLID identifier or TRANSLUCENT identifier
         return Math.max(0, Block.getStateId(state));
     }

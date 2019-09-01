@@ -21,11 +21,10 @@ public class PacketSetItemMode implements NetworkRouter.ModPacket {
     public PacketSetItemMode(final IItemMode mode) { newMode=mode; }
 
     public static void encode(PacketSetItemMode msg, PacketBuffer buf) {
-        buf.writeString( msg.newMode.getName() );
+        buf.writeString(msg.newMode.getName());
     }
 
-    public static PacketSetItemMode decode(PacketBuffer buffer)
-    {
+    public static PacketSetItemMode decode(PacketBuffer buffer) {
         PacketSetItemMode pc = new PacketSetItemMode();
         try {
             pc.newMode = ChiselModeManager.resolveMode(buffer.readString());

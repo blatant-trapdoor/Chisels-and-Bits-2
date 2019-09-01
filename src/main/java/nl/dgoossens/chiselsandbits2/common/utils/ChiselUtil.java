@@ -55,6 +55,7 @@ public class ChiselUtil {
      * event.
      */
     public static boolean canChiselPosition(final BlockPos pos, final PlayerEntity player, final BlockState state, final Direction face) {
+        if(!player.getEntityWorld().getWorldBorder().contains(pos)) return false;
         if(!player.getHeldItemMainhand().getItem().equals(ChiselsAndBits2.getItems().CHISEL)) return false; //The chisel needs to be in the main hand!
         if(!player.getEntityWorld().isBlockModifiable(player, pos)) return false;
         if(!player.canPlayerEdit(pos, face, player.getHeldItemMainhand())) return false;

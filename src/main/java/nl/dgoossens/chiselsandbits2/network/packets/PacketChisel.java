@@ -47,8 +47,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 			final BitLocation from,
 			final BitLocation to,
 			final Direction side,
-			final IItemMode mode)
-	{
+			final IItemMode mode) {
 		this.place = place;
 		this.from = BitLocation.min( from, to );
 		this.to = BitLocation.max( from, to );
@@ -60,8 +59,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 			final BitOperation place,
 			final BitLocation location,
 			final Direction side,
-			final IItemMode mode)
-	{
+			final IItemMode mode) {
 		this.place = place;
 		from = to = location;
 		this.side = side;
@@ -286,39 +284,32 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 		return ChiselTypeIterator.create(VoxelBlob.DIMENSION, from.bitX, from.bitY, from.bitZ, vb, mode, side, place.equals(BitOperation.PLACE));
 	}
 
-	private static BitLocation readBitLoc(
-			final PacketBuffer buffer )
-	{
+	private static BitLocation readBitLoc(final PacketBuffer buffer) {
 		return new BitLocation( buffer.readBlockPos(), buffer.readByte(), buffer.readByte(), buffer.readByte() );
 	}
 
-	private static void writeBitLoc(
-			final BitLocation from2,
-			final PacketBuffer buffer )
-	{
-		buffer.writeBlockPos( from2.blockPos );
-		buffer.writeByte( from2.bitX );
-		buffer.writeByte( from2.bitY );
-		buffer.writeByte( from2.bitZ );
+	private static void writeBitLoc(final BitLocation from2, final PacketBuffer buffer) {
+		buffer.writeBlockPos(from2.blockPos);
+		buffer.writeByte(from2.bitX);
+		buffer.writeByte(from2.bitY);
+		buffer.writeByte(from2.bitZ);
 	}
 
-	public static void encode(PacketChisel msg, PacketBuffer buf)
-	{
-		writeBitLoc( msg.from, buf );
-		writeBitLoc( msg.to, buf );
+	public static void encode(PacketChisel msg, PacketBuffer buf) {
+		writeBitLoc(msg.from, buf);
+		writeBitLoc(msg.to, buf);
 
-		buf.writeEnumValue( msg.place );
-		buf.writeVarInt( msg.side.ordinal() );
-		buf.writeString( msg.mode.getName() );
+		buf.writeEnumValue(msg.place);
+		buf.writeVarInt(msg.side.ordinal());
+		buf.writeString(msg.mode.getName());
 	}
 
-	public static PacketChisel decode(PacketBuffer buffer)
-	{
+	public static PacketChisel decode(PacketBuffer buffer) {
 		PacketChisel pc = new PacketChisel();
-		pc.from = readBitLoc( buffer );
-		pc.to = readBitLoc( buffer );
+		pc.from = readBitLoc(buffer);
+		pc.to = readBitLoc(buffer);
 
-		pc.place = buffer.readEnumValue( BitOperation.class );
+		pc.place = buffer.readEnumValue(BitOperation.class);
 		pc.side = Direction.values()[buffer.readVarInt()];
 		try {
 			pc.mode = ChiselModeManager.resolveMode(buffer.readString());
@@ -326,13 +317,11 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 		return pc;
 	}
 
-	public static class Handler
-	{
-		public static void handle(final PacketChisel pkt, Supplier<NetworkEvent.Context> ctx)
-		{
-			ctx.get().enqueueWork(() -> {
-				pkt.doAction(ctx.get().getSender());
-			});
+	public static class Handler {
+		public static void handle(final PacketChisel pkt, Supplier<NetworkEvent.Context> ctx) {
+			ctx.get().enqueueWork(() ->
+				pkt.doAction(ctx.get().getSender())
+			);
 		}
 	}
 }

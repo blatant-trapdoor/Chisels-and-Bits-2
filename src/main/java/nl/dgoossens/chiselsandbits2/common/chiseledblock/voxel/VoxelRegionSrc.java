@@ -2,11 +2,13 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.BitAccess;
 import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
 
-public class VoxelRegionSrc implements IVoxelSrc
-{
+import java.util.Optional;
 
+public class VoxelRegionSrc implements IVoxelSrc {
 	final BlockPos min;
 	final BlockPos max;
 	final BlockPos actingCenter;
@@ -15,7 +17,7 @@ public class VoxelRegionSrc implements IVoxelSrc
 	final int wrapY;
 	final int wrapX;
 
-	//final VoxelBlob blobs[];
+	final VoxelBlob blobs[];
 
 	private VoxelRegionSrc(
 			final World src,
@@ -31,7 +33,7 @@ public class VoxelRegionSrc implements IVoxelSrc
 		wrapY = max.getY() - min.getY() + 1;
 		wrapZ = max.getZ() - min.getZ() + 1;
 
-		/*blobs = new VoxelBlob[wrapX * wrapY * wrapZ];
+		blobs = new VoxelBlob[wrapX * wrapY * wrapZ];
 
 		for ( int x = min.getX(); x <= max.getX(); ++x )
 		{
@@ -40,37 +42,20 @@ public class VoxelRegionSrc implements IVoxelSrc
 				for ( int z = min.getZ(); z <= max.getZ(); ++z )
 				{
 					final int idx = x - min.getX() + ( y - min.getY() ) * wrapX + ( z - min.getZ() ) * wrapX * wrapY;
-
-					try
-					{
-						final BitAccess access = (BitAccess) ChiselsAndBits.getApi().getBitAccess( src, new BlockPos( x, y, z ) );
-						blobs[idx] = access.getNativeBlob();
-					}
-					catch ( final CannotBeChiseled e )
-					{
-						blobs[idx] = new VoxelBlob();
-					}
+					final Optional<BitAccess> access = ChiselsAndBits2.getAPI().getBitAccess(src, new BlockPos( x, y, z ));
+					if(access.isPresent()) blobs[idx] = access.get().getNativeBlob();
+					else blobs[idx] = new VoxelBlob();
 				}
 			}
-		}*/
+		}
 	}
 
-	public VoxelRegionSrc(
-			final World theWorld,
-			final BlockPos blockPos,
-			final int range )
-	{
+	public VoxelRegionSrc(final World theWorld, final BlockPos blockPos, final int range) {
 		this( theWorld, blockPos.add( -range, -range, -range ), blockPos.add( range, range, range ), blockPos );
 	}
 
 	@Override
-	public int getSafe(
-			int x,
-			int y,
-			int z ) {
-		return 0; //TODO Fix!
-	}
-	/*
+	public int getSafe(int x, int y, int z) {
 		x += actingCenter.getX() * VoxelBlob.DIMENSION;
 		y += actingCenter.getY() * VoxelBlob.DIMENSION;
 		z += actingCenter.getZ() * VoxelBlob.DIMENSION;
@@ -84,29 +69,17 @@ public class VoxelRegionSrc implements IVoxelSrc
 		final int blkPosZ = z >> 4;
 
 		final int idx = blkPosX + blkPosY * wrapX + blkPosZ * wrapX * wrapY;
-
-		if ( blkPosX < 0 || blkPosY < 0 || blkPosZ < 0 || blkPosX >= wrapX || blkPosY >= wrapY || blkPosZ >= wrapZ )
-		{
-			return 0;
-		}
-
-		return blobs[idx].fromName( bitPosX, bitPosY, bitPosZ );
+		if ( blkPosX < 0 || blkPosY < 0 || blkPosZ < 0 || blkPosX >= wrapX || blkPosY >= wrapY || blkPosZ >= wrapZ ) return 0;
+		return blobs[idx].get(bitPosX, bitPosY, bitPosZ);
 	}
 
-	public VoxelBlob getBlobAt(
-			final BlockPos blockPos )
-	{
+	public VoxelBlob getBlobAt(final BlockPos blockPos) {
 		final int blkPosX = blockPos.getX() - min.getX();
 		final int blkPosY = blockPos.getY() - min.getY();
 		final int blkPosZ = blockPos.getZ() - min.getZ();
 
 		final int idx = blkPosX + blkPosY * wrapX + blkPosZ * wrapX * wrapY;
-
-		if ( blkPosX < 0 || blkPosY < 0 || blkPosZ < 0 || blkPosX >= wrapX || blkPosY >= wrapY || blkPosZ >= wrapZ )
-		{
-			return new VoxelBlob();
-		}
-
+		if ( blkPosX < 0 || blkPosY < 0 || blkPosZ < 0 || blkPosX >= wrapX || blkPosY >= wrapY || blkPosZ >= wrapZ ) return new VoxelBlob();
 		return blobs[idx];
-	}*/
+	}
 }

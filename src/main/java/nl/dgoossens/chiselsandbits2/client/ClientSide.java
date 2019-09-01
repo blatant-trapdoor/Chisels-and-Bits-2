@@ -19,6 +19,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
@@ -34,6 +35,9 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.BlockColorChiseled;
@@ -45,6 +49,8 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -256,6 +262,8 @@ public class ClientSide {
 
         if(ChiselsAndBits2.getKeybindings().redo.isPressed())
             System.out.println("REDO");
+
+        //TODO add more keybinds to match C&B1
     }
 
     /**
@@ -330,7 +338,7 @@ public class ClientSide {
     }
 
     /**
-     * For drawing the bit highlights.
+     * For drawing our custom highlight bounding boxes!
      */
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
@@ -341,19 +349,23 @@ public class ClientSide {
             if(mop==null || mop.getType() != RayTraceResult.Type.BLOCK) return;
 
             final World world = Minecraft.getInstance().world;
-            final BitLocation location = new BitLocation((BlockRayTraceResult)  mop, true, BitOperation.PLACE); //TODO add the other bit operations
-            boolean showBox = true;
-            if(world.getWorldBorder().contains(location.blockPos)) {
-                final TileEntity data = world.getTileEntity(location.blockPos);
-                final BlockState state = world.getBlockState(location.blockPos);
-                final IItemMode mode = ChiselModeManager.getMode(player.getHeldItemMainhand());
+            final BitLocation location = new BitLocation((BlockRayTraceResult)  mop, true, BitOperation.REMOVE); //We always show the removal box, never the placement one.
+            final TileEntity data = world.getTileEntity(location.blockPos);
+            final BlockState state = world.getBlockState(location.blockPos);
 
-                final VoxelRegionSrc region = new VoxelRegionSrc( world, location.blockPos, 1 );
-                final VoxelBlob vb = data instanceof ChiseledBlockTileEntity ? ((ChiseledBlockTileEntity) data).getBlob() : new VoxelBlob();
-                vb.fill(1);
-                //TODO draw region
-            }
-            if(!showBox) e.setCanceled(true);
+            //We only show this box if this block is chiselable and this block at this position is chiselable.
+            if(!ChiselUtil.canChiselBlock(state)) return;
+            if(!ChiselUtil.canChiselPosition(location.getBlockPos(), player, state, ((BlockRayTraceResult) mop).getFace())) return;
+
+            final IItemMode mode = ChiselModeManager.getMode(player.getHeldItemMainhand());
+            final VoxelRegionSrc region = new VoxelRegionSrc(world, location.blockPos, 1);
+            final VoxelBlob vb = data instanceof ChiseledBlockTileEntity ? ((ChiseledBlockTileEntity) data).getBlob() : new VoxelBlob();
+            if(!(data instanceof ChiseledBlockTileEntity)) vb.fill(ModUtil.getStateId(state));
+
+            final ChiselIterator i = ChiselTypeIterator.create(VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ, region, mode, ((BlockRayTraceResult) mop).getFace(), false);
+            final AxisAlignedBB bb = i.getBoundingBox(vb, true);
+            RenderingAssistant.drawSelectionBoundingBoxIfExists(bb, location.blockPos, player, e.getPartialTicks(), false);
+            e.setCanceled(true);
         }
     }
 

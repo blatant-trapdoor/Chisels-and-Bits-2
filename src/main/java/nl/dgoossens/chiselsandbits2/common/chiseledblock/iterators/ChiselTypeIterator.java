@@ -5,8 +5,7 @@ import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
 import nl.dgoossens.chiselsandbits2.api.ItemMode;
 
-public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIterator
-{
+public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIterator {
 
 	private final int full_size;
 	private final int max_dim;
@@ -59,7 +58,7 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 			final IVoxelSrc source,
 			final IItemMode mode,
 			final Direction side,
-			final boolean place )
+			final boolean place)
 	{
 		if (mode.equals(ItemMode.CHISEL_CONNECTED_MATERIAL))
 		{
@@ -106,7 +105,7 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 					parts = x_range * y_range * z_range;
 					break;
 
-				case CHISEL_SNAP2:
+				case CHISEL_SNAP8: //1/2 size
 					x -= x % 2;
 					y -= y % 2;
 					z -= z % 2;
@@ -126,7 +125,7 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
 					parts = x_range * y_range * z_range;
 					break;
 
-				case CHISEL_SNAP8:
+				case CHISEL_SNAP2: //1/8 size
 					x -= x % 8;
 					y -= y % 8;
 					z -= z % 8;

@@ -24,17 +24,14 @@ public class PacketSetMenuActionMode implements NetworkRouter.ModPacket {
         buf.writeVarInt( msg.newMode.ordinal() );
     }
 
-    public static PacketSetMenuActionMode decode(PacketBuffer buffer)
-    {
+    public static PacketSetMenuActionMode decode(PacketBuffer buffer) {
         PacketSetMenuActionMode pc = new PacketSetMenuActionMode();
         pc.newMode = MenuAction.values()[buffer.readVarInt()];
         return pc;
     }
 
-    public static class Handler
-    {
-        public static void handle(final PacketSetMenuActionMode pkt, Supplier<NetworkEvent.Context> ctx)
-        {
+    public static class Handler {
+        public static void handle(final PacketSetMenuActionMode pkt, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() -> {
                 ServerPlayerEntity player = ctx.get().getSender();
                 final ItemStack ei = player.getHeldItemMainhand();
