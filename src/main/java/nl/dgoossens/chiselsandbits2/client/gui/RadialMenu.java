@@ -22,7 +22,6 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -50,11 +49,9 @@ public class RadialMenu extends Screen {
     public void configure(final MainWindow window) { this.window = window; }
 
     @Override
-    @NonNull
     public Minecraft getMinecraft() {
         return minecraft==null ? Minecraft.getInstance() : minecraft;
     }
-    @NonNull
     public FontRenderer getFontRenderer() {
         return font==null ? Minecraft.getInstance().fontRenderer : font;
     }
