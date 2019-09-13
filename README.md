@@ -7,6 +7,17 @@ This mod is currently in very early alpha phases. This means that here is curren
 The current textures for the paintbrush and palette are placeholders, if anyone'd like to make some textures I'd love to use them!
 
 <br/>
+
+**Important!**
+
+The mod is currently still in alpha and not playable. All features listed in this README.md are what's planned and not the features that are already fully completed. Development is still continuing slowly but I'm waiting on the following Forge PRs to get added before I can release any public builds: (and there's still a lot of work to be done regardless when these PRs get added)
+* https://github.com/MinecraftForge/MinecraftForge/pull/6047 to add the chisel item's functionality.
+* https://github.com/MinecraftForge/MinecraftForge/pull/6032 for icons in the Left+Alt menu.
+* (optional) https://github.com/MinecraftForge/MinecraftForge/pull/6030 for multipart support.
+
+If you compile and start the mod at the moment you'll notice the chiseling mechanic doesn't work, that's because all current ways to implement a way to disable vanilla's handling of block breaking suffer from a stupid bug that won't be fixed in vanilla in 1.14.x, so an alternate way of canceling vanilla block breaking needs to be used.
+The bug in question (https://bugs.mojang.com/projects/MC/issues/MC-159013) causes the player's movement to be frozen if block breaking is cancelled, which would get me spammed with issues whilst it isn't a bug I can fix which will negatively impact user experience.
+ 
 <br/>
 
 #### Differences from the original mod (these are the planned differences, they are not all finished yet)
@@ -40,9 +51,8 @@ Both the palette and bit bag will still have GUI's where you can manage which it
 
 ##### Temporary Differences
 The mod has been partially rewritten, 99% of the rendering code is still the same though, (because AlgorithmX2s rendering code is both already amazing and better than what I could make) so there may be minor changes to various parts of the mod. More importantly, because of the rewrite not all features have been ported yet, but they will be ported eventually. These features include:
-* Liquid Bits (will be re-added after the forge liquid API is done)
 * Chiseled Blocks giving off light equal to the percentage of glowing blocks used.
-* Most of the configuration options
+* More of the old configuration options
 * The entire old API/addon and IMC (this is probably all going to be completely different)
 * The various languages that the original mod supported
 * The commands and debug features
