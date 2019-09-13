@@ -75,16 +75,18 @@ public class ChiseledBlockTileEntity extends TileEntity {
     /**
      * Get the cached shape of this block.
      */
+    @Nonnull
     public VoxelShape getCachedShape() {
         if(cachedShape==null) recalculateShape();
-        return cachedShape;
+        return cachedShape == null ? VoxelShapes.empty() : cachedShape;
     }
     /**
      * Get the cached shape of this block.
      */
+    @Nonnull
     public VoxelShape getCollisionShape() {
         if(collisionShape==null) recalculateShape();
-        return collisionShape;
+        return collisionShape == null ? VoxelShapes.empty() : collisionShape;
     }
 
     /**
