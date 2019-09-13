@@ -71,9 +71,9 @@ public class BitLocation {
 	}
 
 	public static BitLocation max(final BitLocation from, final BitLocation to) {
-		final int bitX = Max(from.blockPos.getX(), to.blockPos.getX(), from.bitX, to.bitX);
-		final int bitY = Max(from.blockPos.getY(), to.blockPos.getY(), from.bitY, to.bitY);
-		final int bitZ = Max(from.blockPos.getZ(), to.blockPos.getZ(), from.bitZ, to.bitZ);
+		final int bitX = max(from.blockPos.getX(), to.blockPos.getX(), from.bitX, to.bitX);
+		final int bitY = max(from.blockPos.getY(), to.blockPos.getY(), from.bitY, to.bitY);
+		final int bitZ = max(from.blockPos.getZ(), to.blockPos.getZ(), from.bitZ, to.bitZ);
 
 		return new BitLocation( new BlockPos(
 				Math.max(from.blockPos.getX(), to.blockPos.getX()),
@@ -88,7 +88,7 @@ public class BitLocation {
 		return bitX3;
 	}
 
-	private static int Max(final int x, final int x2, final int bitX2, final int bitX3) {
+	private static int max(final int x, final int x2, final int bitX2, final int bitX3) {
 		if (x > x2) return bitX2;
 		if (x2 == x) return Math.max( bitX2, bitX3 );
 		return bitX3;

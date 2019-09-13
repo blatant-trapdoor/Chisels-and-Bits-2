@@ -1,6 +1,6 @@
 modLoader="javafml"
 loaderVersion="[28,)"
-issueTrackerURL="https://github.com/daniel-goossens/Chisels-and-Bits/issues"
+issueTrackerURL="https://github.com/daniel-goossens/Chisels-and-Bits2/issues"
 
 [[mods]]
 modId="chiselsandbits2"
@@ -33,6 +33,6 @@ The successor to the original Chisels and Bits mod for minecraft 1.12. A mod abo
 [[dependencies.chiselsandbits2]]
     modId="jei"
     mandatory=false
-    versionRange="[6.0.0.10,)"
+    versionRange="[6.0.0.11,)"
     ordering="BEFORE"
     side="BOTH"

@@ -80,50 +80,33 @@ public class ChiseledBlock extends Block implements BaseBlock {
     {
         BlockState actingState = originalState;
         Block target = originalState.getBlock();
-        final boolean isAir = world.isAirBlock( pos ); //TODO add isReplacable for grass or smth
+        final boolean isAir = world.isAirBlock(pos); //TODO add isReplacable for grass or smth
         ReplaceWithChiseledValue rv = new ReplaceWithChiseledValue();
 
-        if ( ChiselUtil.canChiselBlock( actingState ) || isAir )
-        {
-            Block blk = ChiselsAndBits2.getBlocks().CHISELED_BLOCK;
+        if(ChiselUtil.canChiselBlock(actingState) || isAir) {
+            int blockId = ModUtil.getStateId(actingState);
 
-            int BlockID = ModUtil.getStateId( actingState );
-
-            if ( isAir )
-            {
+            if(isAir) {
                 actingState = ModUtil.getStateById( fragmentBlockStateID );
                 target = actingState.getBlock();
-                BlockID = ModUtil.getStateId( actingState );
+                blockId = ModUtil.getStateId( actingState );
                 // its still air tho..
                 actingState = Blocks.AIR.getDefaultState();
             }
 
-            if ( BlockID == 0 )
-            {
-                return rv;
-            }
+            if(blockId == 0) return rv;
 
-            if ( blk != null && blk != target )
-            {
-                world.setBlockState( pos, blk.getDefaultState(), triggerUpdate ? 3 : 0 );
-                final TileEntity te = world.getTileEntity( pos );
+            if (!target.equals(ChiselsAndBits2.getBlocks().CHISELED_BLOCK)) {
+                world.setBlockState(pos, ChiselsAndBits2.getBlocks().CHISELED_BLOCK.getDefaultState(), triggerUpdate ? 3 : 0);
+                final TileEntity te = world.getTileEntity(pos);
 
                 ChiseledBlockTileEntity tec;
-                if ( !( te instanceof ChiseledBlockTileEntity ) )
-                {
-                    tec = (ChiseledBlockTileEntity) blk.createTileEntity( blk.getDefaultState(), world );
+                if (!(te instanceof ChiseledBlockTileEntity)) {
+                    tec = (ChiseledBlockTileEntity) ChiselsAndBits2.getBlocks().CHISELED_BLOCK.createTileEntity(ChiselsAndBits2.getBlocks().CHISELED_BLOCK.getDefaultState(), world);
                     world.setTileEntity( pos, tec );
-                }
-                else
-                {
-                    tec = (ChiseledBlockTileEntity) te;
-                }
+                } else tec = (ChiseledBlockTileEntity) te;
 
-                if ( tec != null )
-                {
-                    tec.setPrimaryBlock(BlockID);
-                    tec.fillWith( actingState );
-                }
+                if(tec != null) tec.fillWith(actingState);
 
                 rv.success = true;
                 rv.te = tec;

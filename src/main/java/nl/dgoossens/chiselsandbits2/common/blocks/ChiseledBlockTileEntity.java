@@ -48,6 +48,8 @@ public class ChiseledBlockTileEntity extends TileEntity {
     private void setVoxelReference(VoxelBlobStateReference voxel) {
         voxelBlob=voxel;
         requestModelDataUpdate();
+        cachedShape = null;
+        collisionShape = null;
         recalculateShape();
         renderCache.rebuild();
     }
@@ -86,16 +88,18 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     /**
-     * Recalculates the voxel shape.
+     * Recalculates the voxel shapes.
      */
     public void recalculateShape() {
-        VoxelShape base = VoxelShapes.empty();
-        if(getVoxelReference()!=null)
-            for(AxisAlignedBB box : getVoxelReference().getInstance().getBoxes())
-                base = VoxelShapes.combine(base, VoxelShapes.create(box), IBooleanFunction.OR);
-        collisionShape = base.simplify();
+        if(collisionShape == null) {
+            VoxelShape base = VoxelShapes.empty();
+            if(getVoxelReference()!=null)
+                for(AxisAlignedBB box : getVoxelReference().getInstance().getBoxes())
+                    base = VoxelShapes.combine(base, VoxelShapes.create(box), IBooleanFunction.OR);
+            collisionShape = base.simplify();
+        }
 
-        if(getVoxelReference()!=null)
+        if(cachedShape==null && getVoxelReference()!=null)
             cachedShape = VoxelShapes.create(getVoxelReference().getVoxelBlob().getBounds().toBoundingBox());
     }
 
@@ -231,7 +235,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     public void fillWith(final BlockState blockType) {
-        setVoxelReference(new VoxelBlobStateReference( ModUtil.getStateId( blockType ) ));
+        setVoxelReference(new VoxelBlobStateReference(ModUtil.getStateId(blockType)));
     }
 
     public boolean readChiselData(final CompoundNBT tag) {
