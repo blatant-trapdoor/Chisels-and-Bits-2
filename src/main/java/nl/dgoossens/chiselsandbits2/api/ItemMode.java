@@ -40,6 +40,7 @@ public enum ItemMode implements IItemMode {
     TAPEMEASURE_DISTANCE,
 
     WRENCH_ROTATE,
+    WRENCH_ROTATECCW,
     WRENCH_NUDGE_BIT,
     WRENCH_NUDGE_BLOCK,
 
@@ -74,5 +75,20 @@ public enum ItemMode implements IItemMode {
      */
     public ItemModeType getType() {
         return Stream.of(ItemModeType.values()).filter(f -> name().startsWith(f.name())).findAny().orElse(ItemModeType.CHISEL);
+    }
+
+    /**
+     * Returns false when a item mode should not have a hotkey.
+     */
+    public boolean hasHotkey() {
+        switch(this) {
+            case TAPEMEASURE_BIT: //Nobody will ever use tape measure hotkeys, they just take up space in the controls menu.
+            case TAPEMEASURE_BLOCK:
+            case TAPEMEASURE_DISTANCE:
+            case BLUEPRINT_UNKNOWN:
+            case MALLET_UNKNOWN:
+                return false;
+            default: return true;
+        }
     }
 }

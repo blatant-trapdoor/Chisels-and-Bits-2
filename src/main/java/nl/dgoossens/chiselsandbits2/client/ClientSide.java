@@ -51,6 +51,7 @@ import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -169,6 +170,30 @@ public class ClientSide {
     private RadialMenu radialMenu = new RadialMenu();
     public RadialMenu getRadialMenu() { return radialMenu; }
 
+
+    /**
+     * Handles hotkey presses.
+     */
+    @SubscribeEvent
+    public static void onKeyInput(final InputEvent.KeyInputEvent e) {
+        if(e.getModifiers() != GLFW.GLFW_PRESS) return; //Only trigger on presses.
+
+        ChiselsAndBits2.getKeybindings().actionHotkeys
+                .entrySet().parallelStream()
+                .filter(f -> f.getValue().isPressed())
+                .forEach(f -> handleMenuAction(f.getKey()));
+
+        ChiselsAndBits2.getKeybindings().modeHotkeys
+                .entrySet().parallelStream()
+                .filter(f -> f.getValue().isPressed())
+                .forEach(f -> ChiselModeManager.changeItemMode(f.getKey()));
+
+        if(ChiselsAndBits2.getKeybindings().clearTapeMeasure.isPressed()) {
+            System.out.println("CLEAR TAPE MEASURE");
+        }
+
+    }
+
     /**
      * For the logic whether or not the radial menu should be opened etc.
      */
@@ -198,44 +223,8 @@ public class ClientSide {
                     if(radialMenu.hasSwitchTo())
                         ChiselModeManager.changeItemMode(radialMenu.getSwitchTo());
 
-                    if(radialMenu.hasAction()) {
-                        switch(radialMenu.getAction()) {
-                            case UNDO:
-                                System.out.println("UNDO");
-                                break;
-                            case REDO:
-                                System.out.println("REDO"); //TODO add undo/redo buttons
-                                break;
-                            case ROLL_X:
-                                System.out.println("ROLL_X");
-                                break;
-                            case ROLL_Z:
-                                System.out.println("ROLL_Z");
-                                break;
-                            case PLACE:
-                            case REPLACE:
-                                ChiselModeManager.changeMenuActionMode(radialMenu.getAction());
-                                break;
-                            case BLACK:
-                            case WHITE:
-                            case BLUE:
-                            case BROWN:
-                            case CYAN:
-                            case GRAY:
-                            case GREEN:
-                            case LIGHT_BLUE:
-                            case LIGHT_GRAY:
-                            case LIME:
-                            case MAGENTA:
-                            case ORANGE:
-                            case PINK:
-                            case PURPLE:
-                            case RED:
-                            case YELLOW:
-                                ChiselModeManager.changeMenuActionMode(radialMenu.getAction());
-                                break;
-                        }
-                    }
+                    if(radialMenu.hasAction())
+                        handleMenuAction(radialMenu.getAction());
                 }
 
                 radialMenu.setActionUsed(true);
@@ -243,15 +232,51 @@ public class ClientSide {
             }
         }
         radialMenu.updateGameFocus();
+    }
 
-        //TODO move these to InputEvent
-        if(ChiselsAndBits2.getKeybindings().undo.isPressed())
-            System.out.println("UNDO");
-
-        if(ChiselsAndBits2.getKeybindings().redo.isPressed())
-            System.out.println("REDO");
-
-        //TODO add more keybinds to match C&B1
+    /**
+     * Handles the usage of a menu action.
+     */
+    private static void handleMenuAction(final MenuAction action) {
+        switch(action) {
+            case UNDO:
+                System.out.println("UNDO");
+                break;
+            case REDO:
+                System.out.println("REDO");
+                break;
+            case ROLL_X:
+                System.out.println("ROLL_X");
+                break;
+            case ROLL_Y:
+                System.out.println("ROLL_Y");
+                break;
+            case ROLL_Z:
+                System.out.println("ROLL_Z");
+                break;
+            case PLACE:
+            case REPLACE:
+                ChiselModeManager.changeMenuActionMode(action);
+                break;
+            case BLACK:
+            case WHITE:
+            case BLUE:
+            case BROWN:
+            case CYAN:
+            case GRAY:
+            case GREEN:
+            case LIGHT_BLUE:
+            case LIGHT_GRAY:
+            case LIME:
+            case MAGENTA:
+            case ORANGE:
+            case PINK:
+            case PURPLE:
+            case RED:
+            case YELLOW:
+                ChiselModeManager.changeMenuActionMode(action);
+                break;
+        }
     }
 
     /**

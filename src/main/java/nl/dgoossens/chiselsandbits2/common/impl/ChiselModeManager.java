@@ -25,7 +25,7 @@ public class ChiselModeManager {
      */
     public static void changeItemMode(final IItemMode newMode) {
         final PacketSetItemMode packet = new PacketSetItemMode(newMode);
-        NetworkRouter.sendToServer( packet );
+        NetworkRouter.sendToServer(packet);
     }
 
     /**
@@ -35,7 +35,7 @@ public class ChiselModeManager {
      */
     public static void changeMenuActionMode(final MenuAction newAction) {
         final PacketSetMenuActionMode packet = new PacketSetMenuActionMode(newAction);
-        NetworkRouter.sendToServer( packet );
+        NetworkRouter.sendToServer(packet);
     }
 
     /**

@@ -68,14 +68,44 @@
   "general.chiselsandbits2.itemmode.distance": "Distance",
 
   "general.chiselsandbits2.itemmode.rotate": "Rotate",
+  "general.chiselsandbits2.itemmode.rotateccw": "Rotate Counterclockwise",
   "general.chiselsandbits2.itemmode.nudge_bit": "Nudge Bit",
   "general.chiselsandbits2.itemmode.nudge_block": "Nudge Block",
+
+  "general.chiselsandbits2.itemmode.single.hotkey": "Chisel - Single Bit",
+  "general.chiselsandbits2.itemmode.snap2.hotkey": "Chisel - Grid Snapped 1/2 Size Cube",
+  "general.chiselsandbits2.itemmode.snap4.hotkey": "Chisel - Grid Snapped 1/4 Size Cube",
+  "general.chiselsandbits2.itemmode.snap8.hotkey": "Chisel - Grid Snapped 1/8 Size Cube",
+  "general.chiselsandbits2.itemmode.line.hotkey": "Chisel - Line",
+  "general.chiselsandbits2.itemmode.plane.hotkey": "Chisel - Plane",
+  "general.chiselsandbits2.itemmode.connected_plane.hotkey": "Chisel - Connected Plane",
+  "general.chiselsandbits2.itemmode.cube3.hotkey": "Chisel - Small Cube",
+  "general.chiselsandbits2.itemmode.cube5.hotkey": "Chisel - Medium Cube",
+  "general.chiselsandbits2.itemmode.cube7.hotkey": "Chisel - Large Cube",
+  "general.chiselsandbits2.itemmode.same_material.hotkey": "Chisel - Same Material",
+  "general.chiselsandbits2.itemmode.drawn_region.hotkey": "Chisel - Drawn Region",
+  "general.chiselsandbits2.itemmode.connected_material.hotkey": "Chisel - Connected Material",
+
+  "general.chiselsandbits2.itemmode.replace.hotkey": "Pattern - Replace",
+  "general.chiselsandbits2.itemmode.additive.hotkey": "Pattern - Additive",
+  "general.chiselsandbits2.itemmode.replacement.hotkey": "Pattern - Replacement",
+  "general.chiselsandbits2.itemmode.impose.hotkey": "Pattern - Impose",
+
+  "general.chiselsandbits2.itemmode.bit.hotkey": "Tape Measure - Bit",
+  "general.chiselsandbits2.itemmode.block.hotkey": "Tape Measure - Block",
+  "general.chiselsandbits2.itemmode.distance.hotkey": "Tape Measure - Distance",
+
+  "general.chiselsandbits2.itemmode.rotate.hotkey": "Wrench - Rotate",
+  "general.chiselsandbits2.itemmode.rotateccw.hotkey": "Wrench - Rotate Counterclockwise",
+  "general.chiselsandbits2.itemmode.nudge_bit.hotkey": "Wrench - Nudge Bit",
+  "general.chiselsandbits2.itemmode.nudge_block.hotkey": "Wrench - Nudge Block",
 
   "general.chiselsandbits2.menuaction.undo": "Undo",
   "general.chiselsandbits2.menuaction.redo": "Redo",
 
-  "general.chiselsandbits2.menuaction.roll_x": "Rotate X Clockwise",
-  "general.chiselsandbits2.menuaction.roll_z": "Rotate Z Clockwise",
+  "general.chiselsandbits2.menuaction.roll_x": "Rotate X Axis",
+  "general.chiselsandbits2.menuaction.roll_y": "Rotate Y Axis",
+  "general.chiselsandbits2.menuaction.roll_z": "Rotate Z Axis",
 
   "general.chiselsandbits2.menuaction.place": "Place",
   "general.chiselsandbits2.menuaction.replace": "Replace",
@@ -95,5 +125,15 @@
   "general.chiselsandbits2.menuaction.lime": "Lime",
   "general.chiselsandbits2.menuaction.purple": "Purple",
   "general.chiselsandbits2.menuaction.blue": "Blue",
-  "general.chiselsandbits2.menuaction.green": "Green"
+  "general.chiselsandbits2.menuaction.green": "Green",
+
+  "general.chiselsandbits2.menuaction.undo.hotkey": "Undo",
+  "general.chiselsandbits2.menuaction.redo.hotkey": "Redo",
+
+  "general.chiselsandbits2.menuaction.roll_x.hotkey": "Rotate X Axis",
+  "general.chiselsandbits2.menuaction.roll_y.hotkey": "Rotate Y Axis",
+  "general.chiselsandbits2.menuaction.roll_z.hotkey": "Rotate Z Axis",
+
+  "general.chiselsandbits2.menuaction.place.hotkey": "Placement Mode",
+  "general.chiselsandbits2.menuaction.replace.hotkey": "Replace Mode"
 }

@@ -16,6 +16,7 @@ public enum MenuAction {
     REDO,
 
     ROLL_X,
+    ROLL_Y,
     ROLL_Z,
 
     WHITE(DyeColor.WHITE, 16383998),
@@ -51,11 +52,18 @@ public enum MenuAction {
     }
 
     /**
+     * Does this menu action have a hotkey?
+     * (tape measure colours do not have hotkeys)
+     */
+    public boolean hasHotkey() { return dyeColour==null; }
+
+    /**
      * Get the item mode type associated with this menu option, if any.
      */
     public ItemModeType getAssociatedType() {
         switch(this) {
             case ROLL_X:
+            case ROLL_Y:
             case ROLL_Z:
                 return ItemModeType.PATTERN;
             case PLACE:

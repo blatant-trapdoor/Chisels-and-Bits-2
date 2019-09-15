@@ -7,8 +7,12 @@ import nl.dgoossens.chiselsandbits2.api.VoxelType;
 
 import java.security.InvalidParameterException;
 
+/**
+ * @deprecated  ChiselLayers really need a replacement system as C&B2 handles block rendering layers very differently.
+ */
+@Deprecated
 public enum ChiselLayer {
-	SOLID(BlockRenderLayer.SOLID, VoxelType.SOLID_BLOCKSTATE),
+	SOLID(BlockRenderLayer.SOLID, VoxelType.BLOCKSTATE),
 	SOLID_FLUID(BlockRenderLayer.SOLID, VoxelType.FLUIDSTATE),
 	CUTOUT(BlockRenderLayer.CUTOUT, null),
 	CUTOUT_MIPPED(BlockRenderLayer.CUTOUT_MIPPED, null),
