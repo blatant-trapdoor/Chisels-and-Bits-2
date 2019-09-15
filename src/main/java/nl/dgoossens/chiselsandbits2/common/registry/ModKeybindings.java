@@ -20,7 +20,7 @@ public class ModKeybindings {
         }
         @Override
         public boolean conflicts(IKeyConflictContext other) {
-            return false;
+            return true; //For some reason the keybinds don't trigger unless this is true.
         }
     };
     private static final String CATEGORY = "Chisels & Bits 2 - General";

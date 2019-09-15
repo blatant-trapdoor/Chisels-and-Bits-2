@@ -34,8 +34,8 @@ public final class VoxelBlobStateReference implements IStateRef {
 		}
 
 		final VoxelBlob vb = new VoxelBlob();
-		vb.fill( stateId );
-		return vb.blobToBytes( VoxelVersions.getDefault() );
+		vb.fill(stateId);
+		return vb.blobToBytes(VoxelVersions.getDefault());
 	}
 
 	private static void addReference(final VoxelBlobStateInstance inst) { getReferences().put( inst, new WeakReference<>( inst ) ); }
@@ -57,8 +57,8 @@ public final class VoxelBlobStateReference implements IStateRef {
 	public VoxelBlob getVoxelBlob() { return data.getBlob(); }
 	public VoxelBlob getVoxelBlobCatchable() throws Exception { return data.getBlobCatchable(); }
 
-	public VoxelBlobStateReference(final VoxelBlob blob)
-	{
+	public VoxelBlobStateReference() { this(VoxelBlob.AIR_BIT); }
+	public VoxelBlobStateReference(final VoxelBlob blob) {
 		this(blob.blobToBytes(VoxelVersions.getDefault()));
 		data.blob = new SoftReference<>( new VoxelBlob(blob));
 	}

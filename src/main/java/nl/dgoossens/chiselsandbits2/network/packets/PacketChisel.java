@@ -50,8 +50,8 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 			final Direction side,
 			final IItemMode mode) {
 		this.operation = operation;
-		this.from = BitLocation.min( from, to );
-		this.to = BitLocation.max( from, to );
+		this.from = BitLocation.min(from, to);
+		this.to = BitLocation.max(from, to);
 		this.side = side;
 		this.mode = mode;
 	}

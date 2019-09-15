@@ -9,8 +9,7 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.network.packets.*;
 
-public class NetworkRouter
-{
+public class NetworkRouter {
 	private static final String PROTOCOL_VERSION = Integer.toString(1);
 	private static final SimpleChannel HANDLER = NetworkRegistry.ChannelBuilder
 			.named(new ResourceLocation(ChiselsAndBits2.MOD_ID, "main_channel"))
@@ -27,41 +26,17 @@ public class NetworkRouter
 		HANDLER.registerMessage(disc++, PacketSetMenuActionMode.class, PacketSetMenuActionMode::encode, PacketSetMenuActionMode::decode, PacketSetMenuActionMode.Handler::handle);
 	}
 
-	/**
-	 * from client to server
-	 *
-	 * @param packet
-	 */
-	public static void sendToServer(
-			final ModPacket packet )
-	{
+	public static void sendToServer(final ModPacket packet) {
 		HANDLER.sendToServer( packet );
 	}
 
-	/**
-	 * from server to clients...
-	 *
-	 * @param packet
-	 */
-	public static void sendToAll(
-			final ModPacket packet )
-	{
-		for(ServerPlayerEntity spe : Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayers()) {
+	public static void sendToAll(final ModPacket packet) {
+		for(ServerPlayerEntity spe : Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayers())
 			sendTo(packet, spe);
-		}
 	}
 
-	/**
-	 * from server to specific client.
-	 *
-	 * @param packet
-	 * @param player
-	 */
-	public static void sendTo(
-			final ModPacket packet,
-			final ServerPlayerEntity player )
-	{
-		HANDLER.sendTo( packet, player.connection.netManager, NetworkDirection.PLAY_TO_CLIENT );
+	public static void sendTo(final ModPacket packet, final ServerPlayerEntity player) {
+		HANDLER.sendTo(packet, player.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
 	}
 
 	public static interface ModPacket {}

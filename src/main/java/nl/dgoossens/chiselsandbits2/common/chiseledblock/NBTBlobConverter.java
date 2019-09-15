@@ -28,8 +28,8 @@ public class NBTBlobConverter {
 	public VoxelBlobStateReference getVoxelRef(final int version) throws Exception {
 		final VoxelBlobStateReference voxelRef = getReference();
 		if(format == version)
-			return new VoxelBlobStateReference( voxelRef.getByteArray() );
-		return new VoxelBlobStateReference( voxelRef.getVoxelBlobCatchable().blobToBytes( version ) );
+			return new VoxelBlobStateReference(voxelRef.getByteArray());
+		return new VoxelBlobStateReference(voxelRef.getVoxelBlobCatchable().blobToBytes(version));
 	}
 
 	public NBTBlobConverter() {}
@@ -56,30 +56,28 @@ public class NBTBlobConverter {
 
 	public final void writeChiselData(final CompoundNBT compound) {
 		final VoxelBlobStateReference voxelRef = getReference();
-		if(primaryBlockState == 0) return;
 
 		final int newFormat = VoxelVersions.getDefault();
-		final byte[] voxelBytes = newFormat == format ? voxelRef.getByteArray() : voxelRef.getVoxelBlob().blobToBytes( newFormat );
+		final byte[] voxelBytes = newFormat == format ? voxelRef.getByteArray() : voxelRef.getVoxelBlob().blobToBytes(newFormat);
 
-		compound.putInt( NBT_PRIMARY_STATE, primaryBlockState );
-		compound.putByteArray( NBT_VERSIONED_VOXEL, voxelBytes );
+		compound.putInt(NBT_PRIMARY_STATE, primaryBlockState);
+		compound.putByteArray(NBT_VERSIONED_VOXEL, voxelBytes);
 	}
 
 	public final boolean readChiselData(final CompoundNBT compound, final int preferedFormat ) {
 		if (compound == null) {
-			voxelBlobRef = new VoxelBlobStateReference( 0 );
+			voxelBlobRef = new VoxelBlobStateReference(VoxelBlob.AIR_BIT);
 			format = voxelBlobRef.getFormat();
 
-			if (tile != null) return tile.updateBlob( this );
+			if(tile != null)
+				return tile.updateBlob(this);
 			return false;
 		}
 
-		primaryBlockState = compound.getInt( NBT_PRIMARY_STATE );
-		// if load fails default to stone...
-		if(primaryBlockState == 0) primaryBlockState = ModUtil.getStateId( Blocks.STONE.getDefaultState() );
+		primaryBlockState = compound.getInt(NBT_PRIMARY_STATE);
 
-		byte[] v = compound.getByteArray( NBT_VERSIONED_VOXEL );
-		voxelBlobRef = new VoxelBlobStateReference( v );
+		byte[] v = compound.getByteArray(NBT_VERSIONED_VOXEL);
+		voxelBlobRef = new VoxelBlobStateReference(v);
 		format = voxelBlobRef.getFormat();
 
 		boolean formatChanged = false;
@@ -90,14 +88,14 @@ public class NBTBlobConverter {
 			format = voxelBlobRef.getFormat();
 		}
 
-		if ( tile != null ) {
-			if ( formatChanged ) {
+		if(tile != null) {
+			if(formatChanged) {
 				// this only works on already loaded tiles, so i'm not sure
 				// there is much point in it.
 				tile.markDirty();
 			}
 
-			return tile.updateBlob( this );
+			return tile.updateBlob(this);
 		}
 		return true;
 	}
@@ -121,5 +119,6 @@ public class NBTBlobConverter {
 		if (voxelBlobRef == null) voxelBlobRef = new VoxelBlobStateReference(0);
 		return voxelBlobRef;
 	}
+
 	public VoxelBlob getVoxelBlob() { return getReference().getVoxelBlob(); }
 }

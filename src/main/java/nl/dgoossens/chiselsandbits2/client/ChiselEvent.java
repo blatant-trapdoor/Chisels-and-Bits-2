@@ -1,8 +1,10 @@
 package nl.dgoossens.chiselsandbits2.client;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
@@ -15,6 +17,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
@@ -98,7 +101,8 @@ public class ChiselEvent {
         final PacketChisel pc = new PacketChisel(operation, location, face, mode);
         final int modifiedBits = pc.doAction(player);
         if(modifiedBits != 0) {
-            //TODO add break sound ChiselsAndBits2.getClient().breakSound(world, location.getBlockPos(), ModUtil.getBlockState(modifiedBits));
+            //The chiseled block redirects the breaking sound.
+            ChiselsAndBits2.getClient().breakSound(world, location.getBlockPos(), world.getBlockState(location.getBlockPos()));
             NetworkRouter.sendToServer(pc);
         }
     }

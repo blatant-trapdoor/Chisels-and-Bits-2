@@ -186,59 +186,59 @@ public final class VoxelBlob implements IVoxelSrc {
 	 */
 	public IntegerBox getBounds() {
 		boolean found = false;
-		int min_x = 0, min_y = 0, min_z = 0;
+		int min_x = 15, min_y = 15, min_z = 15;
 		int max_x = 0, max_y = 0, max_z = 0;
 
 		final BitIterator bi = new BitIterator();
 		while (bi.hasNext()) {
 			if(bi.getNext(this) != AIR_BIT) {
-				if (found) {
-					min_x = Math.min(min_x, bi.x);
-					min_y = Math.min(min_y, bi.y);
-					min_z = Math.min(min_z, bi.z);
+				found = true;
+				min_x = Math.min(min_x, bi.x);
+				min_y = Math.min(min_y, bi.y);
+				min_z = Math.min(min_z, bi.z);
 
-					max_x = Math.max(max_x, bi.x);
-					max_y = Math.max(max_y, bi.y);
-					max_z = Math.max(max_z, bi.z);
-				} else {
-					found = true;
-
-					min_x = bi.x;
-					min_y = bi.y;
-					min_z = bi.z;
-
-					max_x = bi.x;
-					max_y = bi.y;
-					max_z = bi.z;
-				}
+				max_x = Math.max(max_x, bi.x);
+				max_y = Math.max(max_y, bi.y);
+				max_z = Math.max(max_z, bi.z);
 			}
 		}
-		return found ? new IntegerBox( min_x, min_y, min_z, max_x, max_y, max_z ) : IntegerBox.NULL;
+		return found ? new IntegerBox(min_x, min_y, min_z, max_x, max_y, max_z) : IntegerBox.NULL;
 	}
 
 	/**
 	 * Returns the amount of bits that's equal to air in this blob.
 	 */
 	public long air() {
-		return Arrays.stream(values).parallel().filter(f -> f==0).count();
+		return Arrays.stream(values).parallel().filter(f -> f==AIR_BIT).count();
 	}
 
 	/**
 	 * Returns the amount of bits that's not air.
 	 */
 	public long filled() {
-		return Arrays.stream(values).parallel().filter(f -> f!=0).count();
+		return Arrays.stream(values).parallel().filter(f -> f!=AIR_BIT).count();
 	}
 
 	/**
-	 * Get the state id of the most common blockstate.
+	 * Get the state id of the most common state.
 	 * Will return 0 if the block is empty.
 	 */
 	public int getMostCommonStateId() {
 		return getBlockSums().entrySet().parallelStream()
-				.filter(f -> f.getKey()!=0) //We ignore air in the calculation.
+				.filter(f -> f.getKey()!=AIR_BIT) //We ignore air in the calculation.
 				.max(Comparator.comparing(e -> e.getValue().intValue())).map(Entry::getKey)
-				.orElse(0); //There needs to be handling downstream if this happens. This also means the block is empty.
+				.orElse(AIR_BIT); //There needs to be handling downstream if this happens. This also means the block is empty.
+	}
+
+	/**
+	 * Get the blockstate id of the most common blockstate.
+	 * Excludes fluids and coloured bits.
+	 */
+	public int getMostCommonBlockStateId() {
+		return getBlockSums().entrySet().parallelStream()
+				.filter(f -> f.getKey()!=AIR_BIT && VoxelType.getType(f.getKey())==VoxelType.BLOCKSTATE) //We ignore air in the calculation.
+				.max(Comparator.comparing(e -> e.getValue().intValue())).map(Entry::getKey)
+				.orElse(AIR_BIT); //There needs to be handling downstream if this happens. This also means the block is empty.
 	}
 
 	/**
@@ -350,7 +350,7 @@ public final class VoxelBlob implements IVoxelSrc {
 			dest.visibleFace = cullVisTest.isVisible(mySpot, get(x, y, z));
 		} else {
 			dest.isEdge = true;
-			dest.visibleFace = (secondBlob==null ? (mySpot != 0) :
+			dest.visibleFace = (secondBlob==null ? (mySpot != AIR_BIT) :
 					(cullVisTest.isVisible(mySpot, secondBlob.get(x - face.getXOffset() * DIMENSION, y - face.getYOffset() * DIMENSION, z - face.getZOffset() * DIMENSION))));
 		}
 	}
@@ -523,11 +523,10 @@ public final class VoxelBlob implements IVoxelSrc {
 	}
 
 	/**
-	 * Reads this voxelblobs values from the supplied
-	 * ByteArrayInputStream.
+	 * Reads this voxelblobs values from the supplied ByteArrayInputStream.
 	 */
 	private void read(final ByteArrayInputStream o) throws IOException, RuntimeException {
-		final InflaterInputStream w = new InflaterInputStream( o );
+		final InflaterInputStream w = new InflaterInputStream(o);
 		final ByteBuffer bb = BlobSerilizationCache.getCacheBuffer();
 
 		int usedBytes = 0;
@@ -535,7 +534,7 @@ public final class VoxelBlob implements IVoxelSrc {
 
 		do {
 			usedBytes += rv;
-			rv = w.read( bb.array(), usedBytes, bb.limit() - usedBytes );
+			rv = w.read(bb.array(), usedBytes, bb.limit() - usedBytes);
 		} while (rv > 0);
 		w.close();
 

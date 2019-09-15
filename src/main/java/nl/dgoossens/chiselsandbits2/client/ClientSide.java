@@ -75,16 +75,14 @@ public class ClientSide {
 
     //--- SPRITES ---
     private static final HashMap<IItemMode, SpriteIconPositioning> chiselModeIcons = new HashMap<>();
-    public static TextureAtlasSprite undoIcon;
-    public static TextureAtlasSprite redoIcon;
+    private static final HashMap<MenuAction, SpriteIconPositioning> menuActionIcons = new HashMap<>();
     public static TextureAtlasSprite trashIcon;
     public static TextureAtlasSprite sortIcon;
     public static TextureAtlasSprite swapIcon;
     public static TextureAtlasSprite placeIcon;
 
-    public static TextureAtlasSprite roll_x;
-    public static TextureAtlasSprite roll_z;
     public static SpriteIconPositioning getIconForMode(final IItemMode mode) { return chiselModeIcons.get(mode); }
+    public static SpriteIconPositioning getIconForAction(final MenuAction action) { return menuActionIcons.get(action); }
 
     @SubscribeEvent   //TODO waiting for PR https://github.com/MinecraftForge/MinecraftForge/pull/6032
     public static void registerIconTextures(final TextureStitchEvent.Pre e) {
@@ -176,8 +174,6 @@ public class ClientSide {
      */
     @SubscribeEvent
     public static void onKeyInput(final InputEvent.KeyInputEvent e) {
-        if(e.getModifiers() != GLFW.GLFW_PRESS) return; //Only trigger on presses.
-
         ChiselsAndBits2.getKeybindings().actionHotkeys
                 .entrySet().parallelStream()
                 .filter(f -> f.getValue().isPressed())
@@ -191,7 +187,6 @@ public class ClientSide {
         if(ChiselsAndBits2.getKeybindings().clearTapeMeasure.isPressed()) {
             System.out.println("CLEAR TAPE MEASURE");
         }
-
     }
 
     /**

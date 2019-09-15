@@ -37,7 +37,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
 
     private VoxelShape cachedShape, collisionShape;
     private int primaryBlock;
-    private VoxelBlobStateReference voxelBlob;
+    private VoxelBlobStateReference voxelBlob = new VoxelBlobStateReference(0b11000000000000000000000000000001); //Default is a box made up of whatever 1 is.
     private VoxelNeighborRenderTracker renderTracker;
 
     public int getPrimaryBlock() { return primaryBlock; }
@@ -103,8 +103,9 @@ public class ChiseledBlockTileEntity extends TileEntity {
             collisionShape = base.simplify();
         }
 
-        if(cachedShape==null && getVoxelReference()!=null)
+        if(cachedShape==null && getVoxelReference()!=null) {
             cachedShape = VoxelShapes.create(getVoxelReference().getVoxelBlob().getBounds().toBoundingBox());
+        }
     }
 
     /**
@@ -160,16 +161,27 @@ public class ChiseledBlockTileEntity extends TileEntity {
         final VoxelBlobStateReference originalRef = getVoxelReference();
         final int b = converter.getPrimaryBlockStateID();
 
-        VoxelBlobStateReference voxelRef = null;
+        VoxelBlobStateReference voxelRef;
         try {
             voxelRef = converter.getVoxelRef(VoxelVersions.getDefault());
         } catch (final Exception e) {
             e.printStackTrace();
-            voxelRef = new VoxelBlobStateReference( 0);
+            voxelRef = new VoxelBlobStateReference();
         }
 
-        setPrimaryBlock(b);
-        setVoxelReference(voxelRef);
+        //We check the state id as the primary block could also just be 0 because this is a fluid/coloured block.
+        if(voxelRef.getVoxelBlob().getMostCommonStateId() == VoxelBlob.AIR_BIT) {
+            setVoxelReference(voxelRef);
+            setPrimaryBlock(b);
+            markDirty();
+        } else {
+            setVoxelReference(new VoxelBlobStateReference());
+            if(world!=null) {
+                //TODO make sure to nuke the block
+                world.removeTileEntity(pos);
+                world.removeBlock(pos, false);
+            }
+        }
 
         return voxelRef == null || !voxelRef.equals(originalRef);
     }
@@ -180,12 +192,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     public void setBlob(final VoxelBlob vb) {
         int mostCommonState = vb.getMostCommonStateId();
 
-        if(world==null ) {
-            if(mostCommonState == 0) {
-                if(primaryBlock == 0) mostCommonState = ModUtil.getStateId(Blocks.STONE.getDefaultState());
-                else mostCommonState = getPrimaryBlock();
-            }
-        }
+        if(world==null && mostCommonState == VoxelBlob.AIR_BIT) mostCommonState = getPrimaryBlock();
 
         //TODO properly replace with normal block if this causes block to be full
         /*if ( common.isFullBlock )
@@ -202,12 +209,13 @@ public class ChiseledBlockTileEntity extends TileEntity {
                 }
             }
         }*/
-        if(mostCommonState == 0) {
+
+        if(mostCommonState != VoxelBlob.AIR_BIT) {
             setVoxelReference(new VoxelBlobStateReference(vb.blobToBytes(VoxelVersions.getDefault())));
-            setPrimaryBlock(mostCommonState);
+            setPrimaryBlock(vb.getMostCommonBlockStateId()); //We only want this to every be a blockstate.
             markDirty();
         } else {
-            setVoxelReference(new VoxelBlobStateReference( 0));
+            setVoxelReference(new VoxelBlobStateReference( ));
             world.removeTileEntity(pos);
             world.removeBlock(pos, false);
         }

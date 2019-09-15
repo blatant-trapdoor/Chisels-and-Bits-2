@@ -102,14 +102,14 @@ public class RadialMenu extends Screen {
         double y1, y2;
         boolean highlighted;
         final MenuAction action;
-        TextureAtlasSprite icon;
+        SpriteIconPositioning icon;
         int color;
         String name;
         Direction textSide;
 
-        public MenuButton(final MenuAction action, final double x, final double y, final TextureAtlasSprite ico, final Direction textSide) {
+        public MenuButton(final MenuAction action, final double x, final double y, final Direction textSide) {
             this(action, x, y, 0xffffff, textSide);
-            this.icon = ico;
+            this.icon = ClientSide.getIconForAction(action);
         }
 
         public MenuButton(final MenuAction action, final double x, final double y, final int col, final Direction textSide) {
@@ -178,18 +178,19 @@ public class RadialMenu extends Screen {
             modes.add(new MenuRegion(m));
 
         //Setup buttons
-        btns.add(new MenuButton(MenuAction.UNDO, text_distance, -20, ClientSide.undoIcon, Direction.EAST));
-        btns.add(new MenuButton(MenuAction.REDO, text_distance, 4, ClientSide.redoIcon, Direction.EAST));
+        btns.add(new MenuButton(MenuAction.UNDO, text_distance, -20, Direction.EAST));
+        btns.add(new MenuButton(MenuAction.REDO, text_distance, 4, Direction.EAST));
 
         ItemModeType tool = ChiselModeManager.getMode(getMinecraft().player.getHeldItemMainhand()).getType();
         if(tool == ItemModeType.PATTERN) {
-            btns.add(new MenuButton(MenuAction.ROLL_X, -text_distance - 18, -20, ClientSide.roll_x, Direction.WEST));
-            btns.add(new MenuButton(MenuAction.ROLL_Z, -text_distance - 18, 4, ClientSide.roll_z, Direction.WEST));
+            btns.add(new MenuButton(MenuAction.ROLL_X, -text_distance - 18, -33, Direction.WEST));
+            btns.add(new MenuButton(MenuAction.ROLL_Y, -text_distance - 18, -9, Direction.WEST));
+            btns.add(new MenuButton(MenuAction.ROLL_Z, -text_distance - 18, 15, Direction.WEST));
         }
 
         if(tool == ItemModeType.CHISEL) {
-            btns.add(new MenuButton(MenuAction.PLACE, -text_distance - 18, -20, ClientSide.roll_x, Direction.WEST));
-            btns.add(new MenuButton(MenuAction.REPLACE, -text_distance - 18, 4, ClientSide.roll_z, Direction.WEST));
+            btns.add(new MenuButton(MenuAction.PLACE, -text_distance - 18, -20, Direction.WEST));
+            btns.add(new MenuButton(MenuAction.REPLACE, -text_distance - 18, 4, Direction.WEST));
         }
 
         if(tool == ItemModeType.TAPEMEASURE) {
@@ -374,10 +375,11 @@ public class RadialMenu extends Screen {
             final float blue = f * ((btn.color & 0xff) / 255.0f);
 
             if(btn.icon!=null) {
-                buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).tex(btn.icon.getInterpolatedU(u1), btn.icon.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
-                buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).tex(btn.icon.getInterpolatedU(u1), btn.icon.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
-                buffer.pos(middle_x + btnx2, middle_y + btny2, blitOffset).tex(btn.icon.getInterpolatedU(u2), btn.icon.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
-                buffer.pos(middle_x + btnx2, middle_y + btny1, blitOffset).tex(btn.icon.getInterpolatedU(u2), btn.icon.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
+                TextureAtlasSprite sprite = btn.icon.sprite;
+                buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
+                buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
+                buffer.pos(middle_x + btnx2, middle_y + btny2, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
+                buffer.pos(middle_x + btnx2, middle_y + btny1, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
             }
         }
 
@@ -461,7 +463,7 @@ public class RadialMenu extends Screen {
         return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
-    /*@SubscribeEvent //TODO Backup event, that isn't even PR'd in yet.
+    /*@SubscribeEvent
     public static void onClickWithGuiOpen(InputEvent.ClickInputEvent e) {
         if(ChiselsAndBits2.getClient().getRadialMenu().isVisible()) {
             ChiselsAndBits2.getClient().getRadialMenu().setClicked(true);
