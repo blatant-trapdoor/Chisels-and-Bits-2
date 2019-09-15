@@ -11,7 +11,9 @@ import java.util.Optional;
  */
 public interface ChiselsAndBitsAPI {
     /**
-     * Get the
+     * Get an entry point to a given block position in a given world.
+     * The BitAccess allows access and easy manipulation of the voxel data of a given
+     * chiseled block.
      */
     Optional<BitAccess> getBitAccess(final World world, final BlockPos pos);
 

@@ -4,7 +4,7 @@ This mod is a successor to Chisels & Bits by AlgorithmX2. After AlgorithmX2 deci
 
 This mod is currently in very early alpha phases. This means that here is currently no support for any other mods, including optifine. You can always report issues that you're having but compatbility with other mods is currently not the focus.
 
-The current textures for the paintbrush and palette are placeholders, if anyone'd like to make some textures I'd love to use them!
+The current texture for the palette is placeholders, if anyone'd like to make some textures I'd love to use them!
 
 <br/>
 
@@ -27,7 +27,6 @@ The design goal for C&B2 is to create a worthy successor to the original C&B by 
 * Patterns will be merged into a single item and they'll get some new functionality/modes probably.
 * Bit Bags are larger, each slot can store 32 blocks worth of bits. (131072 bits)
 * New paint palette and paint buckets, this adds the functionality of the old Flat Colored Blocks mod, they allow you to freely color any bit to be any color. This will also mean that bits can support being an argb color or a blockstate, or a fluidstate.
-* Paintbrush item which allows you to easily replace the top layer of a wall block into a colored bit giving you a painted wall.
 * Internally the chiseled block is different, instead of there being different blocks for each material (rock, cloth, etc.) the chiseled block will mimic most of the functionality of the dominant block. (the original mod already did this to some extent, but I'd like to add to it by also mimicing tile entities that do not store any data, e.g. crafting table, enchantment table, anvil)
 * Compatibility with the new multipart API in forge which will allow even more mods than ever before to be compatible with chisels & bits, for example being able to put power cables in the same space as C&B bits.
 * Finishing C&B's original 'Project Blueprint': (https://github.com/AlgorithmX2/Chisels-and-Bits/issues/337)
