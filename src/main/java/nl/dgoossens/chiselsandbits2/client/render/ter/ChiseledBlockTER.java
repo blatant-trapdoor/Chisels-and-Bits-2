@@ -56,19 +56,10 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
     }
 
     void renderLogic(final ChiseledBlockTileEntity te, final double x, final double y, final double z, final float partialTicks, final int destroyStage) {
-        if(MinecraftForgeClient.getRenderLayer() != null) {
-            for(int l = 0; l < 50; l++) System.out.println("oh no"); //TODO remove this but still oh no
-            return;
-        }
         if(destroyStage >= 0) {
             renderBreakingEffects(te, x, y, z, partialTicks, destroyStage);
             return;
         }
-        //This system of checking if the frame has changed since the last render is a leftover from how the 1.12 mod works. I can't see any reason why
-        //  this system exists since this return statement never gets used.
-        //if(lastId==ChiselsAndBits2.getClient().getFrameId()) return;
-        //lastId = ChiselsAndBits2.getClient().getFrameId();
-
         final RenderCache rc = te.getRenderCache();
         final BlockPos chunkOffset = te.getChunk(te.getWorld()).chunkOffset();
 

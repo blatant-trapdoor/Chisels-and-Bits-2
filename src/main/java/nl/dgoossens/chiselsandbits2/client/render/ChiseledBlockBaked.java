@@ -432,15 +432,15 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
         //Z: z, y, x
         //Y: y, z, x
         //X: x, z, y
-        for(int first = 0; first < blob.DIMENSION; first++) {
+        for(int first = 0; first < VoxelBlob.DIMENSION; first++) {
             if(regions == null) {
                 regions = new ArrayList<>(16);
             }
 
-            for(int second = 0; second < blob.DIMENSION; second++) {
+            for(int second = 0; second < VoxelBlob.DIMENSION; second++) {
                 FaceRegion currentFace = null;
 
-                for(int third = 0; third < blob.DIMENSION; third++) {
+                for(int third = 0; third < VoxelBlob.DIMENSION; third++) {
                     FaceRegion region;
                     if(myFace==Direction.NORTH || myFace==Direction.SOUTH) //Z faces
                         region = getRegion(blob, myFace, third, second, first, visFace, nextTo, test);

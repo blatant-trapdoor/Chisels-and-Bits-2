@@ -24,7 +24,6 @@ public class ChiselUtil {
      * Checks whether or not a given block can be chiseled.
      */
     public static boolean canChiselBlock(final BlockState block) {
-        if(block.getBlock() instanceof ChiseledBlock) return true;
         if(!supportedBlocks.containsKey(block.getBlock())) testBlock(block);
         return supportedBlocks.getOrDefault(block.getBlock(), false);
     }
@@ -37,6 +36,10 @@ public class ChiselUtil {
     private static void testBlock(final BlockState block) {
         //We determine if a block can be chiseled by whether or not the shape of it can be turned into a VoxelBlob.
         final Block blk = block.getBlock();
+        if(blk instanceof ChiseledBlock) {
+            supportedBlocks.put(blk, true);
+            return;
+        }
         if(blk.hasTileEntity(block)) return;
         DummyEnvironmentWorldReader dummyWorld = new DummyEnvironmentWorldReader() {
             @Override

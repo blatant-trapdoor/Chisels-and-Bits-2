@@ -169,18 +169,6 @@ public class ClientSide {
     private RadialMenu radialMenu = new RadialMenu();
     public RadialMenu getRadialMenu() { return radialMenu; }
 
-    //We currently don't use this because MC doesn't render multiple times per frame anymore. (still investigating)
-    /*private static byte frameId = Byte.MIN_VALUE;
-
-    **
-     * Return the current frame's id, please note that this id is arbitrary.
-     * The id is a byte that is supposed to roll over. (so don't worry)
-     *
-     * This frame id is stored in TER data to make sure TER's don't render
-     * twice or more a frame.
-     *
-    public static byte getFrameId() { return frameId; }*/
-
     /**
      * For the logic whether or not the radial menu should be opened etc.
      */
@@ -344,27 +332,35 @@ public class ClientSide {
     @OnlyIn(Dist.CLIENT)
     public static void drawHighlights(final DrawBlockHighlightEvent e) {
         final PlayerEntity player = Minecraft.getInstance().player;
+        //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
         if(player.getHeldItemMainhand().getItem() instanceof ChiselItem) {
-            final RayTraceResult mop = Minecraft.getInstance().objectMouseOver;
-            if(mop==null || mop.getType() != RayTraceResult.Type.BLOCK) return;
+            if(Minecraft.getInstance().objectMouseOver == null || Minecraft.getInstance().objectMouseOver.getType() != RayTraceResult.Type.BLOCK) return;
 
             final World world = Minecraft.getInstance().world;
-            final BitLocation location = new BitLocation((BlockRayTraceResult)  mop, true, BitOperation.REMOVE); //We always show the removal box, never the placement one.
+            final BitLocation location = new BitLocation((BlockRayTraceResult) Minecraft.getInstance().objectMouseOver, true, BitOperation.REMOVE); //We always show the removal box, never the placement one.
             final TileEntity data = world.getTileEntity(location.blockPos);
-            final BlockState state = world.getBlockState(location.blockPos);
 
             //We only show this box if this block is chiselable and this block at this position is chiselable.
-            if(!ChiselUtil.canChiselBlock(state)) return;
-            if(!ChiselUtil.canChiselPosition(location.getBlockPos(), player, state, ((BlockRayTraceResult) mop).getFace())) return;
+            if(!ChiselUtil.canChiselBlock(world.getBlockState(location.blockPos))) return;
+            //The highlight not showing up when you can't chisel in a specific block isn't worth all of the code that needs to be checked for it.
+            //if(!ChiselUtil.canChiselPosition(location.getBlockPos(), player, state, ((BlockRayTraceResult) mop).getFace())) return;
 
-            final IItemMode mode = ChiselModeManager.getMode(player.getHeldItemMainhand());
-            final VoxelRegionSrc region = new VoxelRegionSrc(world, location.blockPos, 1);
-            final VoxelBlob vb = data instanceof ChiseledBlockTileEntity ? ((ChiseledBlockTileEntity) data).getBlob() : new VoxelBlob();
-            if(!(data instanceof ChiseledBlockTileEntity)) vb.fill(ModUtil.getStateId(state));
-
-            final ChiselIterator i = ChiselTypeIterator.create(VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ, region, mode, ((BlockRayTraceResult) mop).getFace(), false);
-            final AxisAlignedBB bb = i.getBoundingBox(vb, true);
-            RenderingAssistant.drawSelectionBoundingBoxIfExists(bb, location.blockPos, player, e.getPartialTicks(), false);
+            //This method call is super complicated, but it saves having way more local variables than necessary.
+            RenderingAssistant.drawSelectionBoundingBoxIfExistsWithColor(
+                    ChiselTypeIterator.create(
+                            VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ,
+                            new VoxelRegionSrc(world, location.blockPos, 1),
+                            ChiselModeManager.getMode(player.getHeldItemMainhand()),
+                            ((BlockRayTraceResult) Minecraft.getInstance().objectMouseOver).getFace(),
+                            false
+                    )
+                    .getBoundingBox(
+                            !(data instanceof ChiseledBlockTileEntity) ?
+                                    (new VoxelBlob().fill(ModUtil.getStateId(world.getBlockState(location.blockPos))))
+                                    : ((ChiseledBlockTileEntity) data).getBlob()
+                            , true
+                    ),
+                    location.blockPos, player, e.getPartialTicks(), false, 0, 0, 0, 102, 32);
             e.setCanceled(true);
         }
     }
@@ -375,12 +371,15 @@ public class ClientSide {
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void drawLast(final RenderWorldLastEvent e) {
-        //frameId++; //Increase the frame id every time a new frame is drawn.
         if(Minecraft.getInstance().gameSettings.hideGUI) return;
+        //TODO render block placement ghost
 
     }
 
     //--- ITEM SCROLL ---
+    /**
+     * Handles calling the scroll methods on all items implementing IItemScrollWheel.
+     */
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void wheelEvent(final InputEvent.MouseScrollEvent me) {

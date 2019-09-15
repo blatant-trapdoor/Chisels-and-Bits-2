@@ -20,21 +20,21 @@ import java.util.List;
 import java.util.Random;
 
 public class RenderingAssistant {
-    public static void drawSelectionBoundingBoxIfExists(
+    /*public static void drawSelectionBoundingBoxIfExists(
             final AxisAlignedBB bb,
             final BlockPos blockPos,
             final PlayerEntity player,
             final float partialTicks,
             final boolean NormalBoundingBox) {
         drawSelectionBoundingBoxIfExistsWithColor(bb, blockPos, player, partialTicks, NormalBoundingBox, 0, 0, 0, 102, 32);
-    }
+    }*/
 
     public static void drawSelectionBoundingBoxIfExistsWithColor(
             final AxisAlignedBB bb,
             final BlockPos blockPos,
             final PlayerEntity player,
             final float partialTicks,
-            final boolean NormalBoundingBox,
+            final boolean normalBoundingBox,
             final int red,
             final int green,
             final int blue,
@@ -53,7 +53,7 @@ public class RenderingAssistant {
 
             final AxisAlignedBB bb2 = bb.expand(0.002D, 0.002D, 0.002D).offset(-x + blockPos.getX(), -y + blockPos.getY(), -z + blockPos.getZ());
 
-            if(!NormalBoundingBox)
+            if(!normalBoundingBox)
                 renderBoundingBox(bb2, red, green, blue, alpha);
 
             GlStateManager.enableDepthTest();
