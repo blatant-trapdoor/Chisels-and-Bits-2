@@ -182,7 +182,7 @@ public class ModelUtil implements ICacheClearable {
             final Random weight,
             final Direction face,
             final BlockRenderLayer layer) {
-        final BlockState state = ModUtil.getStateById(stateID);
+        final BlockState state = ModUtil.getBlockState(stateID);
         final IBakedModel model = ModelUtil.solveModel(state, weight, Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(state), layer);
         final int lv = state.getLightValue();
 
@@ -327,7 +327,7 @@ public class ModelUtil implements ICacheClearable {
         }*/
 
         TextureAtlasSprite texture = null;
-        final BlockState state = ModUtil.getStateById(BlockRef);
+        final BlockState state = ModUtil.getBlockState(BlockRef);
 
         if(model != null) {
             try {
@@ -394,8 +394,8 @@ public class ModelUtil implements ICacheClearable {
         ChiseledBlockBaked out = breakCache.get(key);
 
         if(out == null) {
-            final BlockState state = ModUtil.getStateById(blockStateID);
-            final IBakedModel model = ModelUtil.solveModel(state, new Random(), Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(ModUtil.getStateById(blockStateID)), layer.layer);
+            final BlockState state = ModUtil.getBlockState(blockStateID);
+            final IBakedModel model = ModelUtil.solveModel(state, new Random(), Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(ModUtil.getBlockState(blockStateID)), layer.layer);
 
             if(model != null) {
                 out = ChiseledBlockBaked.createFromTexture(ModelUtil.findTexture(blockStateID, model, Direction.UP, layer.layer), layer);

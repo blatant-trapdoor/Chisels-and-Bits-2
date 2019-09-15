@@ -164,7 +164,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
     {
         myLayer = layer;
         this.format = format;
-        final BlockState state = ModUtil.getStateById( blockReference );
+        final BlockState state = ModUtil.getBlockState( blockReference );
 
         IBakedModel originalModel = null;
 

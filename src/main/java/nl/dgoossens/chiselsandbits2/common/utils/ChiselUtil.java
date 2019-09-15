@@ -68,11 +68,4 @@ public class ChiselUtil {
     public static boolean isBlockChiseled(final BlockPos position, final IBlockReader world) {
         return world.getBlockState(position).getBlock() instanceof ChiseledBlock;
     }
-
-    /**
-     * Get the voxel type of an given blockstate's id.
-     * @deprecated Just use {@link VoxelType#getType(int)}
-     */
-    @Deprecated
-    public static VoxelType getTypeFromStateID(final int bit) { return VoxelType.getType(bit); }
 }

@@ -2,9 +2,8 @@ package nl.dgoossens.chiselsandbits2.api;
 
 public interface ICullTest {
 	/**
-	 * Test the visibility of a second spot
+	 * Test if a bit of id otherId can be seen through
+	 * myId.
 	 */
-	boolean isVisible(
-            int mySpot,
-            int secondSpot);
+	boolean isVisible(int myId, int otherId);
 }

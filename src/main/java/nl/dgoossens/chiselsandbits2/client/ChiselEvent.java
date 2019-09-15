@@ -7,13 +7,10 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -101,7 +98,7 @@ public class ChiselEvent {
         final PacketChisel pc = new PacketChisel(operation, location, face, mode);
         final int modifiedBits = pc.doAction(player);
         if(modifiedBits != 0) {
-            ChiselsAndBits2.getClient().breakSound(world, location.getBlockPos(), ModUtil.getStateById(modifiedBits));
+            //TODO add break sound ChiselsAndBits2.getClient().breakSound(world, location.getBlockPos(), ModUtil.getBlockState(modifiedBits));
             NetworkRouter.sendToServer(pc);
         }
     }

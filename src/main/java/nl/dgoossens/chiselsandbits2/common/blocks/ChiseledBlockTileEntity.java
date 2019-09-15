@@ -14,6 +14,7 @@ import net.minecraft.world.IBlockReader;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.client.render.ter.RenderCache;
 import nl.dgoossens.chiselsandbits2.client.render.ter.TileChunk;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
@@ -41,7 +42,8 @@ public class ChiseledBlockTileEntity extends TileEntity {
 
     public int getPrimaryBlock() { return primaryBlock; }
     public void setPrimaryBlock(int d) {
-        primaryBlock=d;
+        if(VoxelType.getType(d) == VoxelType.BLOCKSTATE) primaryBlock=d;
+        else primaryBlock = 0;
         requestModelDataUpdate();
     }
     public VoxelBlobStateReference getVoxelReference() { return voxelBlob; }
@@ -191,7 +193,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
             setState( getBasicState()
                     .withProperty( BlockChiseled.UProperty_VoxelBlob, new VoxelBlobStateReference( common.mostCommonState, MathHelper.getPositionRandom( pos ) ) ) );
 
-            final IBlockState newState = ModUtil.getStateById( common.mostCommonState );
+            final IBlockState newState = ModUtil.getBlockState( common.mostCommonState );
             if ( ChiselsAndBits.getConfig().canRevertToBlock( newState ) )
             {
                 if ( !MinecraftForge.EVENT_BUS.post( new EventFullBlockRestoration( worldObj, pos, newState ) ) )

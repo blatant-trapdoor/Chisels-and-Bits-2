@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.client.culling;
 
 
 import nl.dgoossens.chiselsandbits2.api.ICullTest;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 
 /**
@@ -10,7 +11,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
  */
 public class SolidCullTest implements ICullTest {
 	@Override
-	public boolean isVisible(final int mySpot, final int secondSpot) {
-		return ChiselUtil.getTypeFromStateID(mySpot).shouldShow(ChiselUtil.getTypeFromStateID(secondSpot));
+	public boolean isVisible(final int myId, final int otherId) {
+		return VoxelType.getType(myId).shouldShow(VoxelType.getType(otherId));
 	}
 }

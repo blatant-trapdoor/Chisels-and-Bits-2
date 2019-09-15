@@ -23,7 +23,7 @@ public class NBTBlobConverter {
 
 	public int getPrimaryBlockStateID() { return primaryBlockState; }
 	public ChiseledBlockTileEntity getTile() { return tile; }
-	public BlockState getPrimaryBlockState() { return ModUtil.getStateById( primaryBlockState ); }
+	public BlockState getPrimaryBlockState() { return ModUtil.getBlockState(primaryBlockState); }
 
 	public VoxelBlobStateReference getVoxelRef(final int version) throws Exception {
 		final VoxelBlobStateReference voxelRef = getReference();

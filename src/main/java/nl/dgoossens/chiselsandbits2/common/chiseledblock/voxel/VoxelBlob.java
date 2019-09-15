@@ -42,10 +42,9 @@ public final class VoxelBlob implements IVoxelSrc {
 	private int best_buffer_size = 26;
 	//Every int in the values map is used as follows:
 	//  00000000000000000000000000000000
-	// 11111111 = 255
 
 	// The integer's 2 MSB determine the type:
-	// 00 -> translucent (cutout is treated as transparent)
+	// 00 -> legacy
 	// 01 -> fluidstate
 	// 10 -> colouredstate
 	// 11 -> blockstate

@@ -12,11 +12,11 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
 import nl.dgoossens.chiselsandbits2.api.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
@@ -24,9 +24,11 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -127,8 +129,8 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 							//world.removeBlock( pos, false );
 						//}
 
-						ChiseledBlock.ReplaceWithChiseledValue rv = null;
-						if((rv = ChiseledBlock.replaceWithChiseled(world, pos, blkstate, placeStateID, true)).success) {
+						ReplaceWithChiseledValue rv = null;
+						if((rv = replaceWithChiseled(world, pos, blkstate, placeStateID, true)).success) {
 							blkstate = world.getBlockState(pos);
 							blkObj = blkstate.getBlock();
 						}
@@ -249,6 +251,58 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 		//TODO update chisel durability (server-side)
 
 		return returnVal;
+	}
+
+	public static class ReplaceWithChiseledValue {
+		public boolean success = false;
+		public ChiseledBlockTileEntity te = null;
+	}
+
+	public static ReplaceWithChiseledValue replaceWithChiseled(
+			final @Nonnull World world,
+			final @Nonnull BlockPos pos,
+			final BlockState originalState,
+			final int fragmentBlockStateID,
+			final boolean triggerUpdate )
+	{
+		BlockState actingState = originalState;
+		Block target = originalState.getBlock();
+		final boolean isAir = world.isAirBlock(pos); //TODO add isReplacable for grass or smth
+		ReplaceWithChiseledValue rv = new ReplaceWithChiseledValue();
+
+		if(ChiselUtil.canChiselBlock(actingState) || isAir) {
+			int blockId = ModUtil.getStateId(actingState);
+
+			if(isAir) {
+				actingState = ModUtil.getBlockState( fragmentBlockStateID );
+				target = actingState.getBlock();
+				blockId = ModUtil.getStateId( actingState );
+				// its still air tho..
+				actingState = Blocks.AIR.getDefaultState();
+			}
+
+			if(blockId == 0) return rv;
+
+			if (!target.equals(ChiselsAndBits2.getBlocks().CHISELED_BLOCK)) {
+				world.setBlockState(pos, ChiselsAndBits2.getBlocks().CHISELED_BLOCK.getDefaultState(), triggerUpdate ? 3 : 0);
+				final TileEntity te = world.getTileEntity(pos);
+
+				ChiseledBlockTileEntity tec;
+				if (!(te instanceof ChiseledBlockTileEntity)) {
+					tec = (ChiseledBlockTileEntity) ChiselsAndBits2.getBlocks().CHISELED_BLOCK.createTileEntity(ChiselsAndBits2.getBlocks().CHISELED_BLOCK.getDefaultState(), world);
+					world.setTileEntity( pos, tec );
+				} else tec = (ChiseledBlockTileEntity) te;
+
+				if(tec != null) tec.fillWith(actingState);
+
+				rv.success = true;
+				rv.te = tec;
+
+				return rv;
+			}
+		}
+
+		return rv;
 	}
 
 	private ChiselIterator getIterator(
