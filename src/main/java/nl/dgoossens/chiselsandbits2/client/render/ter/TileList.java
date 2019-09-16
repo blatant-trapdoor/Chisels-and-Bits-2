@@ -89,6 +89,9 @@ public class TileList implements Iterable<ChiseledBlockTileEntity> {
     public void remove(final ChiseledBlockTileEntity which) {
         tiles.remove(new MWR<ChiseledBlockTileEntity>(which));
     }
+    public boolean contains(final ChiseledBlockTileEntity which) {
+        return tiles.contains(new MWR<ChiseledBlockTileEntity>(which));
+    }
 
     public boolean isEmpty() { return !iterator().hasNext(); }
 

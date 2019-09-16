@@ -3,13 +3,19 @@ package nl.dgoossens.chiselsandbits2.client.render.ter;
 import com.google.common.base.Stopwatch;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.SimpleBakedModel;
 import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Region;
 import net.minecraft.world.World;
@@ -19,6 +25,8 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockBaked;
+import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import org.lwjgl.opengl.GL11;
@@ -45,12 +53,11 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
     }
 
     void renderLogic(final ChiseledBlockTileEntity te, final double x, final double y, final double z, final float partialTicks, final int destroyStage) {
-        //TODO re-add block breaking rendering
-        /*if(destroyStage >= 0) {
+        if(destroyStage >= 0) {
             renderBreakingEffects(te, x, y, z, partialTicks, destroyStage);
             return;
-        }*/
-        final RenderCache rc = te.getRenderCache();
+        }
+        final RenderCache rc = te.getChunk(te.getWorld());
         final BlockPos chunkOffset = te.getChunk(te.getWorld()).chunkOffset();
 
         if(rc.vboRenderer == null) {
@@ -129,7 +136,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         RenderHelper.enableStandardItemLighting();
     }
 
-    /*void renderBreakingEffects(final ChiseledBlockTileEntity te, final double x, final double y, final double z, final float partialTicks, final int destroyStage) {
+    void renderBreakingEffects(final ChiseledBlockTileEntity te, final double x, final double y, final double z, final float partialTicks, final int destroyStage) {
         bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
         final String file = DESTROY_STAGES[destroyStage].toString().replace("textures/", "").replace(".png", "");
         final TextureAtlasSprite damageTexture = Minecraft.getInstance().getTextureMap().getAtlasSprite(file);
@@ -148,13 +155,11 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         final BlockRendererDispatcher blockRenderer = Minecraft.getInstance().getBlockRendererDispatcher();
         final BlockState estate = te.getBlockState();
 
-        for(final ChiselLayer lx : ChiselLayer.values()) {
-            final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel( te, lx );
+        final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(te);
 
-            if(!model.isEmpty()) {
-                final IBakedModel damageModel = new SimpleBakedModel.Builder(estate, model, damageTexture, RAND, RAND.nextLong()).build();
-                blockRenderer.getBlockModelRenderer().renderModel(te.getWorld(), damageModel, estate, cp, buffer, true, RAND, RAND.nextLong());
-            }
+        if(!model.isEmpty()) {
+            final IBakedModel damageModel = new SimpleBakedModel.Builder(estate, model, damageTexture, RAND, RAND.nextLong()).build();
+            blockRenderer.getBlockModelRenderer().renderModel(te.getWorld(), damageModel, estate, cp, buffer, true, RAND, RAND.nextLong());
         }
 
         tessellator.draw();
@@ -162,8 +167,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
 
         GlStateManager.clearCurrentColor();
         GlStateManager.popMatrix();
-        return;
-    }*/
+    }
 
     //--- STATIC PARTS ---
     public final static AtomicInteger pendingTess = new AtomicInteger(0);

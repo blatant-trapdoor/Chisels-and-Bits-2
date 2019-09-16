@@ -20,7 +20,7 @@ public interface BagStorage {
      */
     long getAmount(final Block type);
     /**
-     * Set the amount of bits stored for a given bit type.
+     * Set the amount of bits stored for a given block type.
      */
     void setAmount(final Block type, final long amount);
 }

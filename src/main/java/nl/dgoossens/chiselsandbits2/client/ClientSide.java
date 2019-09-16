@@ -19,7 +19,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
@@ -36,7 +35,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
@@ -51,7 +49,6 @@ import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
-import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -320,7 +317,7 @@ public class ClientSide {
 
                         final TextureAtlasSprite sprite = chiselModeIcons.get(mode) == null ? ChiselsAndBits2.getClient().getMissingIcon() : chiselModeIcons.get( mode ).sprite;
                         if(mode instanceof SelectedBlockItemMode) {
-                            if(mode.equals(SelectedBlockItemMode.NONE)) continue;
+                            if(mode.equals(SelectedBlockItemMode.NONE_BAG)) continue;
                             ir.renderItemIntoGUI(((SelectedBlockItemMode) mode).getStack(), x, y);
                         } else {
                             GlStateManager.translatef(0, 0, 200); //The item models are also rendered 150 higher

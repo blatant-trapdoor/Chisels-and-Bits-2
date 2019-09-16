@@ -5,6 +5,8 @@
   "item.chiselsandbits2.chisel.help": "$ to chisel|$ to (re)place|$ to select|$ to display menu",
   "item.chiselsandbits2.pattern": "Pattern",
   "item.chiselsandbits2.pattern.help": "$ to place|$ to copy|$ to display menu",
+  "item.chiselsandbits2.bit_beaker": "Bit Beaker",
+  "item.chiselsandbits2.bit_beaker.help": "$ to open|$ to scoop up fluids|$ to display quick menu",
 
   "item.chiselsandbits2.bit_bag": "Bit Bag",
   "item.chiselsandbits2.bit_bag.help": "$ to open|$ to display quick menu",

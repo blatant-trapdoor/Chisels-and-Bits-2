@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.DyeColor;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
@@ -406,7 +405,7 @@ public class RadialMenu extends Screen {
                 getFontRenderer().drawStringWithShadow(text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, 0xffffffff);
             }
             if(mnuRgn.mode instanceof SelectedBlockItemMode) {
-                if(mnuRgn.mode.equals(SelectedBlockItemMode.NONE)) continue;
+                if(mnuRgn.mode.equals(SelectedBlockItemMode.NONE_BAG)) continue;
 
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (ring_outer_edge * 0.6 + 0.4 * ring_inner_edge);

@@ -75,7 +75,6 @@ public class NBTBlobConverter {
 
 		primaryBlockState = compound.getInt(NBT_PRIMARY_STATE);
 		byte[] v = compound.getByteArray(NBT_VERSIONED_VOXEL);
-		System.out.println("Read v of length "+v.length+" from compound "+compound);
 		voxelBlobRef = new VoxelBlobStateReference(v);
 		format = voxelBlobRef.getFormat();
 

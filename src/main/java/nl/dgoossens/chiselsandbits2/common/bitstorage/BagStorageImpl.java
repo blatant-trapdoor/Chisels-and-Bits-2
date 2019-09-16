@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.common.bitbag;
+package nl.dgoossens.chiselsandbits2.common.bitstorage;
 
 import net.minecraft.block.Block;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -20,7 +20,7 @@ public class BagStorageImpl implements BagStorage {
             );
             selectedCache.sort(Comparator.comparing(f -> f instanceof SelectedBlockItemMode ? f.getName() : ""));
             for(int j = selectedCache.size(); j < ChiselsAndBits2.getConfig().typeSlotsPerBag.get(); j++)
-                selectedCache.add(SelectedBlockItemMode.NONE); //Fill up remaining slots with the none slot.
+                selectedCache.add(SelectedBlockItemMode.NONE_BAG); //Fill up remaining slots with the none slot.
         }
         return selectedCache;
     }

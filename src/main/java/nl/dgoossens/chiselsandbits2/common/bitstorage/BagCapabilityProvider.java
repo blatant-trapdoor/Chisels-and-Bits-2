@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.common.bitbag;
+package nl.dgoossens.chiselsandbits2.common.bitstorage;
 
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;

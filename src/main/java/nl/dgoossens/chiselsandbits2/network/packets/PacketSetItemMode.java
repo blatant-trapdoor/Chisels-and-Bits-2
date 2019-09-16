@@ -27,7 +27,7 @@ public class PacketSetItemMode implements NetworkRouter.ModPacket {
     public static PacketSetItemMode decode(PacketBuffer buffer) {
         PacketSetItemMode pc = new PacketSetItemMode();
         try {
-            pc.newMode = ChiselModeManager.resolveMode(buffer.readString());
+            pc.newMode = ChiselModeManager.resolveMode(buffer.readString(), null);
         } catch(final Exception x) {}
         return pc;
     }

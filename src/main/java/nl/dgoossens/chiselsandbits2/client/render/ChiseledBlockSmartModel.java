@@ -64,8 +64,8 @@ public class ChiseledBlockSmartModel extends BaseSmartModel implements ICacheCle
         if (format == getModelFormat()) out = modelCache.get(mrs);
         if (out == null) {
             out = new ChiseledBlockBaked(primaryBlock, reference, mrs, format);
-            if (out.isEmpty()) //Create an empty model with the correct breaking texture.
-                out = ChiseledBlockBaked.createFromTexture(ModelUtil.getBreakingTexture(primaryBlock));
+            if (out.isEmpty()) //Add the breaking texture the model
+                out.setSprite(ModelUtil.getBreakingTexture(primaryBlock));
 
             if(format == getModelFormat() && mrs != null)
                 modelCache.put(mrs, out);

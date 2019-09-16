@@ -5,10 +5,13 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -100,7 +103,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 						BlockState blkstate = world.getBlockState( pos );
 						Block blkObj = blkstate.getBlock();
 
-						final int placeStateID = ModUtil.getStateId(Blocks.STONE.getDefaultState());/*operation.usesBits() ? ItemChiseledBit.getStackState( who.getHeldItem( hand ) ) : 0;
+						final int placeStateID = ModUtil.getStateId(Blocks.DIAMOND_BLOCK.getDefaultState());/*operation.usesBits() ? ItemChiseledBit.getStackState( who.getHeldItem( hand ) ) : 0;
 						final IContinuousInventory chisels = new ContinousChisels( player, pos, side );
 						final IContinuousInventory bits = new ContinousBits( player, pos, placeStateID );
 
@@ -129,14 +132,13 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 							//world.removeBlock( pos, false );
 						//}
 
-						ReplaceWithChiseledValue rv = null;
-						if((rv = replaceWithChiseled(world, pos, blkstate, placeStateID, true)).success) {
+						ReplaceWithChiseledValue rv = replaceWithChiseled(player, world, pos, blkstate, placeStateID);
+						if(rv.success) {
 							blkstate = world.getBlockState(pos);
 							blkObj = blkstate.getBlock();
 						}
 
 						final TileEntity te = rv.te != null ? rv.te : world.getTileEntity(pos);
-
 						if (te instanceof ChiseledBlockTileEntity) {
 							final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
 							final VoxelBlob vb = tec.getBlob();
@@ -148,7 +150,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 								case REPLACE:
 								{
 									while(i.hasNext()) {
-										bitPlaced = new ItemStack(Blocks.STONE);//bits.getItem( 0 ).getStack();
+										bitPlaced = new ItemStack(Blocks.DIAMOND_BLOCK);//bits.getItem( 0 ).getStack();
 										if ( vb.get( i.x(), i.y(), i.z() ) == 0 )
 										{
 											//final IItemInInventory slot = bits.getItem( 0 );
@@ -177,8 +179,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 										if ( blk == 0 ) break;
 										//TODO Chisel valid? if ( !selected.useItem( blk ) ) break;
 
-										if ( !world.isRemote && !isCreative )
-										{
+										if(!world.isRemote && !isCreative) {
 											double hitX = i.x() * one_16th;
 											double hitY = i.y() * one_16th;
 											double hitZ = i.z() * one_16th;
@@ -198,9 +199,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 											{
 												ModUtil.adjustStackSize( extracted, 1 );
 											}*/
-										}
-										else
-										{
+										} else {
 											// return value...
 											//extracted = ItemChiseledBit.createStack( blk, 1, true );
 										}
@@ -213,20 +212,11 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 								break;
 							}
 
-
-							if ( update )
-							{
+							if(update || !extracted.isEmpty()) {
 								tec.completeEditOperation( vb );
 								returnVal++;
 							}
-							else if ( !extracted.isEmpty() )
-							{
-								tec.completeEditOperation( vb );
-								returnVal++;
-							}
-
 						}
-
 					}
 				}
 			}
@@ -258,31 +248,23 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 		public ChiseledBlockTileEntity te = null;
 	}
 
-	public static ReplaceWithChiseledValue replaceWithChiseled(final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final boolean triggerUpdate) {
+	public static ReplaceWithChiseledValue replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID) {
 		Block target = originalState.getBlock();
-		final boolean isAir = world.isAirBlock(pos); //TODO add isReplacable for grass or smth
+		final boolean isAir = world.isAirBlock(pos);
 		ReplaceWithChiseledValue rv = new ReplaceWithChiseledValue();
 
 		if(ChiselUtil.canChiselBlock(originalState) || isAir) {
 			int blockId = isAir ? fragmentBlockStateID : ModUtil.getStateId(originalState);
-			if(blockId == 0) return rv;
 
 			if (!target.equals(ChiselsAndBits2.getBlocks().CHISELED_BLOCK)) {
-				world.setBlockState(pos, ChiselsAndBits2.getBlocks().CHISELED_BLOCK.getDefaultState(), triggerUpdate ? 3 : 0);
-				final TileEntity te = world.getTileEntity(pos);
-
-				ChiseledBlockTileEntity tec;
-				if (!(te instanceof ChiseledBlockTileEntity)) {
-					tec = (ChiseledBlockTileEntity) ChiselsAndBits2.getBlocks().CHISELED_BLOCK.createTileEntity(ChiselsAndBits2.getBlocks().CHISELED_BLOCK.getDefaultState(), world);
-					if(tec != null) {
-						tec.fillWith(blockId);
-						world.setTileEntity(pos, tec);
-					}
-				} else tec = (ChiseledBlockTileEntity) te;
-
-				rv.success = true;
-				rv.te = tec;
-				return rv;
+				world.setBlockState(pos, ChiselsAndBits2.getBlocks().CHISELED_BLOCK.getDefaultState(), 3);
+				final ChiseledBlockTileEntity te = (ChiseledBlockTileEntity) world.getTileEntity(pos);
+				if(te != null) {
+					if(!isAir) te.fillWith(blockId);
+					rv.success = true;
+					rv.te = te;
+					return rv;
+				}
 			}
 		}
 		return rv;
@@ -331,7 +313,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 		pc.operation = buffer.readEnumValue(BitOperation.class);
 		pc.side = Direction.values()[buffer.readVarInt()];
 		try {
-			pc.mode = ChiselModeManager.resolveMode(buffer.readString());
+			pc.mode = ChiselModeManager.resolveMode(buffer.readString(), null);
 		} catch(Exception x) { x.printStackTrace(); }
 		return pc;
 	}

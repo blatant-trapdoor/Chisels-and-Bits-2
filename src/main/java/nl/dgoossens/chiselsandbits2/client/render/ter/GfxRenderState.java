@@ -107,9 +107,14 @@ public abstract class GfxRenderState {
             destroy();
             if(vertexbuffer == null) vertexbuffer = new VertexBuffer(t.getBuffer().getVertexFormat());
 
-            t.getBuffer().finishDrawing();
-            vertexbuffer.bufferData(t.getBuffer().getByteBuffer());
-            refreshNum = gfxRefresh;
+            try {
+                t.getBuffer().finishDrawing();
+                vertexbuffer.bufferData(t.getBuffer().getByteBuffer());
+                refreshNum = gfxRefresh;
+            } catch(IllegalStateException x) {
+                destroy();
+                return new VoidRenderState();
+            }
             return this;
         }
         @Override

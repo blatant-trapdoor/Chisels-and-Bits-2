@@ -90,20 +90,17 @@ public class ChiselEvent {
         final BlockState state = player.world.getBlockState(pos);
         if(!ChiselUtil.canChiselBlock(state)) return;
         if(!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
-        useChisel(operation, mode, player, player.world, rayTrace.getFace(), location);
+        useChisel(operation, mode, player.world, rayTrace.getFace(), location);
     }
 
     /**
      * Uses the chisel on a specific bit of a specific block.
      * Does everything short of updating the voxel data. (and updating the durability of the used tool)
      */
-    private static void useChisel(final BitOperation operation, final IItemMode mode, final PlayerEntity player, final World world, final Direction face, final BitLocation location) {
+    private static void useChisel(final BitOperation operation, final IItemMode mode, final World world, final Direction face, final BitLocation location) {
         final PacketChisel pc = new PacketChisel(operation, location, face, mode);
-        final int modifiedBits = pc.doAction(player);
-        if(modifiedBits != 0) {
-            //The chiseled block redirects the breaking sound.
-            ChiselsAndBits2.getClient().breakSound(world, location.getBlockPos(), world.getBlockState(location.getBlockPos()));
-            NetworkRouter.sendToServer(pc);
-        }
+        //The chiseled block redirects the breaking sound.
+        ChiselsAndBits2.getClient().breakSound(world, location.getBlockPos(), world.getBlockState(location.getBlockPos()));
+        NetworkRouter.sendToServer(pc);
     }
 }

@@ -4,6 +4,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -25,11 +27,11 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class ChiseledBlockTileEntity extends TileEntity {
     public ChiseledBlockTileEntity() { super(ChiselsAndBits2.getBlocks().CHISELED_BLOCK_TILE); }
     private TileChunk chunk; //The rendering chunk this block belongs to.
-    private RenderCache renderCache = new RenderCache(); //The cached data for this blocks' rendering.
 
     public static final ModelProperty<VoxelBlobStateReference> VOXEL_DATA = new ModelProperty<>();
     public static final ModelProperty<Integer> PRIMARY_BLOCKSTATE = new ModelProperty<>();
@@ -37,12 +39,13 @@ public class ChiseledBlockTileEntity extends TileEntity {
 
     private VoxelShape cachedShape, collisionShape;
     private int primaryBlock;
-    private VoxelBlobStateReference voxelBlob = new VoxelBlobStateReference(0b11000000000000000000000000000001); //Default is a box made up of whatever 1 is.
+    private VoxelBlobStateReference voxelBlob;
     private VoxelNeighborRenderTracker renderTracker;
 
     public int getPrimaryBlock() { return primaryBlock; }
     public void setPrimaryBlock(int d) {
-        if(VoxelType.getType(d) == VoxelType.BLOCKSTATE) primaryBlock=d;
+        if(VoxelType.getType(d) == VoxelType.BLOCKSTATE)
+            primaryBlock=d;
         requestModelDataUpdate();
     }
     public VoxelBlobStateReference getVoxelReference() { return voxelBlob; }
@@ -52,15 +55,11 @@ public class ChiseledBlockTileEntity extends TileEntity {
         cachedShape = null;
         collisionShape = null;
         recalculateShape();
-        renderCache.rebuild();
+        if(chunk!=null) chunk.rebuild();
     }
     public VoxelNeighborRenderTracker getRenderTracker() {
         if(renderTracker==null) renderTracker = new VoxelNeighborRenderTracker();
         return renderTracker;
-    }
-    public void setRenderTracker(VoxelNeighborRenderTracker d) {
-        renderTracker=d;
-        requestModelDataUpdate();
     }
 
     @Nonnull
@@ -113,7 +112,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     public TileChunk getChunk(final IBlockReader world) {
         if(chunk==null) {
             chunk = findRenderChunk(world);
-            chunk.register(this); //Register us to be a part of the chunk if this is the first time we're searching.
+            chunk.register(this, true); //Register us to be a part of the chunk if this is the first time we're searching.
         }
         return chunk;
     }
@@ -140,13 +139,8 @@ public class ChiseledBlockTileEntity extends TileEntity {
                 }
             }
         }
-        return new TileChunk();
+        return new TileChunk(this);
     }
-
-    /**
-     * Get this tile entity's rendering cache.
-     */
-    public RenderCache getRenderCache() { return renderCache; }
 
     @Override
     public boolean hasFastRenderer() { return true; }
@@ -169,38 +163,29 @@ public class ChiseledBlockTileEntity extends TileEntity {
 
         setVoxelReference(voxelRef);
         setPrimaryBlock(converter.getPrimaryBlockStateID());
-        markDirty();
-
+        try {
+            //Trigger re-render on client
+            if(world.isRemote && chunk != null)
+                chunk.rebuild();
+        } catch(Exception x) {}
         return voxelRef == null || !voxelRef.equals(originalRef);
     }
 
     /**
-     * Set the voxel blob to another.
+     * Set the voxel blob to new data.
      */
     public void setBlob(final VoxelBlob vb) {
-        int mostCommonState = vb.getMostCommonStateId();
-
-        if(world==null && mostCommonState == VoxelBlob.AIR_BIT) mostCommonState = getPrimaryBlock();
-
-        //TODO properly replace with normal block if this causes block to be full
-        /*if ( common.isFullBlock )
-        {
-            setState( getBasicState()
-                    .withProperty( BlockChiseled.UProperty_VoxelBlob, new VoxelBlobStateReference( common.mostCommonState, MathHelper.getPositionRandom( pos ) ) ) );
-
-            final IBlockState newState = ModUtil.getBlockState( common.mostCommonState );
-            if ( ChiselsAndBits.getConfig().canRevertToBlock( newState ) )
-            {
-                if ( !MinecraftForge.EVENT_BUS.post( new EventFullBlockRestoration( worldObj, pos, newState ) ) )
-                {
-                    worldObj.setBlockState( pos, newState, triggerUpdates ? 3 : 0 );
-                }
-            }
-        }*/
+        //TODO Replace with normal block if this voxel blob is made up of solely one blockstate/fluidstate.
 
         setVoxelReference(new VoxelBlobStateReference(vb.blobToBytes(VoxelVersions.getDefault())));
-        setPrimaryBlock(mostCommonState); //We only want this to every be a blockstate.
+        setPrimaryBlock(vb.getMostCommonStateId()); //We only want this to every be a blockstate.
         markDirty();
+        try {
+            //Trigger block update
+            if(!world.isRemote) {
+                world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), 3);
+            }
+        } catch(Exception x) {}
     }
 
     public VoxelBlob getBlob() {
@@ -215,29 +200,39 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     public void completeEditOperation(final VoxelBlob vb ) {
-        final VoxelBlobStateReference before = getVoxelReference();
+        //final VoxelBlobStateReference before = getVoxelReference();
         setBlob(vb);
-        final VoxelBlobStateReference after = getVoxelReference();
-
-        if(world != null)
-            Minecraft.getInstance().worldRenderer.markForRerender(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
+        //final VoxelBlobStateReference after = getVoxelReference();
 
         //TODO UndoTracker.getInstance().add(getWorld(), getPos(), before, after);
     }
 
     public void fillWith(final int stateId) {
-        setVoxelReference(new VoxelBlobStateReference(stateId));
+        setBlob(new VoxelBlob().fill(stateId));
+    }
+
+    @Nullable
+    @Override
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        return new SUpdateTileEntityPacket(this.pos, -999, this.getUpdateTag());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+        super.onDataPacket(net, pkt);
+        read(pkt.getNbtCompound());
     }
 
     @Override
     public CompoundNBT getUpdateTag() {
-        //For some reason it's necessary to confirm we do indeed want our NBT on the client too.
         return write(super.getUpdateTag());
     }
+
     @Override
     public CompoundNBT write(final CompoundNBT compound) {
         super.write(compound);
-        new NBTBlobConverter(this).writeChiselData(compound);
+        NBTBlobConverter converter = new NBTBlobConverter(this);
+        converter.writeChiselData(compound);
         return compound;
     }
 
@@ -246,10 +241,29 @@ public class ChiseledBlockTileEntity extends TileEntity {
         super.read(compound);
         final NBTBlobConverter converter = new NBTBlobConverter(this);
         converter.readChiselData(compound, VoxelVersions.getDefault());
+    }
 
-        try {
-            primaryBlock = converter.getPrimaryBlockStateID();
-            voxelBlob = converter.getReference();
-        } catch(Exception x) { x.printStackTrace(); }
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        detachRenderer();
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        detachRenderer();
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        detachRenderer();
+    }
+
+    private void detachRenderer() {
+        if(chunk != null) {
+            chunk.unregister(this, true);
+            chunk = null;
+        }
     }
 }

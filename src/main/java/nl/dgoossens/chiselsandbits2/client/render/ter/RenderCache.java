@@ -4,6 +4,10 @@ import net.minecraft.client.renderer.Tessellator;
 
 import java.util.concurrent.FutureTask;
 
+/**
+ * The cache of one chunk worth of rendering.
+ * An entire sub chunk (16x16x16) is stored in the Tessellator!
+ */
 public class RenderCache {
     public FutureTask<Tessellator> future = null;
     public GfxRenderState vboRenderer = null; //if this is null the RenderCache is new.

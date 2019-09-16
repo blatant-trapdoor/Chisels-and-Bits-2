@@ -25,10 +25,12 @@ public enum VoxelType {
      * Get the voxel type that corresponds to this bit.
      */
     public static VoxelType getType(int bit) {
-        switch(bit >>> 30) {
-            case 1: return FLUIDSTATE;
-            case 2: return COLOURED;
-            case 3: return BLOCKSTATE;
+        //Using bitwise and and writing these in full length to ensure java doesn't screw this up. (and it's done as fast as possible, just one operation,
+        // and switch statements are faster than else if)
+        switch(bit & 0b11000000000000000000000000000000) {
+            case 0b01000000000000000000000000000000: return FLUIDSTATE;
+            case 0b10000000000000000000000000000000: return COLOURED;
+            case 0b11000000000000000000000000000000: return BLOCKSTATE;
             default: return AIR;
         }
     }

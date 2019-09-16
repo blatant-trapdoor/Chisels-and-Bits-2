@@ -125,13 +125,12 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
     }
 
     private ChiseledBlockBaked() {}
-    public ChiseledBlockBaked(final int blockReference, final VoxelBlobStateReference data, final ModelRenderState mrs, final VertexFormat format) {
+    public ChiseledBlockBaked(final int primaryBlock, final VoxelBlobStateReference data, final ModelRenderState mrs, final VertexFormat format) {
         this.format = format;
-        final BlockState state = ModUtil.getBlockState(blockReference);
-        IBakedModel originalModel = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(state);
+        IBakedModel originalModel = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(ModUtil.getBlockState(primaryBlock));
 
-        //Do we have data and is there no model yet?
-        if(originalModel.equals(MISSING_MODEL) && data!=null) {
+        //Do we have data and is there a model for the primary block type.
+        if(!MISSING_MODEL.equals(originalModel) && data!=null) {
             final VoxelBlob vb = data.getVoxelBlob();
             if(vb!=null) {
                 final ChiseledModelBuilder builder = new ChiseledModelBuilder();
@@ -150,13 +149,11 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
     }
 
     public boolean isEmpty() {
-        boolean trulyEmpty = getList(null).isEmpty();
-
+        if(!getList(null).isEmpty()) return false;
         for(final Direction e : Direction.values()) {
-            trulyEmpty = trulyEmpty&&getList(e).isEmpty();
+            if(!getList(e).isEmpty()) return false;
         }
-
-        return trulyEmpty;
+        return true;
     }
 
     public IFaceBuilder getBuilder(VertexFormat format) {
@@ -164,10 +161,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
         return new ChiselsAndBitsBakedQuad.Builder(format);
     }
 
-    private void generateFaces(
-            final ChiseledModelBuilder builder,
-            final VoxelBlob blob,
-            final ModelRenderState mrs) {
+    private void generateFaces(final ChiseledModelBuilder builder, final VoxelBlob blob, final ModelRenderState mrs) {
         final ArrayList<ArrayList<FaceRegion>> rset = new ArrayList<>();
         final VoxelBlob.VisibleFace visFace = new VoxelBlob.VisibleFace();
 
@@ -545,5 +539,10 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
         ChiseledBlockBaked out = new ChiseledBlockBaked();
         out.sprite = findTexture;
         return out;
+    }
+
+    public ChiseledBlockBaked setSprite(TextureAtlasSprite findTexture) {
+        sprite = findTexture;
+        return this;
     }
 }

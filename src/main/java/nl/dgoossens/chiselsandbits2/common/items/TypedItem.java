@@ -17,7 +17,7 @@ public abstract class TypedItem extends Item implements IItemScrollWheel, IItemM
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
         IItemMode im = ChiselModeManager.getMode(item);
-        return displayName + " - " + (im.equals(SelectedBlockItemMode.NONE) ? I18n.format("general."+ChiselsAndBits2.MOD_ID+".none") : im.getLocalizedName()) + ((getAssociatedType() == ItemModeType.TAPEMEASURE || getAssociatedType() == ItemModeType.CHISEL) ? (" - " + ChiselModeManager.getMenuActionMode(item).getLocalizedName()) : "");
+        return displayName + " - " + (im.equals(SelectedBlockItemMode.NONE_BAG) ? I18n.format("general."+ChiselsAndBits2.MOD_ID+".none") : im.getLocalizedName()) + ((getAssociatedType() == ItemModeType.TAPEMEASURE || getAssociatedType() == ItemModeType.CHISEL) ? (" - " + ChiselModeManager.getMenuActionMode(item).getLocalizedName()) : "");
     }
 
     /**

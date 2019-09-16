@@ -67,14 +67,15 @@ public class ModUtil {
      * Get a blockstate's id.
      */
     public static int getStateId(final BlockState state) {
-        return 0x00000003 << 30 + Math.max(0, Block.BLOCK_STATE_IDS.get(state));
+        //Writing the identifier as these long numbers seems useless but it's necessary to keep java from screwing with them.
+        return 0b11000000000000000000000000000000 + Math.max(0, Block.BLOCK_STATE_IDS.get(state));
     }
 
     /**
      * Get a fluidstate's id.
      */
     public static int getFluidId(final IFluidState fluid) {
-       return 0x00000001 << 30 + Math.max(0, Fluid.STATE_REGISTRY.get(fluid));
+       return 0b01000000000000000000000000000000 + Math.max(0, Fluid.STATE_REGISTRY.get(fluid));
     }
 
     /**
@@ -84,6 +85,6 @@ public class ModUtil {
      */
     public static int getColourId(final Color colour) {
         //We built our own int instead of getting the colour value because we do some trickery to the MSBs.
-        return 0x00000002 << 30 + (colour.getAlpha()/4) << 24 + colour.getRed() << 16 + colour.getGreen() << 8 + colour.getBlue();
+        return 0b01000000000000000000000000000000 + (colour.getAlpha()/4) << 24 + colour.getRed() << 16 + colour.getGreen() << 8 + colour.getBlue();
     }
 }

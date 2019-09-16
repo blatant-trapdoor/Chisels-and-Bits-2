@@ -75,11 +75,12 @@ public class ChiselModeManager {
         final CompoundNBT nbt = stack.getTag();
         if (nbt != null && nbt.contains( "mode" )) {
             try {
-                return resolveMode(nbt.getString("mode"));
+                return resolveMode(nbt.getString("mode"), stack);
             } catch(final Exception x) { x.printStackTrace(); }
         }
 
-        return (stack.getItem() instanceof BitBagItem) ? SelectedBlockItemMode.NONE :
+        return (stack.getItem() instanceof BitBagItem) ? SelectedBlockItemMode.NONE_BAG :
+               (stack.getItem() instanceof BitBeakerItem) ? SelectedBlockItemMode.NONE_BEAKER :
                (stack.getItem() instanceof ChiselItem) ? CHISEL_SINGLE :
                (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
                (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
@@ -92,11 +93,11 @@ public class ChiselModeManager {
      * Resolves an IItemMode from the output of
      * {@link IItemMode#getName()}
      */
-    public static IItemMode resolveMode(final String name) throws Exception {
+    public static IItemMode resolveMode(final String name, final ItemStack item) throws Exception {
         try {
             return ItemMode.valueOf(name);
         } catch(final IllegalArgumentException il) {
-            return SelectedBlockItemMode.fromName(name);
+            return SelectedBlockItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
         }
     }
 

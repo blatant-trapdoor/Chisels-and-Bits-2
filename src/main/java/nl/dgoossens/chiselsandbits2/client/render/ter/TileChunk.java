@@ -1,30 +1,57 @@
 package nl.dgoossens.chiselsandbits2.client.render.ter;
 
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class TileChunk {
+public class TileChunk extends RenderCache {
     private final TileList tiles = new TileList();
 
-    public void register(final ChiseledBlockTileEntity which) {
+    /**
+     * Create the chunk by scanning all tile entities and registering them without triggering
+     * rebuild. This saves us from having to do multiple rebuilds when the world loads in.
+     */
+    public TileChunk(ChiseledBlockTileEntity tileEntity) {
+        int chunkPosX = tileEntity.getPos().getX();
+        int chunkPosY = tileEntity.getPos().getY();
+        int chunkPosZ = tileEntity.getPos().getZ();
+
+        final int mask = ~0xf;
+        chunkPosX = chunkPosX & mask;
+        chunkPosY = chunkPosY & mask;
+        chunkPosZ = chunkPosZ & mask;
+
+        for(int x = 0; x < 16; ++x) {
+            for(int y = 0; y < 16; ++y) {
+                for(int z = 0; z < 16; ++z) {
+                    final TileEntity te = tileEntity.getWorld().getTileEntity(new BlockPos( chunkPosX + x, chunkPosY + y, chunkPosZ + z));
+                    if(te instanceof ChiseledBlockTileEntity)
+                        register((ChiseledBlockTileEntity) te, false);
+                }
+            }
+        }
+    }
+
+    public void register(final ChiseledBlockTileEntity which, final boolean countRebuild) {
         if(which == null) throw new NullPointerException();
 
         tiles.getWriteLock().lock();
         try {
+            if(!tiles.contains(which) && countRebuild) rebuild();
             tiles.add(which);
         } finally {
             tiles.getWriteLock().unlock();
         }
     }
 
-
-    public void unregister(final ChiseledBlockTileEntity which) {
+    public void unregister(final ChiseledBlockTileEntity which, final boolean countRebuild) {
         tiles.getWriteLock().lock();
 
         try {
+            if(tiles.contains(which) && countRebuild) rebuild();
             tiles.remove(which);
         } finally {
             tiles.getWriteLock().unlock();

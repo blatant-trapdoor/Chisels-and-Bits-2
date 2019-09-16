@@ -15,9 +15,7 @@ import javax.annotation.Nullable;
 public class BlockColorChiseled implements IBlockColor {
     @Override
     public int getColor(BlockState state, @Nullable IEnviromentBlockReader world, @Nullable BlockPos pos, int tint) {
-        return Minecraft.getInstance().getBlockColors().getColor(
-                state.getBlock() instanceof ChiseledBlock ? ((ChiseledBlock) state.getBlock()).getPrimaryState(world, pos) : state,
-                world, pos, tint
-        );
+        final BlockState s = state.getBlock() instanceof ChiseledBlock ? ((ChiseledBlock) state.getBlock()).getPrimaryState(world, pos) : state;
+        return s == null || s.getBlock() instanceof ChiseledBlock ? -1 : Minecraft.getInstance().getBlockColors().getColor(s, world, pos, tint);
     }
 }

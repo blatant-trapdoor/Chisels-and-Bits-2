@@ -48,6 +48,7 @@ public class ChiseledBlock extends Block implements BaseBlock {
     }
     @Override
     public boolean canRenderInLayer(BlockState state, BlockRenderLayer layer) { return true; }
+
     @Override
     public BlockRenderType getRenderType(BlockState state) { return BlockRenderType.ENTITYBLOCK_ANIMATED; }
 
@@ -55,6 +56,7 @@ public class ChiseledBlock extends Block implements BaseBlock {
     public SoundType getSoundType(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity entity) {
         return getPrimaryState(world, pos).getSoundType(world, pos, entity);
     }
+
     /**
      * Get the blockstate of the block that this chiseled block
      * is mainly made of.
