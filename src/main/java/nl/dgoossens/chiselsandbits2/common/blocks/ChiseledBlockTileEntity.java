@@ -42,8 +42,6 @@ public class ChiseledBlockTileEntity extends TileEntity {
 
     public int getPrimaryBlock() { return primaryBlock; }
     public void setPrimaryBlock(int d) {
-        System.out.println("Setting primary block to "+Integer.toBinaryString(d));
-        if(d==0) throw new RuntimeException("Tracking exception");
         if(VoxelType.getType(d) == VoxelType.BLOCKSTATE) primaryBlock=d;
         requestModelDataUpdate();
     }
@@ -160,7 +158,6 @@ public class ChiseledBlockTileEntity extends TileEntity {
      */
     public boolean updateBlob(final NBTBlobConverter converter) {
         final VoxelBlobStateReference originalRef = getVoxelReference();
-        final int b = converter.getPrimaryBlockStateID();
 
         VoxelBlobStateReference voxelRef;
         try {
@@ -170,19 +167,9 @@ public class ChiseledBlockTileEntity extends TileEntity {
             voxelRef = new VoxelBlobStateReference();
         }
 
-        //We check the state id as the primary block could also just be 0 because this is a fluid/coloured block.
-        if(voxelRef.getVoxelBlob().getMostCommonStateId() != VoxelBlob.AIR_BIT) {
-            setVoxelReference(voxelRef);
-            setPrimaryBlock(b);
-            markDirty();
-        } else {
-            setVoxelReference(new VoxelBlobStateReference());
-            if(world!=null) {
-                //TODO make sure to nuke the block
-                world.removeTileEntity(pos);
-                world.removeBlock(pos, false);
-            }
-        }
+        setVoxelReference(voxelRef);
+        setPrimaryBlock(converter.getPrimaryBlockStateID());
+        markDirty();
 
         return voxelRef == null || !voxelRef.equals(originalRef);
     }
@@ -211,15 +198,9 @@ public class ChiseledBlockTileEntity extends TileEntity {
             }
         }*/
 
-        if(mostCommonState != VoxelBlob.AIR_BIT) {
-            setVoxelReference(new VoxelBlobStateReference(vb.blobToBytes(VoxelVersions.getDefault())));
-            setPrimaryBlock(vb.getMostCommonBlockStateId()); //We only want this to every be a blockstate.
-            markDirty();
-        } else {
-            setVoxelReference(new VoxelBlobStateReference( ));
-            world.removeTileEntity(pos);
-            world.removeBlock(pos, false);
-        }
+        setVoxelReference(new VoxelBlobStateReference(vb.blobToBytes(VoxelVersions.getDefault())));
+        setPrimaryBlock(mostCommonState); //We only want this to every be a blockstate.
+        markDirty();
     }
 
     public VoxelBlob getBlob() {
@@ -241,13 +222,18 @@ public class ChiseledBlockTileEntity extends TileEntity {
         if(world != null)
             Minecraft.getInstance().worldRenderer.markForRerender(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
 
-        //TODO UndoTracker.getInstance().add( getWorld(), getPos(), before, after );
+        //TODO UndoTracker.getInstance().add(getWorld(), getPos(), before, after);
     }
 
-    public void fillWith(final BlockState blockType) {
-        setVoxelReference(new VoxelBlobStateReference(ModUtil.getStateId(blockType)));
+    public void fillWith(final int stateId) {
+        setVoxelReference(new VoxelBlobStateReference(stateId));
     }
 
+    @Override
+    public CompoundNBT getUpdateTag() {
+        //For some reason it's necessary to confirm we do indeed want our NBT on the client too.
+        return write(super.getUpdateTag());
+    }
     @Override
     public CompoundNBT write(final CompoundNBT compound) {
         super.write(compound);

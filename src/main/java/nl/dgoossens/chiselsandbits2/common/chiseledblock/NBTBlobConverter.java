@@ -23,7 +23,6 @@ public class NBTBlobConverter {
 
 	public int getPrimaryBlockStateID() { return primaryBlockState; }
 	public ChiseledBlockTileEntity getTile() { return tile; }
-	public BlockState getPrimaryBlockState() { return ModUtil.getBlockState(primaryBlockState); }
 
 	public VoxelBlobStateReference getVoxelRef(final int version) throws Exception {
 		final VoxelBlobStateReference voxelRef = getReference();
@@ -66,7 +65,7 @@ public class NBTBlobConverter {
 
 	public final boolean readChiselData(final CompoundNBT compound, final int preferredFormat ) {
 		if(compound == null || !compound.contains(NBT_PRIMARY_STATE) || !compound.contains(NBT_VERSIONED_VOXEL)) {
-			voxelBlobRef = new VoxelBlobStateReference(VoxelBlob.AIR_BIT);
+			voxelBlobRef = new VoxelBlobStateReference();
 			format = voxelBlobRef.getFormat();
 
 			if(tile != null)

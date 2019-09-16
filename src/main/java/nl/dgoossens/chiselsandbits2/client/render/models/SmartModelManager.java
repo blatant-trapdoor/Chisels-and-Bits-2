@@ -17,19 +17,13 @@ import java.util.List;
 
 public class SmartModelManager {
     private final HashMap<ResourceLocation, IBakedModel> models = new HashMap<>();
-    private final List<ModelResourceLocation> res = new ArrayList<>();
     private final List<ICacheClearable> clearable = new ArrayList<>();
 
     public SmartModelManager() {
         ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
+        add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/chiseled_block"), smartModel);
         add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "chiseled_block"), smartModel);
         ChiselsAndBits2.getInstance().addClearable(smartModel);
-
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/block_chiseled"), smartModel);
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/block_bit"), new BitItemSmartModel());
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/positiveprint_written_preview"), new PrintSmartModel("positiveprint", ChiselsAndBits.getItems().itemPositiveprint));
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/negativeprint_written_preview"), new PrintSmartModel("negativeprint", ChiselsAndBits.getItems().itemNegativeprint));
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/mirrorprint_written_preview"), new PrintSmartModel("mirrorprint", ChiselsAndBits.getItems().itemMirrorprint));
     }
 
     private void add(
@@ -40,12 +34,6 @@ public class SmartModelManager {
 
         if(modelGen instanceof ICacheClearable)
             clearable.add((ICacheClearable) modelGen);
-
-        res.add(new ModelResourceLocation(modelLocation, "normal"));
-        res.add(new ModelResourceLocation(second, "normal"));
-
-        res.add(new ModelResourceLocation(modelLocation, "inventory"));
-        res.add(new ModelResourceLocation(second, "inventory"));
 
         models.put(modelLocation, modelGen);
         models.put(second, modelGen);
@@ -68,15 +56,7 @@ public class SmartModelManager {
         for(final ICacheClearable c : clearable)
             c.clearCache();
 
-        for(final ModelResourceLocation rl : res)
-            event.getModelRegistry().put(rl, getModel(rl));
-    }
-
-    private IBakedModel getModel(final ResourceLocation modelLocation) {
-        try {
-            return models.get(modelLocation);
-        } catch(final Exception e) {
-            throw new RuntimeException("The Model: " + modelLocation.toString() + " was not available was requested.");
-        }
+        for(final ResourceLocation rl : models.keySet())
+            event.getModelRegistry().put(rl, models.get(rl));
     }
 }

@@ -88,12 +88,12 @@ public class ClientSide {
     public static void registerIconTextures(final TextureStitchEvent.Pre e) {
         /*swapIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/swap"));
         placeIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/place"));
-        undoIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/undo"));
-        redoIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/redo"));
         trashIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/trash"));
         sortIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/sort"));
-        roll_x = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/roll_x"));
-        roll_z = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID,"icons/roll_z"));
+
+        for(final MenuAction menuAction : MenuAction.values()) {
+            menuActionIcons.put(menuAction, new SpriteIconPositioning(e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/"+menuAction.name().toLowerCase()))));
+        }
 
         for(final ItemMode itemMode : ItemMode.values()) {
             final SpriteIconPositioning sip = new SpriteIconPositioning();

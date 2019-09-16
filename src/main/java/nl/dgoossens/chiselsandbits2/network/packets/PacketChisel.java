@@ -258,29 +258,13 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 		public ChiseledBlockTileEntity te = null;
 	}
 
-	public static ReplaceWithChiseledValue replaceWithChiseled(
-			final @Nonnull World world,
-			final @Nonnull BlockPos pos,
-			final BlockState originalState,
-			final int fragmentBlockStateID,
-			final boolean triggerUpdate )
-	{
-		BlockState actingState = originalState;
+	public static ReplaceWithChiseledValue replaceWithChiseled(final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final boolean triggerUpdate) {
 		Block target = originalState.getBlock();
 		final boolean isAir = world.isAirBlock(pos); //TODO add isReplacable for grass or smth
 		ReplaceWithChiseledValue rv = new ReplaceWithChiseledValue();
 
-		if(ChiselUtil.canChiselBlock(actingState) || isAir) {
-			int blockId = ModUtil.getStateId(actingState);
-
-			if(isAir) {
-				actingState = ModUtil.getBlockState( fragmentBlockStateID );
-				target = actingState.getBlock();
-				blockId = ModUtil.getStateId( actingState );
-				// its still air tho..
-				actingState = Blocks.AIR.getDefaultState();
-			}
-
+		if(ChiselUtil.canChiselBlock(originalState) || isAir) {
+			int blockId = isAir ? fragmentBlockStateID : ModUtil.getStateId(originalState);
 			if(blockId == 0) return rv;
 
 			if (!target.equals(ChiselsAndBits2.getBlocks().CHISELED_BLOCK)) {
@@ -290,25 +274,21 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 				ChiseledBlockTileEntity tec;
 				if (!(te instanceof ChiseledBlockTileEntity)) {
 					tec = (ChiseledBlockTileEntity) ChiselsAndBits2.getBlocks().CHISELED_BLOCK.createTileEntity(ChiselsAndBits2.getBlocks().CHISELED_BLOCK.getDefaultState(), world);
-					world.setTileEntity( pos, tec );
+					if(tec != null) {
+						tec.fillWith(blockId);
+						world.setTileEntity(pos, tec);
+					}
 				} else tec = (ChiseledBlockTileEntity) te;
-
-				if(tec != null) tec.fillWith(actingState);
 
 				rv.success = true;
 				rv.te = tec;
-
 				return rv;
 			}
 		}
-
 		return rv;
 	}
 
-	private ChiselIterator getIterator(
-			final IVoxelSrc vb,
-			final BlockPos pos,
-			final BitOperation place ) {
+	private ChiselIterator getIterator(final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {
 		if(mode == ItemMode.CHISEL_DRAWN_REGION) {
 			final int bitX = pos.getX() == from.blockPos.getX() ? from.bitX : 0;
 			final int bitY = pos.getY() == from.blockPos.getY() ? from.bitY : 0;
@@ -320,12 +300,11 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 
 			return new ChiselTypeIterator(VoxelBlob.DIMENSION, bitX, bitY, bitZ, scaleX, scaleY, scaleZ, side);
 		}
-
 		return ChiselTypeIterator.create(VoxelBlob.DIMENSION, from.bitX, from.bitY, from.bitZ, vb, mode, side, place.equals(BitOperation.PLACE));
 	}
 
 	private static BitLocation readBitLoc(final PacketBuffer buffer) {
-		return new BitLocation( buffer.readBlockPos(), buffer.readByte(), buffer.readByte(), buffer.readByte() );
+		return new BitLocation(buffer.readBlockPos(), buffer.readByte(), buffer.readByte(), buffer.readByte());
 	}
 
 	private static void writeBitLoc(final BitLocation from2, final PacketBuffer buffer) {
@@ -359,9 +338,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 
 	public static class Handler {
 		public static void handle(final PacketChisel pkt, Supplier<NetworkEvent.Context> ctx) {
-			ctx.get().enqueueWork(() ->
-				pkt.doAction(ctx.get().getSender())
-			);
+			ctx.get().enqueueWork(() -> pkt.doAction(ctx.get().getSender()));
 		}
 	}
 }

@@ -231,17 +231,6 @@ public final class VoxelBlob implements IVoxelSrc {
 	}
 
 	/**
-	 * Get the blockstate id of the most common blockstate.
-	 * Excludes fluids and coloured bits.
-	 */
-	public int getMostCommonBlockStateId() {
-		return getBlockSums().entrySet().parallelStream()
-				.filter(f -> f.getKey()!=AIR_BIT && VoxelType.getType(f.getKey())==VoxelType.BLOCKSTATE) //We ignore air in the calculation.
-				.max(Comparator.comparing(e -> e.getValue().intValue())).map(Entry::getKey)
-				.orElse(AIR_BIT); //There needs to be handling downstream if this happens. This also means the block is empty.
-	}
-
-	/**
 	 * Returns a set of all bit ids in this voxel blob.
 	 */
 	public Set<Integer> listContents() {

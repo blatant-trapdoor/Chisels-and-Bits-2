@@ -13,4 +13,7 @@ public class SpriteIconPositioning {
 	public double top;
 	public double width;
 	public double height;
+
+	public SpriteIconPositioning() {}
+	public SpriteIconPositioning(TextureAtlasSprite sprite) { this.sprite=sprite; }
 }
