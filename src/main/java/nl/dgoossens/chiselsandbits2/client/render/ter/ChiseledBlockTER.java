@@ -76,7 +76,6 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
                     pendingTess.incrementAndGet();
                     addFutureTracker(rc);
                 } catch(RejectedExecutionException err) {
-                    err.printStackTrace(); //TODO remove
                     // Yar... ??
                 }
             }
@@ -221,8 +220,6 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             try {
                 final Tessellator t = renderCache.future.get();
                 getTracker().uploaders.offer(new UploadTracker(renderCache, t));
-                //t.getBuffer().finishDrawing();
-                //BackgroundRenderer.submitTessellator(t);
             } catch(CancellationException cancel) { //We're fine if the future got cancelled.
             } catch(Exception x) {
                 x.printStackTrace();

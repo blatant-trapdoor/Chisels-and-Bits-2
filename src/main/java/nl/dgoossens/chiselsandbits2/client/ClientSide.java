@@ -310,7 +310,7 @@ public class ClientSide {
                 GlStateManager.translatef(0, 0, 50);
                 GlStateManager.scalef(0.5f, 0.5f, 1);
                 GlStateManager.color4f(1, 1, 1, 1.0f);
-                Minecraft.getInstance().getTextureManager().bindTexture( AtlasTexture.LOCATION_BLOCKS_TEXTURE );
+                Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
                 RenderHelper.enableGUIStandardItemLighting();
                 for(int slot = 8; slot >= 0; --slot) {
                     if(player.inventory.mainInventory.get(slot).getItem() instanceof IItemMenu) {
