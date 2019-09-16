@@ -32,7 +32,8 @@ public class TileChunk {
     }
 
     /**
-     * Return the coordinates of this chunk's (0,0,0) corner.
+     * Return the coordinates of the (x, y, z) of the bottom
+     * corner (0, 0, 0) of this chunk.
      */
     public BlockPos chunkOffset() {
         tiles.getReadLock().lock();
@@ -40,7 +41,7 @@ public class TileChunk {
         try {
             if(getTiles().isEmpty()) return BlockPos.ZERO;
 
-            final int bitMask = ~0xf;
+            final int bitMask = ~0xf; //This bitmask drops the last 4 bits, effectively getting the chunkX.
             final Iterator<ChiseledBlockTileEntity> i = getTiles().iterator();
             final BlockPos tilepos = i.hasNext() ? i.next().getPos() : BlockPos.ZERO;
             return new BlockPos(tilepos.getX() & bitMask, tilepos.getY() & bitMask, tilepos.getZ() & bitMask);

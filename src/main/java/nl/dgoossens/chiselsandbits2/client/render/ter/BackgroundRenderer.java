@@ -5,17 +5,14 @@ import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Region;
-import nl.dgoossens.chiselsandbits2.client.render.ChiselLayer;
 import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockBaked;
 import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import org.lwjgl.opengl.GL11;
 
 import java.lang.ref.SoftReference;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
@@ -108,27 +105,16 @@ public class BackgroundRenderer implements Callable<Tessellator> {
 
         for(final ChiseledBlockTileEntity tx : myPrivateList) {
             if(!tx.isRemoved()) {
-                for(final ChiselLayer lx : ChiselLayer.values()) {
-                    final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx, lx);
-                    if(!model.isEmpty()) {
-                        //We don't use the model data argument at the end.
-                        blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
+                final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
+                if(!model.isEmpty()) {
+                    blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
 
-                        if(Thread.interrupted()) {
-                            buffer.finishDrawing();
-                            submitTessellator(tessellator);
-                            return null;
-                        }
+                    if(Thread.interrupted()) {
+                        buffer.finishDrawing();
+                        submitTessellator(tessellator);
+                        return null;
                     }
                 }
-
-                //TODO final VoxelNeighborRenderTracker rTracker = estate.getValue(BlockChiseled.UProperty_VoxelNeighborState);
-                //if(rTracker != null) {
-                //    for(final BlockRenderLayer brl : mcLayers) {
-                //        rTracker.setAbovelimit(brl, faceCount[brl.ordinal()]);
-                //        faceCount[brl.ordinal()] = 0;
-                //    }
-                //}
             }
         }
 

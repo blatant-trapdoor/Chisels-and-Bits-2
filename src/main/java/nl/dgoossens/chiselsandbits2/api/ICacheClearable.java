@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.client.render;
+package nl.dgoossens.chiselsandbits2.api;
 
 public interface ICacheClearable {
 	void clearCache();

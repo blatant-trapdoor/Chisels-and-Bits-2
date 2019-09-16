@@ -3,16 +3,15 @@ package nl.dgoossens.chiselsandbits2.client.render;
 import net.minecraft.util.Direction;
 import nl.dgoossens.chiselsandbits2.api.IStateRef;
 
-public class ModelRenderState
-{
+/**
+ * An object storing references to all neighbouring blocks.
+ */
+public class ModelRenderState {
 	// less objects/garbage to clean up, and less memory usage.
 	private IStateRef north, south, east, west, up, down;
 
-	public IStateRef get(
-			final Direction side )
-	{
-		switch ( side )
-		{
+	public IStateRef get(final Direction side) {
+		switch(side) {
 			case DOWN:
 				return down;
 			case EAST:
@@ -26,17 +25,12 @@ public class ModelRenderState
 			case WEST:
 				return west;
 			default:
+				return null;
 		}
-
-		return null;
 	}
 
-	public void put(
-			final Direction side,
-			final IStateRef value )
-	{
-		switch ( side )
-		{
+	public void put(final Direction side, final IStateRef value) {
+		switch(side) {
 			case DOWN:
 				down = value;
 				break;
@@ -59,11 +53,9 @@ public class ModelRenderState
 		}
 	}
 
-	public ModelRenderState(
-			final ModelRenderState sides )
-	{
-		if ( sides != null )
-		{
+	public ModelRenderState() {}
+	public ModelRenderState(final ModelRenderState sides) {
+		if(sides != null) {
 			north = sides.north;
 			south = sides.south;
 			east = sides.east;
@@ -72,5 +64,4 @@ public class ModelRenderState
 			down = sides.down;
 		}
 	}
-
 }

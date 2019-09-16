@@ -13,7 +13,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLModIdMappingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
-import nl.dgoossens.chiselsandbits2.client.render.ICacheClearable;
+import nl.dgoossens.chiselsandbits2.api.ICacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.SmartModelManager;
 import nl.dgoossens.chiselsandbits2.common.bitbag.BagCapability;
 import nl.dgoossens.chiselsandbits2.api.BagStorage;

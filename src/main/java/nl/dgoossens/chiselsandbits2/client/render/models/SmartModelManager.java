@@ -8,7 +8,7 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
-import nl.dgoossens.chiselsandbits2.client.render.ICacheClearable;
+import nl.dgoossens.chiselsandbits2.api.ICacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.ter.GfxRenderState;
 
 import java.util.ArrayList;
@@ -38,18 +38,14 @@ public class SmartModelManager {
         if(modelLocation==null) return;
         final ResourceLocation second = new ResourceLocation(modelLocation.getNamespace(), modelLocation.getPath().substring(1 + modelLocation.getPath().lastIndexOf('/')));
 
-        if(modelGen instanceof ICacheClearable) {
+        if(modelGen instanceof ICacheClearable)
             clearable.add((ICacheClearable) modelGen);
-        }
 
         res.add(new ModelResourceLocation(modelLocation, "normal"));
         res.add(new ModelResourceLocation(second, "normal"));
 
         res.add(new ModelResourceLocation(modelLocation, "inventory"));
         res.add(new ModelResourceLocation(second, "inventory"));
-
-        //res.add(new ModelResourceLocation(modelLocation, "multipart"));
-        //res.add(new ModelResourceLocation(second, "multipart"));
 
         models.put(modelLocation, modelGen);
         models.put(second, modelGen);
@@ -59,9 +55,6 @@ public class SmartModelManager {
 
         models.put(new ModelResourceLocation(modelLocation, "inventory"), modelGen);
         models.put(new ModelResourceLocation(second, "inventory"), modelGen);
-
-        //models.put(new ModelResourceLocation(modelLocation, "multipart"), modelGen);
-        //models.put(new ModelResourceLocation(second, "multipart"), modelGen);
     }
 
     @SubscribeEvent

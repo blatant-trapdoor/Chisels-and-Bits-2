@@ -104,5 +104,4 @@ public abstract class BaseSmartModel implements IBakedModel, IForgeBakedModel {
             final LivingEntity entity) {
         return originalModel;
     }
-
 }

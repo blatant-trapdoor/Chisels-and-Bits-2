@@ -11,8 +11,15 @@ public interface VoxelSerializer {
     VoxelVersions getVersion();
 
     void write(final PacketBuffer buffer);
+
+    /**
+     * Read a bit id from the stream.
+     */
     void writeVoxelState(final int stateId, final BitStream stream);
 
+    /**
+     * Write a bit id to the stream.
+     */
     int readVoxelStateID(final BitStream stream);
 
     void deflate(final VoxelBlob toDeflate);

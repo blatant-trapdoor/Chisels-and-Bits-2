@@ -221,26 +221,23 @@ public class ChiseledBlockTileEntity extends TileEntity {
         }
     }
 
-    public VoxelBlob getBlob()
-    {
+    public VoxelBlob getBlob() {
         VoxelBlob vb = new VoxelBlob();
         final VoxelBlobStateReference vbs = getVoxelReference();
 
         if(vbs != null) vb = vbs.getVoxelBlob();
         else //If we can't make it proper we should fill it with stone as default.
-            vb.fill( ModUtil.getStateId( Blocks.STONE.getDefaultState() ) );
+            vb.fill(ModUtil.getStateId(Blocks.STONE.getDefaultState()));
 
         return vb;
     }
 
-    public void completeEditOperation(
-            final VoxelBlob vb )
-    {
+    public void completeEditOperation(final VoxelBlob vb ) {
         final VoxelBlobStateReference before = getVoxelReference();
-        setBlob( vb );
+        setBlob(vb);
         final VoxelBlobStateReference after = getVoxelReference();
 
-        if ( world != null )
+        if(world != null)
             Minecraft.getInstance().worldRenderer.markForRerender(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
 
         //TODO UndoTracker.getInstance().add( getWorld(), getPos(), before, after );

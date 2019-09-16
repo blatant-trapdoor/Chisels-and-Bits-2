@@ -6,14 +6,11 @@ import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.ForgeHooksClient;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.client.render.ChiselLayer;
-import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockBaked;
-import nl.dgoossens.chiselsandbits2.client.render.ICacheClearable;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.ICacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelUVAverager;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelVertexRange;
@@ -22,73 +19,40 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class ModelUtil implements ICacheClearable {
-    private final static HashMap<Integer, ResourceLocation> blockToTexture[];
+    private final static HashMap<Integer, ResourceLocation> blockToTexture = new HashMap<>();
     private static HashMap<Integer, ModelQuadLayer[]> cache = new HashMap<>();
-    private static HashMap<Integer, ChiseledBlockBaked> breakCache = new HashMap<>();
-
-    static
-    {
-        blockToTexture = new HashMap[Direction.values().length * BlockRenderLayer.values().length];
-
-        for ( int x = 0; x < blockToTexture.length; x++ )
-        {
-            blockToTexture[x] = new HashMap<>();
-        }
-    }
+    private static HashMap<Integer, TextureAtlasSprite> breakCache = new HashMap<>();
 
     @Override
-    public void clearCache()
-    {
-        for ( int x = 0; x < blockToTexture.length; x++ )
-        {
-            blockToTexture[x].clear();
-        }
-
+    public void clearCache() {
+        blockToTexture.clear();
         cache.clear();
         breakCache.clear();
     }
 
-    public static boolean isOne(
-            final float v) {
+    public static boolean isOne(final float v) {
         return Math.abs(v) < 0.01;
     }
 
-    public static boolean isZero(
-            final float v) {
+    public static boolean isZero(final float v) {
         return Math.abs(v - 1.0f) < 0.01;
     }
 
-    public static ModelQuadLayer[] getCachedFace(
-            final int stateID,
-            final Random weight,
-            final Direction face,
-            final BlockRenderLayer layer) {
-        if(layer == null) {
-            return null;
-        }
-
-        final int cacheVal = stateID << 6 | layer.ordinal() << 4 | face.ordinal();
+    public static ModelQuadLayer[] getCachedFace(final int stateID, final Random weight, final Direction face) {
+        final int cacheVal = stateID << 4 | face.ordinal();
 
         final ModelQuadLayer[] mpc = cache.get(cacheVal);
         if(mpc != null) {
             return mpc;
         }
 
-        final BlockRenderLayer original = net.minecraftforge.client.MinecraftForgeClient.getRenderLayer();
-        try {
-            ForgeHooksClient.setRenderLayer(layer);
-            return getInnerCachedFace(cacheVal, stateID, weight, face, layer);
-        } finally {
-            // restore previous layer.
-            ForgeHooksClient.setRenderLayer(original);
-        }
+        return getInnerCachedFace(cacheVal, stateID, weight, face);
     }
 
     public static IBakedModel solveModel(
             final BlockState state,
             final Random weight,
-            final IBakedModel originalModel,
-            final BlockRenderLayer layer )
+            final IBakedModel originalModel)
     {
         boolean hasFaces = false;
 
@@ -180,10 +144,9 @@ public class ModelUtil implements ICacheClearable {
             final int cacheVal,
             final int stateID,
             final Random weight,
-            final Direction face,
-            final BlockRenderLayer layer) {
+            final Direction face) {
         final BlockState state = ModUtil.getBlockState(stateID);
-        final IBakedModel model = ModelUtil.solveModel(state, weight, Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(state), layer);
+        final IBakedModel model = ModelUtil.solveModel(state, weight, Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(state));
         final int lv = state.getLightValue();
 
         /*final Fluid fluid = BlockBitInfo.getFluidFromBlock(state.getBlock());
@@ -212,7 +175,7 @@ public class ModelUtil implements ICacheClearable {
 
                 mp[0].tint = 0;
 
-                final int cacheV = stateID << 6 | layer.ordinal() << 4 | xf.ordinal();
+                final int cacheV = stateID << 4 | xf.ordinal();
                 cache.put(cacheV, mp);
             }
 
@@ -236,7 +199,7 @@ public class ModelUtil implements ICacheClearable {
         }
 
         for(final Direction f : Direction.values()) {
-            final int cacheV = stateID << 6 | layer.ordinal() << 4 | f.ordinal();
+            final int cacheV = stateID << 4 | f.ordinal();
             final ArrayList<ModelQuadLayer.ModelQuadLayerBuilder> x = tmp.get(f);
             final ModelQuadLayer[] mp = new ModelQuadLayer[x.size()];
 
@@ -250,9 +213,7 @@ public class ModelUtil implements ICacheClearable {
         return cache.get(cacheVal);
     }
 
-    public static TextureAtlasSprite findQuadTexture(
-            final BakedQuad q,
-            final BlockState state) throws IllegalArgumentException, NullPointerException {
+    public static TextureAtlasSprite findQuadTexture(final BakedQuad q, final BlockState state) throws IllegalArgumentException, NullPointerException {
         final AtlasTexture map = Minecraft.getInstance().getTextureMap();
         Map<ResourceLocation, TextureAtlasSprite> mapRegisteredSprites;
         /*
@@ -310,62 +271,47 @@ public class ModelUtil implements ICacheClearable {
         return texture;
     }
 
-    public static TextureAtlasSprite findTexture(
-            final int BlockRef,
-            final IBakedModel model,
-            final Direction myFace,
-            final BlockRenderLayer layer) {
-        final int blockToWork = layer.ordinal() * Direction.values().length + myFace.ordinal();
-
-        //TODO textures aren't stored as TextureAtlasSprite anymore so it can't be returned here...
-
+    public static TextureAtlasSprite findTexture(final int blockRef, final IBakedModel model, final Direction myFace) {
         // didn't work? ok lets try scanning for the texture in the
-        /*if ( blockToTexture[blockToWork].containsKey( BlockRef ) )
-        {
-            final ResourceLocation textureName = blockToTexture[blockToWork].fromName( BlockRef );
-            return Minecraft.getInstance().getTextureManager().getTexture( textureName );
-        }*/
+        if(blockToTexture.containsKey(blockRef)) {
+            final ResourceLocation textureName = blockToTexture.get(blockRef);
+            return (TextureAtlasSprite) Minecraft.getInstance().getTextureManager().getTexture(textureName);
+        }
 
         TextureAtlasSprite texture = null;
-        final BlockState state = ModUtil.getBlockState(BlockRef);
+        final BlockState state = ModUtil.getBlockState(blockRef);
 
         if(model != null) {
             try {
                 texture = findTexture(texture, getModelQuads(model, state, myFace, new Random()), myFace);
 
                 if(texture == null) {
-                    for(final Direction side : Direction.values()) {
+                    for(final Direction side : Direction.values())
                         texture = findTexture(texture, getModelQuads(model, state, side, new Random()), side);
-                    }
 
                     texture = findTexture(texture, getModelQuads(model, state, null, new Random()), null);
                 }
-            } catch(final Exception errr) {
-            }
+            } catch(final Exception errr) {}
         }
 
         // who knows if that worked.. now lets try to fromName a texture...
         if(isMissing(texture)) {
             try {
-                if(model != null) {
+                if(model != null)
                     texture = model.getParticleTexture();
-                }
-            } catch(final Exception err) {
-            }
+            } catch(final Exception err) {}
         }
 
         if(isMissing(texture)) {
             try {
                 texture = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getTexture(state);
-            } catch(final Exception err) {
-            }
+            } catch(final Exception err) {}
         }
 
-        if(texture == null) {
+        if(texture == null)
             texture = ChiselsAndBits2.getClient().getMissingIcon();
-        }
 
-        blockToTexture[blockToWork].put(BlockRef, texture.getName());
+        blockToTexture.put(blockRef, texture.getName());
         return texture;
     }
 
@@ -374,36 +320,25 @@ public class ModelUtil implements ICacheClearable {
         return texture == null || texture == ChiselsAndBits2.getClient().getMissingIcon();
     }
 
-    private static TextureAtlasSprite findTexture(
-            TextureAtlasSprite texture,
-            final List<BakedQuad> faceQuads,
-            final Direction myFace) throws IllegalArgumentException, NullPointerException {
+    private static TextureAtlasSprite findTexture(TextureAtlasSprite texture, final List<BakedQuad> faceQuads, final Direction myFace) throws IllegalArgumentException, NullPointerException {
         for(final BakedQuad q : faceQuads) {
-            if(q.getFace() == myFace) {
+            if(q.getFace()==myFace)
                 texture = findQuadTexture(q, null);
-            }
         }
-
         return texture;
     }
 
-    public static ChiseledBlockBaked getBreakingModel(
-            ChiselLayer layer,
-            Integer blockStateID) {
-        int key = layer.layer.ordinal() + (blockStateID << 2);
-        ChiseledBlockBaked out = breakCache.get(key);
+    public static TextureAtlasSprite getBreakingTexture(int blockStateId) {
+        TextureAtlasSprite out = breakCache.get(blockStateId);
 
-        if(out == null) {
-            final BlockState state = ModUtil.getBlockState(blockStateID);
-            final IBakedModel model = ModelUtil.solveModel(state, new Random(), Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(ModUtil.getBlockState(blockStateID)), layer.layer);
+        if(out == null && VoxelType.getType(blockStateId) == VoxelType.BLOCKSTATE) {
+            final BlockState state = ModUtil.getBlockState(blockStateId);
+            final IBakedModel model = ModelUtil.solveModel(state, new Random(), Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(ModUtil.getBlockState(blockStateId)));
 
-            if(model != null) {
-                out = ChiseledBlockBaked.createFromTexture(ModelUtil.findTexture(blockStateID, model, Direction.UP, layer.layer), layer);
-            } else {
-                out = ChiseledBlockBaked.createFromTexture(null, null);
-            }
+            if(model != null)
+                out = ModelUtil.findTexture(blockStateId, model, Direction.UP);
 
-            breakCache.put(key, out);
+            breakCache.put(blockStateId, out);
         }
 
         return out;
@@ -461,45 +396,26 @@ public class ModelUtil implements ICacheClearable {
 
                     b = new ModelQuadLayer.ModelQuadLayerBuilder( sprite, uCoord, vCoord );
                     b.cache.tint = q.getTintIndex();
-                    l.add( b );
+                    l.add(b);
                 }
 
-                q.pipe( b.uvr );
-                b.lv.setVertexFormat( q.getFormat() );
-                q.pipe( b.lv );
-            }
-            catch ( final Exception e )
-            {
-
-            }
+                q.pipe(b.uvr);
+                b.lv.setVertexFormat(q.getFormat());
+                q.pipe(b.lv);
+            } catch(final Exception e) {}
         }
     }
 
-    private static List<BakedQuad> getModelQuads(
-            final IBakedModel model,
-            final BlockState state,
-            final Direction f,
-            final Random rand )
-    {
-        try
-        {
+    private static List<BakedQuad> getModelQuads(final IBakedModel model, final BlockState state, final Direction f, final Random rand) {
+        try {
             // try to fromName block model...
-            return model.getQuads( state, f, rand );
-        }
-        catch ( final Throwable t )
-        {
+            return model.getQuads(state, f, rand);
+        } catch(final Throwable t) {}
 
-        }
-
-        try
-        {
+        try {
             // try to fromName item model?
-            return model.getQuads( null, f, rand );
-        }
-        catch ( final Throwable t )
-        {
-
-        }
+            return model.getQuads(null, f, rand);
+        } catch(final Throwable t) {}
 
         //TODO fix
         /*final ItemStack is = ModUtil.getItemFromBlock( state );
