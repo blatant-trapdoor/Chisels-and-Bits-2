@@ -42,8 +42,9 @@ public class ChiseledBlockTileEntity extends TileEntity {
 
     public int getPrimaryBlock() { return primaryBlock; }
     public void setPrimaryBlock(int d) {
+        System.out.println("Setting primary block to "+Integer.toBinaryString(d));
+        if(d==0) throw new RuntimeException("Tracking exception");
         if(VoxelType.getType(d) == VoxelType.BLOCKSTATE) primaryBlock=d;
-        else primaryBlock = 0;
         requestModelDataUpdate();
     }
     public VoxelBlobStateReference getVoxelReference() { return voxelBlob; }
@@ -170,7 +171,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
         }
 
         //We check the state id as the primary block could also just be 0 because this is a fluid/coloured block.
-        if(voxelRef.getVoxelBlob().getMostCommonStateId() == VoxelBlob.AIR_BIT) {
+        if(voxelRef.getVoxelBlob().getMostCommonStateId() != VoxelBlob.AIR_BIT) {
             setVoxelReference(voxelRef);
             setPrimaryBlock(b);
             markDirty();
@@ -247,25 +248,22 @@ public class ChiseledBlockTileEntity extends TileEntity {
         setVoxelReference(new VoxelBlobStateReference(ModUtil.getStateId(blockType)));
     }
 
-    public boolean readChiselData(final CompoundNBT tag) {
-        final NBTBlobConverter converter = new NBTBlobConverter(this);
-        return converter.readChiselData(tag, VoxelVersions.getDefault());
-    }
-
-    public void writeChiselData(final CompoundNBT tag) {
-        new NBTBlobConverter(this).writeChiselData(tag);
-    }
-
     @Override
     public CompoundNBT write(final CompoundNBT compound) {
         super.write(compound);
-        writeChiselData(compound);
+        new NBTBlobConverter(this).writeChiselData(compound);
         return compound;
     }
 
     @Override
     public void read(final CompoundNBT compound) {
         super.read(compound);
-        readChiselData(compound);
+        final NBTBlobConverter converter = new NBTBlobConverter(this);
+        converter.readChiselData(compound, VoxelVersions.getDefault());
+
+        try {
+            primaryBlock = converter.getPrimaryBlockStateID();
+            voxelBlob = converter.getReference();
+        } catch(Exception x) { x.printStackTrace(); }
     }
 }

@@ -6,6 +6,8 @@ import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -15,8 +17,10 @@ import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelUVAverager;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelVertexRange;
 
+import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.List;
 
 public class ModelUtil implements ICacheClearable {
     private final static HashMap<Integer, ResourceLocation> blockToTexture = new HashMap<>();
@@ -140,76 +144,80 @@ public class ModelUtil implements ICacheClearable {
         return mvr.getLargestRange() > 0 && !isMissing( texture );
     }
     
-    private static ModelQuadLayer[] getInnerCachedFace(
-            final int cacheVal,
-            final int stateID,
-            final Random weight,
-            final Direction face) {
+    private static ModelQuadLayer[] getInnerCachedFace(final int cacheVal, final int stateID, final Random weight, final Direction face) {
         final BlockState state = ModUtil.getBlockState(stateID);
-        final IBakedModel model = ModelUtil.solveModel(state, weight, Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(state));
-        final int lv = state.getLightValue();
+        final IFluidState fluid = ModUtil.getFluidState(stateID);
+        final Color colour = ModUtil.getColourState(stateID);
 
-        /*final Fluid fluid = BlockBitInfo.getFluidFromBlock(state.getBlock());
-        if(fluid != null) {
-            for(final Direction xf : Direction.VALUES) {
-                final ModelQuadLayer[] mp = new ModelQuadLayer[1];
-                mp[0] = new ModelQuadLayer();
-                mp[0].color = fluid.getColor();
-                mp[0].light = lv;
+        switch(VoxelType.getType(stateID)) {
+            case BLOCKSTATE:
+            {
+                final IBakedModel model = ModelUtil.solveModel(state, weight, Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(state));
+                final int lv = state.getLightValue();
 
-                final float V = 0.5f;
-                final float Uf = 1.0f;
-                final float U = 0.5f;
-                final float Vf = 1.0f;
+                final HashMap<Direction, ArrayList<ModelQuadLayer.ModelQuadLayerBuilder>> tmp = new HashMap<>();
 
-                if(xf.getAxis() == Axis.Y) {
-                    mp[0].sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(fluid.getStill().toString());
-                    mp[0].uvs = new float[]{Uf, Vf, 0, Vf, Uf, 0, 0, 0};
-                } else if(xf.getAxis() == Axis.X) {
-                    mp[0].sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(fluid.getFlowing().toString());
-                    mp[0].uvs = new float[]{U, 0, U, V, 0, 0, 0, V};
-                } else {
-                    mp[0].sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(fluid.getFlowing().toString());
-                    mp[0].uvs = new float[]{U, 0, 0, 0, U, V, 0, V};
+                for(final Direction f : Direction.values())
+                    tmp.put(f, new ArrayList<>());
+
+                if(model != null) {
+                    for(final Direction f : Direction.values()) {
+                        final List<BakedQuad> quads = ModelUtil.getModelQuads(model, state, f, new Random());
+                        processFaces(tmp, quads, state);
+                    }
+
+                    processFaces(tmp, ModelUtil.getModelQuads(model, state, null, new Random()), state);
                 }
 
-                mp[0].tint = 0;
+                for(final Direction f : Direction.values()) {
+                    final int cacheV = stateID << 4 | f.ordinal();
+                    final ArrayList<ModelQuadLayer.ModelQuadLayerBuilder> x = tmp.get(f);
+                    final ModelQuadLayer[] mp = new ModelQuadLayer[x.size()];
 
-                final int cacheV = stateID << 4 | xf.ordinal();
-                cache.put(cacheV, mp);
+                    for(int z = 0; z < x.size(); z++) {
+                        mp[z] = x.get(z).build(stateID, 0xffffff, lv);
+                    }
+
+                    cache.put(cacheV, mp);
+                }
+
+                return cache.get(cacheVal);
             }
+            case FLUIDSTATE:
+            {
+                for(final Direction xf : Direction.values()) {
+                    final ModelQuadLayer[] mp = new ModelQuadLayer[1];
+                    mp[0] = new ModelQuadLayer();
+                    mp[0].color = 0xffffff;
+                    mp[0].light = fluid.getBlockState().getLightValue();
 
-            return cache.fromName(cacheVal);
-        }*/
+                    final float V = 0.5f;
+                    final float Uf = 1.0f;
+                    final float U = 0.5f;
+                    final float Vf = 1.0f;
 
-        final HashMap<Direction, ArrayList<ModelQuadLayer.ModelQuadLayerBuilder>> tmp = new HashMap<>();
-        final int color = 0xffffff; //TODO BlockBitInfo.getColorFor(state, 0);
 
-        for(final Direction f : Direction.values()) {
-            tmp.put(f, new ArrayList<>());
-        }
+                    mp[0].sprite = Minecraft.getInstance().getTextureMap().getAtlasSprite(fluid.getFluid().toString());
+                    if(xf.getAxis() == Direction.Axis.Y) {
+                        mp[0].uvs = new float[]{Uf, Vf, 0, Vf, Uf, 0, 0, 0};
+                    } else if(xf.getAxis() == Direction.Axis.X) {
+                        mp[0].uvs = new float[]{U, 0, U, V, 0, 0, 0, V};
+                    } else {
+                        mp[0].uvs = new float[]{U, 0, 0, 0, U, V, 0, V};
+                    }
+                    mp[0].tint = 0;
 
-        if(model != null) {
-            for(final Direction f : Direction.values()) {
-                final List<BakedQuad> quads = ModelUtil.getModelQuads(model, state, f, new Random());
-                processFaces(tmp, quads, state);
+                    final int cacheV = stateID << 4 | xf.ordinal();
+                    cache.put(cacheV, mp);
+                }
+                return cache.get(cacheVal);
             }
+            case COLOURED:
+            {
 
-            processFaces(tmp, ModelUtil.getModelQuads(model, state, null, new Random()), state);
-        }
-
-        for(final Direction f : Direction.values()) {
-            final int cacheV = stateID << 4 | f.ordinal();
-            final ArrayList<ModelQuadLayer.ModelQuadLayerBuilder> x = tmp.get(f);
-            final ModelQuadLayer[] mp = new ModelQuadLayer[x.size()];
-
-            for(int z = 0; z < x.size(); z++) {
-                mp[z] = x.get(z).build(stateID, color, lv);
+                return cache.get(cacheVal);
             }
-
-            cache.put(cacheV, mp);
         }
-
         return cache.get(cacheVal);
     }
 

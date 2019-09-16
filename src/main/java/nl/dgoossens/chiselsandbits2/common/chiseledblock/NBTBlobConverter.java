@@ -29,7 +29,7 @@ public class NBTBlobConverter {
 		final VoxelBlobStateReference voxelRef = getReference();
 		if(format == version)
 			return new VoxelBlobStateReference(voxelRef.getByteArray());
-		return new VoxelBlobStateReference(voxelRef.getVoxelBlobCatchable().blobToBytes(version));
+		return new VoxelBlobStateReference(voxelRef.getVoxelBlob().blobToBytes(version));
 	}
 
 	public NBTBlobConverter() {}
@@ -64,8 +64,8 @@ public class NBTBlobConverter {
 		compound.putByteArray(NBT_VERSIONED_VOXEL, voxelBytes);
 	}
 
-	public final boolean readChiselData(final CompoundNBT compound, final int preferedFormat ) {
-		if (compound == null) {
+	public final boolean readChiselData(final CompoundNBT compound, final int preferredFormat ) {
+		if(compound == null || !compound.contains(NBT_PRIMARY_STATE) || !compound.contains(NBT_VERSIONED_VOXEL)) {
 			voxelBlobRef = new VoxelBlobStateReference(VoxelBlob.AIR_BIT);
 			format = voxelBlobRef.getFormat();
 
@@ -75,16 +75,16 @@ public class NBTBlobConverter {
 		}
 
 		primaryBlockState = compound.getInt(NBT_PRIMARY_STATE);
-
 		byte[] v = compound.getByteArray(NBT_VERSIONED_VOXEL);
+		System.out.println("Read v of length "+v.length+" from compound "+compound);
 		voxelBlobRef = new VoxelBlobStateReference(v);
 		format = voxelBlobRef.getFormat();
 
 		boolean formatChanged = false;
-		if ( preferedFormat != format && preferedFormat != VoxelVersions.ANY.getId() ) {
+		if(preferredFormat != format && preferredFormat != VoxelVersions.ANY.getId()) {
 			formatChanged = true;
-			v = voxelBlobRef.getVoxelBlob().blobToBytes( preferedFormat );
-			voxelBlobRef = new VoxelBlobStateReference( v );
+			v = voxelBlobRef.getVoxelBlob().blobToBytes( preferredFormat );
+			voxelBlobRef = new VoxelBlobStateReference(v);
 			format = voxelBlobRef.getFormat();
 		}
 
@@ -115,7 +115,7 @@ public class NBTBlobConverter {
 		return null;
 	}
 
-	private VoxelBlobStateReference getReference() {
+	public VoxelBlobStateReference getReference() {
 		if (voxelBlobRef == null) voxelBlobRef = new VoxelBlobStateReference(0);
 		return voxelBlobRef;
 	}

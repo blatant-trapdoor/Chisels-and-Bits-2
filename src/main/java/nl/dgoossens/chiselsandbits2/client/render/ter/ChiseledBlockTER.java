@@ -66,6 +66,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
                     pendingTess.incrementAndGet();
                     addFutureTracker(rc);
                 } catch(RejectedExecutionException err) {
+                    err.printStackTrace();
                     // Yar... ??
                 }
             }

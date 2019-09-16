@@ -518,8 +518,15 @@ public final class VoxelBlob implements IVoxelSrc {
 	 * Builds a blob from a byte array.
 	 */
 	public void blobFromBytes(final byte[] bytes) throws IOException {
-		final ByteArrayInputStream out = new ByteArrayInputStream(bytes);
-		read(out);
+		try {
+			if(bytes.length<1) {
+				throw new RuntimeException("Unable to load VoxelBlob: length of data was 0");
+			}
+			final ByteArrayInputStream out = new ByteArrayInputStream(bytes);
+			read(out);
+		} catch(Exception x) {
+			throw new RuntimeException("Unable to load VoxelBlob", x);
+		}
 	}
 
 	/**
@@ -614,8 +621,8 @@ public final class VoxelBlob implements IVoxelSrc {
 
 			w.finish();
 			w.close();
-			def.reset();
 			o.close();
+			def.reset();
 		} catch (final IOException e) { throw new RuntimeException(e); }
 	}
 }
