@@ -87,7 +87,7 @@ public class ChiselEvent {
         final BitLocation location = new BitLocation(rayTrace, true, operation);
         final BlockPos pos = location.getBlockPos(); //We get the location from the bitlocation because that takes placement offset into account. (placement can go into neighbouring block)
         final BlockState state = player.world.getBlockState(pos);
-        if (!ChiselUtil.canChiselBlock(state)) return;
+        if (!ChiselUtil.canChiselBlock(state) && !state.isAir(player.world, pos)) return; //You can place on air.
         if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
         useChisel(operation, mode, player.world, rayTrace.getFace(), location);
     }

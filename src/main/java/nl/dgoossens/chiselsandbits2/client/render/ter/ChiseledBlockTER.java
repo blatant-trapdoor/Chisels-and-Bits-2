@@ -210,9 +210,8 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-            //TODO if we ever need translucent we can do that here
-            GlStateManager.disableBlend();
-            GlStateManager.enableAlphaTest();
+            GlStateManager.enableBlend();
+            GlStateManager.disableAlphaTest();
 
             GlStateManager.enableCull();
             GlStateManager.enableTexture();

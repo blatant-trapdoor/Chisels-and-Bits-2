@@ -135,7 +135,10 @@ public abstract class GfxRenderState {
                 refreshNum = gfxRefresh;
             } catch (IllegalStateException x) {
                 destroy();
-                return new VoidRenderState();
+                GfxRenderState v = new VoidRenderState();
+                //Don't prepare if it's above this to avoid infinite loop.
+                if (t.getBuffer().getVertexCount() <= 0) v.prepare(t);
+                return v;
             }
             return this;
         }

@@ -5,6 +5,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
@@ -29,6 +30,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nonnull;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -129,7 +131,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         return pc;
     }
 
-    public int doAction(final PlayerEntity player) {
+    public void doAction(final PlayerEntity player) {
         final World world = player.world;
 
         final int minX = Math.min(from.blockPos.getX(), to.blockPos.getX());
@@ -139,13 +141,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         final int minZ = Math.min(from.blockPos.getZ(), to.blockPos.getZ());
         final int maxZ = Math.max(from.blockPos.getZ(), to.blockPos.getZ());
 
-        int returnVal = 0;
-
         boolean update = false;
-        Map<Integer, Integer> extracted = new HashMap<>();
-        ItemStack bitPlaced = null;
-
-        final List<ItemEntity> spawnlist = new ArrayList<>();
 
         //TODO UndoTracker.getInstance().beginGroup( who );
 
@@ -158,7 +154,8 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                         BlockState blkstate = world.getBlockState(pos);
                         Block blkObj = blkstate.getBlock();
 
-                        final int placeStateID = ModUtil.getStateId(Blocks.DIAMOND_BLOCK.getDefaultState());/*operation.usesBits() ? ItemChiseledBit.getStackState( who.getHeldItem( hand ) ) : 0;
+                        final int placeStateID = ModUtil.getColourId(Color.GREEN);
+                        /*operation.usesBits() ? ItemChiseledBit.getStackState( who.getHeldItem( hand ) ) : 0;
 						final IContinuousInventory chisels = new ContinousChisels( player, pos, side );
 						final IContinuousInventory bits = new ContinousBits( player, pos, placeStateID );
 
@@ -205,8 +202,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                 case PLACE:
                                 case REPLACE: {
                                     while (i.hasNext()) {
-                                        bitPlaced = new ItemStack(Blocks.DIAMOND_BLOCK);//bits.getItem( 0 ).getStack();
-                                        if (vb.get(i.x(), i.y(), i.z()) == 0) {
+                                        if (operation == BitOperation.REPLACE || vb.get(i.x(), i.y(), i.z()) == VoxelBlob.AIR_BIT) {
                                             //final IItemInInventory slot = bits.getItem( 0 );
                                             //final int stateID = ItemChiseledBit.getStackState( slot.getStack() );
 
@@ -220,7 +216,6 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                             //	else
                                             vb.set(i.x(), i.y(), i.z(), placeStateID);
                                             //}
-
                                             update = true;
                                         }
                                     }
@@ -229,10 +224,10 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                 case REMOVE: {
                                     while (i.hasNext()) {
                                         final int blk = vb.get(i.x(), i.y(), i.z());
-                                        if (blk == 0) break;
+                                        if (blk == VoxelBlob.AIR_BIT) break; //TODO this seems questionable
                                         //TODO Chisel valid? if ( !selected.useItem( blk ) ) break;
 
-                                        if (!world.isRemote && !isCreative) {
+                                        /*if (!world.isRemote && !isCreative) {
                                             double hitX = i.x() * one_16th;
                                             double hitY = i.y() * one_16th;
                                             double hitZ = i.z() * one_16th;
@@ -243,7 +238,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                             hitZ += side.getZOffset() * offset;
 
                                             //TODO return bit
-											/*if ( extracted == null || !ItemChiseledBit.sameBit( extracted, blk ) || ModUtil.getStackSize( extracted ) == 64 )
+											*if ( extracted == null || !ItemChiseledBit.sameBit( extracted, blk ) || ModUtil.getStackSize( extracted ) == 64 )
 											{
 												extracted = ItemChiseledBit.createStack( blk, 1, true );
 												spawnlist.add( new EntityItem( world, pos.getX() + hitX, pos.getY() + hitY, pos.getZ() + hitZ, extracted ) );
@@ -251,24 +246,20 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 											else
 											{
 												ModUtil.adjustStackSize( extracted, 1 );
-											}*/
+											}*
                                         } else {
                                             // return value...
                                             //extracted = ItemChiseledBit.createStack( blk, 1, true );
-                                        }
-
-                                        int current = vb.get(i.x(), i.y(), i.z());
-                                        extracted.put(current, extracted.getOrDefault(current, 0) + 1);
+                                        }*/
                                         vb.clear(i.x(), i.y(), i.z());
+                                        update = true;
                                     }
                                 }
                                 break;
                             }
 
-                            if (update || !extracted.isEmpty()) {
+                            if (update)
                                 tec.completeEditOperation(vb);
-                                returnVal++;
-                            }
                         }
                     }
                 }
@@ -290,8 +281,6 @@ public class PacketChisel implements NetworkRouter.ModPacket {
             //TODO UndoTracker.getInstance().endGroup( who );
         }
         //TODO update chisel durability (server-side)
-
-        return returnVal;
     }
 
     private ChiselIterator getIterator(final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {

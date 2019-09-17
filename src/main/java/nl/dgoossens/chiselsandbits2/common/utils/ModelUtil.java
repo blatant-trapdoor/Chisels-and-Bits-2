@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.common.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -149,9 +150,10 @@ public class ModelUtil implements CacheClearable {
                     final float U = 0.5f;
                     final float Vf = 1.0f;
 
-
-                    mp[0].sprite = Minecraft.getInstance().getTextureMap().getAtlasSprite(fluid.getFluid().toString());
+                    //TODO This is always the missing sprite, fluisd aren't getting lookup up properly.
+                    mp[0].sprite = Minecraft.getInstance().getTextureMap().getSprite(fluid.getFluid().getRegistryName());
                     if (xf.getAxis() == Direction.Axis.Y) {
+                        //TODO Maybe take the flowing sprite if this is Y axis?
                         mp[0].uvs = new float[]{Uf, Vf, 0, Vf, Uf, 0, 0, 0};
                     } else if (xf.getAxis() == Direction.Axis.X) {
                         mp[0].uvs = new float[]{U, 0, U, V, 0, 0, 0, V};
@@ -166,7 +168,30 @@ public class ModelUtil implements CacheClearable {
                 return cache.get(cacheVal);
             }
             case COLOURED: {
+                for (final Direction xf : Direction.values()) {
+                    final ModelQuadLayer[] mp = new ModelQuadLayer[1];
+                    mp[0] = new ModelQuadLayer();
+                    mp[0].color = colour.hashCode();
 
+                    final float V = 0.5f;
+                    final float Uf = 1.0f;
+                    final float U = 0.5f;
+                    final float Vf = 1.0f;
+
+                    //TODO Fix this logic!
+                    mp[0].sprite = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getTexture(Blocks.WHITE_CONCRETE.getDefaultState());
+                    if (xf.getAxis() == Direction.Axis.Y) {
+                        mp[0].uvs = new float[]{Uf, Vf, 0, Vf, Uf, 0, 0, 0};
+                    } else if (xf.getAxis() == Direction.Axis.X) {
+                        mp[0].uvs = new float[]{U, 0, U, V, 0, 0, 0, V};
+                    } else {
+                        mp[0].uvs = new float[]{U, 0, 0, 0, U, V, 0, V};
+                    }
+                    mp[0].tint = 0;
+
+                    final int cacheV = stateID << 4 | xf.ordinal();
+                    cache.put(cacheV, mp);
+                }
                 return cache.get(cacheVal);
             }
         }

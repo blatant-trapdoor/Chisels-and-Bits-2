@@ -67,22 +67,27 @@ public class BackgroundRenderer implements Callable<Tessellator> {
         while (tessellator == null);
         final BufferBuilder buffer = tessellator.getBuffer();
 
-        try {
-            buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-            buffer.setTranslation(-chunkOffset.getX(), -chunkOffset.getY(), -chunkOffset.getZ());
-        } catch (final IllegalStateException e) {
-            e.printStackTrace();
-        }
+        boolean began = false;
 
         for (final ChiseledBlockTileEntity tx : myPrivateList) {
             if (!tx.isRemoved()) {
                 tx.getRenderTracker().update(tx.getWorld(), tx.getPos()); //Update the render tracker first.
                 final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
                 if (!model.isEmpty()) {
+                    if(!began) { //Don't begin unless there's actually something to render. (avoid 0 vertices after we've began which we see 0 vertices as "not built")
+                        try {
+                            buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+                            buffer.setTranslation(-chunkOffset.getX(), -chunkOffset.getY(), -chunkOffset.getZ());
+                            began = true;
+                        } catch (final IllegalStateException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
 
                     if (Thread.interrupted()) {
-                        buffer.finishDrawing();
+                        if(began) buffer.finishDrawing();
                         submitTessellator(tessellator);
                         return null;
                     }
@@ -91,7 +96,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
         }
 
         if (Thread.interrupted()) {
-            buffer.finishDrawing();
+            if(began) buffer.finishDrawing();
             submitTessellator(tessellator);
             return null;
         }

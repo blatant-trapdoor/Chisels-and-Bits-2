@@ -20,16 +20,20 @@ public class BitLocation {
 
     public BitLocation(BlockRayTraceResult mop, final boolean absHit, final BitOperation type) {
         final BlockPos absOffset = absHit ? mop.getPos() : BlockPos.ZERO;
-        final Vec3d crds = mop.getHitVec().subtract(absOffset.getX(), absOffset.getY(), absOffset.getZ())
-                .subtract(new Vec3d(mop.getFace().getXOffset(), mop.getFace().getYOffset(), mop.getFace().getZOffset()).scale(ONE_32ND));
 
-        if (type == BitOperation.PLACE) {
+        if (type != BitOperation.PLACE) {
             blockPos = mop.getPos();
+
+            final Vec3d crds = mop.getHitVec().subtract(absOffset.getX(), absOffset.getY(), absOffset.getZ())
+                    .subtract(new Vec3d(mop.getFace().getXOffset(), mop.getFace().getYOffset(), mop.getFace().getZOffset()).scale(ONE_32ND));
 
             bitX = snapToValid((int) Math.floor(crds.getX() * VoxelBlob.DIMENSION));
             bitY = snapToValid((int) Math.floor(crds.getY() * VoxelBlob.DIMENSION));
             bitZ = snapToValid((int) Math.floor(crds.getZ() * VoxelBlob.DIMENSION));
         } else {
+            final Vec3d crds = mop.getHitVec().subtract(absOffset.getX(), absOffset.getY(), absOffset.getZ())
+                    .add(new Vec3d(mop.getFace().getXOffset(), mop.getFace().getYOffset(), mop.getFace().getZOffset()).scale(ONE_32ND));
+
             final int bitXi = (int) Math.floor(crds.getX() * VoxelBlob.DIMENSION);
             final int bitYi = (int) Math.floor(crds.getY() * VoxelBlob.DIMENSION);
             final int bitZi = (int) Math.floor(crds.getZ() * VoxelBlob.DIMENSION);

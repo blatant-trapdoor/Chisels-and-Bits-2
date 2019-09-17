@@ -79,6 +79,6 @@ public class ModUtil {
      */
     public static int getColourId(final Color colour) {
         //We built our own int instead of getting the colour value because we do some trickery to the MSBs.
-        return 0b01000000000000000000000000000000 + (colour.getAlpha() / 4) << 24 + colour.getRed() << 16 + colour.getGreen() << 8 + colour.getBlue();
+        return 0b01000000000000000000000000000000 + ((colour.getAlpha() / 4) << 24) + (colour.getRed() << 16) + (colour.getGreen() << 8) + colour.getBlue();
     }
 }
