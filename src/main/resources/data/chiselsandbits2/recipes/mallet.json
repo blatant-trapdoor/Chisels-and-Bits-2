@@ -1,0 +1,22 @@
+{
+	"result": {
+		"item": "chiselsandbits2:mallet"
+	},
+	"pattern": [
+		" PL",
+		" SP",
+		"S  "
+	],
+	"type": "minecraft:crafting_shaped",
+	"key": {
+		"L": {
+			"tag": "minecraft:logs"
+		},
+		"P": {
+			"tag": "minecraft:planks"
+		},
+		"S": {
+			"tag": "forge:rods/wooden"
+		}
+	}
+}

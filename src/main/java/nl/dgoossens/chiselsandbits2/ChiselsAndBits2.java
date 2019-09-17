@@ -11,16 +11,13 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLModIdMappingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import nl.dgoossens.chiselsandbits2.api.BeakerStorage;
 import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.api.ICacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.SmartModelManager;
-import nl.dgoossens.chiselsandbits2.common.bitstorage.BagCapability;
-import nl.dgoossens.chiselsandbits2.api.BagStorage;
-import nl.dgoossens.chiselsandbits2.common.bitstorage.BagStorageImpl;
-import nl.dgoossens.chiselsandbits2.common.bitstorage.BeakerCapability;
-import nl.dgoossens.chiselsandbits2.common.bitstorage.BeakerStorageImpl;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapability;
+import nl.dgoossens.chiselsandbits2.api.BitStorage;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselsAndBitsAPIImpl;
 import nl.dgoossens.chiselsandbits2.common.registry.ModConfiguration;
 import nl.dgoossens.chiselsandbits2.common.registry.ModBlocks;
@@ -73,8 +70,7 @@ public class ChiselsAndBits2 {
         MinecraftForge.EVENT_BUS.register(NETWORK_ROUTER);
 
         FMLJavaModLoadingContext.get().getModEventBus().register(SMART_MODEL_MANAGER);
-        CapabilityManager.INSTANCE.register(BagStorage.class, new BagCapability(), BagStorageImpl::new);
-        CapabilityManager.INSTANCE.register(BeakerStorage.class, new BeakerCapability(), BeakerStorageImpl::new);
+        CapabilityManager.INSTANCE.register(BitStorage.class, new StorageCapability(), BitStorageImpl::new);
     }
 
     //TODO this all needs someplaceelse to live

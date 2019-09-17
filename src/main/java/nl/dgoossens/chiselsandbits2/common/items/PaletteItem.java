@@ -7,13 +7,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class PaletteItem extends Item {
-    public PaletteItem(Properties builder) { super(builder); }
+public class PaletteItem extends StorageItem {
+    @Override
+    public ItemModeType getAssociatedType() {
+        return ItemModeType.SELECTED_BOOKMARK;
+    }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {

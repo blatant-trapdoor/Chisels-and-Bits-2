@@ -44,7 +44,7 @@ public class ModItems {
     public final Item BIT_BEAKER = new BitBeakerItem();
     public final Item MALLET = new MalletItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
     public final Item BLUEPRINT = new BlueprintItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item PALETTE = new PaletteItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item PALETTE = new PaletteItem();
 
 
     /**

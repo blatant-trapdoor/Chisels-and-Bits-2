@@ -27,6 +27,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.*;
+import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -165,7 +166,6 @@ public class ClientSide {
     private RadialMenu radialMenu = new RadialMenu();
     public RadialMenu getRadialMenu() { return radialMenu; }
 
-
     /**
      * Handles hotkey presses.
      */
@@ -173,15 +173,15 @@ public class ClientSide {
     public static void onKeyInput(final InputEvent.KeyInputEvent e) {
         ChiselsAndBits2.getKeybindings().actionHotkeys
                 .entrySet().parallelStream()
-                .filter(f -> f.getValue().isPressed())
+                .filter(f -> f.getValue().isPressed() && f.getValue().getKeyModifier().isActive(KeyConflictContext.IN_GAME))
                 .forEach(f -> handleMenuAction(f.getKey()));
 
         ChiselsAndBits2.getKeybindings().modeHotkeys
                 .entrySet().parallelStream()
-                .filter(f -> f.getValue().isPressed())
+                .filter(f -> f.getValue().isPressed() && f.getValue().getKeyModifier().isActive(KeyConflictContext.IN_GAME))
                 .forEach(f -> ChiselModeManager.changeItemMode(f.getKey()));
 
-        if(ChiselsAndBits2.getKeybindings().clearTapeMeasure.isPressed()) {
+        if(ChiselsAndBits2.getKeybindings().clearTapeMeasure.isPressed() && ChiselsAndBits2.getKeybindings().clearTapeMeasure.getKeyModifier().isActive(KeyConflictContext.IN_GAME)) {
             System.out.println("CLEAR TAPE MEASURE");
         }
     }
@@ -199,7 +199,7 @@ public class ClientSide {
             if(radialMenu.hasClicked() && !radialMenu.isPressingButton())
                 radialMenu.setClicked(false);
 
-            radialMenu.setPressingButton(ChiselsAndBits2.getKeybindings().modeMenu.isKeyDown());
+            radialMenu.setPressingButton(ChiselsAndBits2.getKeybindings().modeMenu.isPressed() && ChiselsAndBits2.getKeybindings().modeMenu.getKeyModifier().isActive(KeyConflictContext.IN_GAME));
             if(radialMenu.isPressingButton() && !radialMenu.hasClicked() && (player.getHeldItemMainhand().getItem() instanceof IItemMenu)) {
                 //While the key is down, increase the visibility
                 radialMenu.setActionUsed(false);
@@ -316,9 +316,9 @@ public class ClientSide {
                         final int y = (e.getWindow().getScaledHeight() - 16 - 3)*2;
 
                         final TextureAtlasSprite sprite = chiselModeIcons.get(mode) == null ? ChiselsAndBits2.getClient().getMissingIcon() : chiselModeIcons.get( mode ).sprite;
-                        if(mode instanceof SelectedBlockItemMode) {
-                            if(mode.equals(SelectedBlockItemMode.NONE_BAG)) continue;
-                            ir.renderItemIntoGUI(((SelectedBlockItemMode) mode).getStack(), x, y);
+                        if(mode instanceof SelectedItemMode) {
+                            if(mode.equals(SelectedItemMode.NONE_BAG)) continue;
+                            ir.renderItemIntoGUI(((SelectedItemMode) mode).getStack(), x, y);
                         } else {
                             GlStateManager.translatef(0, 0, 200); //The item models are also rendered 150 higher
                             GlStateManager.enableBlend();

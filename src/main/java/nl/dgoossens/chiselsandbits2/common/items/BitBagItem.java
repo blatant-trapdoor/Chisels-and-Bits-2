@@ -10,30 +10,24 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.bitstorage.BagCapabilityProvider;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItemGroups;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class BitBagItem extends TypedItem {
-    public BitBagItem() {super(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2)); }
-
+public class BitBagItem extends StorageItem {
     @Override
     public ItemModeType getAssociatedType() {
         return ItemModeType.SELECTED_BLOCK;
     }
+
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "bit_bag.help",
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getKeybindings().modeMenu);
-    }
-
-    @Override
-    public ICapabilityProvider initCapabilities(final ItemStack stack, final CompoundNBT nbt) {
-        return new BagCapabilityProvider();
     }
 }

@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.registry;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.util.InputMappings;
 import net.minecraftforge.client.settings.IKeyConflictContext;
@@ -16,11 +17,11 @@ public class ModKeybindings {
     private static final IKeyConflictContext CONFLICT = new IKeyConflictContext() {
         @Override
         public boolean isActive() {
-            return true; //TODO make isActive only true if the item is held that is required for the keybinding
+            return Minecraft.getInstance().currentScreen == null;
         }
         @Override
         public boolean conflicts(IKeyConflictContext other) {
-            return true; //For some reason the keybinds don't trigger unless this is true.
+            return this == other; //For some reason the keybinds don't trigger unless this is true.
         }
     };
     private static final String CATEGORY = "Chisels & Bits 2 - General";

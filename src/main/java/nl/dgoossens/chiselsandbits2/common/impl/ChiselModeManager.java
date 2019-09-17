@@ -10,11 +10,13 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.ItemMode;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
-import nl.dgoossens.chiselsandbits2.api.SelectedBlockItemMode;
+import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.network.packets.PacketSetItemMode;
 import nl.dgoossens.chiselsandbits2.network.packets.PacketSetMenuActionMode;
+
+import java.awt.*;
 
 /**
  * The manager of which mode a tool is currently using.
@@ -79,8 +81,9 @@ public class ChiselModeManager {
             } catch(final Exception x) { x.printStackTrace(); }
         }
 
-        return (stack.getItem() instanceof BitBagItem) ? SelectedBlockItemMode.NONE_BAG :
-               (stack.getItem() instanceof BitBeakerItem) ? SelectedBlockItemMode.NONE_BEAKER :
+        return (stack.getItem() instanceof BitBagItem) ? SelectedItemMode.NONE_BAG :
+               (stack.getItem() instanceof BitBeakerItem) ? SelectedItemMode.NONE_BEAKER :
+               (stack.getItem() instanceof PaletteItem) ? SelectedItemMode.NONE_BOOKMARK :
                (stack.getItem() instanceof ChiselItem) ? CHISEL_SINGLE :
                (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
                (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
@@ -97,7 +100,7 @@ public class ChiselModeManager {
         try {
             return ItemMode.valueOf(name);
         } catch(final IllegalArgumentException il) {
-            return SelectedBlockItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
+            return item.getItem() instanceof PaletteItem ? SelectedItemMode.fromColour(new Color(Integer.valueOf(name), true)) : SelectedItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
         }
     }
 

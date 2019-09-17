@@ -1,0 +1,14 @@
+{
+	"result": {
+		"item": "chiselsandbits2:black_bit_bag"
+	},
+	"type": "minecraft:crafting_shapeless",
+	"ingredients": [
+		{
+			"tag": "chiselsandbits2:bit_bags"
+		},
+		{
+			"tag": "forge:dyes/black"
+		}
+	]
+}

@@ -6,30 +6,30 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
-import nl.dgoossens.chiselsandbits2.api.BeakerStorage;
+import nl.dgoossens.chiselsandbits2.api.BitStorage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BeakerCapabilityProvider implements ICapabilitySerializable<INBT> {
-    @CapabilityInject(BeakerStorage.class)
-    public static final Capability<BeakerStorage> BEAKER_STORAGE = null;
+public class StorageCapabilityProvider implements ICapabilitySerializable<INBT> {
+    @CapabilityInject(BitStorage.class)
+    public static final Capability<BitStorage> STORAGE = null;
 
-    private BeakerStorage instance = new BeakerStorageImpl();
+    private BitStorage instance = new BitStorageImpl();
 
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        return cap == BEAKER_STORAGE ? LazyOptional.of(() -> (T) this.instance) : LazyOptional.empty();
+        return cap == STORAGE ? LazyOptional.of(() -> (T) this.instance) : LazyOptional.empty();
     }
 
     @Override
     public INBT serializeNBT() {
-        return BEAKER_STORAGE.getStorage().writeNBT(BEAKER_STORAGE, this.instance, null);
+        return STORAGE.getStorage().writeNBT(STORAGE, this.instance, null);
     }
 
     @Override
     public void deserializeNBT(INBT nbt) {
-        BEAKER_STORAGE.getStorage().readNBT(BEAKER_STORAGE, this.instance, null, nbt);
+        STORAGE.getStorage().readNBT(STORAGE, this.instance, null, nbt);
     }
 }
