@@ -8,6 +8,7 @@ import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.AtlasTexture;
@@ -177,7 +178,10 @@ public class ClientSide {
                 radialMenu.setClicked(false);
 
             KeyBinding modeMenu = ChiselsAndBits2.getInstance().getKeybindings().modeMenu;
-            radialMenu.setPressingButton(modeMenu.isPressed() && modeMenu.getKeyModifier().isActive(KeyConflictContext.IN_GAME));
+            //isKeyDown breaks when using ALT for some reason, so we do it custom.
+            if(modeMenu.isDefault()) radialMenu.setPressingButton(Screen.hasAltDown());
+            else radialMenu.setPressingButton(modeMenu.isKeyDown());
+
             if (radialMenu.isPressingButton() && !radialMenu.hasClicked() && (player.getHeldItemMainhand().getItem() instanceof IItemMenu)) {
                 //While the key is down, increase the visibility
                 radialMenu.setActionUsed(false);
