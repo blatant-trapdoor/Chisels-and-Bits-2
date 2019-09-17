@@ -64,9 +64,9 @@ public class ChiselEvent {
         boolean leftClick = e instanceof PlayerInteractEvent.LeftClickBlock;
         if (!leftClick && !(e instanceof PlayerInteractEvent.RightClickBlock)) return;
 
-        RayTraceResult rtr = Minecraft.getInstance().objectMouseOver;
-        if (rtr == null || rtr.getType() != RayTraceResult.Type.BLOCK) return;
         final PlayerEntity player = Minecraft.getInstance().player;
+        RayTraceResult rtr = ChiselUtil.rayTrace(player);
+        if (rtr == null || rtr.getType() != RayTraceResult.Type.BLOCK) return;
         if (!(player.getHeldItemMainhand().getItem() instanceof ChiselItem)) return;
         e.setCanceled(true);
 

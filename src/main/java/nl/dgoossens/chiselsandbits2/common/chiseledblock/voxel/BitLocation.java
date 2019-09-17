@@ -1,9 +1,16 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.api.BitOperation;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
+
+import javax.annotation.Nullable;
 
 public class BitLocation {
     private static final double ONE_32ND = 0.5 / VoxelBlob.DIMENSION;
@@ -11,10 +18,11 @@ public class BitLocation {
     public final BlockPos blockPos;
     public final int bitX, bitY, bitZ;
 
-    public BitLocation(final BlockRayTraceResult mop, final boolean absHit, final BitOperation type) {
+    public BitLocation(BlockRayTraceResult mop, final boolean absHit, final BitOperation type) {
         final BlockPos absOffset = absHit ? mop.getPos() : BlockPos.ZERO;
         final Vec3d crds = mop.getHitVec().subtract(absOffset.getX(), absOffset.getY(), absOffset.getZ())
                 .subtract(new Vec3d(mop.getFace().getXOffset(), mop.getFace().getYOffset(), mop.getFace().getZOffset()).scale(ONE_32ND));
+
         if (type == BitOperation.PLACE) {
             blockPos = mop.getPos();
 

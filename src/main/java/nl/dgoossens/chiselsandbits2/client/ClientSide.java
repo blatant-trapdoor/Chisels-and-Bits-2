@@ -335,11 +335,12 @@ public class ClientSide {
         final PlayerEntity player = Minecraft.getInstance().player;
         //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
         if (player.getHeldItemMainhand().getItem() instanceof ChiselItem) {
-            if (Minecraft.getInstance().objectMouseOver == null || Minecraft.getInstance().objectMouseOver.getType() != RayTraceResult.Type.BLOCK)
+            final RayTraceResult rayTrace = ChiselUtil.rayTrace(player);
+            if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK)
                 return;
 
             final World world = Minecraft.getInstance().world;
-            final BitLocation location = new BitLocation((BlockRayTraceResult) Minecraft.getInstance().objectMouseOver, true, BitOperation.REMOVE); //We always show the removal box, never the placement one.
+            final BitLocation location = new BitLocation((BlockRayTraceResult) rayTrace, true, BitOperation.REMOVE); //We always show the removal box, never the placement one.
             final TileEntity data = world.getTileEntity(location.blockPos);
 
             //We only show this box if this block is chiselable and this block at this position is chiselable.
@@ -354,7 +355,7 @@ public class ClientSide {
                             VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ,
                             new VoxelRegionSrc(world, location.blockPos, 1),
                             ChiselModeManager.getMode(player.getHeldItemMainhand()),
-                            ((BlockRayTraceResult) Minecraft.getInstance().objectMouseOver).getFace(),
+                            ((BlockRayTraceResult) rayTrace).getFace(),
                             false
                     ).getBoundingBox(
                             !(data instanceof ChiseledBlockTileEntity) ? (new VoxelBlob().fill(ModUtil.getStateId(world.getBlockState(location.blockPos))))

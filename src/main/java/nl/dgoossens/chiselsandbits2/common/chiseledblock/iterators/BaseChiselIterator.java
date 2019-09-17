@@ -7,14 +7,12 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 public abstract class BaseChiselIterator implements ChiselIterator {
 
     @Override
-    public IntegerBox getVoxelBox(
-            final VoxelBlob vb,
-            final boolean boundSolids) {
+    public IntegerBox getVoxelBox(final VoxelBlob vb, final boolean boundSolids) {
         final IntegerBox box = new IntegerBox(0, 0, 0, 0, 0, 0);
 
         boolean started = false;
         while (hasNext()) {
-            if (vb.get(x(), y(), z()) != 0 == boundSolids) {
+            if ((vb.get(x(), y(), z()) != VoxelBlob.AIR_BIT) == boundSolids) {
                 if (started) {
                     box.minX = Math.min(box.minX, x());
                     box.minY = Math.min(box.minY, y());

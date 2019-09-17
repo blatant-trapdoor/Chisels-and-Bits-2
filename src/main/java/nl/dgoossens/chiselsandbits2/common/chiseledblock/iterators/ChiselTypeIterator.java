@@ -6,7 +6,6 @@ import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
 import nl.dgoossens.chiselsandbits2.api.ItemMode;
 
 public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIterator {
-
     public final Direction side;
     final IItemMode mode;
     private final int full_size;
@@ -45,14 +44,7 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
         original_z = z;
     }
 
-    private ChiselTypeIterator(
-            final int dim,
-            int x,
-            int y,
-            int z,
-            final IVoxelSrc source,
-            final IItemMode mode,
-            final Direction side) {
+    private ChiselTypeIterator(final int dim, int x, int y, int z, final IVoxelSrc source, final IItemMode mode, final Direction side) {
         int offset = 0;
         full_size = dim;
         max_dim = dim - 1;

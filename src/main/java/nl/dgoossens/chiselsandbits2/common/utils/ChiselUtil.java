@@ -2,9 +2,11 @@ package nl.dgoossens.chiselsandbits2.common.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -62,5 +64,16 @@ public class ChiselUtil {
         if (!player.getEntityWorld().isBlockModifiable(player, pos)) return false;
         if (!player.canPlayerEdit(pos, face, player.getHeldItemMainhand())) return false;
         return ForgeEventFactory.onEntityDestroyBlock(player, pos, state);
+    }
+
+    /**
+     * Raytraces from the player's eyes to a block, uses COLLIDER mode.
+     */
+    public static RayTraceResult rayTrace(final Entity entity) {
+        Vec3d vec3d = entity.getEyePosition(1.0f);
+        Vec3d vec3d1 = entity.getLook(1.0f);
+        double d = (double) Minecraft.getInstance().playerController.getBlockReachDistance();
+        Vec3d vec3d2 = vec3d.add(vec3d1.x * d, vec3d1.y * d, vec3d1.z * d);
+        return entity.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity));
     }
 }
