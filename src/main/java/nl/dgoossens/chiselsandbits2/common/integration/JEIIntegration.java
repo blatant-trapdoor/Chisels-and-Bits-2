@@ -19,15 +19,15 @@ public class JEIIntegration implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        ModItems m = ChiselsAndBits2.getItems();
+        ModItems m = ChiselsAndBits2.getInstance().getItems();
         addDescriptions(registration, m.CHISEL, m.PATTERN, m.SAW, m.TAPE_MEASURE, m.WRENCH, m.BIT_BAG,
                 m.BIT_BEAKER, m.MALLET, m.BLUEPRINT, m.PALETTE);
     }
 
     private void addDescriptions(IRecipeRegistration registration, Item... items) {
         IIngredientType<ItemStack> i = registration.getIngredientManager().getIngredientType(ItemStack.class);
-        for(Item it : items) {
-            registration.addIngredientInfo(new ItemStack(it), i, "jei."+it.getTranslationKey());
+        for (Item it : items) {
+            registration.addIngredientInfo(new ItemStack(it), i, "jei." + it.getTranslationKey());
         }
     }
 }

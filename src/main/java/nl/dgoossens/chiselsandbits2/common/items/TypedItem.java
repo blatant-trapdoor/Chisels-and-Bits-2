@@ -1,15 +1,17 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.client.resources.I18n;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 
 public abstract class TypedItem extends Item implements IItemScrollWheel, IItemMenu {
-    public TypedItem(Item.Properties builder) { super(builder); }
+    public TypedItem(Item.Properties builder) {
+        super(builder);
+    }
 
     /**
      * Display the mode in the highlight tip. (and color for tape measure)
@@ -17,7 +19,7 @@ public abstract class TypedItem extends Item implements IItemScrollWheel, IItemM
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
         IItemMode im = ChiselModeManager.getMode(item);
-        return displayName + " - " + (im.equals(SelectedItemMode.NONE_BAG) || im.equals(SelectedItemMode.NONE_BEAKER) || im.equals(SelectedItemMode.NONE_BOOKMARK) ? I18n.format("general."+ChiselsAndBits2.MOD_ID+".none") : im.getLocalizedName()) + ((getAssociatedType() == ItemModeType.TAPEMEASURE || getAssociatedType() == ItemModeType.CHISEL) ? (" - " + ChiselModeManager.getMenuActionMode(item).getLocalizedName()) : "");
+        return displayName + " - " + (im.equals(SelectedItemMode.NONE_BAG) || im.equals(SelectedItemMode.NONE_BEAKER) || im.equals(SelectedItemMode.NONE_BOOKMARK) ? I18n.format("general." + ChiselsAndBits2.MOD_ID + ".none") : im.getLocalizedName()) + ((getAssociatedType() == ItemModeType.TAPEMEASURE || getAssociatedType() == ItemModeType.CHISEL) ? (" - " + ChiselModeManager.getMenuActionMode(item).getLocalizedName()) : "");
     }
 
     /**

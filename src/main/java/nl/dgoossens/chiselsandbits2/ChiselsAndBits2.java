@@ -3,31 +3,24 @@ package nl.dgoossens.chiselsandbits2;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLModIdMappingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import nl.dgoossens.chiselsandbits2.api.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
-import nl.dgoossens.chiselsandbits2.api.ICacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.SmartModelManager;
-import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapability;
-import nl.dgoossens.chiselsandbits2.api.BitStorage;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapability;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselsAndBitsAPIImpl;
-import nl.dgoossens.chiselsandbits2.common.registry.ModConfiguration;
+import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.registry.ModBlocks;
+import nl.dgoossens.chiselsandbits2.common.registry.ModConfiguration;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
-import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
-import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Mod(ChiselsAndBits2.MOD_ID)
 public class ChiselsAndBits2 {
@@ -53,13 +46,9 @@ public class ChiselsAndBits2 {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CONFIGURATION.CLIENT);
     }
 
-    public static ChiselsAndBits2 getInstance() { return instance; }
-    public static ChiselsAndBitsAPI getAPI() { return getInstance().API; }
-    public static ModItems getItems() { return getInstance().ITEMS; }
-    public static ModBlocks getBlocks() { return getInstance().BLOCKS; }
-    public static ClientSide getClient() { return getInstance().CLIENT; }
-    public static ModConfiguration getConfig() { return getInstance().CONFIGURATION; }
-    public static ModKeybindings getKeybindings() { return getInstance().KEYBINDINGS; }
+    public static ChiselsAndBits2 getInstance() {
+        return instance;
+    }
 
     // Ran after all registry events have finished.
     private void setup(final FMLCommonSetupEvent event) {
@@ -73,32 +62,35 @@ public class ChiselsAndBits2 {
         CapabilityManager.INSTANCE.register(BitStorage.class, new StorageCapability(), BitStorageImpl::new);
     }
 
-    //TODO this all needs someplaceelse to live
-    boolean idsHaveBeenMapped = false;
-    List<ICacheClearable> cacheClearables = new ArrayList<>();
-
-    @SubscribeEvent
-    public void idsMapped(final FMLModIdMappingEvent event) {
-        idsHaveBeenMapped = true;
-        //BlockBitInfo.recalculateFluidBlocks();
-        clearCache();
-        new ModelUtil().clearCache();
+    public ChiselsAndBitsAPI getAPI() {
+        return API;
     }
 
-    public void clearCache() {
-        if (idsHaveBeenMapped) {
-            for(final ICacheClearable clearable : cacheClearables)
-                clearable.clearCache();
-
-            //TODO addClearable(UndoTracker.getInstance());
-            //VoxelBlob.clearCache();
-        }
+    public ModItems getItems() {
+        return ITEMS;
     }
 
-    /**
-     * Adds an IClearable to fromName cleared when clearCache() is called.
-     */
-    public void addClearable(final ICacheClearable cache) {
-        if(!cacheClearables.contains(cache)) cacheClearables.add(cache);
+    public ModBlocks getBlocks() {
+        return BLOCKS;
+    }
+
+    public ClientSide getClient() {
+        return CLIENT;
+    }
+
+    public NetworkRouter getNetworkRouter() {
+        return NETWORK_ROUTER;
+    }
+
+    public ModConfiguration getConfig() {
+        return CONFIGURATION;
+    }
+
+    public ModKeybindings getKeybindings() {
+        return KEYBINDINGS;
+    }
+
+    public SmartModelManager getModelManager() {
+        return SMART_MODEL_MANAGER;
     }
 }

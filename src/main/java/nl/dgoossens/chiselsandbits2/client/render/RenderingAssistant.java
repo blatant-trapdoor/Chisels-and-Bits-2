@@ -11,7 +11,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import org.lwjgl.opengl.GL11;
@@ -40,7 +39,7 @@ public class RenderingAssistant {
             final int blue,
             final int alpha,
             final int seeThruAlpha) {
-        if(bb != null) {
+        if (bb != null) {
             final double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
             final double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks + player.getEyeHeight();
             final double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
@@ -53,7 +52,7 @@ public class RenderingAssistant {
 
             final AxisAlignedBB bb2 = bb.expand(0.002D, 0.002D, 0.002D).offset(-x + blockPos.getX(), -y + blockPos.getY(), -z + blockPos.getZ());
 
-            if(!normalBoundingBox)
+            if (!normalBoundingBox)
                 renderBoundingBox(bb2, red, green, blue, alpha);
 
             GlStateManager.enableDepthTest();
@@ -114,7 +113,7 @@ public class RenderingAssistant {
             final World worldObj,
             final BlockPos blockPos) {
         int i = 0;
-        for(final int j = quads.size(); i < j; ++i) {
+        for (final int j = quads.size(); i < j; ++i) {
             final BakedQuad bakedquad = quads.get(i);
             final int color = bakedquad.getTintIndex() == -1 ? alpha | 0xffffff : getTint(alpha, bakedquad.getTintIndex(), worldObj, blockPos);
             net.minecraftforge.client.model.pipeline.LightUtil.renderQuadColor(renderer, bakedquad, color);
@@ -198,7 +197,7 @@ public class RenderingAssistant {
             final int tintIndex,
             final World worldObj,
             final BlockPos blockPos) {
-        return alpha | Minecraft.getInstance().getBlockColors().getColor(ChiselsAndBits2.getBlocks().CHISELED_BLOCK.getDefaultState(), worldObj, blockPos, tintIndex);
+        return alpha | Minecraft.getInstance().getBlockColors().getColor(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), worldObj, blockPos, tintIndex);
     }
 
     public static void renderModel(
@@ -210,7 +209,7 @@ public class RenderingAssistant {
         final BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
 
-        for(final Direction enumfacing : Direction.values()) {
+        for (final Direction enumfacing : Direction.values()) {
             renderQuads(alpha, buffer, model.getQuads(null, enumfacing, new Random()), worldObj, blockPos);
         }
 

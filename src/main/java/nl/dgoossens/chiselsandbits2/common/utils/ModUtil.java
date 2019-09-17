@@ -2,32 +2,26 @@ package nl.dgoossens.chiselsandbits2.common.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
-import java.util.Random;
 
 public class ModUtil {
-    //The amount of memory allocated to Minecraft.
-    private static long memory = -1;
-
     @Nonnull
     public static final String NBT_BLOCKENTITYTAG = "BlockEntityTag";
+    //The amount of memory allocated to Minecraft.
+    private static long memory = -1;
 
     /**
      * Returns true if less than 1256 MB in memory is allocated
      * to Minecraft.
      */
     public static boolean isLowMemoryMode() {
-        if(memory==-1)
+        if (memory == -1)
             memory = Runtime.getRuntime().maxMemory() / (1024 * 1024); // mb
         return memory < 1256;
     }
@@ -60,7 +54,7 @@ public class ModUtil {
         //We shift the alpha part 2 to the left (and back) to drop the identifier.
         //Then we multiply the alpha part by 4 to make use of the full range of visibility.
         //Then we add the normal part of the id to it, which makes the int complete in the way that the colour object internally stores it.
-        return new Color((colourStateId << 2 >>> 2)*4 + colourStateId << 8 >>> 8, true);
+        return new Color((colourStateId << 2 >>> 2) * 4 + colourStateId << 8 >>> 8, true);
     }
 
     /**
@@ -75,7 +69,7 @@ public class ModUtil {
      * Get a fluidstate's id.
      */
     public static int getFluidId(final IFluidState fluid) {
-       return 0b01000000000000000000000000000000 + Math.max(0, Fluid.STATE_REGISTRY.get(fluid));
+        return 0b01000000000000000000000000000000 + Math.max(0, Fluid.STATE_REGISTRY.get(fluid));
     }
 
     /**
@@ -85,6 +79,6 @@ public class ModUtil {
      */
     public static int getColourId(final Color colour) {
         //We built our own int instead of getting the colour value because we do some trickery to the MSBs.
-        return 0b01000000000000000000000000000000 + (colour.getAlpha()/4) << 24 + colour.getRed() << 16 + colour.getGreen() << 8 + colour.getBlue();
+        return 0b01000000000000000000000000000000 + (colour.getAlpha() / 4) << 24 + colour.getRed() << 16 + colour.getGreen() << 8 + colour.getBlue();
     }
 }

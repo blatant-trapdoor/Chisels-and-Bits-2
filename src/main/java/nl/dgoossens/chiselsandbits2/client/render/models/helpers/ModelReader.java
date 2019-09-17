@@ -14,9 +14,9 @@ public class ModelReader extends BaseModelReader {
         final VertexFormat format = getVertexFormat();
         final VertexFormatElement ele = format.getElement(element);
 
-        if(ele.getUsage() == VertexFormatElement.Usage.UV && ele.getIndex() != 1)
+        if (ele.getUsage() == VertexFormatElement.Usage.UV && ele.getIndex() != 1)
             uv = Arrays.copyOf(data, data.length);
-        else if(ele.getUsage() == VertexFormatElement.Usage.POSITION)
+        else if (ele.getUsage() == VertexFormatElement.Usage.POSITION)
             pos = Arrays.copyOf(data, data.length);
     }
 }

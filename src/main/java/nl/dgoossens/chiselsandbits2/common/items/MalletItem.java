@@ -13,7 +13,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.ItemMode;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
@@ -21,18 +20,21 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class MalletItem extends TypedItem {
-    public MalletItem(Properties builder) { super(builder); }
+    public MalletItem(Properties builder) {
+        super(builder);
+    }
 
     @Override
     public ItemModeType getAssociatedType() {
         return ItemModeType.MALLET;
     }
+
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "mallet.help",
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
-                ChiselsAndBits2.getKeybindings().modeMenu
+                ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
     }
 
@@ -60,7 +62,7 @@ public class MalletItem extends TypedItem {
      */
     @Override
     public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
-        if(ItemTags.PLANKS.contains(repair.getItem())) return true; //Can repair with wooden planks.
+        if (ItemTags.PLANKS.contains(repair.getItem())) return true; //Can repair with wooden planks.
         return super.getIsRepairable(toRepair, repair);
     }
 
@@ -70,7 +72,7 @@ public class MalletItem extends TypedItem {
     @Override
     public Multimap<String, AttributeModifier> getAttributeModifiers(EquipmentSlotType slot, ItemStack stack) {
         Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
-        if(slot == EquipmentSlotType.MAINHAND) {
+        if (slot == EquipmentSlotType.MAINHAND) {
             multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, () -> "Tool modifier", 1.1, AttributeModifier.Operation.ADDITION));
             multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, () -> "Tool modifier", -1.9, AttributeModifier.Operation.ADDITION));
         }

@@ -2,10 +2,11 @@ package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.block.Block;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 import java.awt.*;
 import java.util.List;
-import java.util.Set;
 
 public interface BitStorage {
     /**
@@ -27,7 +28,7 @@ public interface BitStorage {
      * Returns a set of all types of blocks in this storage.
      * Lists them as SelectedBlockItemMode instances.
      */
-    List<IItemMode> listTypesAsItemModes();
+    List<IItemMode> listTypesAsItemModes(Item item);
 
     /**
      * Get the amount of block bits stored for a given block type.

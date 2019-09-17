@@ -1,36 +1,21 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
 import com.google.common.collect.Multimap;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTier;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.*;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
-import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.api.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
-import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
-import nl.dgoossens.chiselsandbits2.network.packets.PacketChisel;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -44,14 +29,15 @@ public class ChiselItem extends TypedItem {
     public ItemModeType getAssociatedType() {
         return ItemModeType.CHISEL;
     }
+
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "chisel.help",
                 Minecraft.getInstance().gameSettings.keyBindAttack,
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
-                ChiselsAndBits2.getKeybindings().selectBitType,
-                ChiselsAndBits2.getKeybindings().modeMenu
+                ChiselsAndBits2.getInstance().getKeybindings().selectBitType,
+                ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
     }
 
@@ -79,7 +65,7 @@ public class ChiselItem extends TypedItem {
      */
     @Override
     public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
-        if(Tags.Items.INGOTS_GOLD.contains(repair.getItem())) return true; //Can repair with gold.
+        if (Tags.Items.INGOTS_GOLD.contains(repair.getItem())) return true; //Can repair with gold.
         return super.getIsRepairable(toRepair, repair);
     }
 
@@ -90,7 +76,7 @@ public class ChiselItem extends TypedItem {
     @Override
     public Multimap<String, AttributeModifier> getAttributeModifiers(EquipmentSlotType slot, ItemStack stack) {
         Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
-        if(slot == EquipmentSlotType.MAINHAND) {
+        if (slot == EquipmentSlotType.MAINHAND) {
             multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, () -> "Tool modifier", 0, AttributeModifier.Operation.ADDITION));
             multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, () -> "Tool modifier", -2, AttributeModifier.Operation.ADDITION));
         }

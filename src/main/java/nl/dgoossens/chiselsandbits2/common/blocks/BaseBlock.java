@@ -7,6 +7,11 @@ import net.minecraft.item.Item;
  * The parent class to all blocks.
  */
 public interface BaseBlock {
-    default Item.Properties getItemProperties() { return new Item.Properties(); }
-    default BlockItem getBlockItem() { return null; }
+    default Item.Properties getItemProperties() {
+        return new Item.Properties();
+    }
+
+    default BlockItem getBlockItem() {
+        return null;
+    }
 }

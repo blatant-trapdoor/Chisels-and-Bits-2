@@ -6,29 +6,29 @@ import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
 
 public abstract class BaseBakedBlockModel extends BaseBakedPerspectiveModel implements IBakedModel, IForgeBakedModel {
-	@Override
-	final public boolean isAmbientOcclusion() {
-		return true;
-	}
+    @Override
+    final public boolean isAmbientOcclusion() {
+        return true;
+    }
 
-	@Override
-	final public boolean isGui3d() {
-		return true;
-	}
+    @Override
+    final public boolean isGui3d() {
+        return true;
+    }
 
-	@Override
-	final public boolean isBuiltInRenderer() {
-		return false;
-	}
+    @Override
+    final public boolean isBuiltInRenderer() {
+        return false;
+    }
 
-	@Override
-	final public ItemCameraTransforms getItemCameraTransforms() {
-		return ItemCameraTransforms.DEFAULT;
-	}
+    @Override
+    final public ItemCameraTransforms getItemCameraTransforms() {
+        return ItemCameraTransforms.DEFAULT;
+    }
 
-	@Override
-	public ItemOverrideList getOverrides() {
-		return ItemOverrideList.EMPTY;
-	}
+    @Override
+    public ItemOverrideList getOverrides() {
+        return ItemOverrideList.EMPTY;
+    }
 
 }

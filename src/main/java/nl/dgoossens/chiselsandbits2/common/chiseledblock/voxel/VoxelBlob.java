@@ -18,8 +18,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
@@ -28,321 +31,365 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 public final class VoxelBlob implements IVoxelSrc {
-	public final static int AIR_BIT = 0;
+    public final static int AIR_BIT = 0;
 
-	public final static int DIMENSION = 16;
-	public final static int DIMENSION2 = DIMENSION * DIMENSION;
-	public final static int DIMENSION3 = DIMENSION2 * DIMENSION;
+    public final static int DIMENSION = 16;
+    public final static int DIMENSION2 = DIMENSION * DIMENSION;
+    public final static int DIMENSION3 = DIMENSION2 * DIMENSION;
 
-	public final static int ARRAY_SIZE = DIMENSION3;
-	public final static int DIMENSION_MINUS_ONE = DIMENSION - 1;
+    public final static int ARRAY_SIZE = DIMENSION3;
+    public final static int DIMENSION_MINUS_ONE = DIMENSION - 1;
 
 
-	private final int[] values = new int[ARRAY_SIZE];
-	private int best_buffer_size = 26;
-	//Every int in the values map is used as follows:
-	//  00000000000000000000000000000000
+    private final int[] values = new int[ARRAY_SIZE];
+    private int best_buffer_size = 26;
+    //Every int in the values map is used as follows:
+    //  00000000000000000000000000000000
 
-	// The integer's 2 MSB determine the type:
-	// 00 -> legacy
-	// 01 -> fluidstate
-	// 10 -> colouredstate
-	// 11 -> blockstate
+    // The integer's 2 MSB determine the type:
+    // 00 -> legacy
+    // 01 -> fluidstate
+    // 10 -> colouredstate
+    // 11 -> blockstate
 
-	// Each type has it's own usage of the remaining 30 bits
-	// Coloured State -> 30: 6 - 8 - 8 - 8
-	// which leaves 64 possible alpha's and 255 for R, G and B
-	// the alpha value is retrieved by multiplying the value from the 6 bits by 4
+    // Each type has it's own usage of the remaining 30 bits
+    // Coloured State -> 30: 6 - 8 - 8 - 8
+    // which leaves 64 possible alpha's and 255 for R, G and B
+    // the alpha value is retrieved by multiplying the value from the 6 bits by 4
 
-	//--- CONSTRUCTORS ---
-	public VoxelBlob() {}
-	protected VoxelBlob(final VoxelBlob vb) {
-		for(int x = 0; x < values.length; ++x)
-			values[x] = vb.values[x];
-	}
+    //--- CONSTRUCTORS ---
+    public VoxelBlob() {
+    }
 
-	//--- PROTECTED METHODS ---
-	protected int getBit(final int offset) { return values[offset]; }
-	protected void putBit(final int offset, final int newValue) { values[offset] = newValue; }
+    protected VoxelBlob(final VoxelBlob vb) {
+        for (int x = 0; x < values.length; ++x)
+            values[x] = vb.values[x];
+    }
 
-	//--- MODIFICATION METHODS ---
-	/**
-	 * Merges the second voxelblob into this one.
-	 * Returns this.
-	 */
-	public VoxelBlob merge(final VoxelBlob second) {
-		for(int x = 0; x < values.length; ++x)
-			if(values[x] == 0) values[x] = second.values[x];
-		return this;
-	}
+    /**
+     * Creates a voxelblob filled with type.
+     */
+    public static VoxelBlob full(final BlockState type) {
+        return new VoxelBlob().fill(ModUtil.getStateId(type));
+    }
 
-	/**
-	 * Returns a new VoxelBlob which contains
-	 * a version of this one mirrored
-	 * across the given axis.
-	 */
-	public VoxelBlob mirror(final Direction.Axis axis) {
-		VoxelBlob out = new VoxelBlob();
-		final BitIterator bi = new BitIterator();
-		while(bi.hasNext()) {
-			if(bi.getNext(this) != AIR_BIT) {
-				switch(axis) {
-					case X:
-						out.set(DIMENSION_MINUS_ONE - bi.x, bi.y, bi.z, bi.getNext(this));
-						break;
-					case Y:
-						out.set(bi.x, DIMENSION_MINUS_ONE - bi.y, bi.z, bi.getNext(this));
-						break;
-					case Z:
-						out.set(bi.x, bi.y, DIMENSION_MINUS_ONE - bi.z, bi.getNext(this));
-						break;
-				}
-			}
-		}
-		return out;
-	}
+    //--- PROTECTED METHODS ---
+    protected int getBit(final int offset) {
+        return values[offset];
+    }
 
-	/**
-	 * Offsets the voxel blob.
-	 */
-	public VoxelBlob offset(final int xx, final int yy, final int zz ) {
-		final VoxelBlob out = new VoxelBlob();
-		for(int z = 0; z < DIMENSION; z++) {
-			for(int y = 0; y < DIMENSION; y++) {
-				for(int x = 0; x < DIMENSION; x++)
-					out.set(x, y, z, getSafe( x - xx, y - yy, z - zz ));
-			}
-		}
-		return out;
-	}
+    //--- MODIFICATION METHODS ---
 
-	/**
-	 * Spin the voxel blob along the axis by 90
-	 * clockwise.
-	 */
-	public VoxelBlob spin(final Direction.Axis axis) {
-		final VoxelBlob out = new VoxelBlob();
-		//Rotate by -90 Degrees: x' = y y' = - x
+    protected void putBit(final int offset, final int newValue) {
+        values[offset] = newValue;
+    }
 
-		final BitIterator bi = new BitIterator();
-		while(bi.hasNext()) {
-			switch(axis) {
-				case X:
-					out.set(bi.x, DIMENSION_MINUS_ONE - bi.z, bi.y, bi.getNext(this));
-					break;
-				case Y:
-					out.set(bi.z, bi.y, DIMENSION_MINUS_ONE - bi.x, bi.getNext(this));
-					break;
-				case Z:
-					out.set(DIMENSION_MINUS_ONE - bi.y, bi.x, bi.z, bi.getNext(this));
-					break;
-				default:
-					throw new NullPointerException();
-			}
-		}
-		return out;
-	}
+    /**
+     * Merges the second voxelblob into this one.
+     * Returns this.
+     */
+    public VoxelBlob merge(final VoxelBlob second) {
+        for (int x = 0; x < values.length; ++x)
+            if (values[x] == 0) values[x] = second.values[x];
+        return this;
+    }
 
-	/**
-	 * Fills this voxelbob
-	 */
-	public VoxelBlob fill(final int value) {
-		for(int x = 0; x < ARRAY_SIZE; x++)
-			values[x] = value;
-		return this;
-	}
+    /**
+     * Returns a new VoxelBlob which contains
+     * a version of this one mirrored
+     * across the given axis.
+     */
+    public VoxelBlob mirror(final Direction.Axis axis) {
+        VoxelBlob out = new VoxelBlob();
+        final BitIterator bi = new BitIterator();
+        while (bi.hasNext()) {
+            if (bi.getNext(this) != AIR_BIT) {
+                switch (axis) {
+                    case X:
+                        out.set(DIMENSION_MINUS_ONE - bi.x, bi.y, bi.z, bi.getNext(this));
+                        break;
+                    case Y:
+                        out.set(bi.x, DIMENSION_MINUS_ONE - bi.y, bi.z, bi.getNext(this));
+                        break;
+                    case Z:
+                        out.set(bi.x, bi.y, DIMENSION_MINUS_ONE - bi.z, bi.getNext(this));
+                        break;
+                }
+            }
+        }
+        return out;
+    }
 
-	/**
-	 * Clears this voxelblob, fills it with air.
-	 */
-	public VoxelBlob clear() {
-		fill(AIR_BIT);
-		return this;
-	}
+    /**
+     * Offsets the voxel blob.
+     */
+    public VoxelBlob offset(final int xx, final int yy, final int zz) {
+        final VoxelBlob out = new VoxelBlob();
+        for (int z = 0; z < DIMENSION; z++) {
+            for (int y = 0; y < DIMENSION; y++) {
+                for (int x = 0; x < DIMENSION; x++)
+                    out.set(x, y, z, getSafe(x - xx, y - yy, z - zz));
+            }
+        }
+        return out;
+    }
 
-	//--- LOOKUP METHODS ---
-	/**
-	 * Will return true if for every bit in the voxelblob
-	 * it is true that it is air in either or both of
-	 * the blobs. (no bit is set in both)
-	 */
-	public boolean canMerge(final VoxelBlob second) {
-		for(int x = 0; x < values.length; ++x)
-			if(values[x] != AIR_BIT && second.values[x] != AIR_BIT) return false;
+    /**
+     * Spin the voxel blob along the axis by 90
+     * clockwise.
+     */
+    public VoxelBlob spin(final Direction.Axis axis) {
+        final VoxelBlob out = new VoxelBlob();
+        //Rotate by -90 Degrees: x' = y y' = - x
 
-		return true;
-	}
+        final BitIterator bi = new BitIterator();
+        while (bi.hasNext()) {
+            switch (axis) {
+                case X:
+                    out.set(bi.x, DIMENSION_MINUS_ONE - bi.z, bi.y, bi.getNext(this));
+                    break;
+                case Y:
+                    out.set(bi.z, bi.y, DIMENSION_MINUS_ONE - bi.x, bi.getNext(this));
+                    break;
+                case Z:
+                    out.set(DIMENSION_MINUS_ONE - bi.y, bi.x, bi.z, bi.getNext(this));
+                    break;
+                default:
+                    throw new NullPointerException();
+            }
+        }
+        return out;
+    }
 
-	/**
-	 * Get the position of the center of the shape.
-	 */
-	public BlockPos getCenter() {
-		final IntegerBox bounds = getBounds();
-		return bounds!=null ? new BlockPos( ( bounds.minX + bounds.maxX ) / 2, ( bounds.minY + bounds.maxY ) / 2, ( bounds.minZ + bounds.maxZ ) / 2 ) : null;
-	}
+    /**
+     * Fills this voxelbob
+     */
+    public VoxelBlob fill(final int value) {
+        for (int x = 0; x < ARRAY_SIZE; x++)
+            values[x] = value;
+        return this;
+    }
 
-	/**
-	 * Gets the bounding box around this voxel blob.
-	 */
-	public IntegerBox getBounds() {
-		boolean found = false;
-		int min_x = 15, min_y = 15, min_z = 15;
-		int max_x = 0, max_y = 0, max_z = 0;
+    //--- LOOKUP METHODS ---
 
-		final BitIterator bi = new BitIterator();
-		while (bi.hasNext()) {
-			if(bi.getNext(this) != AIR_BIT) {
-				found = true;
-				min_x = Math.min(min_x, bi.x);
-				min_y = Math.min(min_y, bi.y);
-				min_z = Math.min(min_z, bi.z);
+    /**
+     * Clears this voxelblob, fills it with air.
+     */
+    public VoxelBlob clear() {
+        fill(AIR_BIT);
+        return this;
+    }
 
-				max_x = Math.max(max_x, bi.x);
-				max_y = Math.max(max_y, bi.y);
-				max_z = Math.max(max_z, bi.z);
-			}
-		}
-		return found ? new IntegerBox(min_x, min_y, min_z, max_x, max_y, max_z) : IntegerBox.NULL;
-	}
+    /**
+     * Will return true if for every bit in the voxelblob
+     * it is true that it is air in either or both of
+     * the blobs. (no bit is set in both)
+     */
+    public boolean canMerge(final VoxelBlob second) {
+        for (int x = 0; x < values.length; ++x)
+            if (values[x] != AIR_BIT && second.values[x] != AIR_BIT) return false;
 
-	/**
-	 * Returns the amount of bits that's equal to air in this blob.
-	 */
-	public long air() {
-		return Arrays.stream(values).parallel().filter(f -> f==AIR_BIT).count();
-	}
+        return true;
+    }
 
-	/**
-	 * Returns the amount of bits that's not air.
-	 */
-	public long filled() {
-		return Arrays.stream(values).parallel().filter(f -> f!=AIR_BIT).count();
-	}
+    /**
+     * Get the position of the center of the shape.
+     */
+    public BlockPos getCenter() {
+        final IntegerBox bounds = getBounds();
+        return bounds != null ? new BlockPos((bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2, (bounds.minZ + bounds.maxZ) / 2) : null;
+    }
 
-	/**
-	 * Get the state id of the most common state.
-	 * Will return 0 if the block is empty.
-	 */
-	public int getMostCommonStateId() {
-		return getBlockSums().entrySet().parallelStream()
-				.filter(f -> f.getKey()!=AIR_BIT) //We ignore air in the calculation.
-				.max(Comparator.comparing(e -> e.getValue().intValue())).map(Entry::getKey)
-				.orElse(AIR_BIT); //There needs to be handling downstream if this happens. This also means the block is empty.
-	}
+    /**
+     * Gets the bounding box around this voxel blob.
+     */
+    public IntegerBox getBounds() {
+        boolean found = false;
+        int min_x = 15, min_y = 15, min_z = 15;
+        int max_x = 0, max_y = 0, max_z = 0;
 
-	/**
-	 * Returns a set of all bit ids in this voxel blob.
-	 */
-	public Set<Integer> listContents() {
-		return Arrays.stream(values).parallel().distinct().boxed().collect(Collectors.toSet());
-	}
+        final BitIterator bi = new BitIterator();
+        while (bi.hasNext()) {
+            if (bi.getNext(this) != AIR_BIT) {
+                found = true;
+                min_x = Math.min(min_x, bi.x);
+                min_y = Math.min(min_y, bi.y);
+                min_z = Math.min(min_z, bi.z);
 
-	/**
-	 * Returns a map with bit-count sums of all bits in this
-	 * voxelblob.
-	 * LongAdder is used to allow for multithreaded counting.
-	 */
-	public Map<Integer, LongAdder> getBlockSums() {
-		final Map<Integer, LongAdder> counts = new ConcurrentHashMap<>();
-		Arrays.stream(values).parallel()
-				.forEach(f -> {
-					if(!counts.containsKey(f)) counts.put(f, new LongAdder());
-					counts.get(f).increment();
-				});
-		return counts;
-	}
+                max_x = Math.max(max_x, bi.x);
+                max_y = Math.max(max_y, bi.y);
+                max_z = Math.max(max_z, bi.z);
+            }
+        }
+        return found ? new IntegerBox(min_x, min_y, min_z, max_x, max_y, max_z) : IntegerBox.NULL;
+    }
 
-	//--- ACTION METHODS ---
-	/**
-	 * Get the voxel type of a bit at a position.
-	 */
-	public VoxelType getVoxelType(final int x, final int y, final int z) {
-		return VoxelType.getType(get(x, y, z));
-	}
+    /**
+     * Returns the amount of bits that's equal to air in this blob.
+     */
+    public long air() {
+        return Arrays.stream(values).parallel().filter(f -> f == AIR_BIT).count();
+    }
 
-	/**
-	 * Gets a pit at a given position.
-	 */
-	public int get(final int x, final int y, final int z) {
-		return getBit( x | y << 4 | z << 8 );
-	}
+    /**
+     * Returns the amount of bits that's not air.
+     */
+    public long filled() {
+        return Arrays.stream(values).parallel().filter(f -> f != AIR_BIT).count();
+    }
 
-	/**
-	 * Sets a bit at a given x/y/z to a value.
-	 */
-	public void set(final int x, final int y, final int z, final int value) {
-		putBit( x | y << 4 | z << 8, value );
-	}
+    /**
+     * Get the state id of the most common state.
+     * Will return 0 if the block is empty.
+     */
+    public int getMostCommonStateId() {
+        return getBlockSums().entrySet().parallelStream()
+                .filter(f -> f.getKey() != AIR_BIT) //We ignore air in the calculation.
+                .max(Comparator.comparing(e -> e.getValue().intValue())).map(Entry::getKey)
+                .orElse(AIR_BIT); //There needs to be handling downstream if this happens. This also means the block is empty.
+    }
 
-	/**
-	 * Sets a bit to air a given position.
-	 */
-	public void clear(final int x, final int y, final int z ) {
-		putBit(x | y << 4 | z << 8, AIR_BIT);
-	}
+    /**
+     * Returns a set of all bit ids in this voxel blob.
+     */
+    public Set<Integer> listContents() {
+        return Arrays.stream(values).parallel().distinct().boxed().collect(Collectors.toSet());
+    }
 
-	/**
-	 * Get the bit at a given location. Doesn't throw errors when
-	 * the coordinates are not in this voxel blob.
-	 */
-	@Override
-	public int getSafe(final int x, final int y, final int z) {
-		if(x >= 0 && x < DIMENSION && y >= 0 && y < DIMENSION && z >= 0 && z < DIMENSION)
-			return get( x, y, z );
-		return AIR_BIT;
-	}
+    //--- ACTION METHODS ---
 
-	//--- STATIC CONSTRUCTION METHODS ---
-	/**
-	 * Creates a voxelblob filled with type.
-	 */
-	public static VoxelBlob full(final BlockState type) {
-		return new VoxelBlob().fill(ModUtil.getStateId(type));
-	}
+    /**
+     * Returns a map with bit-count sums of all bits in this
+     * voxelblob.
+     * LongAdder is used to allow for multithreaded counting.
+     */
+    public Map<Integer, LongAdder> getBlockSums() {
+        final Map<Integer, LongAdder> counts = new ConcurrentHashMap<>();
+        Arrays.stream(values).parallel()
+                .forEach(f -> {
+                    if (!counts.containsKey(f)) counts.put(f, new LongAdder());
+                    counts.get(f).increment();
+                });
+        return counts;
+    }
 
-	//--- OBJECT OVERWRITE METHODS ---
-	@Override
-	public VoxelBlob clone() {
-		return new VoxelBlob(this);
-	}
+    /**
+     * Get the voxel type of a bit at a position.
+     */
+    public VoxelType getVoxelType(final int x, final int y, final int z) {
+        return VoxelType.getType(get(x, y, z));
+    }
 
-	@Override
-	public boolean equals(final Object obj) {
-		if(obj instanceof VoxelBlob) {
-			final VoxelBlob a = (VoxelBlob) obj;
-			return Arrays.equals(a.values, values);
-		}
-		return false;
-	}
+    /**
+     * Gets a pit at a given position.
+     */
+    public int get(final int x, final int y, final int z) {
+        return getBit(x | y << 4 | z << 8);
+    }
 
-	//--- INTERNAL LOGIC METHODS ---
+    /**
+     * Sets a bit at a given x/y/z to a value.
+     */
+    public void set(final int x, final int y, final int z, final int value) {
+        putBit(x | y << 4 | z << 8, value);
+    }
 
-	public static class VisibleFace {
-		public boolean isEdge;
-		public boolean visibleFace;
-		public int state;
-	}
+    /**
+     * Sets a bit to air a given position.
+     */
+    public void clear(final int x, final int y, final int z) {
+        putBit(x | y << 4 | z << 8, AIR_BIT);
+    }
 
-	/**
-	 * Updates the visible faces.
-	 */
-	public void updateVisibleFace(final Direction face, int x, int y, int z, final VisibleFace dest, final VoxelBlob secondBlob, final ICullTest cullVisTest ) {
-		final int mySpot = get(x, y, z);
-		dest.state = mySpot;
+    //--- STATIC CONSTRUCTION METHODS ---
 
-		x += face.getXOffset();
-		y += face.getYOffset();
-		z += face.getZOffset();
+    /**
+     * Get the bit at a given location. Doesn't throw errors when
+     * the coordinates are not in this voxel blob.
+     */
+    @Override
+    public int getSafe(final int x, final int y, final int z) {
+        if (x >= 0 && x < DIMENSION && y >= 0 && y < DIMENSION && z >= 0 && z < DIMENSION)
+            return get(x, y, z);
+        return AIR_BIT;
+    }
 
-		if(x >= 0 && x < DIMENSION && y >= 0 && y < DIMENSION && z >= 0 && z < DIMENSION) {
-			dest.isEdge = false;
-			dest.visibleFace = cullVisTest.isVisible(mySpot, get(x, y, z));
-		} else {
-			dest.isEdge = true;
-			dest.visibleFace = (secondBlob==null ? (mySpot != AIR_BIT) :
-					(cullVisTest.isVisible(mySpot, secondBlob.get(x - face.getXOffset() * DIMENSION, y - face.getYOffset() * DIMENSION, z - face.getZOffset() * DIMENSION))));
-		}
-	}
+    //--- OBJECT OVERWRITE METHODS ---
+    @Override
+    public VoxelBlob clone() {
+        return new VoxelBlob(this);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof VoxelBlob) {
+            final VoxelBlob a = (VoxelBlob) obj;
+            return Arrays.equals(a.values, values);
+        }
+        return false;
+    }
+
+    //--- INTERNAL LOGIC METHODS ---
+
+    /**
+     * Updates the visible faces.
+     */
+    public void updateVisibleFace(final Direction face, int x, int y, int z, final VisibleFace dest, final VoxelBlob secondBlob, final ICullTest cullVisTest) {
+        final int mySpot = get(x, y, z);
+        dest.state = mySpot;
+
+        x += face.getXOffset();
+        y += face.getYOffset();
+        z += face.getZOffset();
+
+        if (x >= 0 && x < DIMENSION && y >= 0 && y < DIMENSION && z >= 0 && z < DIMENSION) {
+            dest.isEdge = false;
+            dest.visibleFace = cullVisTest.isVisible(mySpot, get(x, y, z));
+        } else {
+            dest.isEdge = true;
+            dest.visibleFace = (secondBlob == null ? (mySpot != AIR_BIT) :
+                    (cullVisTest.isVisible(mySpot, secondBlob.get(x - face.getXOffset() * DIMENSION, y - face.getYOffset() * DIMENSION, z - face.getZOffset() * DIMENSION))));
+        }
+    }
+
+    /**
+     * Special internal method for getting sideflags.
+     */
+    public int getSideFlags(final int minRange, final int maxRange, final int totalRequired) {
+        int output = 0x00;
+
+        for (final Direction face : Direction.values()) {
+            final int edge = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 15 : 0;
+            int required = totalRequired;
+
+            switch (face.getAxis()) {
+                case X:
+                    for (int z = minRange; z <= maxRange; z++) {
+                        for (int y = minRange; y <= maxRange; y++) {
+                            if (getVoxelType(edge, y, z).isSolid()) required--;
+                        }
+                    }
+                    break;
+                case Y:
+                    for (int z = minRange; z <= maxRange; z++) {
+                        for (int x = minRange; x <= maxRange; x++) {
+                            if (getVoxelType(x, edge, z).isSolid()) required--;
+                        }
+                    }
+                    break;
+                case Z:
+                    for (int y = minRange; y <= maxRange; y++) {
+                        for (int x = minRange; x <= maxRange; x++) {
+                            if (getVoxelType(x, y, edge).isSolid()) required--;
+                        }
+                    }
+                    break;
+            }
+
+            if (required <= 0) output |= 1 << face.ordinal();
+        }
+        return output;
+    }
 
 	/*@OnlyIn(Dist.CLIENT)
 	public List<String> listContents(final List<String> details) {
@@ -408,46 +455,22 @@ public final class VoxelBlob implements IVoxelSrc {
 		return details;
 	}*/
 
-	/**
-	 * Special internal method for getting sideflags.
-	 */
-	public int getSideFlags(final int minRange, final int maxRange, final int totalRequired) {
-		int output = 0x00;
+    /**
+     * Builds a blob from a byte array.
+     */
+    public void blobFromBytes(final byte[] bytes) throws IOException {
+        try {
+            if (bytes.length < 1) {
+                throw new RuntimeException("Unable to load VoxelBlob: length of data was 0");
+            }
+            final ByteArrayInputStream out = new ByteArrayInputStream(bytes);
+            read(out);
+        } catch (Exception x) {
+            throw new RuntimeException("Unable to load VoxelBlob", x);
+        }
+    }
 
-		for(final Direction face : Direction.values()) {
-			final int edge = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 15 : 0;
-			int required = totalRequired;
-
-			switch (face.getAxis()) {
-				case X:
-					for(int z = minRange; z <= maxRange; z++ ) {
-						for(int y = minRange; y <= maxRange; y++ ) {
-							if(getVoxelType( edge, y, z).isSolid()) required--;
-						}
-					}
-					break;
-				case Y:
-					for(int z = minRange; z <= maxRange; z++ ) {
-						for(int x = minRange; x <= maxRange; x++ ) {
-							if(getVoxelType( x, edge, z).isSolid()) required--;
-						}
-					}
-					break;
-				case Z:
-					for(int y = minRange; y <= maxRange; y++ ) {
-						for(int x = minRange; x <= maxRange; x++ ) {
-							if(getVoxelType( x, y, edge).isSolid()) required--;
-						}
-					}
-					break;
-			}
-
-			if(required <= 0) output |= 1 << face.ordinal();
-		}
-		return output;
-	}
-
-	//--- FILTERING ---
+    //--- FILTERING ---
 	/*
 	public boolean filterFluids(
 			final boolean wantsFluids )
@@ -474,7 +497,7 @@ public final class VoxelBlob implements IVoxelSrc {
 
 		return hasValues;
 	}*/
- //TODO add a new filter method which returns only one voxel type
+    //TODO add a new filter method which returns only one voxel type
 	/*public boolean filter(
 			final BlockRenderLayer layer )
 	{
@@ -502,116 +525,114 @@ public final class VoxelBlob implements IVoxelSrc {
 		return hasValues;
 	}*/
 
-	//--- SERIALIZATION ---
-	/**
-	 * Builds a blob from a byte array.
-	 */
-	public void blobFromBytes(final byte[] bytes) throws IOException {
-		try {
-			if(bytes.length<1) {
-				throw new RuntimeException("Unable to load VoxelBlob: length of data was 0");
-			}
-			final ByteArrayInputStream out = new ByteArrayInputStream(bytes);
-			read(out);
-		} catch(Exception x) {
-			throw new RuntimeException("Unable to load VoxelBlob", x);
-		}
-	}
+    //--- SERIALIZATION ---
 
-	/**
-	 * Reads this voxelblobs values from the supplied ByteArrayInputStream.
-	 */
-	private void read(final ByteArrayInputStream o) throws IOException, RuntimeException {
-		final InflaterInputStream w = new InflaterInputStream(o);
-		final ByteBuffer bb = BlobSerilizationCache.getCacheBuffer();
+    /**
+     * Reads this voxelblobs values from the supplied ByteArrayInputStream.
+     */
+    private void read(final ByteArrayInputStream o) throws IOException, RuntimeException {
+        final InflaterInputStream w = new InflaterInputStream(o);
+        final ByteBuffer bb = BlobSerilizationCache.getCacheBuffer();
 
-		int usedBytes = 0;
-		int rv = 0;
+        int usedBytes = 0;
+        int rv = 0;
 
-		do {
-			usedBytes += rv;
-			rv = w.read(bb.array(), usedBytes, bb.limit() - usedBytes);
-		} while (rv > 0);
-		w.close();
+        do {
+            usedBytes += rv;
+            rv = w.read(bb.array(), usedBytes, bb.limit() - usedBytes);
+        } while (rv > 0);
+        w.close();
 
-		final PacketBuffer header = new PacketBuffer(Unpooled.wrappedBuffer(bb));
-		final int version = header.readVarInt();
-		VoxelVersions versions = VoxelVersions.getVersion(version);
-		if(versions==VoxelVersions.ANY) throw new RuntimeException("Invalid Version: " + version);
+        final PacketBuffer header = new PacketBuffer(Unpooled.wrappedBuffer(bb));
+        final int version = header.readVarInt();
+        VoxelVersions versions = VoxelVersions.getVersion(version);
+        if (versions == VoxelVersions.ANY) throw new RuntimeException("Invalid Version: " + version);
 
-		try {
-			VoxelSerializer bs = versions.getWorker();
-			if(bs==null) throw new RuntimeException("Invalid VoxelVersion: " + version+", worker was null");
-			bs.inflate(header);
+        try {
+            VoxelSerializer bs = versions.getWorker();
+            if (bs == null) throw new RuntimeException("Invalid VoxelVersion: " + version + ", worker was null");
+            bs.inflate(header);
 
-			final int byteOffset = header.readVarInt();
-			final int bytesOfInterest = header.readVarInt();
+            final int byteOffset = header.readVarInt();
+            final int bytesOfInterest = header.readVarInt();
 
-			final BitStream bits = BitStream.valueOf(byteOffset, ByteBuffer.wrap( bb.array(), header.readerIndex(), bytesOfInterest));
-			for(int x = 0; x < ARRAY_SIZE; x++)
-				values[x] = bs.readVoxelStateID(bits);
-		} catch(Exception x) { x.printStackTrace(); }
-	}
+            final BitStream bits = BitStream.valueOf(byteOffset, ByteBuffer.wrap(bb.array(), header.readerIndex(), bytesOfInterest));
+            for (int x = 0; x < ARRAY_SIZE; x++)
+                values[x] = bs.readVoxelStateID(bits);
+        } catch (Exception x) {
+            x.printStackTrace();
+        }
+    }
 
-	/**
-	 * Creates a byte array representing this blob.
-	 */
-	public byte[] blobToBytes(final int version) {
-		final ByteArrayOutputStream out = new ByteArrayOutputStream(best_buffer_size);
-		write(out, getSerializer(version));
-		final byte[] o = out.toByteArray();
-		if(best_buffer_size < o.length) best_buffer_size = o.length;
-		return o;
-	}
+    /**
+     * Creates a byte array representing this blob.
+     */
+    public byte[] blobToBytes(final int version) {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream(best_buffer_size);
+        write(out, getSerializer(version));
+        final byte[] o = out.toByteArray();
+        if (best_buffer_size < o.length) best_buffer_size = o.length;
+        return o;
+    }
 
-	/**
-	 * Get the serializer to use to serialize this
-	 * blob with the specified version.
-	 */
-	@Nullable
-	private VoxelSerializer getSerializer(final int version) {
-		VoxelVersions ret = VoxelVersions.getVersion(version);
-		if(ret==VoxelVersions.ANY) throw new RuntimeException("Invalid Version: " + version);
-		try {
-			VoxelSerializer worker = ret.getWorker();
-			if(worker==null) return null;
-			worker.deflate(this);
-			return worker;
-		} catch(Exception x) { x.printStackTrace(); }
-		return null;
-	}
+    /**
+     * Get the serializer to use to serialize this
+     * blob with the specified version.
+     */
+    @Nullable
+    private VoxelSerializer getSerializer(final int version) {
+        VoxelVersions ret = VoxelVersions.getVersion(version);
+        if (ret == VoxelVersions.ANY) throw new RuntimeException("Invalid Version: " + version);
+        try {
+            VoxelSerializer worker = ret.getWorker();
+            if (worker == null) return null;
+            worker.deflate(this);
+            return worker;
+        } catch (Exception x) {
+            x.printStackTrace();
+        }
+        return null;
+    }
 
-	/**
-	 * Write this blob to a ByteArrayOutputStream.
-	 */
-	private void write(final ByteArrayOutputStream o, @Nullable final VoxelSerializer bs) {
-		if(bs==null) return;
-		try {
-			final Deflater def = BlobSerilizationCache.getCacheDeflater();
-			final DeflaterOutputStream w = new DeflaterOutputStream(o, def, best_buffer_size);
+    /**
+     * Write this blob to a ByteArrayOutputStream.
+     */
+    private void write(final ByteArrayOutputStream o, @Nullable final VoxelSerializer bs) {
+        if (bs == null) return;
+        try {
+            final Deflater def = BlobSerilizationCache.getCacheDeflater();
+            final DeflaterOutputStream w = new DeflaterOutputStream(o, def, best_buffer_size);
 
-			final PacketBuffer pb = BlobSerilizationCache.getCachePacketBuffer();
-			pb.writeVarInt(bs.getVersion().getId());
-			bs.write(pb);
+            final PacketBuffer pb = BlobSerilizationCache.getCachePacketBuffer();
+            pb.writeVarInt(bs.getVersion().getId());
+            bs.write(pb);
 
-			final BitStream set = BlobSerilizationCache.getCacheBitStream();
-			for(int x = 0; x < ARRAY_SIZE; x++)
-				bs.writeVoxelState(values[x], set);
+            final BitStream set = BlobSerilizationCache.getCacheBitStream();
+            for (int x = 0; x < ARRAY_SIZE; x++)
+                bs.writeVoxelState(values[x], set);
 
-			final byte[] arrayContents = set.toByteArray();
-			final int bytesToWrite = arrayContents.length;
-			final int byteOffset = set.byteOffset();
+            final byte[] arrayContents = set.toByteArray();
+            final int bytesToWrite = arrayContents.length;
+            final int byteOffset = set.byteOffset();
 
-			pb.writeVarInt(byteOffset);
-			pb.writeVarInt(bytesToWrite - byteOffset);
+            pb.writeVarInt(byteOffset);
+            pb.writeVarInt(bytesToWrite - byteOffset);
 
-			w.write(pb.array(), 0, pb.writerIndex());
-			w.write(arrayContents, byteOffset, bytesToWrite - byteOffset);
+            w.write(pb.array(), 0, pb.writerIndex());
+            w.write(arrayContents, byteOffset, bytesToWrite - byteOffset);
 
-			w.finish();
-			w.close();
-			o.close();
-			def.reset();
-		} catch (final IOException e) { throw new RuntimeException(e); }
-	}
+            w.finish();
+            w.close();
+            o.close();
+            def.reset();
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static class VisibleFace {
+        public boolean isEdge;
+        public boolean visibleFace;
+        public int state;
+    }
 }

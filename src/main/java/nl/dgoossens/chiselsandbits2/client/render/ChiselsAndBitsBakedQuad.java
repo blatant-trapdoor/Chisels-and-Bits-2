@@ -18,16 +18,25 @@ public class ChiselsAndBitsBakedQuad extends BakedQuad {
     public static final VertexFormat VERTEX_FORMAT = new VertexFormat();
 
     static {
-        for(final VertexFormatElement element : DefaultVertexFormats.ITEM.getElements())
+        for (final VertexFormatElement element : DefaultVertexFormats.ITEM.getElements())
             VERTEX_FORMAT.addElement(element);
 
         //Add the lightmap to our format
         VERTEX_FORMAT.addElement(DefaultVertexFormats.TEX_2S);
     }
 
+    public ChiselsAndBitsBakedQuad(
+            final float[][][] unpackedData,
+            final int tint,
+            final Direction orientation,
+            final TextureAtlasSprite sprite,
+            VertexFormat format) {
+        super(packData(format, unpackedData), tint, orientation, sprite, true, format);
+    }
+
     private static int[] packData(VertexFormat format, float[][][] unpackedData) {
         FormatInfo fi = formatData.get(format);
-        if(fi==null) {
+        if (fi == null) {
             fi = new FormatInfo(format);
             formatData.put(format, fi);
         }
@@ -43,9 +52,9 @@ public class ChiselsAndBitsBakedQuad extends BakedQuad {
         consumer.setQuadOrientation(getFace());
         consumer.setApplyDiffuseLighting(true);
 
-        for(int v = 0; v<4; v++) {
-            for(int e = 0; e<consumer.getVertexFormat().getElementCount(); e++) {
-                if(eMap[e]!=format.getElementCount())
+        for (int v = 0; v < 4; v++) {
+            for (int e = 0; e < consumer.getVertexFormat().getElementCount(); e++) {
+                if (eMap[e] != format.getElementCount())
                     consumer.put(e, getRawPart(v, eMap[e]));
                 else
                     consumer.put(e);
@@ -61,32 +70,21 @@ public class ChiselsAndBitsBakedQuad extends BakedQuad {
     public int[] getVertexData() {
         final int[] tmpData = new int[format.getSize() /* / 4 * 4 */];
 
-        for(int v = 0; v<4; v++) {
-            for(int e = 0; e<format.getElementCount(); e++)
+        for (int v = 0; v < 4; v++) {
+            for (int e = 0; e < format.getElementCount(); e++)
                 LightUtil.pack(getRawPart(v, e), tmpData, format, v, e);
         }
 
         return tmpData;
     }
 
-    public ChiselsAndBitsBakedQuad(
-            final float[][][] unpackedData,
-            final int tint,
-            final Direction orientation,
-            final TextureAtlasSprite sprite,
-            VertexFormat format) {
-        super(packData(format, unpackedData), tint, orientation, sprite, true, format);
-    }
-
     public static class Builder implements IVertexConsumer, IFaceBuilder {
+        private final VertexFormat format;
         private float[][][] unpackedData;
         private int tint = -1;
         private Direction orientation;
-
         private int vertices = 0;
         private int elements = 0;
-
-        private final VertexFormat format;
 
         public Builder(VertexFormat format) {
             this.format = format;
@@ -109,8 +107,8 @@ public class ChiselsAndBitsBakedQuad extends BakedQuad {
 
         @Override
         public void put(final int element, final float... data) {
-            for(int i = 0; i<4; i++) {
-                if(i<data.length)
+            for (int i = 0; i < 4; i++) {
+                if (i < data.length)
                     unpackedData[vertices][element][i] = data[i];
                 else
                     unpackedData[vertices][element][i] = 0;
@@ -118,7 +116,7 @@ public class ChiselsAndBitsBakedQuad extends BakedQuad {
 
             elements++;
 
-            if(elements==getVertexFormat().getElementCount()) {
+            if (elements == getVertexFormat().getElementCount()) {
                 vertices++;
                 elements = 0;
             }
@@ -126,7 +124,7 @@ public class ChiselsAndBitsBakedQuad extends BakedQuad {
 
         @Override
         public void begin() {
-            if(format != getVertexFormat())
+            if (format != getVertexFormat())
                 throw new RuntimeException("Bad format, can only be CNB.");
 
             unpackedData = new float[4][getVertexFormat().getElementCount()][4];
@@ -149,10 +147,12 @@ public class ChiselsAndBitsBakedQuad extends BakedQuad {
         }
 
         @Override
-        public void setApplyDiffuseLighting(final boolean diffuse) {}
+        public void setApplyDiffuseLighting(final boolean diffuse) {
+        }
 
         @Override
-        public void setTexture(final TextureAtlasSprite texture) {}
+        public void setTexture(final TextureAtlasSprite texture) {
+        }
 
         @Override
         public VertexFormat getFormat() {

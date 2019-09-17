@@ -1,17 +1,17 @@
 {
-	"result": {
-		"item": "chiselsandbits2:pattern"
-	},
-	"type": "minecraft:crafting_shapeless",
-	"ingredients": [
-		{
-			"tag": "forge:dyes/black"
-		},
-		{
-			"item": "minecraft:paper"
-		},
-		{
-			"tag": "forge:dyes"
-		}
-	]
+  "result": {
+    "item": "chiselsandbits2:pattern"
+  },
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "forge:dyes/black"
+    },
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "tag": "forge:dyes"
+    }
+  ]
 }

@@ -18,7 +18,7 @@ public class StorageCapability implements Capability.IStorage<BitStorage> {
     @Override
     public INBT writeNBT(Capability<BitStorage> capability, BitStorage instance, Direction side) {
         CompoundNBT compound = new CompoundNBT();
-        if(instance instanceof BitStorageImpl) {
+        if (instance instanceof BitStorageImpl) {
             CompoundNBT blockContent = new CompoundNBT();
             ((BitStorageImpl) instance).blocks.forEach((k, v) ->
                     blockContent.putLong(k.getRegistryName().toString(), v));
@@ -36,7 +36,7 @@ public class StorageCapability implements Capability.IStorage<BitStorage> {
 
     @Override
     public void readNBT(Capability<BitStorage> capability, BitStorage instance, Direction side, INBT nbt) {
-        if(nbt instanceof CompoundNBT) {
+        if (nbt instanceof CompoundNBT) {
             CompoundNBT blockContent = ((CompoundNBT) nbt).getCompound("blockContent");
             CompoundNBT fluidContent = ((CompoundNBT) nbt).getCompound("fluidContent");
             int[] bookmarks = ((CompoundNBT) nbt).getIntArray("bookmarks");
@@ -45,7 +45,7 @@ public class StorageCapability implements Capability.IStorage<BitStorage> {
                     instance.setAmount(ForgeRegistries.BLOCKS.getValue(ResourceLocation.create(k, ':')), blockContent.getLong(k)));
             fluidContent.keySet().forEach(k ->
                     instance.setAmount(ForgeRegistries.FLUIDS.getValue(ResourceLocation.create(k, ':')), fluidContent.getLong(k)));
-            for(int i : bookmarks)
+            for (int i : bookmarks)
                 instance.addBookmark(new Color(i, true));
         }
     }

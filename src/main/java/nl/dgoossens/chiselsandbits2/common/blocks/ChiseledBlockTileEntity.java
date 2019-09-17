@@ -1,8 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.blocks;
 
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
@@ -17,7 +15,6 @@ import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
-import nl.dgoossens.chiselsandbits2.client.render.ter.RenderCache;
 import nl.dgoossens.chiselsandbits2.client.render.ter.TileChunk;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -30,35 +27,44 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class ChiseledBlockTileEntity extends TileEntity {
-    public ChiseledBlockTileEntity() { super(ChiselsAndBits2.getBlocks().CHISELED_BLOCK_TILE); }
-    private TileChunk chunk; //The rendering chunk this block belongs to.
-
     public static final ModelProperty<VoxelBlobStateReference> VOXEL_DATA = new ModelProperty<>();
     public static final ModelProperty<Integer> PRIMARY_BLOCKSTATE = new ModelProperty<>();
     public static final ModelProperty<VoxelNeighborRenderTracker> NEIGHBOUR_RENDER_TRACKER = new ModelProperty<>();
-
+    private TileChunk chunk; //The rendering chunk this block belongs to.
     private VoxelShape cachedShape, collisionShape;
     private int primaryBlock;
     private VoxelBlobStateReference voxelBlob;
     private VoxelNeighborRenderTracker renderTracker;
 
-    public int getPrimaryBlock() { return primaryBlock; }
+    public ChiseledBlockTileEntity() {
+        super(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK_TILE);
+    }
+
+    public int getPrimaryBlock() {
+        return primaryBlock;
+    }
+
     public void setPrimaryBlock(int d) {
-        if(VoxelType.getType(d) == VoxelType.BLOCKSTATE)
-            primaryBlock=d;
+        if (VoxelType.getType(d) == VoxelType.BLOCKSTATE)
+            primaryBlock = d;
         requestModelDataUpdate();
     }
-    public VoxelBlobStateReference getVoxelReference() { return voxelBlob; }
+
+    public VoxelBlobStateReference getVoxelReference() {
+        return voxelBlob;
+    }
+
     private void setVoxelReference(VoxelBlobStateReference voxel) {
-        voxelBlob=voxel;
+        voxelBlob = voxel;
         requestModelDataUpdate();
         cachedShape = null;
         collisionShape = null;
         recalculateShape();
-        if(chunk!=null) chunk.rebuild();
+        if (chunk != null) chunk.rebuild();
     }
+
     public VoxelNeighborRenderTracker getRenderTracker() {
-        if(renderTracker==null) renderTracker = new VoxelNeighborRenderTracker();
+        if (renderTracker == null) renderTracker = new VoxelNeighborRenderTracker();
         return renderTracker;
     }
 
@@ -77,15 +83,16 @@ public class ChiseledBlockTileEntity extends TileEntity {
      */
     @Nonnull
     public VoxelShape getCachedShape() {
-        if(cachedShape==null) recalculateShape();
+        if (cachedShape == null) recalculateShape();
         return cachedShape == null ? VoxelShapes.empty() : cachedShape;
     }
+
     /**
      * Get the cached shape of this block.
      */
     @Nonnull
     public VoxelShape getCollisionShape() {
-        if(collisionShape==null) recalculateShape();
+        if (collisionShape == null) recalculateShape();
         return collisionShape == null ? VoxelShapes.empty() : collisionShape;
     }
 
@@ -93,15 +100,15 @@ public class ChiseledBlockTileEntity extends TileEntity {
      * Recalculates the voxel shapes.
      */
     public void recalculateShape() {
-        if(collisionShape == null) {
+        if (collisionShape == null) {
             VoxelShape base = VoxelShapes.empty();
-            if(getVoxelReference()!=null)
-                for(AxisAlignedBB box : getVoxelReference().getInstance().getBoxes())
+            if (getVoxelReference() != null)
+                for (AxisAlignedBB box : getVoxelReference().getInstance().getBoxes())
                     base = VoxelShapes.combine(base, VoxelShapes.create(box), IBooleanFunction.OR);
             collisionShape = base.simplify();
         }
 
-        if(cachedShape==null && getVoxelReference()!=null) {
+        if (cachedShape == null && getVoxelReference() != null) {
             cachedShape = VoxelShapes.create(getVoxelReference().getVoxelBlob().getBounds().toBoundingBox());
         }
     }
@@ -110,7 +117,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
      * Get the tile chunk this block belongs to.
      */
     public TileChunk getChunk(final IBlockReader world) {
-        if(chunk==null) {
+        if (chunk == null) {
             chunk = findRenderChunk(world);
             chunk.register(this, true); //Register us to be a part of the chunk if this is the first time we're searching.
         }
@@ -130,11 +137,11 @@ public class ChiseledBlockTileEntity extends TileEntity {
         chunkPosY = chunkPosY & mask;
         chunkPosZ = chunkPosZ & mask;
 
-        for ( int x = 0; x < 16; ++x ) {
-            for ( int y = 0; y < 16; ++y ) {
-                for ( int z = 0; z < 16; ++z ) {
-                    final TileEntity te = access.getTileEntity(new BlockPos( chunkPosX + x, chunkPosY + y, chunkPosZ + z));
-                    if ( te instanceof ChiseledBlockTileEntity && ((ChiseledBlockTileEntity) te).chunk != null)
+        for (int x = 0; x < 16; ++x) {
+            for (int y = 0; y < 16; ++y) {
+                for (int z = 0; z < 16; ++z) {
+                    final TileEntity te = access.getTileEntity(new BlockPos(chunkPosX + x, chunkPosY + y, chunkPosZ + z));
+                    if (te instanceof ChiseledBlockTileEntity && ((ChiseledBlockTileEntity) te).chunk != null)
                         return ((ChiseledBlockTileEntity) te).chunk;
                 }
             }
@@ -143,9 +150,14 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     @Override
-    public boolean hasFastRenderer() { return true; }
+    public boolean hasFastRenderer() {
+        return true;
+    }
+
     @Override
-    public boolean canRenderBreaking() { return true; }
+    public boolean canRenderBreaking() {
+        return true;
+    }
 
     /**
      * Update this tile entity's voxel data.
@@ -165,10 +177,22 @@ public class ChiseledBlockTileEntity extends TileEntity {
         setPrimaryBlock(converter.getPrimaryBlockStateID());
         try {
             //Trigger re-render on client
-            if(world.isRemote && chunk != null)
+            if (world.isRemote && chunk != null)
                 chunk.rebuild();
-        } catch(Exception x) {}
+        } catch (Exception x) {
+        }
         return voxelRef == null || !voxelRef.equals(originalRef);
+    }
+
+    public VoxelBlob getBlob() {
+        VoxelBlob vb = new VoxelBlob();
+        final VoxelBlobStateReference vbs = getVoxelReference();
+
+        if (vbs != null) vb = vbs.getVoxelBlob();
+        else //If we can't make it proper we should fill it with stone as default.
+            vb.fill(ModUtil.getStateId(Blocks.STONE.getDefaultState()));
+
+        return vb;
     }
 
     /**
@@ -182,24 +206,14 @@ public class ChiseledBlockTileEntity extends TileEntity {
         markDirty();
         try {
             //Trigger block update
-            if(!world.isRemote) {
+            if (!world.isRemote) {
                 world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), 3);
             }
-        } catch(Exception x) {}
+        } catch (Exception x) {
+        }
     }
 
-    public VoxelBlob getBlob() {
-        VoxelBlob vb = new VoxelBlob();
-        final VoxelBlobStateReference vbs = getVoxelReference();
-
-        if(vbs != null) vb = vbs.getVoxelBlob();
-        else //If we can't make it proper we should fill it with stone as default.
-            vb.fill(ModUtil.getStateId(Blocks.STONE.getDefaultState()));
-
-        return vb;
-    }
-
-    public void completeEditOperation(final VoxelBlob vb ) {
+    public void completeEditOperation(final VoxelBlob vb) {
         //final VoxelBlobStateReference before = getVoxelReference();
         setBlob(vb);
         //final VoxelBlobStateReference after = getVoxelReference();
@@ -261,7 +275,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     private void detachRenderer() {
-        if(chunk != null) {
+        if (chunk != null) {
             chunk.unregister(this, true);
             chunk = null;
         }

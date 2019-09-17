@@ -1,15 +1,7 @@
 package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.client.resources.I18n;
-import net.minecraft.item.DyeColor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.StringNBT;
-import nl.dgoossens.chiselsandbits2.common.items.*;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -53,14 +45,14 @@ public enum ItemMode implements IItemMode {
      * Get the localized key from this Item Mode.
      */
     public String getLocalizedName() {
-        return I18n.format("general.chiselsandbits2.itemmode."+getTypelessName());
+        return I18n.format("general.chiselsandbits2.itemmode." + getTypelessName());
     }
 
     /**
      * Return this enum's name() but without the type in front.
      */
     public String getTypelessName() {
-        return name().substring(getType().name().length()+1).toLowerCase();
+        return name().substring(getType().name().length() + 1).toLowerCase();
     }
 
     /**
@@ -81,14 +73,15 @@ public enum ItemMode implements IItemMode {
      * Returns false when a item mode should not have a hotkey.
      */
     public boolean hasHotkey() {
-        switch(this) {
+        switch (this) {
             case TAPEMEASURE_BIT: //Nobody will ever use tape measure hotkeys, they just take up space in the controls menu.
             case TAPEMEASURE_BLOCK:
             case TAPEMEASURE_DISTANCE:
             case BLUEPRINT_UNKNOWN:
             case MALLET_UNKNOWN:
                 return false;
-            default: return true;
+            default:
+                return true;
         }
     }
 }

@@ -7,13 +7,17 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
  * the sprite is placed in the atlas.
  */
 public class SpriteIconPositioning {
-	public TextureAtlasSprite sprite;
+    public TextureAtlasSprite sprite;
 
-	public double left;
-	public double top;
-	public double width;
-	public double height;
+    public double left;
+    public double top;
+    public double width;
+    public double height;
 
-	public SpriteIconPositioning() {}
-	public SpriteIconPositioning(TextureAtlasSprite sprite) { this.sprite=sprite; }
+    public SpriteIconPositioning() {
+    }
+
+    public SpriteIconPositioning(TextureAtlasSprite sprite) {
+        this.sprite = sprite;
+    }
 }

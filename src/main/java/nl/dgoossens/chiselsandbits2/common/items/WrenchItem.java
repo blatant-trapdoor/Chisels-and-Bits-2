@@ -20,18 +20,21 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class WrenchItem extends TypedItem {
-    public WrenchItem(Properties builder) { super(builder); }
+    public WrenchItem(Properties builder) {
+        super(builder);
+    }
 
     @Override
     public ItemModeType getAssociatedType() {
         return ItemModeType.WRENCH;
     }
+
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "wrench.help",
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
-                ChiselsAndBits2.getKeybindings().modeMenu
+                ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
     }
 
@@ -59,7 +62,7 @@ public class WrenchItem extends TypedItem {
      */
     @Override
     public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
-        if(ItemTags.PLANKS.contains(repair.getItem())) return true; //Can repair with wooden planks.
+        if (ItemTags.PLANKS.contains(repair.getItem())) return true; //Can repair with wooden planks.
         return super.getIsRepairable(toRepair, repair);
     }
 
@@ -69,7 +72,7 @@ public class WrenchItem extends TypedItem {
     @Override
     public Multimap<String, AttributeModifier> getAttributeModifiers(EquipmentSlotType slot, ItemStack stack) {
         Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
-        if(slot == EquipmentSlotType.MAINHAND) {
+        if (slot == EquipmentSlotType.MAINHAND) {
             multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, () -> "Tool modifier", 0.8, AttributeModifier.Operation.ADDITION));
             multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, () -> "Tool modifier", -1.5, AttributeModifier.Operation.ADDITION));
         }

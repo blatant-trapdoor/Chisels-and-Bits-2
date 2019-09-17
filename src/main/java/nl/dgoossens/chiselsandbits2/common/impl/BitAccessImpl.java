@@ -18,19 +18,22 @@ public class BitAccessImpl implements BitAccess {
     private VoxelBlob blob = null;
 
     public BitAccessImpl(final World world, final BlockPos pos) {
-        this.world=world; this.pos=pos;
+        this.world = world;
+        this.pos = pos;
 
         TileEntity te = world.getTileEntity(pos);
-        if(te instanceof ChiseledBlockTileEntity)
+        if (te instanceof ChiseledBlockTileEntity)
             blob = ((ChiseledBlockTileEntity) te).getBlob();
         else {
             final BlockState state = world.getBlockState(pos);
-            if(!ChiselUtil.canChiselBlock(state)) return;
+            if (!ChiselUtil.canChiselBlock(state)) return;
             blob = new VoxelBlob();
             blob.fill(ModUtil.getStateId(state));
         }
     }
 
     @Nullable
-    public VoxelBlob getNativeBlob() { return blob; }
+    public VoxelBlob getNativeBlob() {
+        return blob;
+    }
 }

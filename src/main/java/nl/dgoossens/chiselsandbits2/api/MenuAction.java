@@ -34,34 +34,47 @@ public enum MenuAction {
     LIME(DyeColor.LIME, 8439583),
     PURPLE(DyeColor.PURPLE, 8991416),
     BLUE(DyeColor.BLUE, 3949738),
-    GREEN(DyeColor.GREEN, 6192150)
-    ;
+    GREEN(DyeColor.GREEN, 6192150);
 
     private DyeColor dyeColour;
     private int colour;
-    MenuAction() {}
-    MenuAction(DyeColor dc, int col) { dyeColour=dc; colour=col; }
-    public DyeColor getDyeColour() { return dyeColour; }
-    public int getColour() { return colour; }
+
+    MenuAction() {
+    }
+
+    MenuAction(DyeColor dc, int col) {
+        dyeColour = dc;
+        colour = col;
+    }
+
+    public DyeColor getDyeColour() {
+        return dyeColour;
+    }
+
+    public int getColour() {
+        return colour;
+    }
 
     /**
      * Get the localized key from this Menu Action.
      */
     public String getLocalizedName() {
-        return I18n.format("general.chiselsandbits2.menuaction."+name().toLowerCase());
+        return I18n.format("general.chiselsandbits2.menuaction." + name().toLowerCase());
     }
 
     /**
      * Does this menu action have a hotkey?
      * (tape measure colours do not have hotkeys)
      */
-    public boolean hasHotkey() { return dyeColour==null; }
+    public boolean hasHotkey() {
+        return dyeColour == null;
+    }
 
     /**
      * Get the item mode type associated with this menu option, if any.
      */
     public ItemModeType getAssociatedType() {
-        switch(this) {
+        switch (this) {
             case ROLL_X:
             case ROLL_Y:
             case ROLL_Z:
@@ -72,7 +85,8 @@ public enum MenuAction {
             case UNDO:
             case REDO:
                 return null; //Undo/redo are universal.
-            default: return ItemModeType.TAPEMEASURE; //For all the colours
+            default:
+                return ItemModeType.TAPEMEASURE; //For all the colours
         }
     }
 }

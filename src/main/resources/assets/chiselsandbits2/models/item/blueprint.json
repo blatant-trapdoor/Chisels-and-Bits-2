@@ -1,6 +1,6 @@
 {
-    "parent":"item/generated",
-    "textures": {
-        "layer0":"chiselsandbits2:item/blueprint"
-    }
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "chiselsandbits2:item/blueprint"
+  }
 }

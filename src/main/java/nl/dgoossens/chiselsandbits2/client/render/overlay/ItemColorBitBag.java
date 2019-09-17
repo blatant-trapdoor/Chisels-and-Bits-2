@@ -8,8 +8,8 @@ import nl.dgoossens.chiselsandbits2.api.MenuAction;
 public class ItemColorBitBag implements IItemColor {
     @Override
     public int getColor(ItemStack stack, int tint) {
-        if(tint!=1) return -1;
-        MenuAction colour = ChiselsAndBits2.getItems().getBitBagColour(stack);
-        return colour!=null ? colour.getColour() : -1;
+        if (tint != 1) return -1;
+        MenuAction colour = ChiselsAndBits2.getInstance().getItems().getBitBagColour(stack);
+        return colour != null ? colour.getColour() : -1;
     }
 }

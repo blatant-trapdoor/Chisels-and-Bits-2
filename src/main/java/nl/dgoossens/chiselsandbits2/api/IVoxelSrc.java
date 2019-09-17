@@ -5,12 +5,12 @@ package nl.dgoossens.chiselsandbits2.api;
  * the VoxelBlob.
  */
 public interface IVoxelSrc {
-	/**
-	 * Get the state id of the bit at the location.
-	 * Safe method, impossible coordinates will be clamped to
-	 * be valid.
-	 */
-	int getSafe(
+    /**
+     * Get the state id of the bit at the location.
+     * Safe method, impossible coordinates will be clamped to
+     * be valid.
+     */
+    int getSafe(
             int x,
             int y,
             int i);

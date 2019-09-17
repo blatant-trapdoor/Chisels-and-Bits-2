@@ -29,46 +29,15 @@ public class BackgroundRenderer implements Callable<Tessellator> {
     private final Region cache;
     private final BlockPos chunkOffset;
 
-    static class CBTessellatorRefNode {
-        private boolean done = false;
-        public CBTessellatorRefNode() { ChiseledBlockTER.activeTess.incrementAndGet(); }
-        public void dispose() {
-            if(!done) {
-                ChiseledBlockTER.activeTess.decrementAndGet();
-                done = true;
-            }
-        }
-        @Override
-        protected void finalize() throws Throwable { dispose(); }
-    }
-
-    static class CBTessellatorRefHold {
-        SoftReference<Tessellator> myTess;
-        CBTessellatorRefNode node;
-        public CBTessellatorRefHold(final CBTessellator cbTessellator) { myTess = new SoftReference<>(cbTessellator); node = cbTessellator.node; }
-        public Tessellator get() { return myTess == null ? null : myTess.get(); }
-        public void dispose() {
-            if(myTess != null) {
-                node.dispose();
-                myTess = null;
-            }
-        }
-        @Override
-        protected void finalize() throws Throwable { dispose(); }
-    }
-
-    static class CBTessellator extends Tessellator {
-        CBTessellatorRefNode node = new CBTessellatorRefNode();
-        public CBTessellator(final int bufferSize) { super(bufferSize); }
+    public BackgroundRenderer(final Region cache, final BlockPos chunkOffset, final List<ChiseledBlockTileEntity> myList) {
+        myPrivateList = myList;
+        this.cache = cache;
+        this.chunkOffset = chunkOffset;
     }
 
     public static void submitTessellator(final Tessellator t) {
-        if(t instanceof CBTessellator) previousTessellators.add(new CBTessellatorRefHold((CBTessellator) t));
+        if (t instanceof CBTessellator) previousTessellators.add(new CBTessellatorRefHold((CBTessellator) t));
         else throw new RuntimeException("Invalid TESS submitted for re-use!");
-    }
-
-    public BackgroundRenderer(final Region cache, final BlockPos chunkOffset, final List<ChiseledBlockTileEntity> myList) {
-        myPrivateList = myList; this.cache = cache; this.chunkOffset = chunkOffset;
     }
 
     @Override
@@ -78,39 +47,41 @@ public class BackgroundRenderer implements Callable<Tessellator> {
         do {
             do {
                 final CBTessellatorRefHold holder = previousTessellators.poll();
-                if(holder != null) {
+                if (holder != null) {
                     tessellator = holder.get();
-                    if(tessellator == null)
+                    if (tessellator == null)
                         holder.dispose();
                 }
             }
-            while(tessellator == null && !previousTessellators.isEmpty());
+            while (tessellator == null && !previousTessellators.isEmpty());
 
             // no previous queues?
-            if(tessellator == null) {
-                synchronized(CBTessellator.class) {
-                    if(ChiseledBlockTER.activeTess.get() < ChiseledBlockTER.getMaxTessalators())
+            if (tessellator == null) {
+                synchronized (CBTessellator.class) {
+                    if (ChiseledBlockTER.activeTess.get() < ChiseledBlockTER.getMaxTessalators())
                         tessellator = new CBTessellator(2109952);
                     else Thread.sleep(10);
                 }
             }
         }
-        while(tessellator == null);
+        while (tessellator == null);
         final BufferBuilder buffer = tessellator.getBuffer();
 
         try {
             buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
             buffer.setTranslation(-chunkOffset.getX(), -chunkOffset.getY(), -chunkOffset.getZ());
-        } catch(final IllegalStateException e) { e.printStackTrace(); }
+        } catch (final IllegalStateException e) {
+            e.printStackTrace();
+        }
 
-        for(final ChiseledBlockTileEntity tx : myPrivateList) {
-            if(!tx.isRemoved()) {
+        for (final ChiseledBlockTileEntity tx : myPrivateList) {
+            if (!tx.isRemoved()) {
                 tx.getRenderTracker().update(tx.getWorld(), tx.getPos()); //Update the render tracker first.
                 final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
-                if(!model.isEmpty()) {
+                if (!model.isEmpty()) {
                     blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
 
-                    if(Thread.interrupted()) {
+                    if (Thread.interrupted()) {
                         buffer.finishDrawing();
                         submitTessellator(tessellator);
                         return null;
@@ -119,11 +90,65 @@ public class BackgroundRenderer implements Callable<Tessellator> {
             }
         }
 
-        if(Thread.interrupted()) {
+        if (Thread.interrupted()) {
             buffer.finishDrawing();
             submitTessellator(tessellator);
             return null;
         }
         return tessellator;
+    }
+
+    static class CBTessellatorRefNode {
+        private boolean done = false;
+
+        public CBTessellatorRefNode() {
+            ChiseledBlockTER.activeTess.incrementAndGet();
+        }
+
+        public void dispose() {
+            if (!done) {
+                ChiseledBlockTER.activeTess.decrementAndGet();
+                done = true;
+            }
+        }
+
+        @Override
+        protected void finalize() throws Throwable {
+            dispose();
+        }
+    }
+
+    static class CBTessellatorRefHold {
+        SoftReference<Tessellator> myTess;
+        CBTessellatorRefNode node;
+
+        public CBTessellatorRefHold(final CBTessellator cbTessellator) {
+            myTess = new SoftReference<>(cbTessellator);
+            node = cbTessellator.node;
+        }
+
+        public Tessellator get() {
+            return myTess == null ? null : myTess.get();
+        }
+
+        public void dispose() {
+            if (myTess != null) {
+                node.dispose();
+                myTess = null;
+            }
+        }
+
+        @Override
+        protected void finalize() throws Throwable {
+            dispose();
+        }
+    }
+
+    static class CBTessellator extends Tessellator {
+        CBTessellatorRefNode node = new CBTessellatorRefNode();
+
+        public CBTessellator(final int bufferSize) {
+            super(bufferSize);
+        }
     }
 }

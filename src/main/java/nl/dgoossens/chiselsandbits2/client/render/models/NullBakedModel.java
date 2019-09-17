@@ -3,7 +3,6 @@ package nl.dgoossens.chiselsandbits2.client.render.models;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Direction;
@@ -27,6 +26,7 @@ public class NullBakedModel implements IBakedModel, IForgeBakedModel {
             @Nonnull final IModelData modelData) {
         return getQuads(state, side, rand);
     }
+
     @Override
     public List<BakedQuad> getQuads(
             final BlockState state,
@@ -52,12 +52,7 @@ public class NullBakedModel implements IBakedModel, IForgeBakedModel {
 
     @Override
     public TextureAtlasSprite getParticleTexture() {
-        return ChiselsAndBits2.getClient().getMissingIcon();
-    }
-
-    @Override
-    public ItemCameraTransforms getItemCameraTransforms() {
-        return ItemCameraTransforms.DEFAULT;
+        return ChiselsAndBits2.getInstance().getClient().getMissingIcon();
     }
 
     @Override

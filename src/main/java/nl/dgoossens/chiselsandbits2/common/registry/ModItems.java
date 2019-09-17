@@ -11,7 +11,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 
-import java.util.stream.Stream;
+import java.lang.reflect.Field;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModItems {
@@ -46,40 +46,40 @@ public class ModItems {
     public final Item BLUEPRINT = new BlueprintItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
     public final Item PALETTE = new PaletteItem();
 
-
-    /**
-     * Get the colour of the bit bag, we hijack MenuAction's colour values.
-     */
-    public MenuAction getBitBagColour(final ItemStack stack) {
-        if(!(stack.getItem() instanceof BitBagItem)) return null;
-        return Stream.of(getClass().getFields()).parallel()
-                .filter(i -> {
-                    try {
-                        return i.getName().contains("_BIT_BAG") && stack.getItem().equals(i.get(this));
-                    } catch(Exception x) { x.printStackTrace(); }
-                    return false;
-                })
-                .map(i -> MenuAction.valueOf(i.getName().substring(0, i.getName().length() - "_BIT_BAG".length())))
-                .findAny().orElse(null);
-    }
-
     @SubscribeEvent
     public static void onItemRegistry(final RegistryEvent.Register<Item> e) {
         //Register all items in this class automatically.
-        ModItems k = ChiselsAndBits2.getItems();
-        registerAll(e, k, Item.class);
+        registerAll(e, ChiselsAndBits2.getInstance().getItems(), Item.class);
     }
 
     /**
      * Internal method to automatically register all fields in the class to the registry.
      */
     static <T extends IForgeRegistryEntry<T>> void registerAll(final RegistryEvent.Register<T> register, final Object k, final Class<T> type) {
-        Stream.of(k.getClass().getFields())
-                .filter(i -> type.isAssignableFrom(i.getType()))
-                .forEachOrdered(i -> {
-                    try {
-                        register.getRegistry().register(((ForgeRegistryEntry<T>) i.get(k)).setRegistryName(ChiselsAndBits2.MOD_ID, i.getName().toLowerCase()));
-                    } catch(IllegalAccessException ex) { ex.printStackTrace(); }
-                });
+        for (Field f : k.getClass().getFields()) {
+            if (!type.isAssignableFrom(f.getType())) continue;
+            try {
+                register.getRegistry().register(((ForgeRegistryEntry<T>) f.get(k)).setRegistryName(ChiselsAndBits2.MOD_ID,
+                        f.getName().toLowerCase()));
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Get the colour of the bit bag, we hijack MenuAction's colour values.
+     */
+    public MenuAction getBitBagColour(final ItemStack stack) {
+        if (!(stack.getItem() instanceof BitBagItem)) return null;
+        for (Field f : getClass().getFields()) {
+            try {
+                if (!f.getName().contains("_BIT_BAG") || !stack.getItem().equals(f.get(this))) continue;
+                return MenuAction.valueOf(f.getName().substring(0, f.getName().length() - "_BIT_BAG".length()));
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
+        }
+        return null;
     }
 }

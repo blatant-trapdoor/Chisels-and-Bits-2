@@ -1,19 +1,19 @@
 {
-	"result": {
-		"item": "chiselsandbits2:wrench"
-	},
-	"pattern": [
-		" P ",
-		" SP",
-		"S  "
-	],
-	"type": "minecraft:crafting_shaped",
-	"key": {
-		"P": {
-			"tag": "minecraft:planks"
-		},
-		"S": {
-			"tag": "forge:rods/wooden"
-		}
-	}
+  "result": {
+    "item": "chiselsandbits2:wrench"
+  },
+  "pattern": [
+    " P ",
+    " SP",
+    "S  "
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "S": {
+      "tag": "forge:rods/wooden"
+    }
+  }
 }

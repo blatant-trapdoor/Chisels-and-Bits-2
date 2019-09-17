@@ -1,10 +1,8 @@
 package nl.dgoossens.chiselsandbits2.client;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
@@ -16,15 +14,15 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.*;
-import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
+import nl.dgoossens.chiselsandbits2.api.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
+import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
+import nl.dgoossens.chiselsandbits2.common.network.packets.PacketChisel;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
-import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
-import nl.dgoossens.chiselsandbits2.network.packets.PacketChisel;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -64,15 +62,15 @@ public class ChiselEvent {
     @SubscribeEvent
     public static void temporaryClick(PlayerInteractEvent e) {
         boolean leftClick = e instanceof PlayerInteractEvent.LeftClickBlock;
-        if(!leftClick && !(e instanceof PlayerInteractEvent.RightClickBlock)) return;
+        if (!leftClick && !(e instanceof PlayerInteractEvent.RightClickBlock)) return;
 
         RayTraceResult rtr = Minecraft.getInstance().objectMouseOver;
-        if(rtr == null || rtr.getType() != RayTraceResult.Type.BLOCK) return;
-        final PlayerEntity player = ChiselsAndBits2.getClient().getPlayer();
-        if(!(player.getHeldItemMainhand().getItem() instanceof ChiselItem)) return;
+        if (rtr == null || rtr.getType() != RayTraceResult.Type.BLOCK) return;
+        final PlayerEntity player = Minecraft.getInstance().player;
+        if (!(player.getHeldItemMainhand().getItem() instanceof ChiselItem)) return;
         e.setCanceled(true);
 
-        if(System.currentTimeMillis()-lastClick < 300) return;
+        if (System.currentTimeMillis() - lastClick < 300) return;
         lastClick = System.currentTimeMillis();
 
         final BitOperation operation = leftClick ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.REPLACE) ? BitOperation.REPLACE : BitOperation.PLACE);
@@ -83,13 +81,14 @@ public class ChiselEvent {
      * Handle the block chiselling with the given bit operation.
      */
     public static void startChiselingBlock(final BlockRayTraceResult rayTrace, final IItemMode mode, final PlayerEntity player, final BitOperation operation) {
-        if(!player.world.isRemote) throw new UnsupportedOperationException("Block chiseling can only be started on the client-side.");
+        if (!player.world.isRemote)
+            throw new UnsupportedOperationException("Block chiseling can only be started on the client-side.");
 
         final BitLocation location = new BitLocation(rayTrace, true, operation);
         final BlockPos pos = location.getBlockPos(); //We get the location from the bitlocation because that takes placement offset into account. (placement can go into neighbouring block)
         final BlockState state = player.world.getBlockState(pos);
-        if(!ChiselUtil.canChiselBlock(state)) return;
-        if(!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
+        if (!ChiselUtil.canChiselBlock(state)) return;
+        if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
         useChisel(operation, mode, player.world, rayTrace.getFace(), location);
     }
 
@@ -100,7 +99,7 @@ public class ChiselEvent {
     private static void useChisel(final BitOperation operation, final IItemMode mode, final World world, final Direction face, final BitLocation location) {
         final PacketChisel pc = new PacketChisel(operation, location, face, mode);
         //The chiseled block redirects the breaking sound.
-        ChiselsAndBits2.getClient().breakSound(world, location.getBlockPos(), world.getBlockState(location.getBlockPos()));
+        ChiselsAndBits2.getInstance().getClient().breakSound(world, location.getBlockPos(), world.getBlockState(location.getBlockPos()));
         NetworkRouter.sendToServer(pc);
     }
 }

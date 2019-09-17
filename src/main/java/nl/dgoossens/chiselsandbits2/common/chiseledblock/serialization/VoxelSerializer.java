@@ -23,5 +23,6 @@ public interface VoxelSerializer {
     int readVoxelStateID(final BitStream stream);
 
     void deflate(final VoxelBlob toDeflate);
+
     void inflate(final PacketBuffer toInflate);
 }

@@ -18,7 +18,7 @@ public class RenderCache {
      */
     public void rebuild() {
         vboRenderer = null;
-        if(future!=null) future.cancel(true);
+        if (future != null) future.cancel(true);
         future = null;
     }
 }

@@ -5,5 +5,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 
 public class ChiseledBlockItem extends BlockItem {
-    public ChiseledBlockItem(Block block, Item.Properties properties) { super(block, properties); }
+    public ChiseledBlockItem(Block block, Item.Properties properties) {
+        super(block, properties);
+    }
 }

@@ -6,34 +6,33 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLModIdMappingEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
-import nl.dgoossens.chiselsandbits2.api.ICacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.ter.GfxRenderState;
+import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class SmartModelManager {
     private final HashMap<ResourceLocation, IBakedModel> models = new HashMap<>();
-    private final List<ICacheClearable> clearable = new ArrayList<>();
 
     public SmartModelManager() {
         ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
         add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/chiseled_block"), smartModel);
         add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "chiseled_block"), smartModel);
-        ChiselsAndBits2.getInstance().addClearable(smartModel);
+        CacheType.DEFAULT.register(smartModel);
+        CacheType.DEFAULT.register(new ModelUtil());
     }
 
     private void add(
             final ResourceLocation modelLocation,
             final IBakedModel modelGen) {
-        if(modelLocation==null) return;
+        if (modelLocation == null) return;
         final ResourceLocation second = new ResourceLocation(modelLocation.getNamespace(), modelLocation.getPath().substring(1 + modelLocation.getPath().lastIndexOf('/')));
 
-        if(modelGen instanceof ICacheClearable)
-            clearable.add((ICacheClearable) modelGen);
+        if (modelGen instanceof CacheClearable)
+            CacheType.MODEL.register((CacheClearable) modelGen);
 
         models.put(modelLocation, modelGen);
         models.put(second, modelGen);
@@ -48,15 +47,18 @@ public class SmartModelManager {
     @SubscribeEvent
     public void textureStitchEvent(final TextureStitchEvent.Post e) {
         GfxRenderState.gfxRefresh++;
-        ChiselsAndBits2.getInstance().clearCache();
+        CacheType.DEFAULT.call();
     }
 
     @SubscribeEvent
     public void onModelBakeEvent(final ModelBakeEvent event) {
-        for(final ICacheClearable c : clearable)
-            c.clearCache();
-
-        for(final ResourceLocation rl : models.keySet())
+        CacheType.MODEL.call();
+        for (final ResourceLocation rl : models.keySet())
             event.getModelRegistry().put(rl, models.get(rl));
+    }
+
+    @SubscribeEvent
+    public void idsMapped(final FMLModIdMappingEvent event) {
+        CacheType.DEFAULT.call();
     }
 }

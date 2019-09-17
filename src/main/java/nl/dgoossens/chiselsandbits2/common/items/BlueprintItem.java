@@ -13,18 +13,21 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class BlueprintItem extends TypedItem {
-    public BlueprintItem(Properties builder) { super(builder); }
+    public BlueprintItem(Properties builder) {
+        super(builder);
+    }
 
     @Override
     public ItemModeType getAssociatedType() {
         return ItemModeType.BLUEPRINT;
     }
+
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "blueprint.help",
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
-                ChiselsAndBits2.getKeybindings().modeMenu
+                ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
     }
 }

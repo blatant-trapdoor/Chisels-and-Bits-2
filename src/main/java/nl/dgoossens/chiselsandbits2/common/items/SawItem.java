@@ -20,14 +20,16 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class SawItem extends Item {
-    public SawItem(Properties builder) { super(builder); }
+    public SawItem(Properties builder) {
+        super(builder);
+    }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "saw.help",
                 Minecraft.getInstance().gameSettings.keyBindAttack,
-                ChiselsAndBits2.getKeybindings().modeMenu
+                ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
     }
 
@@ -55,7 +57,7 @@ public class SawItem extends Item {
      */
     @Override
     public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
-        if(Tags.Items.INGOTS_GOLD.contains(repair.getItem())) return true; //Can repair with gold.
+        if (Tags.Items.INGOTS_GOLD.contains(repair.getItem())) return true; //Can repair with gold.
         return super.getIsRepairable(toRepair, repair);
     }
 
@@ -65,7 +67,7 @@ public class SawItem extends Item {
     @Override
     public Multimap<String, AttributeModifier> getAttributeModifiers(EquipmentSlotType slot, ItemStack stack) {
         Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(slot, stack);
-        if(slot == EquipmentSlotType.MAINHAND) {
+        if (slot == EquipmentSlotType.MAINHAND) {
             multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, () -> "Tool modifier", 2.5, AttributeModifier.Operation.ADDITION));
             multimap.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(ATTACK_SPEED_MODIFIER, () -> "Tool modifier", -1.8, AttributeModifier.Operation.ADDITION));
         }

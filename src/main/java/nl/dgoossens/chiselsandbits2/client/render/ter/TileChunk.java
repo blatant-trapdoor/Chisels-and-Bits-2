@@ -24,11 +24,11 @@ public class TileChunk extends RenderCache {
         chunkPosY = chunkPosY & mask;
         chunkPosZ = chunkPosZ & mask;
 
-        for(int x = 0; x < 16; ++x) {
-            for(int y = 0; y < 16; ++y) {
-                for(int z = 0; z < 16; ++z) {
-                    final TileEntity te = tileEntity.getWorld().getTileEntity(new BlockPos( chunkPosX + x, chunkPosY + y, chunkPosZ + z));
-                    if(te instanceof ChiseledBlockTileEntity)
+        for (int x = 0; x < 16; ++x) {
+            for (int y = 0; y < 16; ++y) {
+                for (int z = 0; z < 16; ++z) {
+                    final TileEntity te = tileEntity.getWorld().getTileEntity(new BlockPos(chunkPosX + x, chunkPosY + y, chunkPosZ + z));
+                    if (te instanceof ChiseledBlockTileEntity)
                         register((ChiseledBlockTileEntity) te, false);
                 }
             }
@@ -36,11 +36,11 @@ public class TileChunk extends RenderCache {
     }
 
     public void register(final ChiseledBlockTileEntity which, final boolean countRebuild) {
-        if(which == null) throw new NullPointerException();
+        if (which == null) throw new NullPointerException();
 
         tiles.getWriteLock().lock();
         try {
-            if(!tiles.contains(which) && countRebuild) rebuild();
+            if (!tiles.contains(which) && countRebuild) rebuild();
             tiles.add(which);
         } finally {
             tiles.getWriteLock().unlock();
@@ -51,7 +51,7 @@ public class TileChunk extends RenderCache {
         tiles.getWriteLock().lock();
 
         try {
-            if(tiles.contains(which) && countRebuild) rebuild();
+            if (tiles.contains(which) && countRebuild) rebuild();
             tiles.remove(which);
         } finally {
             tiles.getWriteLock().unlock();
@@ -66,7 +66,7 @@ public class TileChunk extends RenderCache {
         tiles.getReadLock().lock();
 
         try {
-            if(getTiles().isEmpty()) return BlockPos.ZERO;
+            if (getTiles().isEmpty()) return BlockPos.ZERO;
 
             final int bitMask = ~0xf; //This bitmask drops the last 4 bits, effectively getting the chunkX.
             final Iterator<ChiseledBlockTileEntity> i = getTiles().iterator();

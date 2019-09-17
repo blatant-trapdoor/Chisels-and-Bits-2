@@ -45,15 +45,20 @@ public class RadialMenu extends Screen {
         minecraft = Minecraft.getInstance();
         font = Minecraft.getInstance().fontRenderer;
     }
-    public void configure(final MainWindow window) { this.window = window; }
+
+    public void configure(final MainWindow window) {
+        this.window = window;
+    }
 
     @Override
     public Minecraft getMinecraft() {
         return minecraft == null ? Minecraft.getInstance() : minecraft;
     }
+
     public FontRenderer getFontRenderer() {
         return font == null ? Minecraft.getInstance().fontRenderer : font;
     }
+
     private float clampVis(final float f) {
         return Math.max(0.0f, Math.min(1.0f, f));
     }
@@ -68,73 +73,73 @@ public class RadialMenu extends Screen {
         lastChange = Stopwatch.createStarted();
     }
 
-    public boolean isVisible() { return visibility > 0.001; }
-    public boolean hasSwitchTo() { return switchTo != null; }
-    public IItemMode getSwitchTo() { return switchTo; }
-    public void setSwitchTo(IItemMode d) { switchTo = d; }
-    public void setActionUsed(boolean b) { actionUsed = b; }
-    public boolean isActionUsed() { return actionUsed; }
-    public boolean hasAction() { return doAction != null; }
-    public MenuAction getAction() { return doAction; }
-    public boolean hasClicked() { return clicked; }
-    public void setClicked(boolean c) { if(hasAction() || hasSwitchTo()) clicked = c; } //Only see as click if we've highlighted something
-    public void setPressingButton(boolean d) { pressedButton = d; }
-    public boolean isPressingButton() { return pressedButton; }
+    public boolean isVisible() {
+        return visibility > 0.001;
+    }
+
+    public boolean hasSwitchTo() {
+        return switchTo != null;
+    }
+
+    public IItemMode getSwitchTo() {
+        return switchTo;
+    }
+
+    public void setSwitchTo(IItemMode d) {
+        switchTo = d;
+    }
+
+    public boolean isActionUsed() {
+        return actionUsed;
+    }
+
+    public void setActionUsed(boolean b) {
+        actionUsed = b;
+    }
+
+    public boolean hasAction() {
+        return doAction != null;
+    }
+
+    public MenuAction getAction() {
+        return doAction;
+    }
+
+    public boolean hasClicked() {
+        return clicked;
+    }
+
+    public void setClicked(boolean c) {
+        if (hasAction() || hasSwitchTo()) clicked = c;
+    } //Only see as click if we've highlighted something
+
+    public boolean isPressingButton() {
+        return pressedButton;
+    }
+
+    public void setPressingButton(boolean d) {
+        pressedButton = d;
+    }
 
     public void updateGameFocus() {
         //Switch the game focus state if the game is focus doesn't match the visibility.
-        if((gameFocused && isVisible()) || (!gameFocused && !isVisible())) {
+        if ((gameFocused && isVisible()) || (!gameFocused && !isVisible())) {
             gameFocused = !gameFocused;
             getMinecraft().setGameFocused(gameFocused);
-            if(!gameFocused) {
+            if (!gameFocused) {
                 getMinecraft().mouseHelper.ungrabMouse();
-                if(ChiselsAndBits2.getConfig().enableVivecraftCompatibility.get()) getMinecraft().currentScreen = this;
+                if (ChiselsAndBits2.getInstance().getConfig().enableVivecraftCompatibility.get()) getMinecraft().currentScreen = this;
             } else {
                 getMinecraft().mouseHelper.grabMouse();
-                if(ChiselsAndBits2.getConfig().enableVivecraftCompatibility.get()) getMinecraft().displayGuiScreen(null);
+                if (ChiselsAndBits2.getInstance().getConfig().enableVivecraftCompatibility.get())
+                    getMinecraft().displayGuiScreen(null);
             }
         }
     }
 
-    private static class MenuButton {
-        double x1, x2;
-        double y1, y2;
-        boolean highlighted;
-        final MenuAction action;
-        SpriteIconPositioning icon;
-        int color;
-        String name;
-        Direction textSide;
-
-        public MenuButton(final MenuAction action, final double x, final double y, final Direction textSide) {
-            this(action, x, y, 0xffffff, textSide);
-            this.icon = ClientSide.getIconForAction(action);
-        }
-
-        public MenuButton(final MenuAction action, final double x, final double y, final int col, final Direction textSide) {
-            this.name = action.getLocalizedName();
-            this.action = action;
-            x1 = x;
-            x2 = x + 18;
-            y1 = y;
-            y2 = y + 18;
-            color = col;
-            this.textSide = textSide;
-        }
-    }
-
-    static class MenuRegion {
-        public final IItemMode mode;
-        public double x1, x2;
-        public double y1, y2;
-        public boolean highlighted;
-
-        public MenuRegion(final IItemMode mode) { this.mode = mode; }
-    }
-
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
-        if(!(getMinecraft().player.getHeldItemMainhand().getItem() instanceof IItemMenu)) return;
+        if (!(getMinecraft().player.getHeldItemMainhand().getItem() instanceof IItemMenu)) return;
         GlStateManager.pushMatrix();
         GlStateManager.translatef(0.0F, 0.0F, 200.0F);
 
@@ -165,14 +170,14 @@ public class RadialMenu extends Screen {
         final double text_distance = 65;
         final double quarterCircle = Math.PI / 2.0;
 
-        if(radians < -quarterCircle) {
+        if (radians < -quarterCircle) {
             radians = radians + Math.PI * 2;
         }
 
         final ArrayList<MenuRegion> modes = new ArrayList<>();
         final ArrayList<MenuButton> btns = new ArrayList<>();
         //Setup mode regions
-        for(IItemMode m : ChiselModeManager.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getItemModes(ChiselsAndBits2.getClient().getPlayer().getHeldItemMainhand()))
+        for (IItemMode m : ChiselModeManager.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getItemModes(getMinecraft().player.getHeldItemMainhand()))
             modes.add(new MenuRegion(m));
 
         //Setup buttons
@@ -180,26 +185,26 @@ public class RadialMenu extends Screen {
         btns.add(new MenuButton(MenuAction.REDO, text_distance, 4, Direction.EAST));
 
         ItemModeType tool = ChiselModeManager.getMode(getMinecraft().player.getHeldItemMainhand()).getType();
-        if(tool == ItemModeType.PATTERN) {
+        if (tool == ItemModeType.PATTERN) {
             btns.add(new MenuButton(MenuAction.ROLL_X, -text_distance - 18, -33, Direction.WEST));
             btns.add(new MenuButton(MenuAction.ROLL_Y, -text_distance - 18, -9, Direction.WEST));
             btns.add(new MenuButton(MenuAction.ROLL_Z, -text_distance - 18, 15, Direction.WEST));
         }
 
-        if(tool == ItemModeType.CHISEL) {
+        if (tool == ItemModeType.CHISEL) {
             btns.add(new MenuButton(MenuAction.PLACE, -text_distance - 18, -20, Direction.WEST));
             btns.add(new MenuButton(MenuAction.REPLACE, -text_distance - 18, 4, Direction.WEST));
         }
 
-        if(tool == ItemModeType.TAPEMEASURE) {
+        if (tool == ItemModeType.TAPEMEASURE) {
             final int colorSize = DyeColor.values().length / 4 * 24 - 4;
             double underring = -ring_outer_edge - 34;
             double bntPos = -colorSize;
             final int bntSize = 24;
             Direction textSide = Direction.UP;
-            for(final DyeColor color : DyeColor.values()) {
+            for (final DyeColor color : DyeColor.values()) {
                 final MenuAction action = MenuAction.valueOf(color.name());
-                if(bntPos > colorSize) {
+                if (bntPos > colorSize) {
                     underring = ring_outer_edge;
                     bntPos = -colorSize;
                     textSide = Direction.DOWN;
@@ -212,14 +217,14 @@ public class RadialMenu extends Screen {
         switchTo = null;
         doAction = null;
 
-        if(!modes.isEmpty()) {
+        if (!modes.isEmpty()) {
             final int totalModes = Math.max(3, modes.size());
             int currentMode = 0;
             final double fragment = Math.PI * 0.005;
             final double fragment2 = Math.PI * 0.0025;
             final double perObject = 2.0 * Math.PI / totalModes;
 
-            for(final MenuRegion mnuRgn : modes) {
+            for (final MenuRegion mnuRgn : modes) {
                 final double begin_rad = currentMode * perObject - quarterCircle;
                 final double end_rad = (currentMode + 1) * perObject - quarterCircle;
 
@@ -251,7 +256,7 @@ public class RadialMenu extends Screen {
                         x2m2, y2m2,
                         vecX, vecY);
 
-                if(begin_rad <= radians && radians <= end_rad && quad) {
+                if (begin_rad <= radians && radians <= end_rad && quad) {
                     f = 1;
                     mnuRgn.highlighted = true;
                     switchTo = mnuRgn.mode;
@@ -266,12 +271,12 @@ public class RadialMenu extends Screen {
             }
         }
 
-        for(final MenuButton btn : btns) {
+        for (final MenuButton btn : btns) {
             {
                 final float a = 0.5f * visibility;
                 float f = 0f;
 
-                if(btn.x1 <= vecX && btn.x2 >= vecX && btn.y1 <= vecY && btn.y2 >= vecY) {
+                if (btn.x1 <= vecX && btn.x2 >= vecX && btn.y1 <= vecY && btn.y2 >= vecY) {
                     f = 1;
                     btn.highlighted = true;
                     doAction = btn.action;
@@ -302,7 +307,7 @@ public class RadialMenu extends Screen {
                 final float green = f * ((btn.color >> 8 & 0xff) / 255.0f);
                 final float blue = f * ((btn.color & 0xff) / 255.0f);
 
-                if(btn.icon == null) {
+                if (btn.icon == null) {
                     buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).color(red, green, blue, a).endVertex();
                     buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).color(red, green, blue, a).endVertex();
                     buffer.pos(middle_x + btnx2, middle_y + btny2, blitOffset).color(red, green, blue, a).endVertex();
@@ -324,12 +329,12 @@ public class RadialMenu extends Screen {
 
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
 
-        for(final MenuRegion mnuRgn : modes) {
+        for (final MenuRegion mnuRgn : modes) {
             final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (ring_outer_edge * 0.6 + 0.4 * ring_inner_edge);
             final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (ring_outer_edge * 0.6 + 0.4 * ring_inner_edge);
 
             final SpriteIconPositioning sip = ClientSide.getIconForMode(mnuRgn.mode);
-            if(sip == null) continue;
+            if (sip == null) continue;
 
             final double scalex = 15 * sip.width * 0.5;
             final double scaley = 15 * sip.height * 0.5;
@@ -354,7 +359,7 @@ public class RadialMenu extends Screen {
             buffer.pos(middle_x + x2, middle_y + y1, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v1)).color(f, f, f, a).endVertex();
         }
 
-        for(final MenuButton btn : btns) {
+        for (final MenuButton btn : btns) {
             final float f = switchTo == null ? 1.0f : 0.5f;
             final float a = 1.0f * visibility;
 
@@ -372,7 +377,7 @@ public class RadialMenu extends Screen {
             final float green = f * ((btn.color >> 8 & 0xff) / 255.0f);
             final float blue = f * ((btn.color & 0xff) / 255.0f);
 
-            if(btn.icon != null) {
+            if (btn.icon != null) {
                 TextureAtlasSprite sprite = btn.icon.sprite;
                 buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
                 buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
@@ -386,8 +391,8 @@ public class RadialMenu extends Screen {
         final ItemRenderer ir = Minecraft.getInstance().getItemRenderer();
         final double w = 8;
         RenderHelper.enableGUIStandardItemLighting();
-        for(final MenuRegion mnuRgn : modes) {
-            if(mnuRgn.highlighted) {
+        for (final MenuRegion mnuRgn : modes) {
+            if (mnuRgn.highlighted) {
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5;
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5;
 
@@ -395,16 +400,16 @@ public class RadialMenu extends Screen {
                 final int fixed_y = (int) (y * text_distance);
                 final String text = mnuRgn.mode.getLocalizedName();
 
-                if(x <= -0.2) {
+                if (x <= -0.2) {
                     fixed_x -= getFontRenderer().getStringWidth(text);
-                } else if(-0.2 <= x && x <= 0.2) {
+                } else if (-0.2 <= x && x <= 0.2) {
                     fixed_x -= getFontRenderer().getStringWidth(text) / 2;
                 }
 
                 getFontRenderer().drawStringWithShadow(text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, 0xffffffff);
             }
-            if(mnuRgn.mode instanceof SelectedItemMode) {
-                if(mnuRgn.mode.equals(SelectedItemMode.NONE_BAG)) continue;
+            if (mnuRgn.mode instanceof SelectedItemMode) {
+                if (mnuRgn.mode.equals(SelectedItemMode.NONE_BAG)) continue;
 
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (ring_outer_edge * 0.6 + 0.4 * ring_inner_edge);
@@ -414,16 +419,16 @@ public class RadialMenu extends Screen {
         }
         RenderHelper.disableStandardItemLighting();
 
-        for(final MenuButton btn : btns) {
-            if(btn.highlighted) {
+        for (final MenuButton btn : btns) {
+            if (btn.highlighted) {
                 final String text = btn.name;
-                if(btn.textSide == Direction.WEST) {
+                if (btn.textSide == Direction.WEST) {
                     getFontRenderer().drawStringWithShadow(text, (int) (middle_x + btn.x1 - 8) - getFontRenderer().getStringWidth(text), (int) (middle_y + btn.y1 + 6), 0xffffffff);
-                } else if(btn.textSide == Direction.EAST) {
+                } else if (btn.textSide == Direction.EAST) {
                     getFontRenderer().drawStringWithShadow(text, (int) (middle_x + btn.x2 + 8), (int) (middle_y + btn.y1 + 6), 0xffffffff);
-                } else if(btn.textSide == Direction.UP) {
+                } else if (btn.textSide == Direction.UP) {
                     getFontRenderer().drawStringWithShadow(text, (int) (middle_x + (btn.x1 + btn.x2) * 0.5 - getFontRenderer().getStringWidth(text) * 0.5), (int) (middle_y + btn.y1 - 14), 0xffffffff);
-                } else if(btn.textSide == Direction.DOWN) {
+                } else if (btn.textSide == Direction.DOWN) {
                     getFontRenderer().drawStringWithShadow(text, (int) (middle_x + (btn.x1 + btn.x2) * 0.5 - getFontRenderer().getStringWidth(text) * 0.5), (int) (middle_y + btn.y1 + 24), 0xffffffff);
                 }
             }
@@ -454,9 +459,47 @@ public class RadialMenu extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        if(mouseButton == 0)
+        if (mouseButton == 0)
             setClicked(true);
         return super.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    private static class MenuButton {
+        final MenuAction action;
+        double x1, x2;
+        double y1, y2;
+        boolean highlighted;
+        SpriteIconPositioning icon;
+        int color;
+        String name;
+        Direction textSide;
+
+        public MenuButton(final MenuAction action, final double x, final double y, final Direction textSide) {
+            this(action, x, y, 0xffffff, textSide);
+            this.icon = ClientSide.getIconForAction(action);
+        }
+
+        public MenuButton(final MenuAction action, final double x, final double y, final int col, final Direction textSide) {
+            this.name = action.getLocalizedName();
+            this.action = action;
+            x1 = x;
+            x2 = x + 18;
+            y1 = y;
+            y2 = y + 18;
+            color = col;
+            this.textSide = textSide;
+        }
+    }
+
+    static class MenuRegion {
+        public final IItemMode mode;
+        public double x1, x2;
+        public double y1, y2;
+        public boolean highlighted;
+
+        public MenuRegion(final IItemMode mode) {
+            this.mode = mode;
+        }
     }
 
     /*@SubscribeEvent

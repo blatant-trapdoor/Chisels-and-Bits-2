@@ -6,16 +6,21 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 
 public interface ChiselIterator {
-	IntegerBox getVoxelBox(
+    IntegerBox getVoxelBox(
             VoxelBlob blobAt,
             boolean b);
-	AxisAlignedBB getBoundingBox(
-            VoxelBlob NULL_BLOB,
-			boolean b);
-	Direction side();
 
-	int x();
-	int y();
-	int z();
-	boolean hasNext();
+    AxisAlignedBB getBoundingBox(
+            VoxelBlob NULL_BLOB,
+            boolean b);
+
+    Direction side();
+
+    int x();
+
+    int y();
+
+    int z();
+
+    boolean hasNext();
 }

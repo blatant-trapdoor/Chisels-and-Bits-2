@@ -3,7 +3,8 @@ package nl.dgoossens.chiselsandbits2.api;
 import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,9 +28,9 @@ public enum ItemModeType {
      * Get all item modes associated with this type.
      */
     public List<IItemMode> getItemModes(final ItemStack item) {
-        if(this==SELECTED_BLOCK || this==SELECTED_FLUID || this==SELECTED_BOOKMARK)
-            return item.getCapability(StorageCapabilityProvider.STORAGE).map(BitStorage::listTypesAsItemModes).orElse(new ArrayList<>());
-        if(cache==null)
+        if (this == SELECTED_BLOCK || this == SELECTED_FLUID || this == SELECTED_BOOKMARK)
+            return item.getCapability(StorageCapabilityProvider.STORAGE).map(s -> s.listTypesAsItemModes(item.getItem())).orElse(new ArrayList<>());
+        if (cache == null)
             cache = Stream.of(ItemMode.values()).filter(f -> f.name().startsWith(name())).collect(Collectors.toList());
         return cache;
     }

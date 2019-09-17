@@ -1,20 +1,20 @@
 {
-	"result": {
-		"item": "chiselsandbits2:palette"
-	},
-	"type": "minecraft:crafting_shapeless",
-	"ingredients": [
-		{
-			"tag": "forge:ingots/iron"
-		},
-		{
-			"tag": "forge:dyes"
-		},
-		{
-			"tag": "forge:dyes"
-		},
-		{
-			"tag": "forge:dyes"
-		}
-	]
+  "result": {
+    "item": "chiselsandbits2:palette"
+  },
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "forge:ingots/iron"
+    },
+    {
+      "tag": "forge:dyes"
+    },
+    {
+      "tag": "forge:dyes"
+    },
+    {
+      "tag": "forge:dyes"
+    }
+  ]
 }
