@@ -42,20 +42,12 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 
     private BitLocation from;
     private BitLocation to;
-
     private BitOperation operation;
     private Direction side;
     private IItemMode mode;
 
-    private PacketChisel() {
-    }
-
-    public PacketChisel(
-            final BitOperation operation,
-            final BitLocation from,
-            final BitLocation to,
-            final Direction side,
-            final IItemMode mode) {
+    private PacketChisel() { }
+    public PacketChisel(final BitOperation operation, final BitLocation from, final BitLocation to, final Direction side, final IItemMode mode) {
         this.operation = operation;
         this.from = BitLocation.min(from, to);
         this.to = BitLocation.max(from, to);
@@ -63,11 +55,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         this.mode = mode;
     }
 
-    public PacketChisel(
-            final BitOperation operation,
-            final BitLocation location,
-            final Direction side,
-            final IItemMode mode) {
+    public PacketChisel(final BitOperation operation, final BitLocation location, final Direction side, final IItemMode mode) {
         this.operation = operation;
         from = to = location;
         this.side = side;
@@ -87,6 +75,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                 final ChiseledBlockTileEntity te = (ChiseledBlockTileEntity) world.getTileEntity(pos);
                 if (te != null) {
                     if (!isAir) te.fillWith(blockId);
+                    else te.fillWith(VoxelBlob.AIR_BIT);
                     rv.success = true;
                     rv.te = te;
                     return rv;
@@ -154,7 +143,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                         BlockState blkstate = world.getBlockState(pos);
                         Block blkObj = blkstate.getBlock();
 
-                        final int placeStateID = ModUtil.getColourId(Color.GREEN);
+                        final int placeStateID = ModUtil.getStateId(Blocks.DIAMOND_BLOCK.getDefaultState());
                         /*operation.usesBits() ? ItemChiseledBit.getStackState( who.getHeldItem( hand ) ) : 0;
 						final IContinuousInventory chisels = new ContinousChisels( player, pos, side );
 						final IContinuousInventory bits = new ContinousBits( player, pos, placeStateID );
@@ -199,10 +188,9 @@ public class PacketChisel implements NetworkRouter.ModPacket {
 
                             final ChiselIterator i = getIterator(new VoxelRegionSrc(world, pos, 1), pos, operation);
                             switch (operation) {
-                                case PLACE:
-                                case REPLACE: {
+                                case PLACE: {
                                     while (i.hasNext()) {
-                                        if (operation == BitOperation.REPLACE || vb.get(i.x(), i.y(), i.z()) == VoxelBlob.AIR_BIT) {
+                                        if (vb.get(i.x(), i.y(), i.z()) == VoxelBlob.AIR_BIT) {
                                             //final IItemInInventory slot = bits.getItem( 0 );
                                             //final int stateID = ItemChiseledBit.getStackState( slot.getStack() );
 
@@ -219,6 +207,13 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                             update = true;
                                         }
                                     }
+                                }
+                                break;
+                                case REPLACE: {
+                                    while (i.hasNext()) {
+                                        vb.set(i.x(), i.y(), i.z(), placeStateID);
+                                    }
+                                    update = true;
                                 }
                                 break;
                                 case REMOVE: {

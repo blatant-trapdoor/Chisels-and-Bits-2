@@ -37,7 +37,7 @@ public final class VoxelNeighborRenderTracker {
      * Updates the tracked neighbouring voxel references.
      */
     public void update(IBlockReader world, BlockPos pos) {
-        System.out.println("Updating NEIGHBOURS " + pos);
+        //System.out.println("Updating NEIGHBOURS " + pos);
         for (Direction d : Direction.values()) {
             final TileEntity te = world.getTileEntity(pos.offset(d));
             if (te instanceof ChiseledBlockTileEntity) {

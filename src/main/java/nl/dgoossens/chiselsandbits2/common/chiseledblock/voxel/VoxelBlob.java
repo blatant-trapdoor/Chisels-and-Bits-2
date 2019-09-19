@@ -334,7 +334,7 @@ public final class VoxelBlob implements IVoxelSrc {
     /**
      * Updates the visible faces.
      */
-    public void updateVisibleFace(final Direction face, int x, int y, int z, final VisibleFace dest, final VoxelBlob secondBlob, final ICullTest cullVisTest) {
+    public void updateFaceVisibility(final Direction face, int x, int y, int z, final VisibleFace dest, final VoxelBlob secondBlob, final ICullTest cullVisTest) {
         final int mySpot = get(x, y, z);
         dest.state = mySpot;
 

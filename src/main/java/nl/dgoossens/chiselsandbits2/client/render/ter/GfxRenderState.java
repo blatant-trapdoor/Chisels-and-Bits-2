@@ -49,7 +49,9 @@ public abstract class GfxRenderState {
         public GfxRenderState prepare(final Tessellator t) {
             if (t.getBuffer().getVertexCount() > 0)
                 return GfxRenderState.getNewState(t.getBuffer().getVertexCount()).prepare(t);
-            t.getBuffer().finishDrawing();
+            try {
+                t.getBuffer().finishDrawing();
+            } catch (IllegalStateException x) {}
             return this;
         }
 
@@ -135,10 +137,7 @@ public abstract class GfxRenderState {
                 refreshNum = gfxRefresh;
             } catch (IllegalStateException x) {
                 destroy();
-                GfxRenderState v = new VoidRenderState();
-                //Don't prepare if it's above this to avoid infinite loop.
-                if (t.getBuffer().getVertexCount() <= 0) v.prepare(t);
-                return v;
+                return new VoidRenderState();
             }
             return this;
         }

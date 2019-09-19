@@ -75,10 +75,11 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                 final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
                 if (!model.isEmpty()) {
                     if(!began) { //Don't begin unless there's actually something to render. (avoid 0 vertices after we've began which we see 0 vertices as "not built")
+                        began = true;
                         try {
+                            //TODO Investigate ALREADY BUILDING occurences.
                             buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
                             buffer.setTranslation(-chunkOffset.getX(), -chunkOffset.getY(), -chunkOffset.getZ());
-                            began = true;
                         } catch (final IllegalStateException e) {
                             e.printStackTrace();
                         }
@@ -87,7 +88,9 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                     blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
 
                     if (Thread.interrupted()) {
-                        if(began) buffer.finishDrawing();
+                        try {
+                            buffer.finishDrawing();
+                        } catch(IllegalStateException e) {}
                         submitTessellator(tessellator);
                         return null;
                     }
@@ -96,7 +99,9 @@ public class BackgroundRenderer implements Callable<Tessellator> {
         }
 
         if (Thread.interrupted()) {
-            if(began) buffer.finishDrawing();
+            try {
+                buffer.finishDrawing();
+            } catch(IllegalStateException e) {}
             submitTessellator(tessellator);
             return null;
         }

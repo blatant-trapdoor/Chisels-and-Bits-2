@@ -15,7 +15,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.ICullTest;
 import nl.dgoossens.chiselsandbits2.api.IFaceBuilder;
 import nl.dgoossens.chiselsandbits2.api.IStateRef;
-import nl.dgoossens.chiselsandbits2.client.culling.SolidCullTest;
+import nl.dgoossens.chiselsandbits2.client.culling.MCCullTest;
 import nl.dgoossens.chiselsandbits2.client.render.models.BaseBakedBlockModel;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -110,6 +110,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
 
     public ChiseledBlockBaked(final int primaryBlock, final VoxelBlobStateReference data, final ModelRenderState mrs, final VertexFormat format) {
         this.format = format;
+        System.out.println("Building model for "+ModUtil.getBlockState(primaryBlock));
         IBakedModel originalModel = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(ModUtil.getBlockState(primaryBlock));
 
         //Do we have data and is there a model for the primary block type.
@@ -357,7 +358,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
 
     private void processFace(final VoxelBlob blob, final VoxelBlob.VisibleFace visFace, final ModelRenderState mrs, final ArrayList<ArrayList<FaceRegion>> rset, final Direction myFace) {
         ArrayList<FaceRegion> regions = null;
-        final ICullTest test = new SolidCullTest();
+        final ICullTest test = new MCCullTest();
         final IStateRef nextToState = mrs != null ? mrs.get(myFace) : null;
         VoxelBlob nextTo = nextToState == null ? null : nextToState.getVoxelBlob();
 
@@ -404,7 +405,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
     }
 
     private FaceRegion getRegion(final VoxelBlob blob, final Direction myFace, final int x, final int y, final int z, final VoxelBlob.VisibleFace visFace, final VoxelBlob nextTo, final ICullTest test) {
-        blob.updateVisibleFace(myFace, x, y, z, visFace, nextTo, test);
+        blob.updateFaceVisibility(myFace, x, y, z, visFace, nextTo, test);
 
         if (visFace.visibleFace) {
             final Vec3i off = myFace.getDirectionVec();
