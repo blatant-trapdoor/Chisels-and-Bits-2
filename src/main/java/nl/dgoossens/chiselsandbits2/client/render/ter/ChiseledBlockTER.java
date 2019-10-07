@@ -127,10 +127,10 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
 
     private static void uploadVBO(final UploadTracker t) {
         final Tessellator tx = t.getTessellator();
-        if (t.renderCache.vboRenderer == null)
-            t.renderCache.vboRenderer = GfxRenderState.getNewState(tx.getBuffer().getVertexCount());
+        if (t.renderCache.needsRebuilding())
+            t.renderCache.setRenderState(GfxRenderState.getNewState(tx.getBuffer().getVertexCount()));
 
-        t.renderCache.vboRenderer = t.renderCache.vboRenderer.prepare(tx);
+        t.renderCache.prepareRenderState(tx);
         t.submitForReuse();
     }
 
@@ -160,7 +160,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         final RenderCache rc = te.getChunk(te.getWorld());
         final BlockPos chunkOffset = te.getChunk(te.getWorld()).chunkOffset();
 
-        if (rc.vboRenderer == null) {
+        if (rc.needsRebuilding()) {
             //Rebuild!
             final int dynamicTess = getMaxTessalators();
             if (pendingTess.get() < dynamicTess && rc.future == null) {
@@ -179,10 +179,10 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             }
         }
 
-        final GfxRenderState dl = rc.vboRenderer;
+        final GfxRenderState dl = rc.getRenderState();
         if (dl != null && dl.shouldRender()) {
             if (!dl.validForUse()) {
-                rc.vboRenderer = null;
+                rc.setRenderState(null);
                 return;
             }
 
