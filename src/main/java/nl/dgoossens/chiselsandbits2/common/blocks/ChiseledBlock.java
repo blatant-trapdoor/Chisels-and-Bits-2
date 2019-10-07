@@ -21,6 +21,7 @@ import nl.dgoossens.chiselsandbits2.common.items.ChiseledBlockItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class ChiseledBlock extends Block implements BaseBlock {
     public ChiseledBlock(Properties properties) {
@@ -68,18 +69,23 @@ public class ChiseledBlock extends Block implements BaseBlock {
     }
 
     @Override
+    public BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.ENTITYBLOCK_ANIMATED; //Set it to TESR only mode so there's no normal model.
+    }
+
+    @Override
     public boolean canRenderInLayer(BlockState state, BlockRenderLayer layer) {
         return true;
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.ENTITYBLOCK_ANIMATED;
+    public SoundType getSoundType(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity entity) {
+        return getPrimaryState(world, pos).getSoundType(world, pos, entity);
     }
 
     @Override
-    public SoundType getSoundType(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity entity) {
-        return getPrimaryState(world, pos).getSoundType(world, pos, entity);
+    public boolean isSolid(BlockState state) {
+        return false; //We say it's never solid to avoid shouldSideBeRendered from returning false somehow.
     }
 
     /**

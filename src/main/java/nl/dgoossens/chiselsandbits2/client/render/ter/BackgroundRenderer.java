@@ -159,8 +159,8 @@ public class BackgroundRenderer implements Callable<Tessellator> {
         }
     }
 
-    static class CBTessellator extends Tessellator {
-        CBTessellatorRefNode node = new CBTessellatorRefNode();
+    public static class CBTessellator extends Tessellator {
+        public CBTessellatorRefNode node = new CBTessellatorRefNode();
 
         public CBTessellator(final int bufferSize) {
             super(bufferSize);
