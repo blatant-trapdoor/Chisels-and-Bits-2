@@ -43,69 +43,74 @@ public class BackgroundRenderer implements Callable<Tessellator> {
     @Override
     public Tessellator call() throws Exception {
         Tessellator tessellator = null;
-
-        do {
+        try {
             do {
-                final CBTessellatorRefHold holder = previousTessellators.poll();
-                if (holder != null) {
-                    tessellator = holder.get();
-                    if (tessellator == null)
-                        holder.dispose();
+                do {
+                    final CBTessellatorRefHold holder = previousTessellators.poll();
+                    if (holder != null) {
+                        tessellator = holder.get();
+                        if (tessellator == null)
+                            holder.dispose();
+                    }
+                }
+                while (tessellator == null && !previousTessellators.isEmpty());
+
+                // no previous queues?
+                if (tessellator == null) {
+                    synchronized (CBTessellator.class) {
+                        if (ChiseledBlockTER.activeTess.get() < ChiseledBlockTER.getMaxTessalators())
+                            tessellator = new CBTessellator(2109952);
+                        else Thread.sleep(10);
+                    }
                 }
             }
-            while (tessellator == null && !previousTessellators.isEmpty());
+            while (tessellator == null);
+            final BufferBuilder buffer = tessellator.getBuffer();
 
-            // no previous queues?
-            if (tessellator == null) {
-                synchronized (CBTessellator.class) {
-                    if (ChiseledBlockTER.activeTess.get() < ChiseledBlockTER.getMaxTessalators())
-                        tessellator = new CBTessellator(2109952);
-                    else Thread.sleep(10);
-                }
-            }
-        }
-        while (tessellator == null);
-        final BufferBuilder buffer = tessellator.getBuffer();
+            boolean began = false;
 
-        boolean began = false;
+            for (final ChiseledBlockTileEntity tx : myPrivateList) {
+                if (!tx.isRemoved()) {
+                    tx.getRenderTracker().update(tx.getWorld(), tx.getPos()); //Update the render tracker first.
+                    final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
+                    if (!model.isEmpty()) {
+                        if(!began) { //Don't begin unless there's actually something to render. (avoid 0 vertices after we've began which we see 0 vertices as "not built")
+                            began = true;
+                            try {
+                                //TODO Investigate ALREADY BUILDING occurences.
+                                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+                                buffer.setTranslation(-chunkOffset.getX(), -chunkOffset.getY(), -chunkOffset.getZ());
+                            } catch (final IllegalStateException e) {
+                                e.printStackTrace();
+                            }
+                        }
 
-        for (final ChiseledBlockTileEntity tx : myPrivateList) {
-            if (!tx.isRemoved()) {
-                tx.getRenderTracker().update(tx.getWorld(), tx.getPos()); //Update the render tracker first.
-                final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
-                if (!model.isEmpty()) {
-                    if(!began) { //Don't begin unless there's actually something to render. (avoid 0 vertices after we've began which we see 0 vertices as "not built")
-                        began = true;
-                        try {
-                            //TODO Investigate ALREADY BUILDING occurences.
-                            buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-                            buffer.setTranslation(-chunkOffset.getX(), -chunkOffset.getY(), -chunkOffset.getZ());
-                        } catch (final IllegalStateException e) {
-                            e.printStackTrace();
+                        blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
+
+                        if (Thread.interrupted()) {
+                            try {
+                                buffer.finishDrawing();
+                            } catch(IllegalStateException e) {}
+                            submitTessellator(tessellator);
+                            return null;
                         }
                     }
-
-                    blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
-
-                    if (Thread.interrupted()) {
-                        try {
-                            buffer.finishDrawing();
-                        } catch(IllegalStateException e) {}
-                        submitTessellator(tessellator);
-                        return null;
-                    }
                 }
             }
-        }
 
-        if (Thread.interrupted()) {
-            try {
-                buffer.finishDrawing();
-            } catch(IllegalStateException e) {}
-            submitTessellator(tessellator);
-            return null;
+            if (Thread.interrupted()) {
+                try {
+                    buffer.finishDrawing();
+                } catch(IllegalStateException e) {}
+                submitTessellator(tessellator);
+                return null;
+            }
+            return tessellator;
+        } catch(Exception x) {
+            //Catch exceptions and print them here.
+            x.printStackTrace();
+            return tessellator;
         }
-        return tessellator;
     }
 
     static class CBTessellatorRefNode {

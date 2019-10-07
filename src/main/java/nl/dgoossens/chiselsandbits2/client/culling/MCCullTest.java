@@ -30,9 +30,9 @@ public class MCCullTest extends DummyEnvironmentWorldReader implements ICullTest
     @Override
     public boolean isVisible(final int myId, final int otherId) {
         //If this is air
-        if (myId == otherId || myId == VoxelBlob.AIR_BIT) return false;
+        if (myId == VoxelBlob.AIR_BIT || myId == otherId) return false;
 
-        switch (VoxelType.getType(myId)) {
+        switch (VoxelType.getType(otherId)) {
             case FLUIDSTATE:
             case AIR:
                 return true;
