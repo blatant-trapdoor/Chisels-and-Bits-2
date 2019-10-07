@@ -67,24 +67,22 @@ public class BackgroundRenderer implements Callable<Tessellator> {
             while (tessellator == null);
             final BufferBuilder buffer = tessellator.getBuffer();
 
-            boolean began = false;
+            try {
+                try {
+                    //Finish drawing if the buffer was somehow drawing.
+                    buffer.finishDrawing();
+                } catch(IllegalStateException e) {}
+                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+                buffer.setTranslation(-chunkOffset.getX(), -chunkOffset.getY(), -chunkOffset.getZ());
+            } catch (final IllegalStateException e) {
+                e.printStackTrace();
+            }
 
             for (final ChiseledBlockTileEntity tx : myPrivateList) {
                 if (!tx.isRemoved()) {
                     tx.getRenderTracker().update(tx.getWorld(), tx.getPos()); //Update the render tracker first.
                     final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
                     if (!model.isEmpty()) {
-                        if(!began) { //Don't begin unless there's actually something to render. (avoid 0 vertices after we've began which we see 0 vertices as "not built")
-                            began = true;
-                            try {
-                                //TODO Investigate ALREADY BUILDING occurences.
-                                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-                                buffer.setTranslation(-chunkOffset.getX(), -chunkOffset.getY(), -chunkOffset.getZ());
-                            } catch (final IllegalStateException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
                         blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
 
                         if (Thread.interrupted()) {
