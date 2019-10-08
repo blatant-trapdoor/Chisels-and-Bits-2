@@ -6,11 +6,16 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -25,6 +30,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
@@ -62,10 +68,16 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         this.mode = mode;
     }
 
-    public static ReplaceWithChiseledValue replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID) {
+    public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final Direction face) {
         Block target = originalState.getBlock();
-        final boolean isAir = world.isAirBlock(pos);
-        ReplaceWithChiseledValue rv = new ReplaceWithChiseledValue();
+        boolean isAir = world.isAirBlock(pos);
+
+        //We see it as air if we can replace it.
+        System.out.println("Pos at "+pos+", but can we replace it?");
+        if(!isAir && world.getBlockState(pos).isReplaceable(new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, new BlockRayTraceResult(new Vec3d((double)pos.getX() + 0.5D + (double)face.getXOffset() * 0.5D, (double)pos.getY() + 0.5D + (double)face.getYOffset() * 0.5D, (double)pos.getZ() + 0.5D + (double)face.getZOffset() * 0.5D), face, pos, false))))) {
+            isAir = true;
+            System.out.println("Pos at "+pos+" is indeed replaceable");
+        }
 
         if (ChiselUtil.canChiselBlock(originalState) || isAir) {
             int blockId = isAir ? fragmentBlockStateID : ModUtil.getStateId(originalState);
@@ -76,13 +88,9 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                 if (te != null) {
                     if (!isAir) te.fillWith(blockId);
                     else te.fillWith(VoxelBlob.AIR_BIT);
-                    rv.success = true;
-                    rv.te = te;
-                    return rv;
                 }
             }
         }
-        return rv;
     }
 
     private static BitLocation readBitLoc(final PacketBuffer buffer) {
@@ -130,8 +138,6 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         final int minZ = Math.min(from.blockPos.getZ(), to.blockPos.getZ());
         final int maxZ = Math.max(from.blockPos.getZ(), to.blockPos.getZ());
 
-        boolean update = false;
-
         //TODO UndoTracker.getInstance().beginGroup( who );
 
         try {
@@ -141,52 +147,31 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                         final BlockPos pos = new BlockPos(xOff, yOff, zOff);
 
                         BlockState blkstate = world.getBlockState(pos);
-                        Block blkObj = blkstate.getBlock();
+                        ItemStack chisel = player.getHeldItemMainhand();
+                        if(!(chisel.getItem() instanceof ChiselItem))
+                            return; //Extra security, if you're somehow no longer holding a chisel we cancel.
 
                         final int placeStateID = ModUtil.getStateId(Blocks.DIAMOND_BLOCK.getDefaultState());
-                        /*operation.usesBits() ? ItemChiseledBit.getStackState( who.getHeldItem( hand ) ) : 0;
-						final IContinuousInventory chisels = new ContinousChisels( player, pos, side );
-						final IContinuousInventory bits = new ContinousBits( player, pos, placeStateID );
-
-
-
-						if ( operation.usesChisels() )
-						{
-							if ( !chisels.isValid() || blkObj == null || blkstate == null || !ItemChisel.canMine( chisels, blkstate, who, world, pos ) )
-							{
-								continue;
-							}
-						}
-
-						if ( operation.usesBits() )
-						{
-							if ( !bits.isValid() || blkObj == null || blkstate == null )
-							{
-								continue;
-							}
-						}*/
 
                         if (world.getServer() != null && world.getServer().isBlockProtected(world, pos, player))
                             continue;
 
-                        //if ( world.getBlockState( pos ).getBlock().isReplaceable( world, pos ) )
-                        //{
-                        //world.removeBlock( pos, false );
-                        //}
-
-                        ReplaceWithChiseledValue rv = replaceWithChiseled(player, world, pos, blkstate, placeStateID);
-                        if (rv.success) {
-                            blkstate = world.getBlockState(pos);
-                            blkObj = blkstate.getBlock();
-                        }
-
-                        final TileEntity te = rv.te != null ? rv.te : world.getTileEntity(pos);
+                        replaceWithChiseled(player, world, pos, blkstate, placeStateID, side);
+                        final TileEntity te = world.getTileEntity(pos);
                         if (te instanceof ChiseledBlockTileEntity) {
                             final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
                             final VoxelBlob vb = tec.getBlob();
                             final boolean isCreative = player.isCreative();
 
                             final ChiselIterator i = getIterator(new VoxelRegionSrc(world, pos, 1), pos, operation);
+                            int durabilityTaken = 0;
+                            int totalCapacity = 0;
+                            //Determine the maximum durability that the player has.
+                            for(ItemStack item : player.inventory.mainInventory) {
+                                if(item.getItem() instanceof ChiselItem)
+                                    totalCapacity += (chisel.getMaxDamage() - chisel.getDamage());
+                            }
+
                             switch (operation) {
                                 case PLACE: {
                                     while (i.hasNext()) {
@@ -203,8 +188,11 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                             //	}
                                             //	else
                                             vb.set(i.x(), i.y(), i.z(), placeStateID);
+                                            durabilityTaken += 1;
+                                            if(durabilityTaken >= totalCapacity) {
+                                                break;
+                                            }
                                             //}
-                                            update = true;
                                         }
                                     }
                                 }
@@ -212,8 +200,11 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                 case REPLACE: {
                                     while (i.hasNext()) {
                                         vb.set(i.x(), i.y(), i.z(), placeStateID);
+                                        durabilityTaken += 1;
+                                        if(durabilityTaken >= totalCapacity) {
+                                            break;
+                                        }
                                     }
-                                    update = true;
                                 }
                                 break;
                                 case REMOVE: {
@@ -247,14 +238,64 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                             //extracted = ItemChiseledBit.createStack( blk, 1, true );
                                         }*/
                                         vb.clear(i.x(), i.y(), i.z());
-                                        update = true;
+                                        durabilityTaken++;
+                                        if(durabilityTaken >= totalCapacity) {
+                                            break;
+                                        }
                                     }
                                 }
                                 break;
                             }
 
-                            if (update)
+                            if (durabilityTaken > 0) {
                                 tec.completeEditOperation(vb);
+
+                                //Below follows some incredibly complex code to lower the durability of the chisel and to automatically move backup chisels to the slot to continue chiseling when the old one breaks.
+                                if(!isCreative) { //No tool damage in creative mode.
+                                    int usesLeft = chisel.getMaxDamage() - chisel.getDamage();
+                                    //While there is durability to be taken we'll keep damaging tools.
+                                    usesLeft -= durabilityTaken;
+                                    while(durabilityTaken > 0) {
+                                        //Remember the mode of the current chisel.
+                                        IItemMode mode = ChiselModeManager.getMode(chisel);
+
+                                        //We'll break the chisel as much as possible to the max of its durability.
+                                        int capacity = Math.min(chisel.getMaxDamage() - chisel.getDamage(), durabilityTaken);
+                                        chisel.damageItem(capacity, player, (p) -> {
+                                            p.sendBreakAnimation(Hand.MAIN_HAND);
+                                        });
+                                        //Decrease the owed durability with as much as we've removed.
+                                        durabilityTaken -= capacity;
+
+                                        //Move new chisel to the front if the previous one broke so operations don't get halted halfway unnecessarily.
+                                        boolean done = false;
+                                        //Give a new one if the old chisel broke. (which is always the case if usesLeft < 0)
+                                        if(usesLeft < 0 || chisel.getDamage() == chisel.getMaxDamage()) {
+                                            for(int s = 0; s < player.inventory.mainInventory.size(); s++) {
+                                                ItemStack item = player.inventory.mainInventory.get(s);
+                                                if(item.getItem() instanceof ChiselItem) {
+                                                    player.inventory.removeStackFromSlot(s);
+                                                    //The previous item broke so the slot is always free.
+                                                    player.inventory.mainInventory.set(player.inventory.currentItem, item);
+                                                    ChiselModeManager.setMode(item, mode); //Keep the mode from your old chisel. Just a little quality of life!
+                                                    chisel = item;
+                                                    done = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if(usesLeft < 0) { //If the current chisel item didn't have enough to last the operation we need to update our variables for the next round of the while loop.
+                                            //If done failed we should have aborted the operation at some point, so this is a really bad scenario.
+                                            if(!done)
+                                                throw new IllegalArgumentException("Expected valid chisel but found none");
+
+                                            usesLeft = chisel.getMaxDamage() - chisel.getDamage();
+                                            usesLeft -= durabilityTaken;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -275,7 +316,6 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         } finally {
             //TODO UndoTracker.getInstance().endGroup( who );
         }
-        //TODO update chisel durability (server-side)
     }
 
     private ChiselIterator getIterator(final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {
@@ -291,11 +331,6 @@ public class PacketChisel implements NetworkRouter.ModPacket {
             return new ChiselTypeIterator(VoxelBlob.DIMENSION, bitX, bitY, bitZ, scaleX, scaleY, scaleZ, side);
         }
         return ChiselTypeIterator.create(VoxelBlob.DIMENSION, from.bitX, from.bitY, from.bitZ, vb, mode, side, place.equals(BitOperation.PLACE));
-    }
-
-    public static class ReplaceWithChiseledValue {
-        public boolean success = false;
-        public ChiseledBlockTileEntity te = null;
     }
 
     public static class Handler {

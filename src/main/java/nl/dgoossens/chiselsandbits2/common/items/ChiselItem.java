@@ -82,4 +82,12 @@ public class ChiselItem extends TypedItem {
         }
         return multimap;
     }
+
+    /**
+     * Overwrite the Properties.maxDamage() with the configuration value.
+     */
+    @Override
+    public int getMaxDamage(ItemStack stack) {
+        return ChiselsAndBits2.getInstance().getConfig().chiselDurability.get();
+    }
 }

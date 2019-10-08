@@ -20,6 +20,7 @@ public class ModConfiguration {
     // --- SERVER VALUES ---
     public ForgeConfigSpec.DoubleValue maxDrawnRegionSize;
 
+    public ForgeConfigSpec.IntValue chiselDurability;
     public ForgeConfigSpec.IntValue typeSlotsPerBag;
     public ForgeConfigSpec.LongValue bitsPerTypeSlot;
 
@@ -93,6 +94,10 @@ public class ModConfiguration {
             bitsPerTypeSlot = builder
                     .comment("How many bits fit in each slot of the bit bag")
                     .defineInRange("bitsPerTypeSlot", 131072, 1, 9223372036854775807L);
+
+            chiselDurability = builder
+                    .comment("How big should the durability of a chisel be, each bit modified takes one durability.")
+                    .defineInRange("chiselDurability", 1048576, 1, Integer.MAX_VALUE); //Default is 16^5
 
             builder.pop();
 

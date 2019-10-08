@@ -47,7 +47,7 @@ public class ChiselEvent {
         if(!(player.getHeldItemMainhand().getItem() instanceof ChiselItem)) return;
         e.setCanceled(true);
 
-        if(System.currentTimeMillis()-lastClick < 300) return;
+        if(System.currentTimeMillis()-lastClick < 150) return;
         lastClick = System.currentTimeMillis();
 
         final BitOperation operation = e.isAttack() ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.REPLACE) ? BitOperation.REPLACE : BitOperation.PLACE);
@@ -70,7 +70,7 @@ public class ChiselEvent {
         if (!(player.getHeldItemMainhand().getItem() instanceof ChiselItem)) return;
         e.setCanceled(true);
 
-        if (System.currentTimeMillis() - lastClick < 300) return;
+        if (System.currentTimeMillis() - lastClick < 150) return;
         lastClick = System.currentTimeMillis();
 
         final BitOperation operation = leftClick ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.REPLACE) ? BitOperation.REPLACE : BitOperation.PLACE);
