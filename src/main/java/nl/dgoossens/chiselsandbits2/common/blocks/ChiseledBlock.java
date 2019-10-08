@@ -1,12 +1,14 @@
 package nl.dgoossens.chiselsandbits2.common.blocks;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.SoundType;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.state.IProperty;
+import net.minecraft.state.IntegerProperty;
+import net.minecraft.state.Property;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
@@ -78,9 +80,16 @@ public class ChiseledBlock extends Block implements BaseBlock {
         return true;
     }
 
+    //Redirect getSoundType to the primary block.
     @Override
     public SoundType getSoundType(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity entity) {
         return getPrimaryState(world, pos).getSoundType(world, pos, entity);
+    }
+
+    //Redirect getSlipperiness to the primary block.
+    @Override
+    public float getSlipperiness(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity entity) {
+        return getPrimaryState(world, pos).getSlipperiness(world, pos, entity);
     }
 
     @Override

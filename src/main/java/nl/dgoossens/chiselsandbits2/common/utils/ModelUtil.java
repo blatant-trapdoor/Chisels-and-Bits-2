@@ -9,10 +9,15 @@ import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.fluid.FlowingFluid;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.FluidAttributes;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
@@ -150,17 +155,20 @@ public class ModelUtil implements CacheClearable {
                     final float U = 0.5f;
                     final float Vf = 1.0f;
 
-                    //TODO This is always the missing sprite, fluisd aren't getting lookup up properly.
-                    mp[0].sprite = Minecraft.getInstance().getTextureMap().getSprite(fluid.getFluid().getRegistryName());
+                    if(fluid.isEmpty()) continue;
+                    FluidAttributes a = fluid.getFluid().getAttributes();
                     if (xf.getAxis() == Direction.Axis.Y) {
-                        //TODO Maybe take the flowing sprite if this is Y axis?
+                        mp[0].sprite = Minecraft.getInstance().getTextureMap().getSprite(a.getStillTexture());
                         mp[0].uvs = new float[]{Uf, Vf, 0, Vf, Uf, 0, 0, 0};
-                    } else if (xf.getAxis() == Direction.Axis.X) {
-                        mp[0].uvs = new float[]{U, 0, U, V, 0, 0, 0, V};
                     } else {
-                        mp[0].uvs = new float[]{U, 0, 0, 0, U, V, 0, V};
+                        mp[0].sprite = Minecraft.getInstance().getTextureMap().getSprite(a.getFlowingTexture());
+                        if (xf.getAxis() == Direction.Axis.X) {
+                            mp[0].uvs = new float[]{U, 0, U, V, 0, 0, 0, V};
+                        } else {
+                            mp[0].uvs = new float[]{U, 0, 0, 0, U, V, 0, V};
+                        }
                     }
-                    mp[0].tint = 0;
+                    mp[0].tint = stateID;
 
                     final int cacheV = stateID << 4 | xf.ordinal();
                     cache.put(cacheV, mp);
@@ -171,14 +179,13 @@ public class ModelUtil implements CacheClearable {
                 for (final Direction xf : Direction.values()) {
                     final ModelQuadLayer[] mp = new ModelQuadLayer[1];
                     mp[0] = new ModelQuadLayer();
-                    mp[0].color = colour.hashCode();
+                    mp[0].color = 0xffffff;
 
                     final float V = 0.5f;
                     final float Uf = 1.0f;
                     final float U = 0.5f;
                     final float Vf = 1.0f;
 
-                    //TODO Fix this logic!
                     mp[0].sprite = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getTexture(Blocks.WHITE_CONCRETE.getDefaultState());
                     if (xf.getAxis() == Direction.Axis.Y) {
                         mp[0].uvs = new float[]{Uf, Vf, 0, Vf, Uf, 0, 0, 0};
@@ -187,7 +194,7 @@ public class ModelUtil implements CacheClearable {
                     } else {
                         mp[0].uvs = new float[]{U, 0, 0, 0, U, V, 0, V};
                     }
-                    mp[0].tint = 0;
+                    mp[0].tint = stateID;
 
                     final int cacheV = stateID << 4 | xf.ordinal();
                     cache.put(cacheV, mp);

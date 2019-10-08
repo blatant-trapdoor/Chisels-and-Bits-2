@@ -42,7 +42,7 @@ public class ModUtil {
      * If this id is not a fluid state, errors may occur.
      */
     public static IFluidState getFluidState(final int fluidStateId) {
-        IFluidState ret = Fluid.STATE_REGISTRY.getByValue(fluidStateId);
+        IFluidState ret = Fluid.STATE_REGISTRY.getByValue(fluidStateId << 2 >>> 2); //Shift and shift back 2 to lose the identifier.
         return ret == null ? Fluids.EMPTY.getDefaultState() : ret;
     }
 
@@ -79,6 +79,6 @@ public class ModUtil {
      */
     public static int getColourId(final Color colour) {
         //We built our own int instead of getting the colour value because we do some trickery to the MSBs.
-        return 0b01000000000000000000000000000000 + ((colour.getAlpha() / 4) << 24) + (colour.getRed() << 16) + (colour.getGreen() << 8) + colour.getBlue();
+        return 0b10000000000000000000000000000000 + ((colour.getAlpha() / 4) << 24) + (colour.getRed() << 16) + (colour.getGreen() << 8) + colour.getBlue();
     }
 }

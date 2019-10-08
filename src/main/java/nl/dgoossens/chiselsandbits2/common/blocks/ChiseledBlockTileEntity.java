@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.blocks;
 
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
@@ -24,6 +25,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelNeighborRenderTracker;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
+import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -105,7 +107,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
         if (collisionShape == null) {
             VoxelShape base = VoxelShapes.empty();
             if (getVoxelReference() != null)
-                for (AxisAlignedBB box : getVoxelReference().getInstance().getBoxes())
+                for (AxisAlignedBB box : getVoxelReference().getInstance().getCollidableBoxes())
                     base = VoxelShapes.combine(base, VoxelShapes.create(box), IBooleanFunction.OR);
             collisionShape = base.simplify();
         }

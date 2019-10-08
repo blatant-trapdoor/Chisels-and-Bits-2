@@ -228,14 +228,30 @@ public final class VoxelBlob implements IVoxelSrc {
      * Returns the amount of bits that's equal to air in this blob.
      */
     public long air() {
-        return Arrays.stream(values).parallel().filter(f -> f == AIR_BIT).count();
+        int i = 0;
+        for(int v : values)
+            if(v == AIR_BIT) i++;
+        return i;
+    }
+
+    /**
+     * Returns the amount of fluid bits in the block.
+     */
+    public long fluids() {
+        int i = 0;
+        for(int v : values)
+            if(VoxelType.isFluid(v)) i++;
+        return i;
     }
 
     /**
      * Returns the amount of bits that's not air.
      */
     public long filled() {
-        return Arrays.stream(values).parallel().filter(f -> f != AIR_BIT).count();
+        int i = 0;
+        for(int v : values)
+            if(v != VoxelBlob.AIR_BIT) i++;
+        return i;
     }
 
     /**
@@ -245,6 +261,18 @@ public final class VoxelBlob implements IVoxelSrc {
     public int getMostCommonStateId() {
         return getBlockSums().entrySet().parallelStream()
                 .filter(f -> f.getKey() != AIR_BIT) //We ignore air in the calculation.
+                .max(Comparator.comparing(e -> e.getValue().intValue())).map(Entry::getKey)
+                .orElse(AIR_BIT); //There needs to be handling downstream if this happens. This also means the block is empty.
+    }
+
+    /**
+     * Get the state id of the most common fluid.
+     * Will return 0 if the block is empty.
+     * Used to determine which fluidstate the block should use.
+     */
+    public int getMostCommonFluid() {
+        return getBlockSums().entrySet().parallelStream()
+                .filter(f -> VoxelType.isFluid(f.getKey())) //We ignore non-fluids in the calculation.
                 .max(Comparator.comparing(e -> e.getValue().intValue())).map(Entry::getKey)
                 .orElse(AIR_BIT); //There needs to be handling downstream if this happens. This also means the block is empty.
     }

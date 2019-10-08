@@ -3,8 +3,10 @@ package nl.dgoossens.chiselsandbits2.client.render.overlay;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.color.IBlockColor;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IEnviromentBlockReader;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
@@ -19,8 +21,19 @@ public class BlockColorChiseled implements IBlockColor {
         if(tint == -1) return -1;
 
         //If this block has a colour we hide it in the tint value. See ModelQuadLayer.java
-        final BlockState tstate = ModUtil.getBlockState(tint >> TINT_BITS);
+        int v = tint >> TINT_BITS;
         int tintValue = tint & TINT_MASK;
-        return Minecraft.getInstance().getBlockColors().getColor( tstate, world, pos, tintValue );
+
+        if(VoxelType.isColoured(tint)) {
+            return ModUtil.getColourState(tint).hashCode();
+        }
+
+        if(VoxelType.isFluid(tint)) {
+            final IFluidState fstate = ModUtil.getFluidState(tint);
+            return fstate.getFluid().getAttributes().getColor(world, pos);
+        }
+
+        final BlockState tstate = ModUtil.getBlockState(v);
+        return Minecraft.getInstance().getBlockColors().getColor(tstate, world, pos, tintValue);
     }
 }

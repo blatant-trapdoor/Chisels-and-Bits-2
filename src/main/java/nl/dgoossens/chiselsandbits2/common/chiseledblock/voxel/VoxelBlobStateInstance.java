@@ -4,6 +4,7 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.block.Blocks;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.AxisAlignedBB;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import java.io.ByteArrayInputStream;
@@ -77,16 +78,22 @@ public final class VoxelBlobStateInstance implements Comparable<VoxelBlobStateIn
     }
 
     public Collection<AxisAlignedBB> getBoxes() {
-        return Arrays.asList(generateBoxes(getBlob()));
+        return Arrays.asList(generateBoxes(getBlob(), true));
     }
 
-    private AxisAlignedBB[] generateBoxes(final VoxelBlob blob) {
+    public Collection<AxisAlignedBB> getCollidableBoxes() {
+        return Arrays.asList(generateBoxes(getBlob(), false));
+    }
+
+    private AxisAlignedBB[] generateBoxes(final VoxelBlob blob, boolean includeFluids) {
         final List<AxisAlignedBB> cache = new ArrayList<>();
         final BitOcclusionIterator boi = new BitOcclusionIterator(cache);
 
         while (boi.hasNext()) {
-            if (boi.getNext(blob) != 0) boi.add();
-            else boi.drop();
+            int i = boi.getNext(blob);
+            if(i == VoxelBlob.AIR_BIT) boi.drop();
+            else if(!includeFluids && VoxelType.isFluid(i)) boi.drop();
+            else boi.add();
         }
         return cache.toArray(new AxisAlignedBB[cache.size()]);
     }

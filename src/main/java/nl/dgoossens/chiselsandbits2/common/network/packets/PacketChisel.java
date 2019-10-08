@@ -153,7 +153,8 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                         if(!(chisel.getItem() instanceof ChiselItem))
                             return; //Extra security, if you're somehow no longer holding a chisel we cancel.
 
-                        final int placeStateID = ModUtil.getStateId(Blocks.DIAMOND_BLOCK.getDefaultState());
+                        int placeStateID = ModUtil.getColourId(Color.GREEN);
+                        placeStateID = ModUtil.getStateId(Blocks.DIAMOND_BLOCK.getDefaultState());
 
                         if (world.getServer() != null && world.getServer().isBlockProtected(world, pos, player))
                             continue;
