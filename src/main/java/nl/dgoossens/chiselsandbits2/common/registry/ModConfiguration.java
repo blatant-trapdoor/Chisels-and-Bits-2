@@ -22,6 +22,8 @@ public class ModConfiguration {
 
     public ForgeConfigSpec.IntValue chiselDurability;
     public ForgeConfigSpec.IntValue typeSlotsPerBag;
+    public ForgeConfigSpec.IntValue typeSlotsPerBeaker;
+    public ForgeConfigSpec.IntValue bookmarksPerPalette;
     public ForgeConfigSpec.LongValue bitsPerTypeSlot;
 
     /**
@@ -88,8 +90,14 @@ public class ModConfiguration {
                     .defineInRange("maxDrawnRegionSize", 4.0, 1.0, 16.0);
 
             typeSlotsPerBag = builder
-                    .comment("How many slots for unique blocks does the bit bag have")
+                    .comment("How many slots for unique blocks the bit bag have")
                     .defineInRange("typeSlotsPerBag", 12, 3, 12);
+            typeSlotsPerBeaker = builder
+                    .comment("How many slots for unique fluids the bit beaker has")
+                    .defineInRange("typeSlotsPerBeaker", 4, 3, 12);
+            bookmarksPerPalette = builder
+                    .comment("How many slots you have for bookmarks in the palette")
+                    .defineInRange("bookmarksPerPalette", 12, 3, 12);
 
             bitsPerTypeSlot = builder
                     .comment("How many bits fit in each slot of the bit bag")

@@ -9,6 +9,8 @@ import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.ItemMode;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
 import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSetItemMode;
@@ -44,7 +46,7 @@ public class ChiselModeManager {
      * Scrolls through the current options and goes to the next one depending
      * on which direction was scrolled in.
      */
-    public static void scrollOption(IItemMode currentMode, final double dwheel) {
+    public static void scrollOption(IItemMode currentMode, ItemStack item, final double dwheel) {
         if (!ChiselsAndBits2.getInstance().getConfig().enableModeScrolling.get()) return;
         if (currentMode instanceof ItemMode) {
             int offset = ((ItemMode) currentMode).ordinal();
@@ -55,7 +57,41 @@ public class ChiselModeManager {
             } while (ItemMode.values()[offset].getType() != currentMode.getType());
             changeItemMode(ItemMode.values()[offset]);
         } else {
-            //TODO implement bit bag scroll
+            IItemMode i = getMode(item);
+            if(!(i instanceof SelectedItemMode)) return; //Just in case.
+            SelectedItemMode current = ((SelectedItemMode) i);
+            item.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(c -> {
+                BitStorageImpl bs = (BitStorageImpl) c;
+                switch(currentMode.getType()) {
+                    case SELECTED_BLOCK:
+                    {
+                        if(bs.listBlocks().size() <= 1) return; //You can't scroll without at least 2 elements.
+                        int j = bs.getBlockIndex(current.getBlock());
+                        j++;
+                        if(bs.listBlocks().size() <= j) j = 0;
+                        changeItemMode(SelectedItemMode.fromBlock(bs.getBlock(j)));
+                    }
+                        break;
+                    case SELECTED_FLUID:
+                    {
+                        if(bs.listFluids().size() <= 1) return; //You can't scroll without at least 2 elements.
+                        int j = bs.getFluidIndex(current.getFluid());
+                        j++;
+                        if(bs.listFluids().size() <= j) j = 0;
+                        changeItemMode(SelectedItemMode.fromFluid(bs.getFluid(j)));
+                    }
+                        break;
+                    case SELECTED_BOOKMARK:
+                    {
+                        if(bs.listColours().size() <= 1) return; //You can't scroll without at least 2 elements.
+                        int j = bs.listColours().indexOf(current.getColour());
+                        j++;
+                        if(bs.listColours().size() <= j) j = 0;
+                        changeItemMode(SelectedItemMode.fromColour(bs.listColours().get(j)));
+                    }
+                        break;
+                }
+            });
         }
     }
 
@@ -102,7 +138,8 @@ public class ChiselModeManager {
         try {
             return ItemMode.valueOf(name);
         } catch (final IllegalArgumentException il) {
-            return item.getItem() instanceof PaletteItem ? SelectedItemMode.fromColour(new Color(Integer.valueOf(name), true)) : SelectedItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
+            return item.getItem() instanceof PaletteItem ? SelectedItemMode.fromColour(new Color(name == null ? -1 : Integer.valueOf(name), true))
+                    : SelectedItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
         }
     }
 
@@ -110,7 +147,8 @@ public class ChiselModeManager {
      * Set the mode of this itemstack to this enum value.
      */
     public static void setMode(final ItemStack stack, final IItemMode mode) {
-        if (stack != null) stack.setTagInfo("mode", new StringNBT(mode.getName()));
+        if (stack != null)
+            stack.setTagInfo("mode", new StringNBT(mode.getName()));
     }
 
     /**

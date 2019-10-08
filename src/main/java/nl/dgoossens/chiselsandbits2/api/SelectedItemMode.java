@@ -1,8 +1,10 @@
 package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -45,6 +47,14 @@ public class SelectedItemMode implements IItemMode {
         return new SelectedItemMode(color.hashCode());
     }
 
+    public Block getBlock() {
+        return fluid ? Blocks.AIR : ForgeRegistries.BLOCKS.getValue(key);
+    }
+
+    public Fluid getFluid() {
+        return !fluid ? Fluids.EMPTY : ForgeRegistries.FLUIDS.getValue(key);
+    }
+
     public ItemStack getStack() {
         return !fluid ? new ItemStack(ForgeRegistries.BLOCKS.getValue(key)) : new ItemStack(ForgeRegistries.FLUIDS.getValue(key).getFilledBucket());
     }
@@ -54,7 +64,7 @@ public class SelectedItemMode implements IItemMode {
     }
 
     public String getLocalizedName() {
-        return color != 0 ? String.valueOf(color) : key == null ? I18n.format("general." + ChiselsAndBits2.MOD_ID + ".empty_slot") : I18n.format((fluid ? "fluid" : "block") + "." + key.getNamespace() + "." + key.getPath());
+        return color != 0 ? String.valueOf(color) : key == null ? I18n.format("general." + ChiselsAndBits2.MOD_ID + ".empty_slot") : I18n.format("block" + "." + key.getNamespace() + "." + key.getPath());
     }
 
     public String getTypelessName() {
@@ -67,5 +77,10 @@ public class SelectedItemMode implements IItemMode {
 
     public ItemModeType getType() {
         return color != 0 ? ItemModeType.SELECTED_BOOKMARK : fluid ? ItemModeType.SELECTED_FLUID : ItemModeType.SELECTED_BLOCK;
+    }
+
+    @Override
+    public String toString() {
+        return getLocalizedName();
     }
 }

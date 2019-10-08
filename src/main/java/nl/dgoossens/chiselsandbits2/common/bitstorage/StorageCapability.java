@@ -20,15 +20,15 @@ public class StorageCapability implements Capability.IStorage<BitStorage> {
         CompoundNBT compound = new CompoundNBT();
         if (instance instanceof BitStorageImpl) {
             CompoundNBT blockContent = new CompoundNBT();
-            ((BitStorageImpl) instance).blocks.forEach((k, v) ->
-                    blockContent.putLong(k.getRegistryName().toString(), v));
+            instance.listBlocks().forEach(k ->
+                    blockContent.putLong(k.getRegistryName().toString(), ((BitStorageImpl) instance).blocks.getMap().get(k)));
             compound.put("blockContent", blockContent);
             CompoundNBT fluidContent = new CompoundNBT();
-            ((BitStorageImpl) instance).fluids.forEach((k, v) ->
-                    fluidContent.putLong(k.getRegistryName().toString(), v));
+            instance.listFluids().forEach(k ->
+                    fluidContent.putLong(k.getRegistryName().toString(), ((BitStorageImpl) instance).fluids.getMap().get(k)));
             compound.put("fluidContent", fluidContent);
             ArrayList<Integer> ints = new ArrayList<>();
-            ((BitStorageImpl) instance).bookmarks.forEach(k -> ints.add(k.hashCode()));
+            instance.listColours().forEach(k -> ints.add(k.hashCode()));
             compound.put("bookmarks", new IntArrayNBT(ints));
         }
         return compound;

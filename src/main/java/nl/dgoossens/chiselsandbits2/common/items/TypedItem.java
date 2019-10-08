@@ -28,7 +28,7 @@ public abstract class TypedItem extends Item implements IItemScrollWheel, IItemM
     @Override
     public boolean scroll(final PlayerEntity player, final ItemStack stack, final double dwheel) {
         final IItemMode mode = ChiselModeManager.getMode(player);
-        ChiselModeManager.scrollOption(mode, dwheel);
+        ChiselModeManager.scrollOption(mode, stack, dwheel);
         return true;
     }
 }

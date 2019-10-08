@@ -18,11 +18,37 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class BitStorageImpl implements BitStorage {
-    protected LinkedHashMap<Block, Long> blocks = new LinkedHashMap<>();
-    protected LinkedHashMap<Fluid, Long> fluids = new LinkedHashMap<>();
+    protected IndexedHashMap<Block, Long> blocks = new IndexedHashMap<>();
+    protected IndexedHashMap<Fluid, Long> fluids = new IndexedHashMap<>();
     protected List<Color> bookmarks = new ArrayList<>();
 
     private List<IItemMode> selectedCache = null;
+
+    public int getBlockIndex(Block blk) {
+        int i = 0;
+        for(Block b : blocks.keySet()) {
+            if(blk.equals(b)) return i;
+            i++;
+        }
+        return 0;
+    }
+
+    public Block getBlock(int index) {
+        return blocks.getAt(index);
+    }
+
+    public int getFluidIndex(Fluid blk) {
+        int i = 0;
+        for(Fluid b : fluids.keySet()) {
+            if(blk.equals(b)) return i;
+            i++;
+        }
+        return 0;
+    }
+
+    public Fluid getFluid(int index) {
+        return fluids.getAt(index);
+    }
 
     public List<IItemMode> listTypesAsItemModes(Item item) {
         boolean block = item instanceof BitBagItem,
@@ -45,7 +71,7 @@ public class BitStorageImpl implements BitStorage {
             }
 
             //Fill up remaining slots with the none slot.
-            for (int j = selectedCache.size(); j < ChiselsAndBits2.getInstance().getConfig().typeSlotsPerBag.get(); j++) {
+            for (int j = selectedCache.size(); j < (block ? ChiselsAndBits2.getInstance().getConfig().typeSlotsPerBag.get() : fluid ? ChiselsAndBits2.getInstance().getConfig().typeSlotsPerBeaker.get() : ChiselsAndBits2.getInstance().getConfig().bookmarksPerPalette.get()); j++) {
                 if (block) selectedCache.add(SelectedItemMode.NONE_BAG);
                 if (fluid) selectedCache.add(SelectedItemMode.NONE_BEAKER);
                 if (colour) selectedCache.add(SelectedItemMode.NONE_BOOKMARK);
@@ -55,11 +81,11 @@ public class BitStorageImpl implements BitStorage {
     }
 
     public List<Block> listBlocks() {
-        return new ArrayList<>(blocks.keySet());
+        return blocks.keySet();
     }
 
     public List<Fluid> listFluids() {
-        return new ArrayList<>(fluids.keySet());
+        return fluids.keySet();
     }
 
     public List<Color> listColours() {
@@ -67,20 +93,20 @@ public class BitStorageImpl implements BitStorage {
     }
 
     public long getAmount(final Block type) {
-        return blocks.get(type);
+        return blocks.getMap().getOrDefault(type, 0L);
     }
 
     public void setAmount(final Block type, final long amount) {
-        blocks.put(type, amount);
+        blocks.add(type, amount);
         selectedCache = null;
     }
 
     public long getAmount(final Fluid type) {
-        return fluids.get(type);
+        return fluids.getMap().getOrDefault(type, 0L);
     }
 
     public void setAmount(final Fluid type, final long amount) {
-        fluids.put(type, amount);
+        fluids.add(type, amount);
         selectedCache = null;
     }
 
