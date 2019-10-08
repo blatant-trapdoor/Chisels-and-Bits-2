@@ -36,7 +36,7 @@ public enum VoxelType {
      * Most efficient check to see if a bit is a coloured bit.
      */
     public static boolean isColoured(int bit) {
-        return (bit & 0b11000000000000000000000000000000) == 0b11000000000000000000000000000000;
+        return (bit & 0b11000000000000000000000000000000) == 0b10000000000000000000000000000000;
     }
 
     /**

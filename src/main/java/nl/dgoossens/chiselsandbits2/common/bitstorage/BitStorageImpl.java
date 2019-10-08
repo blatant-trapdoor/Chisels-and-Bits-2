@@ -121,4 +121,44 @@ public class BitStorageImpl implements BitStorage {
     public void clearBookmark(final int index) {
         bookmarks.remove(index);
     }
+
+    public boolean hasBlock(Block b) {
+        return blocks.keySet().contains(b);
+    }
+
+    public boolean hasFluid(Fluid f) {
+        return fluids.keySet().contains(f);
+    }
+
+    public long addAmount(Block type, long amount) {
+        if(amount == 0) return 0;
+        if(amount > 0) {
+            setAmount(type, getAmount(type) + amount);
+            return 0;
+        }
+        long current = getAmount(type);
+        if(current > amount) {
+            setAmount(type, current - amount);
+            return 0;
+        } else {
+            blocks.remove(type);
+            return current - amount;
+        }
+    }
+
+    public long addAmount(Fluid type, long amount) {
+        if(amount == 0) return 0;
+        if(amount > 0) {
+            setAmount(type, getAmount(type) + amount);
+            return 0;
+        }
+        long current = getAmount(type);
+        if(current > amount) {
+            setAmount(type, current - amount);
+            return 0;
+        } else {
+            fluids.remove(type);
+            return current - amount;
+        }
+    }
 }

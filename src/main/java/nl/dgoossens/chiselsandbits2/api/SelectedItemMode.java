@@ -9,6 +9,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import java.awt.*;
 
@@ -77,6 +79,19 @@ public class SelectedItemMode implements IItemMode {
 
     public ItemModeType getType() {
         return color != 0 ? ItemModeType.SELECTED_BOOKMARK : fluid ? ItemModeType.SELECTED_FLUID : ItemModeType.SELECTED_BLOCK;
+    }
+
+    public int getBitId() {
+        //If this is NULL_BAG, NULL_BEAKER or NULL_BOOKMARK
+        if(color == 0 && key == null)
+            return VoxelBlob.AIR_BIT;
+
+        if(color != 0)
+            return ModUtil.getColourId(getColour());
+        if(fluid)
+            return ModUtil.getFluidId(getFluid().getDefaultState());
+
+        return ModUtil.getStateId(getBlock().getDefaultState());
     }
 
     @Override

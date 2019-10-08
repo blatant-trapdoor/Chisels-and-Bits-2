@@ -31,24 +31,36 @@ public interface BitStorage {
     List<IItemMode> listTypesAsItemModes(Item item);
 
     /**
-     * Get the amount of block bits stored for a given block type.
+     * Get the amount of block bits stored for a given type.
      */
     long getAmount(final Block type);
 
     /**
-     * Set the amount of block bits stored for a given block type.
+     * Set the amount of block bits stored for a given type.
      */
     void setAmount(final Block type, final long amount);
 
     /**
-     * Get the amount of fluid bits stored for a given block type.
+     * Adds to the amount of block bits stored for a given type.
+     * If this amount if negative and it would result in a negative amount of bits to remain we return the amount of bits we're short.
+     */
+    long addAmount(final Block type, final long amount);
+
+    /**
+     * Get the amount of fluid bits stored for a given type.
      */
     long getAmount(final Fluid type);
 
     /**
-     * Set the amount of fluid bits stored for a given block type.
+     * Set the amount of fluid bits stored for a given type.
      */
     void setAmount(final Fluid type, final long amount);
+
+    /**
+     * Adds to the amount of fluid bits stored for a given type.
+     * If this amount if negative and it would result in a negative amount of bits to remain we return the amount of bits we're short.
+     */
+    long addAmount(final Fluid type, final long amount);
 
     /**
      * Adds a bookmark to a given slot.
@@ -64,4 +76,14 @@ public interface BitStorage {
      * Removes the bookmark at a given slot.
      */
     void clearBookmark(final int index);
+
+    /**
+     * Returns whether this storage stores a given block.
+     */
+    boolean hasBlock(Block b);
+
+    /**
+     * Returns whether this storage stores a given fluid.
+     */
+    boolean hasFluid(Fluid f);
 }

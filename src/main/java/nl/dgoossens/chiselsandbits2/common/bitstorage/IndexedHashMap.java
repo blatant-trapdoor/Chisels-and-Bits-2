@@ -29,4 +29,9 @@ public class IndexedHashMap<K, V> {
         if(!index.contains(k)) index.add(k);
         data.put(k, v);
     }
+
+    public void remove(K k) {
+        index.remove(k);
+        data.remove(k);
+    }
 }

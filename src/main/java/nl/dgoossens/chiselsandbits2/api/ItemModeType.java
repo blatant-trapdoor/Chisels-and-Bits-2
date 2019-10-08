@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 public enum ItemModeType {
     //Type names must be identical to the startsWith() of the ItemMode!
+    //Static Types
     CHISEL,
     PATTERN,
     TAPEMEASURE,
@@ -17,6 +18,7 @@ public enum ItemModeType {
     BLUEPRINT,
     MALLET,
 
+    //Dynamic Types
     SELECTED_BLOCK,
     SELECTED_FLUID,
     SELECTED_BOOKMARK,
@@ -33,5 +35,13 @@ public enum ItemModeType {
         if (cache == null)
             cache = Stream.of(ItemMode.values()).filter(f -> f.name().startsWith(name())).collect(Collectors.toList());
         return cache;
+    }
+
+    /**
+     * Returns whether or not this type is "dynamic". Dynamic types are types where the item mode is an object and has more information
+     * attached, static types are defined by the ItemMode enum.
+     */
+    public boolean isDynamic() {
+        return this == SELECTED_BLOCK || this == SELECTED_FLUID || this == SELECTED_BOOKMARK;
     }
 }

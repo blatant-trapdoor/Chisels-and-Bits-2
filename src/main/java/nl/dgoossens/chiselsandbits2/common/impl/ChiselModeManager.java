@@ -3,12 +3,10 @@ package nl.dgoossens.chiselsandbits2.common.impl;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.ItemMode;
-import nl.dgoossens.chiselsandbits2.api.MenuAction;
-import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
+import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.items.*;
@@ -131,6 +129,31 @@ public class ChiselModeManager {
     }
 
     /**
+     * Get the selected item of an item stack, this item stack should be a BitStorage holder.
+     */
+    public static SelectedItemMode getSelectedItem(final ItemStack stack) {
+        IItemMode ret = getMode(stack);
+        if(ret instanceof SelectedItemMode)
+            return (SelectedItemMode) ret;
+        return null;
+    }
+
+    /**
+     * If this stack is of a dynamic itemmode type this will return the timestamp when
+     * the selection was made.
+     * Used to determine what to place as the most recently selected item mode of a storage
+     * item is used for placement regardless of the inventory slots.
+     */
+    public static long getSelectionTime(final ItemStack stack) {
+        if(stack.getItem() instanceof IItemMenu) {
+            final CompoundNBT nbt = stack.getTag();
+            if (nbt != null && nbt.contains("timestamp"))
+                return nbt.getLong("timestamp");
+        }
+        return 0L;
+    }
+
+    /**
      * Resolves an IItemMode from the output of
      * {@link IItemMode#getName()}
      */
@@ -151,8 +174,11 @@ public class ChiselModeManager {
      * Set the mode of this itemstack to this enum value.
      */
     public static void setMode(final ItemStack stack, final IItemMode mode) {
-        if (stack != null)
+        if (stack != null) {
             stack.setTagInfo("mode", new StringNBT(mode.getName()));
+            if(mode.getType().isDynamic())
+                stack.setTagInfo("timestamp", new LongNBT(System.currentTimeMillis()));
+        }
     }
 
     /**
