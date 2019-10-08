@@ -138,8 +138,12 @@ public class ChiselModeManager {
         try {
             return ItemMode.valueOf(name);
         } catch (final IllegalArgumentException il) {
-            return item.getItem() instanceof PaletteItem ? SelectedItemMode.fromColour(new Color(name == null ? -1 : Integer.valueOf(name), true))
-                    : SelectedItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
+            try {
+                return item.getItem() instanceof PaletteItem ? SelectedItemMode.fromColour(new Color(Integer.valueOf(name), true))
+                        : SelectedItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
+            } catch(NumberFormatException e) { //For when the input value is "null"
+                return null;
+            }
         }
     }
 

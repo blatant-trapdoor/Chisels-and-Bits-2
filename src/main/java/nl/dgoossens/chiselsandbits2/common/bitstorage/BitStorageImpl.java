@@ -97,7 +97,7 @@ public class BitStorageImpl implements BitStorage {
     }
 
     public void setAmount(final Block type, final long amount) {
-        blocks.add(type, amount);
+        blocks.add(type, Math.max(0, Math.min(amount, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get())));
         selectedCache = null;
     }
 
@@ -106,7 +106,7 @@ public class BitStorageImpl implements BitStorage {
     }
 
     public void setAmount(final Fluid type, final long amount) {
-        fluids.add(type, amount);
+        fluids.add(type, Math.max(0, Math.min(amount, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get())));
         selectedCache = null;
     }
 
