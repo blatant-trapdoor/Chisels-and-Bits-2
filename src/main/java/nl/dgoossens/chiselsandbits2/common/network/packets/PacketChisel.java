@@ -6,6 +6,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
@@ -19,10 +20,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
-import nl.dgoossens.chiselsandbits2.api.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
@@ -71,12 +69,12 @@ public class PacketChisel implements NetworkRouter.ModPacket {
     public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final Direction face) {
         Block target = originalState.getBlock();
         boolean isAir = world.isAirBlock(pos);
+        IFluidState fluid = world.getFluidState(pos);
 
         //We see it as air if we can replace it.
-        System.out.println("Pos at "+pos+", but can we replace it?");
         if(!isAir && world.getBlockState(pos).isReplaceable(new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, new BlockRayTraceResult(new Vec3d((double)pos.getX() + 0.5D + (double)face.getXOffset() * 0.5D, (double)pos.getY() + 0.5D + (double)face.getYOffset() * 0.5D, (double)pos.getZ() + 0.5D + (double)face.getZOffset() * 0.5D), face, pos, false))))) {
+            world.destroyBlock(pos, true);
             isAir = true;
-            System.out.println("Pos at "+pos+" is indeed replaceable");
         }
 
         if (ChiselUtil.canChiselBlock(originalState) || isAir) {
@@ -87,7 +85,11 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                 final ChiseledBlockTileEntity te = (ChiseledBlockTileEntity) world.getTileEntity(pos);
                 if (te != null) {
                     if (!isAir) te.fillWith(blockId);
-                    else te.fillWith(VoxelBlob.AIR_BIT);
+                    else {
+                        //If there was a fluid previously make this a fluid block instead of an air block.
+                        if(fluid.isEmpty()) te.fillWith(VoxelBlob.AIR_BIT);
+                        else te.fillWith(ModUtil.getFluidId(fluid));
+                    }
                 }
             }
         }
@@ -166,16 +168,21 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                             final ChiselIterator i = getIterator(new VoxelRegionSrc(world, pos, 1), pos, operation);
                             int durabilityTaken = 0;
                             int totalCapacity = 0;
-                            //Determine the maximum durability that the player has.
-                            for(ItemStack item : player.inventory.mainInventory) {
-                                if(item.getItem() instanceof ChiselItem)
-                                    totalCapacity += (chisel.getMaxDamage() - chisel.getDamage());
+
+                            //In creative we don't care about the capacity.
+                            if(isCreative) totalCapacity = Integer.MAX_VALUE;
+                            else {
+                                //Determine the maximum durability that the player has.
+                                for(ItemStack item : player.inventory.mainInventory) {
+                                    if(item.getItem() instanceof ChiselItem)
+                                        totalCapacity += (chisel.getMaxDamage() - chisel.getDamage());
+                                }
                             }
 
                             switch (operation) {
                                 case PLACE: {
                                     while (i.hasNext()) {
-                                        if (vb.get(i.x(), i.y(), i.z()) == VoxelBlob.AIR_BIT) {
+                                        if (vb.get(i.x(), i.y(), i.z()) == VoxelBlob.AIR_BIT || VoxelType.isFluid(vb.get(i.x(), i.y(), i.z()))) {
                                             //final IItemInInventory slot = bits.getItem( 0 );
                                             //final int stateID = ItemChiseledBit.getStackState( slot.getStack() );
 

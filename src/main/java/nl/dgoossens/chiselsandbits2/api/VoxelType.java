@@ -26,6 +26,13 @@ public enum VoxelType {
     }
 
     /**
+     * Most efficient check to see if a bit is a fluid.
+     */
+    public static boolean isFluid(int bit) {
+        return (bit & 0b11000000000000000000000000000000) == 0b01000000000000000000000000000000;
+    }
+
+    /**
      * Returns true if this voxel type can be collided with.
      */
     public boolean isSolid() {
