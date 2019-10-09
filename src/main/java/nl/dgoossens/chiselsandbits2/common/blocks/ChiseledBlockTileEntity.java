@@ -25,6 +25,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelNeighborRenderTracker;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nonnull;
@@ -96,6 +97,14 @@ public class ChiseledBlockTileEntity extends TileEntity {
      */
     @Nonnull
     public VoxelShape getCollisionShape() {
+        if (ChiselUtil.ACTIVELY_TRACING) {
+            //This will trigger if we're doing raytracing, and we need to do a custom shape to also have fluids included.
+            VoxelShape base = VoxelShapes.empty();
+            if (getVoxelReference() != null)
+                for (AxisAlignedBB box : getVoxelReference().getInstance().getBoxes())
+                    base = VoxelShapes.combine(base, VoxelShapes.create(box), IBooleanFunction.OR);
+            return base.simplify();
+        }
         if (collisionShape == null) recalculateShape();
         return collisionShape == null ? VoxelShapes.empty() : collisionShape;
     }

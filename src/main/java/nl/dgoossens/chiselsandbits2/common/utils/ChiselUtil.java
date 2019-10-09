@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ChiselUtil {
     private static Map<Block, Boolean> supportedBlocks = new ConcurrentHashMap<>();
+    public static boolean ACTIVELY_TRACING = false;
 
     /**
      * Checks whether or not a given block can be chiseled.
@@ -74,6 +75,9 @@ public class ChiselUtil {
         Vec3d vec3d1 = entity.getLook(1.0f);
         double d = (double) Minecraft.getInstance().playerController.getBlockReachDistance();
         Vec3d vec3d2 = vec3d.add(vec3d1.x * d, vec3d1.y * d, vec3d1.z * d);
-        return entity.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity));
+        ACTIVELY_TRACING = true;
+        RayTraceResult r = entity.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity));
+        ACTIVELY_TRACING = false;
+        return r;
     }
 }
