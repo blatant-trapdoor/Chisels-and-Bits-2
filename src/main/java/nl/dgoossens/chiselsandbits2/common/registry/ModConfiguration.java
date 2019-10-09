@@ -26,6 +26,8 @@ public class ModConfiguration {
     public ForgeConfigSpec.IntValue bookmarksPerPalette;
     public ForgeConfigSpec.LongValue bitsPerTypeSlot;
 
+    public ForgeConfigSpec.BooleanValue showBitsAvailableAsDurability;
+
     /**
      * Initialise all configuration values.
      */
@@ -106,6 +108,10 @@ public class ModConfiguration {
             chiselDurability = builder
                     .comment("How big should the durability of a chisel be, each bit modified takes one durability.")
                     .defineInRange("chiselDurability", 1048576, 1, Integer.MAX_VALUE); //Default is 16^5
+
+            showBitsAvailableAsDurability = builder
+                    .comment("Shows how many bits you've got left of the current type in the durability bar of the storage item.")
+                    .define("showBitsAvailableAsDurability", true);
 
             builder.pop();
 

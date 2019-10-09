@@ -116,6 +116,6 @@ public class SelectedItemMode implements IItemMode {
     }
 
     public static boolean isNone(IItemMode i) {
-        return i.equals(NONE_BAG) || i.equals(NONE_BOOKMARK) || i.equals(NONE_BEAKER);
+        return i != null && (i.equals(NONE_BAG) || i.equals(NONE_BOOKMARK) || i.equals(NONE_BEAKER));
     }
 }
