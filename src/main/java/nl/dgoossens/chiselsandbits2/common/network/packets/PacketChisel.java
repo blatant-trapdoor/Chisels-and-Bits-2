@@ -2,11 +2,8 @@ package nl.dgoossens.chiselsandbits2.common.network.packets;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
@@ -31,19 +28,13 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
-import nl.dgoossens.chiselsandbits2.common.items.BitBagItem;
-import nl.dgoossens.chiselsandbits2.common.items.BitBeakerItem;
-import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
-import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
+import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nonnull;
-import java.awt.*;
 import java.util.*;
-import java.util.List;
-import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
 import static nl.dgoossens.chiselsandbits2.api.BitOperation.PLACE;
@@ -121,7 +112,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
             return;
 
         //Determine the placed bit, if this is REMOVE we set this to -1 to bypass any checks.
-        int placeStateID = operation == REMOVE ? -1 : getPlacedBit(player);
+        int placeStateID = operation == REMOVE ? -1 : getSelectedBit(player, null);
 
         //If we couldn't find a selected type, don't chisel.
         if(placeStateID == VoxelBlob.AIR_BIT)
@@ -392,13 +383,20 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         }
     }
 
-    private int getPlacedBit(final PlayerEntity player) {
+    public static int getSelectedBit(final PlayerEntity player, final ItemModeType type) {
         int ret = VoxelBlob.AIR_BIT;
         long stamp = 0;
 
         //Scan all storage containers for the most recently selected one.
         for(ItemStack item : player.inventory.mainInventory) {
             if(item.getItem() instanceof StorageItem) {
+                if(type != null) {
+                    //Cancel if we don't want this type.
+                    if(type == ItemModeType.SELECTED_BLOCK && !(item.getItem() instanceof BitBagItem)) continue;
+                    if(type == ItemModeType.SELECTED_FLUID && !(item.getItem() instanceof BitBeakerItem)) continue;
+                    if(type == ItemModeType.SELECTED_BOOKMARK && !(item.getItem() instanceof PaletteItem)) continue;
+                }
+
                 long l = ChiselModeManager.getSelectionTime(item);
                 if(l > stamp) {
                     stamp = l;

@@ -165,7 +165,7 @@ public class ChiselModeManager {
                 return item.getItem() instanceof PaletteItem ? SelectedItemMode.fromColour(new Color(Integer.valueOf(name), true))
                         : SelectedItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
             } catch(NumberFormatException e) { //For when the input value is "null"
-                return null;
+                return SelectedItemMode.NONE_BOOKMARK;
             }
         }
     }

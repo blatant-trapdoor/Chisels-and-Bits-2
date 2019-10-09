@@ -98,4 +98,24 @@ public class SelectedItemMode implements IItemMode {
     public String toString() {
         return getLocalizedName();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof SelectedItemMode) {
+            SelectedItemMode s = (SelectedItemMode) obj;
+            switch(getType()) {
+                case SELECTED_BLOCK:
+                case SELECTED_FLUID:
+                    if(key == null) return s.key == null;
+                    return key.equals(s.key);
+                case SELECTED_BOOKMARK:
+                    return color == s.color;
+            }
+        }
+        return super.equals(obj);
+    }
+
+    public static boolean isNone(IItemMode i) {
+        return i.equals(NONE_BAG) || i.equals(NONE_BOOKMARK) || i.equals(NONE_BEAKER);
+    }
 }
