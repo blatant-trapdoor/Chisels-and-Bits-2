@@ -24,6 +24,22 @@ public class BitStorageImpl implements BitStorage {
 
     private List<IItemMode> selectedCache = null;
 
+    public BitStorageImpl() {
+        //Initialise bookmarks with default bookmarks.
+        bookmarks.add(Color.RED);
+        bookmarks.add(Color.ORANGE);
+        bookmarks.add(Color.YELLOW);
+        bookmarks.add(Color.GREEN);
+        bookmarks.add(Color.BLUE);
+        bookmarks.add(Color.MAGENTA);
+        bookmarks.add(Color.PINK);
+        bookmarks.add(Color.WHITE);
+        bookmarks.add(Color.LIGHT_GRAY);
+        bookmarks.add(Color.GRAY);
+        bookmarks.add(Color.DARK_GRAY);
+        bookmarks.add(Color.BLACK);
+    }
+
     public int getBlockIndex(Block blk) {
         int i = 0;
         for(Block b : blocks.keySet()) {
@@ -55,23 +71,32 @@ public class BitStorageImpl implements BitStorage {
                 fluid = item instanceof BitBeakerItem,
                 colour = item instanceof PaletteItem;
 
+        //We break when we hit the cap to prevent glitches when people make the configs tiny.
+        int cap = (block ? ChiselsAndBits2.getInstance().getConfig().typeSlotsPerBag.get() : fluid ? ChiselsAndBits2.getInstance().getConfig().typeSlotsPerBeaker.get() : ChiselsAndBits2.getInstance().getConfig().bookmarksPerPalette.get());
+
         if (selectedCache == null) {
             selectedCache = new ArrayList<>();
             if (block) {
-                for(Block b : blocks.keySet())
+                for(Block b : blocks.keySet()) {
                     selectedCache.add(SelectedItemMode.fromBlock(b));
+                    if (selectedCache.size() >= cap) break;
+                }
             }
             if (fluid) {
-                for(Fluid f : fluids.keySet())
+                for(Fluid f : fluids.keySet()) {
                     selectedCache.add(SelectedItemMode.fromFluid(f));
+                    if (selectedCache.size() >= cap) break;
+                }
             }
             if (colour) {
-                for(Color c : bookmarks)
+                for(Color c : bookmarks) {
                     selectedCache.add(SelectedItemMode.fromColour(c));
+                    if(selectedCache.size() >= cap) break;
+                }
             }
 
             //Fill up remaining slots with the none slot.
-            for (int j = selectedCache.size(); j < (block ? ChiselsAndBits2.getInstance().getConfig().typeSlotsPerBag.get() : fluid ? ChiselsAndBits2.getInstance().getConfig().typeSlotsPerBeaker.get() : ChiselsAndBits2.getInstance().getConfig().bookmarksPerPalette.get()); j++) {
+            for (int j = selectedCache.size(); j < cap; j++) {
                 if (block) selectedCache.add(SelectedItemMode.NONE_BAG);
                 if (fluid) selectedCache.add(SelectedItemMode.NONE_BEAKER);
                 if (colour) selectedCache.add(SelectedItemMode.NONE_BOOKMARK);
