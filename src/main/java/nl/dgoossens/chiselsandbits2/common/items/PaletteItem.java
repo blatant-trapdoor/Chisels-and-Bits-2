@@ -25,4 +25,9 @@ public class PaletteItem extends StorageItem {
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu);
     }
+
+    @Override
+    public boolean showDurabilityBar(ItemStack stack) {
+        return false; //Coloured bits don't have amounts.
+    }
 }

@@ -21,6 +21,7 @@ public class SelectedItemMode implements IItemMode {
 
     private ResourceLocation key;
     private boolean fluid;
+    private boolean isColor = false;
     private int color;
 
     private SelectedItemMode(final ResourceLocation key, final boolean fluid) {
@@ -30,6 +31,7 @@ public class SelectedItemMode implements IItemMode {
 
     private SelectedItemMode(final int color) {
         this.color = color;
+        isColor = true;
     }
 
     public static SelectedItemMode fromName(final String key, final boolean fluid) {
@@ -66,7 +68,8 @@ public class SelectedItemMode implements IItemMode {
     }
 
     public String getLocalizedName() {
-        return color != 0 ? String.valueOf(color) : key == null ? I18n.format("general." + ChiselsAndBits2.MOD_ID + ".empty_slot") : I18n.format("block" + "." + key.getNamespace() + "." + key.getPath());
+        Color c = getColour();
+        return isColor ? "("+c.getRed()+","+c.getGreen()+","+c.getBlue()+")" : key == null ? I18n.format("general." + ChiselsAndBits2.MOD_ID + ".empty_slot") : I18n.format("block" + "." + key.getNamespace() + "." + key.getPath());
     }
 
     public String getTypelessName() {
@@ -74,11 +77,11 @@ public class SelectedItemMode implements IItemMode {
     }
 
     public String getName() {
-        return color != 0 ? String.valueOf(color) : key == null ? "null" : key.toString();
+        return isColor ? String.valueOf(color) : key == null ? "null" : key.toString();
     }
 
     public ItemModeType getType() {
-        return color != 0 ? ItemModeType.SELECTED_BOOKMARK : fluid ? ItemModeType.SELECTED_FLUID : ItemModeType.SELECTED_BLOCK;
+        return isColor ? ItemModeType.SELECTED_BOOKMARK : fluid ? ItemModeType.SELECTED_FLUID : ItemModeType.SELECTED_BLOCK;
     }
 
     public int getBitId() {
@@ -86,7 +89,7 @@ public class SelectedItemMode implements IItemMode {
         if(color == 0 && key == null)
             return VoxelBlob.AIR_BIT;
 
-        if(color != 0)
+        if(isColor)
             return ModUtil.getColourId(getColour());
         if(fluid)
             return ModUtil.getFluidId(getFluid().getDefaultState());
@@ -103,6 +106,7 @@ public class SelectedItemMode implements IItemMode {
     public boolean equals(Object obj) {
         if(obj instanceof SelectedItemMode) {
             SelectedItemMode s = (SelectedItemMode) obj;
+            if(s.getType() != getType()) return false;
             switch(getType()) {
                 case SELECTED_BLOCK:
                 case SELECTED_FLUID:

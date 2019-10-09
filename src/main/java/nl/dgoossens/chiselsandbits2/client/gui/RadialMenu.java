@@ -113,7 +113,9 @@ public class RadialMenu extends Screen {
         getItemRenderer().setAlpha(visibility * 0.65f);
 
         renderBackgrounds(mouseX, mouseY, middle_x, middle_y, buffer);
+        //Render flat coloured parts of icons and overlays.
         renderIcons(middle_x, middle_y, buffer, false);
+        renderOverlay(middle_x, middle_y, buffer);
         tessellator.draw();
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
@@ -128,8 +130,8 @@ public class RadialMenu extends Screen {
         renderIcons(middle_x, middle_y, buffer, true);
         tessellator.draw();
 
-        //Enable alpha for font renderer
-        renderOverlay(middle_x, middle_y);
+        //Render the overlays, there's no buffer here. This renders the texts and itemstacks.
+        renderOverlay(middle_x, middle_y, null);
 
         if(getMinecraft().player.getHeldItemMainhand().getItem() instanceof StorageItem)
             renderCapacityBars(middle_x, middle_y);
@@ -198,10 +200,21 @@ public class RadialMenu extends Screen {
                     switchTo = mnuRgn.mode;
                 }
 
-                buffer.pos(middle_x + x1m1, middle_y + y1m1, blitOffset).color(f, f, f, a).endVertex();
-                buffer.pos(middle_x + x2m1, middle_y + y2m1, blitOffset).color(f, f, f, a).endVertex();
-                buffer.pos(middle_x + x2m2, middle_y + y2m2, blitOffset).color(f, f, f, a).endVertex();
-                buffer.pos(middle_x + x1m2, middle_y + y1m2, blitOffset).color(f, f, f, a).endVertex();
+                if(mnuRgn.mode.getType() == ItemModeType.SELECTED_BOOKMARK) {
+                    if(f < 0.1f) f = 0.4f;
+                    Color color = ((SelectedItemMode) mnuRgn.mode).getColour();
+                    int red = (int) Math.round(color.getRed()*f), green = (int) Math.round(color.getGreen()*f), blue = (int) Math.round(color.getBlue()*f), alp = (int) Math.round(color.getAlpha()*a);
+
+                    buffer.pos(middle_x + x1m1, middle_y + y1m1, blitOffset).color(red, green, blue ,alp).endVertex();
+                    buffer.pos(middle_x + x2m1, middle_y + y2m1, blitOffset).color(red, green, blue ,alp).endVertex();
+                    buffer.pos(middle_x + x2m2, middle_y + y2m2, blitOffset).color(red, green, blue ,alp).endVertex();
+                    buffer.pos(middle_x + x1m2, middle_y + y1m2, blitOffset).color(red, green, blue ,alp).endVertex();
+                } else {
+                    buffer.pos(middle_x + x1m1, middle_y + y1m1, blitOffset).color(f, f, f, a).endVertex();
+                    buffer.pos(middle_x + x2m1, middle_y + y2m1, blitOffset).color(f, f, f, a).endVertex();
+                    buffer.pos(middle_x + x2m2, middle_y + y2m2, blitOffset).color(f, f, f, a).endVertex();
+                    buffer.pos(middle_x + x1m2, middle_y + y1m2, blitOffset).color(f, f, f, a).endVertex();
+                }
 
                 currentMode++;
             }
@@ -305,20 +318,24 @@ public class RadialMenu extends Screen {
     /**
      * Render the texts next to highlighted elements and the item renders for selected item modes.
      */
-    private void renderOverlay(double middle_x, double middle_y) {
+    private void renderOverlay(double middle_x, double middle_y, BufferBuilder buffer) {
         boolean buttonHighlighted = false;
         for (final MenuButton btn : buttons) {
+            if(buffer != null)
+                continue;
+
             if (btn.highlighted) {
                 buttonHighlighted = true;
                 final String text = btn.name;
+                int c = new Color(1.0f, 1.0f, 1.0f, visibility).hashCode();
                 if (btn.textSide == Direction.WEST) {
-                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + btn.x1 - 8) - getFontRenderer().getStringWidth(text), (int) (middle_y + btn.y1 + 6), 0xffffffff);
+                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + btn.x1 - 8) - getFontRenderer().getStringWidth(text), (int) (middle_y + btn.y1 + 6), c);
                 } else if (btn.textSide == Direction.EAST) {
-                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + btn.x2 + 8), (int) (middle_y + btn.y1 + 6), 0xffffffff);
+                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + btn.x2 + 8), (int) (middle_y + btn.y1 + 6), c);
                 } else if (btn.textSide == Direction.UP) {
-                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + (btn.x1 + btn.x2) * 0.5 - getFontRenderer().getStringWidth(text) * 0.5), (int) (middle_y + btn.y1 - 14), 0xffffffff);
+                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + (btn.x1 + btn.x2) * 0.5 - getFontRenderer().getStringWidth(text) * 0.5), (int) (middle_y + btn.y1 - 14), c);
                 } else if (btn.textSide == Direction.DOWN) {
-                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + (btn.x1 + btn.x2) * 0.5 - getFontRenderer().getStringWidth(text) * 0.5), (int) (middle_y + btn.y1 + 24), 0xffffffff);
+                    getFontRenderer().drawStringWithShadow(text, (int) (middle_x + (btn.x1 + btn.x2) * 0.5 - getFontRenderer().getStringWidth(text) * 0.5), (int) (middle_y + btn.y1 + 24), c);
                 }
             }
         }
@@ -329,10 +346,13 @@ public class RadialMenu extends Screen {
         final double w = 8;
         RenderHelper.enableGUIStandardItemLighting();
         for (final MenuRegion mnuRgn : modes) {
-            if (mnuRgn.highlighted || mnuRgn.type.isSelected()) {
+            if (buffer == null && (mnuRgn.highlighted || mnuRgn.type.isSelected())) {
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5;
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5;
-                int color = new Color(255, 255, 255, 212-(!mnuRgn.highlighted ? remove : 0)).hashCode();
+                Color base = new Color(255, 255, 255);
+                if(mnuRgn.mode.getType() == ItemModeType.SELECTED_BOOKMARK)
+                    base = ((SelectedItemMode) mnuRgn.mode).getColour();
+                int color = new Color(base.getRed(), base.getGreen(), base.getBlue(),(int) Math.round((212-(!mnuRgn.highlighted ? remove : 0))*visibility*(((double)base.getAlpha())/255))).hashCode();
 
                 int fixed_x = (int) (x * TEXT_DISTANCE);
                 final int fixed_y = (int) (y * TEXT_DISTANCE);
@@ -354,8 +374,29 @@ public class RadialMenu extends Screen {
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
-                //We use minecraft's (actually forge's) item renderer instead of our own here because we can't support alpha in item rendering anyways.
-                getMinecraft().getItemRenderer().renderItemIntoGUI(((SelectedItemMode) mnuRgn.mode).getStack(), (int) Math.round(middle_x + x - w), (int) Math.round(middle_y + y - w));
+                if(mnuRgn.mode.getType() == ItemModeType.SELECTED_BOOKMARK) {
+                    //Backup system for when we want little coloured squares.
+                    /*if(buffer==null)
+                        continue;
+
+                    Color color = ((SelectedItemMode) mnuRgn.mode).getColour();
+                    int red = color.getRed(), green = color.getGreen(), blue = color.getBlue(), a = color.getAlpha();
+                    final double btnx1 = x-8 + 1;
+                    final double btnx2 = x-8 + 16 - 1;
+                    final double btny1 = y-8 + 1;
+                    final double btny2 = y-8 + 16 - 1;
+
+                    buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).color(red, green, blue, a).endVertex();
+                    buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).color(red, green, blue, a).endVertex();
+                    buffer.pos(middle_x + btnx2, middle_y + btny2, blitOffset).color(red, green, blue, a).endVertex();
+                    buffer.pos(middle_x + btnx2, middle_y + btny1, blitOffset).color(red, green, blue, a).endVertex();*/
+                } else {
+                    if(buffer!=null)
+                        continue;
+
+                    //We use minecraft's (actually forge's) item renderer instead of our own here because we can't support alpha in item rendering anyways.
+                    getMinecraft().getItemRenderer().renderItemIntoGUI(((SelectedItemMode) mnuRgn.mode).getStack(), (int) Math.round(middle_x + x - w), (int) Math.round(middle_y + y - w));
+                }
             }
         }
         RenderHelper.disableStandardItemLighting();
@@ -372,7 +413,8 @@ public class RadialMenu extends Screen {
         for (final MenuRegion mnuRgn : modes) {
             if (mnuRgn.mode instanceof SelectedItemMode) {
                 SelectedItemMode s = (SelectedItemMode) mnuRgn.mode;
-                if (SelectedItemMode.isNone(s)) continue;
+                //None or bookmarks don't have amounts.
+                if (SelectedItemMode.isNone(s) || s.getType() == ItemModeType.SELECTED_BOOKMARK) continue;
 
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);

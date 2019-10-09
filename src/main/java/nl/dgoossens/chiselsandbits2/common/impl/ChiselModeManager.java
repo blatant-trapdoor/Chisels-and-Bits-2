@@ -158,16 +158,16 @@ public class ChiselModeManager {
      * {@link IItemMode#getName()}
      */
     public static IItemMode resolveMode(final String name, final ItemStack item) {
-        try {
-            return ItemMode.valueOf(name);
-        } catch (final IllegalArgumentException il) {
+        if(item != null && item.getItem() instanceof PaletteItem) {
+            return name.equalsIgnoreCase("null") ? SelectedItemMode.NONE_BOOKMARK : SelectedItemMode.fromColour(new Color(Integer.valueOf(name), true));
+        } else if(item != null && item.getItem() instanceof StorageItem) {
+            return SelectedItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
+        } else {
             try {
-                return item.getItem() instanceof PaletteItem ? SelectedItemMode.fromColour(new Color(Integer.valueOf(name), true))
-                        : SelectedItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
-            } catch(NumberFormatException e) { //For when the input value is "null"
-                return SelectedItemMode.NONE_BOOKMARK;
-            }
+                return ItemMode.valueOf(name);
+            } catch (final IllegalArgumentException il) {}
         }
+        return CHISEL_SINGLE;
     }
 
     /**
