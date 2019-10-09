@@ -29,7 +29,9 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * Variant of {@link ItemRenderer} with support for transparent items and rendering separate
- * durability bars with custom percentages.
+ * transparent durability bars with custom percentages.
+ *
+ * Items can't actually be rendered transparent (as far as I know) unless we're gonna redo a bunch of forge logic too.
  */
 @OnlyIn(Dist.CLIENT)
 public class CustomItemRenderer {
@@ -172,9 +174,6 @@ public class CustomItemRenderer {
         this.setupGuiTransform(x, y, bakedmodel.isGui3d());
         bakedmodel = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(bakedmodel, ItemCameraTransforms.TransformType.GUI, false);
         this.renderItem(stack, bakedmodel);
-        GlStateManager.disableAlphaTest();
-        GlStateManager.disableRescaleNormal();
-        GlStateManager.disableLighting();
         GlStateManager.popMatrix();
         getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
         getTextureManager().getTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
@@ -198,7 +197,7 @@ public class CustomItemRenderer {
         GlStateManager.disableDepthTest();
         GlStateManager.disableTexture();
         GlStateManager.disableAlphaTest();
-        GlStateManager.disableBlend();
+        GlStateManager.enableBlend();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuffer();
         double health = damage / maxDamage;
@@ -206,11 +205,6 @@ public class CustomItemRenderer {
         int j = MathHelper.hsvToRGB(Math.max(0.0F, (float) (1.0F - health)) / 3.0F, 1.0F, 1.0F);
         this.draw(bufferbuilder, xPosition + 2, yPosition + 13, 13, 2, 0, 0, 0);
         this.draw(bufferbuilder, xPosition + 2, yPosition + 13, i, 1, j >> 16 & 255, j >> 8 & 255, j & 255);
-        GlStateManager.enableBlend();
-        GlStateManager.enableAlphaTest();
-        GlStateManager.enableTexture();
-        GlStateManager.enableLighting();
-        GlStateManager.enableDepthTest();
     }
 
     //Draw with alpha support.

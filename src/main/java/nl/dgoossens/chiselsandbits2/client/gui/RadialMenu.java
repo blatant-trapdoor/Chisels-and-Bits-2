@@ -55,6 +55,7 @@ public class RadialMenu extends Screen {
     private boolean pressedButton = false;
     private boolean clicked = false;
     private MainWindow window;
+    private long buttonLastHighlighted = 0L;
 
     public RadialMenu() {
         super(new StringTextComponent("Radial Menu"));
@@ -108,8 +109,8 @@ public class RadialMenu extends Screen {
         modes = getShownModes();
         buttons = getShownButtons();
 
-        //Set the invisibility for all rendered items/bars.
-        getItemRenderer().setAlpha(visibility * 0.5f);
+        //Set the invisibility for all rendered bars.
+        getItemRenderer().setAlpha(visibility * 0.65f);
 
         renderBackgrounds(mouseX, mouseY, middle_x, middle_y, buffer);
         renderIcons(middle_x, middle_y, buffer, false);
@@ -126,6 +127,8 @@ public class RadialMenu extends Screen {
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
         renderIcons(middle_x, middle_y, buffer, true);
         tessellator.draw();
+
+        //Enable alpha for font renderer
         renderOverlay(middle_x, middle_y);
 
         if(getMinecraft().player.getHeldItemMainhand().getItem() instanceof StorageItem)
@@ -174,7 +177,7 @@ public class RadialMenu extends Screen {
                         fragment2 = Math.PI * 0.0005;
                         break;
                     case HIGHLIGHTED:
-                        f = 0.5f;
+                        f = 0.8f;
                         break;
                 }
 
@@ -190,7 +193,7 @@ public class RadialMenu extends Screen {
 
                 final boolean quad = inTriangle(x1m1, y1m1, x2m2, y2m2, x2m1, y2m1, vecX, vecY) || inTriangle(x1m1, y1m1, x1m2, y1m2, x2m2, y2m2, vecX, vecY);
                 if (begin_rad <= radians && radians <= end_rad && quad) {
-                    if(f < 0.5f) f = 0.5f;
+                    if(f < 0.8f) f = 0.8f;
                     mnuRgn.highlighted = true;
                     switchTo = mnuRgn.mode;
                 }
@@ -303,40 +306,10 @@ public class RadialMenu extends Screen {
      * Render the texts next to highlighted elements and the item renders for selected item modes.
      */
     private void renderOverlay(double middle_x, double middle_y) {
-        final double w = 8;
-        RenderHelper.enableGUIStandardItemLighting();
-        for (final MenuRegion mnuRgn : modes) {
-            if (mnuRgn.highlighted || mnuRgn.type == RegionType.SELECTED) {
-                final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5;
-                final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5;
-                //FontRenderer decided to ignore the alpha so this doesn't really do much actually.
-                int color = mnuRgn.highlighted ? 0xffffffff : new Color(255, 255, 255, 64).hashCode();
-
-                int fixed_x = (int) (x * TEXT_DISTANCE);
-                final int fixed_y = (int) (y * TEXT_DISTANCE);
-                final String text = mnuRgn.mode.getLocalizedName();
-
-                if (x <= -0.2) {
-                    fixed_x -= getFontRenderer().getStringWidth(text);
-                } else if (-0.2 <= x && x <= 0.2) {
-                    fixed_x -= getFontRenderer().getStringWidth(text) / 2;
-                }
-
-                getFontRenderer().drawStringWithShadow(text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, color);
-            }
-            if (mnuRgn.mode instanceof SelectedItemMode) {
-                if (SelectedItemMode.isNone(mnuRgn.mode)) continue;
-
-                //Selectable blocks should render the item that's inside!
-                final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
-                final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
-                getItemRenderer().renderItemIntoGUI(((SelectedItemMode) mnuRgn.mode).getStack(), (int) Math.round(middle_x + x - w), (int) Math.round(middle_y + y - w));
-            }
-        }
-        RenderHelper.disableStandardItemLighting();
-
+        boolean buttonHighlighted = false;
         for (final MenuButton btn : buttons) {
             if (btn.highlighted) {
+                buttonHighlighted = true;
                 final String text = btn.name;
                 if (btn.textSide == Direction.WEST) {
                     getFontRenderer().drawStringWithShadow(text, (int) (middle_x + btn.x1 - 8) - getFontRenderer().getStringWidth(text), (int) (middle_y + btn.y1 + 6), 0xffffffff);
@@ -349,6 +322,43 @@ public class RadialMenu extends Screen {
                 }
             }
         }
+        if(buttonHighlighted) buttonLastHighlighted = System.currentTimeMillis();
+        //Nicely fade it back in when you release a button.
+        int remove = (int) Math.round((212.0d-64.0d) * (1.0-(Math.min((double)(System.currentTimeMillis()-buttonLastHighlighted), 3000.0d) / 3000.0d)));
+
+        final double w = 8;
+        RenderHelper.enableGUIStandardItemLighting();
+        for (final MenuRegion mnuRgn : modes) {
+            if (mnuRgn.highlighted || mnuRgn.type.isSelected()) {
+                final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5;
+                final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5;
+                int color = new Color(255, 255, 255, 212-(!mnuRgn.highlighted ? remove : 0)).hashCode();
+
+                int fixed_x = (int) (x * TEXT_DISTANCE);
+                final int fixed_y = (int) (y * TEXT_DISTANCE);
+                final String text = mnuRgn.mode.getLocalizedName();
+
+                if (x <= -0.2) {
+                    fixed_x -= getFontRenderer().getStringWidth(text);
+                } else if (-0.2 <= x && x <= 0.2) {
+                    fixed_x -= getFontRenderer().getStringWidth(text) / 2;
+                }
+
+                GlStateManager.enableBlend();
+                GlStateManager.disableAlphaTest();
+                getFontRenderer().drawStringWithShadow(text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, color);
+            }
+            if (mnuRgn.mode instanceof SelectedItemMode) {
+                if (SelectedItemMode.isNone(mnuRgn.mode)) continue;
+
+                //Selectable blocks should render the item that's inside!
+                final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
+                final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
+                //We use minecraft's (actually forge's) item renderer instead of our own here because we can't support alpha in item rendering anyways.
+                getMinecraft().getItemRenderer().renderItemIntoGUI(((SelectedItemMode) mnuRgn.mode).getStack(), (int) Math.round(middle_x + x - w), (int) Math.round(middle_y + y - w));
+            }
+        }
+        RenderHelper.disableStandardItemLighting();
     }
 
     /**
@@ -368,7 +378,7 @@ public class RadialMenu extends Screen {
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 getItemRenderer().renderDurabilityBar(ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - (s.getType() == ItemModeType.SELECTED_BLOCK ? store.getAmount(s.getBlock()) : store.getAmount(s.getFluid())),
-                        ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get(), (int) Math.round(middle_x + x - 8), (int) Math.round(middle_y + y - 8));
+                        ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get(), (int) Math.round(middle_x + x - 9), (int) Math.round(middle_y + y - 7));
             }
         }
     }
@@ -422,6 +432,11 @@ public class RadialMenu extends Screen {
         SELECTED, //For the currently selected mode.
         HIGHLIGHTED, //For selected but not used selected item mode
         DEFAULT,
+        ;
+
+        public boolean isSelected() {
+            return this == SELECTED || this == HIGHLIGHTED;
+        }
     }
 
     static class MenuRegion {
@@ -440,7 +455,7 @@ public class RadialMenu extends Screen {
                     type = RegionType.DEFAULT;
                     return;
                 }
-                int b = PacketChisel.getSelectedBit(player, mode.getType());
+                int b = PacketChisel.getSelectedBit(player, null);
                 if(b != s.getBitId()) {
                     //Highlighted = selected in this bitstorage but won't be used atm to build.
                     type = RegionType.HIGHLIGHTED;
