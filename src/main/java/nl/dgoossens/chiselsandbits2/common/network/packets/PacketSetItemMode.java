@@ -39,7 +39,8 @@ public class PacketSetItemMode implements NetworkRouter.ModPacket {
             pc.newMode = ChiselModeManager.resolveMode(buffer.readString(),
                     pc.type == ItemModeType.SELECTED_BLOCK ? new ItemStack(ChiselsAndBits2.getInstance().getItems().BIT_BAG) :
                     pc.type == ItemModeType.SELECTED_FLUID ? new ItemStack(ChiselsAndBits2.getInstance().getItems().BIT_BEAKER) :
-                    new ItemStack(ChiselsAndBits2.getInstance().getItems().PALETTE));
+                    pc.type == ItemModeType.SELECTED_BOOKMARK ? new ItemStack(ChiselsAndBits2.getInstance().getItems().PALETTE) :
+                    null);
         } catch (final Exception x) {
             x.printStackTrace();
         }
