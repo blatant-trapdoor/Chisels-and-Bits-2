@@ -1,16 +1,15 @@
 package nl.dgoossens.chiselsandbits2.common.network;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.common.network.packets.PacketChisel;
-import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSetItemMode;
-import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSetMenuActionMode;
-import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSynchronizeBitStorage;
+import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
+import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
+import nl.dgoossens.chiselsandbits2.common.network.client.CSetMenuActionModePacket;
+import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
 
 public class NetworkRouter {
     private static final String PROTOCOL_VERSION = Integer.toString(1);
@@ -21,27 +20,25 @@ public class NetworkRouter {
             .networkProtocolVersion(() -> PROTOCOL_VERSION)
             .simpleChannel();
 
-
     public NetworkRouter() {
         int disc = 0;
-        HANDLER.registerMessage(disc++, PacketChisel.class, PacketChisel::encode, PacketChisel::decode, PacketChisel.Handler::handle);
-        HANDLER.registerMessage(disc++, PacketSetItemMode.class, PacketSetItemMode::encode, PacketSetItemMode::decode, PacketSetItemMode.Handler::handle);
-        HANDLER.registerMessage(disc++, PacketSetMenuActionMode.class, PacketSetMenuActionMode::encode, PacketSetMenuActionMode::decode, PacketSetMenuActionMode.Handler::handle);
-        HANDLER.registerMessage(disc++, PacketSynchronizeBitStorage.class, PacketSynchronizeBitStorage::encode, PacketSynchronizeBitStorage::decode, PacketSynchronizeBitStorage.Handler::handle);
+        HANDLER.registerMessage(disc++, CChiselBlockPacket.class, CChiselBlockPacket::encode, CChiselBlockPacket::decode, CChiselBlockPacket::handle);
+        HANDLER.registerMessage(disc++, CSetItemModePacket.class, CSetItemModePacket::encode, CSetItemModePacket::decode, CSetItemModePacket::handle);
+        HANDLER.registerMessage(disc++, CSetMenuActionModePacket.class, CSetMenuActionModePacket::encode, CSetMenuActionModePacket::decode, CSetMenuActionModePacket::handle);
+        HANDLER.registerMessage(disc++, SSynchronizeBitStoragePacket.class, SSynchronizeBitStoragePacket::encode, SSynchronizeBitStoragePacket::decode, SSynchronizeBitStoragePacket::handle);
     }
 
-    public static void sendToServer(final ModPacket packet) {
+    /**
+     * Sends the packet from the CLIENT to the SERVER.
+     */
+    public static void sendToServer(final Object packet) {
         HANDLER.sendToServer(packet);
     }
 
-    public static void sendToAll(final ModPacket packet) {
-        for (ServerPlayerEntity spe : Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayers())
-            sendTo(packet, spe);
-    }
-
-    public static void sendTo(final ModPacket packet, final ServerPlayerEntity player) {
+    /**
+     * Send the packet from SERVER to a given players CLIENT.
+     */
+    public static void sendTo(final Object packet, final ServerPlayerEntity player) {
         HANDLER.sendTo(packet, player.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
     }
-
-    public static interface ModPacket {}
 }

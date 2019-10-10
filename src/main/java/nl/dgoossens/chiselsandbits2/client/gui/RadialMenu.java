@@ -26,7 +26,7 @@ import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
-import nl.dgoossens.chiselsandbits2.common.network.packets.PacketChisel;
+import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -60,7 +60,7 @@ public class RadialMenu extends Screen {
     public RadialMenu() {
         super(new StringTextComponent("Radial Menu"));
         minecraft = Minecraft.getInstance();
-        font = Minecraft.getInstance().fontRenderer;
+        if(minecraft != null) font = Minecraft.getInstance().fontRenderer;
     }
 
     public void updateGameFocus() {
@@ -497,7 +497,7 @@ public class RadialMenu extends Screen {
                     type = RegionType.DEFAULT;
                     return;
                 }
-                int b = PacketChisel.getSelectedBit(player, null);
+                int b = CChiselBlockPacket.getSelectedBit(player, null);
                 if(b != s.getBitId()) {
                     //Highlighted = selected in this bitstorage but won't be used atm to build.
                     type = RegionType.HIGHLIGHTED;

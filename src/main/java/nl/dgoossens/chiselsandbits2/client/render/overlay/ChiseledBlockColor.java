@@ -12,7 +12,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nullable;
 
-public class BlockColorChiseled implements IBlockColor {
+public class ChiseledBlockColor implements IBlockColor {
     public static final int TINT_MASK = 0xff;
     public static final int TINT_BITS = 8;
 

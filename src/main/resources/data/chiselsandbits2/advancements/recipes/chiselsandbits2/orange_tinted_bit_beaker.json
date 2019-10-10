@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "chiselsandbits2:orange_tinted_bit_beaker"
+    ]
+  },
+  "criteria": {
+    "bit_beaker": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "chiselsandbits2:bit_beaker"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "chiselsandbits2:orange_tinted_bit_beaker"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "bit_beaker",
+      "has_the_recipe"
+    ]
+  ]
+}

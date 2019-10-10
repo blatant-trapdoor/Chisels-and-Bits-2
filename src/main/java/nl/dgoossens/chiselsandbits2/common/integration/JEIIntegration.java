@@ -20,8 +20,9 @@ public class JEIIntegration implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         ModItems m = ChiselsAndBits2.getInstance().getItems();
-        addDescriptions(registration, m.CHISEL, m.PATTERN, m.SAW, m.TAPE_MEASURE, m.WRENCH, m.BIT_BAG,
-                m.BIT_BEAKER, m.MALLET, m.BLUEPRINT, m.PALETTE);
+        addDescriptions(registration, m.CHISEL, m.PATTERN, m.SAW, m.TAPE_MEASURE, m.WRENCH,
+                m.BIT_BAG, m.BIT_BEAKER, m.MALLET, m.BLUEPRINT, m.MORPHING_BIT,
+                m.OAK_PALETTE, m.BIRCH_PALETTE, m.SPRUCE_PALETTE, m.ACACIA_PALETTE, m.JUNGLE_PALETTE, m.DARK_OAK_PALETTE);
     }
 
     private void addDescriptions(IRecipeRegistration registration, Item... items) {

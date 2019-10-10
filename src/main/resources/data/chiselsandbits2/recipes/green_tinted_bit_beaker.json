@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "tinted_bit_beakers",
+  "ingredients": [
+    {
+      "item": "chiselsandbits2:bit_beaker"
+    },
+    {
+      "item": "minecraft:green_dye"
+    }
+  ],
+  "result": {
+    "item": "chiselsandbits2:green_tinted_bit_beaker"
+  }
+}

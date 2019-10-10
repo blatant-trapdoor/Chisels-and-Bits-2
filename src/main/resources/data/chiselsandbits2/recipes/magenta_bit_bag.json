@@ -1,14 +1,15 @@
 {
-  "result": {
-    "item": "chiselsandbits2:magenta_bit_bag"
-  },
   "type": "minecraft:crafting_shapeless",
+  "group": "dyed_bit_bags",
   "ingredients": [
     {
-      "tag": "chiselsandbits2:bit_bags"
+      "item": "chiselsandbits2:bit_bag"
     },
     {
-      "tag": "forge:dyes/magenta"
+      "item": "minecraft:magenta_dye"
     }
-  ]
+  ],
+  "result": {
+    "item": "chiselsandbits2:magenta_bit_bag"
+  }
 }

@@ -43,6 +43,10 @@ public class ModKeybindings {
     public Map<ItemMode, KeyBinding> modeHotkeys = new HashMap<>();
 
     public ModKeybindings() {
+        //This is null if this is a data mode startup. (or server)
+        if(Minecraft.getInstance()==null)
+            return;
+
         //Generate Hotkeys
         for (MenuAction ma : MenuAction.values())
             if (ma.hasHotkey()) {

@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.common.network.packets;
+package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -8,7 +8,6 @@ import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -17,89 +16,36 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.*;
-import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
+import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nonnull;
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static nl.dgoossens.chiselsandbits2.api.BitOperation.*;
+import static nl.dgoossens.chiselsandbits2.api.BitOperation.PLACE;
 
-public class PacketChisel implements NetworkRouter.ModPacket {
-    private static final float one_16th = 1.0f / 16.0f;
-
-    private BitLocation from;
-    private BitLocation to;
-    private BitOperation operation;
-    private Direction side;
-    private IItemMode mode;
-
-    private PacketChisel() { }
-    public PacketChisel(final BitOperation operation, final BitLocation from, final BitLocation to, final Direction side, final IItemMode mode) {
-        this.operation = operation;
-        this.from = BitLocation.min(from, to);
-        this.to = BitLocation.max(from, to);
-        this.side = side;
-        this.mode = mode;
-    }
-
-    public PacketChisel(final BitOperation operation, final BitLocation location, final Direction side, final IItemMode mode) {
-        this.operation = operation;
-        from = to = location;
-        this.side = side;
-        this.mode = mode;
-    }
-
-    private static BitLocation readBitLoc(final PacketBuffer buffer) {
-        return new BitLocation(buffer.readBlockPos(), buffer.readByte(), buffer.readByte(), buffer.readByte());
-    }
-
-    private static void writeBitLoc(final BitLocation from2, final PacketBuffer buffer) {
-        buffer.writeBlockPos(from2.blockPos);
-        buffer.writeByte(from2.bitX);
-        buffer.writeByte(from2.bitY);
-        buffer.writeByte(from2.bitZ);
-    }
-
-    public static void encode(PacketChisel msg, PacketBuffer buf) {
-        writeBitLoc(msg.from, buf);
-        writeBitLoc(msg.to, buf);
-
-        buf.writeEnumValue(msg.operation);
-        buf.writeVarInt(msg.side.ordinal());
-        buf.writeString(msg.mode.getName());
-    }
-
-    public static PacketChisel decode(PacketBuffer buffer) {
-        PacketChisel pc = new PacketChisel();
-        pc.from = readBitLoc(buffer);
-        pc.to = readBitLoc(buffer);
-
-        pc.operation = buffer.readEnumValue(BitOperation.class);
-        pc.side = Direction.values()[buffer.readVarInt()];
-        try {
-            pc.mode = ChiselModeManager.resolveMode(buffer.readString(), null);
-        } catch (Exception x) {
-            x.printStackTrace();
-        }
-        return pc;
-    }
-
-    public void doAction(final PlayerEntity player) {
+/**
+ * Handles chiseling a block.
+ */
+public class ChiselHandler {
+    /**
+     * Handles an incoming {@link CChiselBlockPacket} packet.
+     */
+    public static void handle(final CChiselBlockPacket pkt, final PlayerEntity player) {
         ItemStack chisel = player.getHeldItemMainhand();
         if(!(chisel.getItem() instanceof ChiselItem))
             return; //Extra security, if you're somehow no longer holding a chisel we cancel.
@@ -111,7 +57,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
             return;
 
         //Determine the placed bit, if this is REMOVE we set this to -1 to bypass any checks.
-        int placeStateID = operation == REMOVE ? -1 : getSelectedBit(player, null);
+        int placeStateID = pkt.operation == REMOVE ? -1 : getSelectedBit(player, null);
 
         //If we couldn't find a selected type, don't chisel.
         if(placeStateID == VoxelBlob.AIR_BIT)
@@ -122,12 +68,15 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         final Fluid fluid = ModUtil.getFluidState(placeStateID).getFluid();
         final boolean isCreative = player.isCreative();
 
-        final int minX = Math.min(from.blockPos.getX(), to.blockPos.getX());
-        final int maxX = Math.max(from.blockPos.getX(), to.blockPos.getX());
-        final int minY = Math.min(from.blockPos.getY(), to.blockPos.getY());
-        final int maxY = Math.max(from.blockPos.getY(), to.blockPos.getY());
-        final int minZ = Math.min(from.blockPos.getZ(), to.blockPos.getZ());
-        final int maxZ = Math.max(from.blockPos.getZ(), to.blockPos.getZ());
+        final BlockPos from = pkt.from.blockPos;
+        final BlockPos to = pkt.to.blockPos;
+        
+        final int minX = Math.min(from.getX(), to.getX());
+        final int maxX = Math.max(from.getX(), to.getX());
+        final int minY = Math.min(from.getY(), to.getY());
+        final int maxY = Math.max(from.getY(), to.getY());
+        final int minZ = Math.min(from.getZ(), to.getZ());
+        final int maxZ = Math.max(from.getZ(), to.getZ());
 
         //TODO UndoTracker.getInstance().beginGroup( who );
 
@@ -143,13 +92,13 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                             continue;
 
                         //Replace the block with a chiseled block.
-                        replaceWithChiseled(player, world, pos, world.getBlockState(pos), placeStateID, side);
+                        replaceWithChiseled(player, world, pos, world.getBlockState(pos), placeStateID, pkt.side);
 
                         final TileEntity te = world.getTileEntity(pos);
                         if (te instanceof ChiseledBlockTileEntity) {
                             final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
                             final VoxelBlob vb = tec.getBlob();
-                            final ChiselIterator i = getIterator(new VoxelRegionSrc(world, pos, 1), pos, operation);
+                            final ChiselIterator i = getIterator(pkt, new VoxelRegionSrc(world, pos, 1), pos, pkt.operation);
                             final Map<Integer, Long> extracted = new HashMap<>();
 
                             //Determine the capacity = the durability we have to use
@@ -167,7 +116,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                             }
 
                             //Handle the operation
-                            switch (operation) {
+                            switch (pkt.operation) {
                                 case REPLACE:
                                 case PLACE: {
                                     //Determine our resources, not needed if this is a REMOVE operation
@@ -199,11 +148,11 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                         int blk = vb.get(i.x(), i.y(), i.z());
 
                                         //If this is a place operation we only place in air.
-                                        if (operation == PLACE && (blk != VoxelBlob.AIR_BIT && !VoxelType.isFluid(blk)))
+                                        if (pkt.operation == PLACE && (blk != VoxelBlob.AIR_BIT && !VoxelType.isFluid(blk)))
                                             continue;
 
                                         //Track how many bits we've extracted and it's not a coloured bit.
-                                        if (operation == REPLACE && !VoxelType.isColoured(blk))
+                                        if (pkt.operation == REPLACE && !VoxelType.isColoured(blk))
                                             extracted.put(blk, extracted.getOrDefault(blk, 0L)+1);
 
                                         vb.set(i.x(), i.y(), i.z(), placeStateID);
@@ -426,7 +375,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         return ret;
     }
 
-    private void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final Direction face) {
+    public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final Direction face) {
         Block target = originalState.getBlock();
         boolean isAir = world.isAirBlock(pos);
         IFluidState fluid = world.getFluidState(pos);
@@ -455,24 +404,21 @@ public class PacketChisel implements NetworkRouter.ModPacket {
         }
     }
 
-    private ChiselIterator getIterator(final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {
-        if (mode == ItemMode.CHISEL_DRAWN_REGION) {
-            final int bitX = pos.getX() == from.blockPos.getX() ? from.bitX : 0;
-            final int bitY = pos.getY() == from.blockPos.getY() ? from.bitY : 0;
-            final int bitZ = pos.getZ() == from.blockPos.getZ() ? from.bitZ : 0;
+    public static ChiselIterator getIterator(final CChiselBlockPacket pkt, final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {
+        if (pkt.mode == ItemMode.CHISEL_DRAWN_REGION) {
+            final BlockPos from = pkt.from.blockPos;
+            final BlockPos to = pkt.to.blockPos;
 
-            final int scaleX = (pos.getX() == to.blockPos.getX() ? to.bitX : 15) - bitX + 1;
-            final int scaleY = (pos.getY() == to.blockPos.getY() ? to.bitY : 15) - bitY + 1;
-            final int scaleZ = (pos.getZ() == to.blockPos.getZ() ? to.bitZ : 15) - bitZ + 1;
+            final int bitX = pos.getX() == from.getX() ? pkt.from.bitX : 0;
+            final int bitY = pos.getY() == from.getY() ? pkt.from.bitY : 0;
+            final int bitZ = pos.getZ() == from.getZ() ? pkt.from.bitZ : 0;
 
-            return new ChiselTypeIterator(VoxelBlob.DIMENSION, bitX, bitY, bitZ, scaleX, scaleY, scaleZ, side);
+            final int scaleX = (pos.getX() == to.getX() ? pkt.to.bitX : 15) - bitX + 1;
+            final int scaleY = (pos.getY() == to.getY() ? pkt.to.bitY : 15) - bitY + 1;
+            final int scaleZ = (pos.getZ() == to.getZ() ? pkt.to.bitZ : 15) - bitZ + 1;
+
+            return new ChiselTypeIterator(VoxelBlob.DIMENSION, bitX, bitY, bitZ, scaleX, scaleY, scaleZ, pkt.side);
         }
-        return ChiselTypeIterator.create(VoxelBlob.DIMENSION, from.bitX, from.bitY, from.bitZ, vb, mode, side, place.equals(PLACE));
-    }
-
-    public static class Handler {
-        public static void handle(final PacketChisel pkt, Supplier<NetworkEvent.Context> ctx) {
-            ctx.get().enqueueWork(() -> pkt.doAction(ctx.get().getSender()));
-        }
+        return ChiselTypeIterator.create(VoxelBlob.DIMENSION, pkt.from.bitX, pkt.from.bitY, pkt.from.bitZ, vb, pkt.mode, pkt.side, place.equals(PLACE));
     }
 }

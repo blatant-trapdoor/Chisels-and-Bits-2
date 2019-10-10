@@ -6,17 +6,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.LazyOptional;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
-import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSetItemMode;
-import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSetMenuActionMode;
-import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSynchronizeBitStorage;
+import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
+import nl.dgoossens.chiselsandbits2.common.network.client.CSetMenuActionModePacket;
+import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
 
 import java.awt.*;
 
@@ -30,7 +28,7 @@ public class ChiselModeManager {
      * Set the main item mode of an itemstack.
      */
     public static void changeItemMode(final IItemMode newMode) {
-        final PacketSetItemMode packet = new PacketSetItemMode(newMode);
+        final CSetItemModePacket packet = new CSetItemModePacket(newMode);
         NetworkRouter.sendToServer(packet);
     }
 
@@ -40,7 +38,7 @@ public class ChiselModeManager {
      * are accepted.
      */
     public static void changeMenuActionMode(final MenuAction newAction) {
-        final PacketSetMenuActionMode packet = new PacketSetMenuActionMode(newAction);
+        final CSetMenuActionModePacket packet = new CSetMenuActionModePacket(newAction);
         NetworkRouter.sendToServer(packet);
     }
 
@@ -48,7 +46,7 @@ public class ChiselModeManager {
      * Updates the stack capability from the server to the client.
      */
     public static void updateStackCapability(final ItemStack item, final BitStorage cap, final PlayerEntity player) {
-        NetworkRouter.sendTo(new PacketSynchronizeBitStorage(cap, player.inventory.getSlotFor(item)), (ServerPlayerEntity) player);
+        NetworkRouter.sendTo(new SSynchronizeBitStoragePacket(cap, player.inventory.getSlotFor(item)), (ServerPlayerEntity) player);
     }
 
     /**

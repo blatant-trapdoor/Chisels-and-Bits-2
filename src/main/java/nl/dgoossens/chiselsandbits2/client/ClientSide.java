@@ -38,8 +38,9 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.BlockColorChiseled;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.ItemColorBitBag;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.BitBeakerItemColor;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.BitBagItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
@@ -398,13 +399,17 @@ public class ClientSide {
     //--- GENERAL SETUP ---
     public void setup() {
         ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, new ChiseledBlockTER());
-        Minecraft.getInstance().getBlockColors().register(new BlockColorChiseled(),
+        Minecraft.getInstance().getBlockColors().register(new ChiseledBlockColor(),
                 ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK);
         final ModItems i = ChiselsAndBits2.getInstance().getItems();
-        Minecraft.getInstance().getItemColors().register(new ItemColorBitBag(),
+        Minecraft.getInstance().getItemColors().register(new BitBagItemColor(),
                 i.WHITE_BIT_BAG, i.BLACK_BIT_BAG, i.BLUE_BIT_BAG, i.BROWN_BIT_BAG, i.CYAN_BIT_BAG, i.GRAY_BIT_BAG,
                 i.GREEN_BIT_BAG, i.LIGHT_BLUE_BIT_BAG, i.LIGHT_GRAY_BIT_BAG, i.LIME_BIT_BAG, i.MAGENTA_BIT_BAG,
                 i.ORANGE_BIT_BAG, i.PINK_BIT_BAG, i.PURPLE_BIT_BAG, i.RED_BIT_BAG, i.YELLOW_BIT_BAG);
+        Minecraft.getInstance().getItemColors().register(new BitBeakerItemColor(),
+                i.WHITE_TINTED_BIT_BEAKER, i.BLACK_TINTED_BIT_BEAKER, i.BLUE_TINTED_BIT_BEAKER, i.BROWN_TINTED_BIT_BEAKER, i.CYAN_TINTED_BIT_BEAKER, i.GRAY_TINTED_BIT_BEAKER,
+                i.GREEN_TINTED_BIT_BEAKER, i.LIGHT_BLUE_TINTED_BIT_BEAKER, i.LIGHT_GRAY_TINTED_BIT_BEAKER, i.LIME_TINTED_BIT_BEAKER, i.MAGENTA_TINTED_BIT_BEAKER,
+                i.ORANGE_TINTED_BIT_BEAKER, i.PINK_TINTED_BIT_BEAKER, i.PURPLE_TINTED_BIT_BEAKER, i.RED_TINTED_BIT_BEAKER, i.YELLOW_TINTED_BIT_BEAKER);
 
         //We've got both normal and mod event bus events.
         MinecraftForge.EVENT_BUS.register(getClass());

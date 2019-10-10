@@ -29,16 +29,23 @@ public class ChiselsAndBits2 {
 
     private final ModItems ITEMS = new ModItems();
     private final ModBlocks BLOCKS = new ModBlocks();
-    private final ClientSide CLIENT = new ClientSide();
     private final ModConfiguration CONFIGURATION = new ModConfiguration();
     private final NetworkRouter NETWORK_ROUTER = new NetworkRouter();
-    private final ModKeybindings KEYBINDINGS = new ModKeybindings();
     private final ChiselsAndBitsAPI API = new ChiselsAndBitsAPIImpl();
     private final SmartModelManager SMART_MODEL_MANAGER;
+
+    private ClientSide CLIENT;
+    private ModKeybindings KEYBINDINGS;
 
     public ChiselsAndBits2() {
         instance = this;
         SMART_MODEL_MANAGER = new SmartModelManager();
+
+        //Only register the client and keybindings classes when on the CLIENT distribution.
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            CLIENT = new ClientSide();
+            KEYBINDINGS = new ModKeybindings();
+        });
 
         //Register to mod bus
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);

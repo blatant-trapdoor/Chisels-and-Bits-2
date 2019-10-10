@@ -25,7 +25,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
-import nl.dgoossens.chiselsandbits2.common.network.packets.PacketChisel;
+import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 
 @OnlyIn(Dist.CLIENT)
@@ -104,7 +104,7 @@ public class ChiselEvent {
      * Does everything short of updating the voxel data. (and updating the durability of the used tool)
      */
     private static void useChisel(final BitOperation operation, final IItemMode mode, final World world, final Direction face, final BitLocation location) {
-        final PacketChisel pc = new PacketChisel(operation, location, face, mode);
+        final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode);
         //The chiseled block redirects the breaking sound.
         ChiselsAndBits2.getInstance().getClient().breakSound(world, location.getBlockPos(), world.getBlockState(location.getBlockPos()));
         NetworkRouter.sendToServer(pc);

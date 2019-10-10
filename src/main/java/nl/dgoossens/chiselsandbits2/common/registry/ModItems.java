@@ -8,10 +8,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModItems {
@@ -20,6 +21,9 @@ public class ModItems {
     public final Item SAW = new SawItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
     public final Item TAPE_MEASURE = new TapeMeasureItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
     public final Item WRENCH = new WrenchItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item MALLET = new MalletItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item BLUEPRINT = new BlueprintItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+    public final Item MORPHING_BIT = new MorphingBitItem(new Item.Properties().group(ModItemGroups.CHISELS_AND_BITS2));
 
     //all of the coloured bit bags
     public final Item BIT_BAG = new BitBagItem();
@@ -40,12 +44,31 @@ public class ModItems {
     public final Item RED_BIT_BAG = new BitBagItem();
     public final Item BLACK_BIT_BAG = new BitBagItem();
 
-    //Some more regular items (we put these after the bit bags because they are new and people who know C&B will notice them)
     public final Item BIT_BEAKER = new BitBeakerItem();
-    public final Item MALLET = new MalletItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item BLUEPRINT = new BlueprintItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item PALETTE = new PaletteItem();
-
+    public final Item WHITE_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item ORANGE_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item MAGENTA_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item LIGHT_BLUE_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item YELLOW_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item LIME_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item PINK_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item GRAY_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item LIGHT_GRAY_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item CYAN_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item PURPLE_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item BLUE_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item BROWN_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item GREEN_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item RED_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public final Item BLACK_TINTED_BIT_BEAKER = new BitBeakerItem();
+    
+    public final Item OAK_PALETTE = new PaletteItem();
+    public final Item SPRUCE_PALETTE = new PaletteItem();
+    public final Item BIRCH_PALETTE = new PaletteItem();
+    public final Item JUNGLE_PALETTE = new PaletteItem();
+    public final Item ACACIA_PALETTE = new PaletteItem();
+    public final Item DARK_OAK_PALETTE = new PaletteItem();
+    
     @SubscribeEvent
     public static void onItemRegistry(final RegistryEvent.Register<Item> e) {
         //Register all items in this class automatically.
@@ -67,19 +90,63 @@ public class ModItems {
         }
     }
 
+    //Cached data to make colour lookups faster.
+    private Map<BagBeakerColours, BitBagItem> bags = new HashMap<>();
+    private Map<BagBeakerColours, BitBeakerItem> beakers = new HashMap<>();
+    
+    public ModItems() {
+        //Build the caches
+        for (Field f : getClass().getFields()) {
+            if(f.getName().endsWith("_BIT_BAG")) {
+                String val = f.getName().substring(0, f.getName().length() - "_BIT_BAG".length());
+                try {
+                    bags.put(BagBeakerColours.valueOf(val), (BitBagItem) f.get(this));
+                } catch(Exception x) {}
+            }
+            if(f.getName().endsWith("_TINTED_BIT_BEAKER")) {
+                String val = f.getName().substring(0, f.getName().length() - "_TINTED_BIT_BEAKER".length());
+                try {
+                   beakers.put(BagBeakerColours.valueOf(val), (BitBeakerItem) f.get(this));
+                } catch(Exception x) {}
+            }
+        }
+    }
+    
     /**
      * Get the colour of the bit bag, we hijack MenuAction's colour values.
      */
-    public MenuAction getBitBagColour(final ItemStack stack) {
-        if (!(stack.getItem() instanceof BitBagItem)) return null;
-        for (Field f : getClass().getFields()) {
-            try {
-                if (!f.getName().contains("_BIT_BAG") || !stack.getItem().equals(f.get(this))) continue;
-                return MenuAction.valueOf(f.getName().substring(0, f.getName().length() - "_BIT_BAG".length()));
-            } catch (Exception x) {
-                x.printStackTrace();
-            }
+    public BagBeakerColours getBagBeakerColour(final ItemStack stack) {
+        for(BagBeakerColours c : BagBeakerColours.values()) {
+            if(stack.getItem().equals(bags.get(c))) return c;
+            if(stack.getItem().equals(beakers.get(c))) return c;
         }
+        return null;
+    }
+
+    /**
+     * Internal method used by recipe generators.
+     */
+    public BitBagItem getBitBag(final BagBeakerColours colour) {
+        return bags.get(colour);
+    }
+
+    /**
+     * Internal method used by recipe generators.
+     */
+    public BitBeakerItem getBitBeaker(final BagBeakerColours colour) {
+        return beakers.get(colour);
+    }
+
+    /**
+     * Internal method used by recipe generators.
+     */
+    public PaletteItem getPalette(final String fieldName) {
+        try {
+            for (Field f : getClass().getFields()) {
+                if(fieldName.equals(f.getName()))
+                    return (PaletteItem) f.get(this);
+            }
+        } catch(Exception x) {}
         return null;
     }
 }

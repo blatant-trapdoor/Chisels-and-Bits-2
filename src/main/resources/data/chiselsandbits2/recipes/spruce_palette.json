@@ -1,11 +1,9 @@
 {
-  "result": {
-    "item": "chiselsandbits2:palette"
-  },
   "type": "minecraft:crafting_shapeless",
+  "group": "palettes",
   "ingredients": [
     {
-      "tag": "minecraft:wooden_slabs"
+      "item": "minecraft:spruce_slab"
     },
     {
       "tag": "forge:dyes"
@@ -16,5 +14,8 @@
     {
       "tag": "forge:dyes"
     }
-  ]
+  ],
+  "result": {
+    "item": "chiselsandbits2:spruce_palette"
+  }
 }
