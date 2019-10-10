@@ -15,6 +15,9 @@ import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 
 import java.util.function.Supplier;
 
+/**
+ * Sent from client to server
+ */
 public class PacketSetItemMode implements NetworkRouter.ModPacket {
     private IItemMode newMode;
     private ItemModeType type;

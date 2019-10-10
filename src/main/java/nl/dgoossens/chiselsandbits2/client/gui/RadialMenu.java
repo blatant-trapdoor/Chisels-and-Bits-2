@@ -375,12 +375,12 @@ public class RadialMenu extends Screen {
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 if(mnuRgn.mode.getType() == ItemModeType.SELECTED_BOOKMARK) {
-                    //Backup system for when we want little coloured squares.
+                    //We're currently not using this system.
                     /*if(buffer==null)
                         continue;
 
                     Color color = ((SelectedItemMode) mnuRgn.mode).getColour();
-                    int red = color.getRed(), green = color.getGreen(), blue = color.getBlue(), a = color.getAlpha();
+                    int red = color.getRed(), green = color.getGreen(), blue = color.getBlue(), a = (int) Math.round(color.getAlpha()*0.6f);
                     final double btnx1 = x-8 + 1;
                     final double btnx2 = x-8 + 16 - 1;
                     final double btny1 = y-8 + 1;

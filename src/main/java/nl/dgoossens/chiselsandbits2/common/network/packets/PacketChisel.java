@@ -37,8 +37,7 @@ import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static nl.dgoossens.chiselsandbits2.api.BitOperation.PLACE;
-import static nl.dgoossens.chiselsandbits2.api.BitOperation.REMOVE;
+import static nl.dgoossens.chiselsandbits2.api.BitOperation.*;
 
 public class PacketChisel implements NetworkRouter.ModPacket {
     private static final float one_16th = 1.0f / 16.0f;
@@ -151,6 +150,7 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                             final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
                             final VoxelBlob vb = tec.getBlob();
                             final ChiselIterator i = getIterator(new VoxelRegionSrc(world, pos, 1), pos, operation);
+                            final Map<Integer, Long> extracted = new HashMap<>();
 
                             //Determine the capacity = the durability we have to use
                             int durabilityTaken = 0;
@@ -191,10 +191,20 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                         }
                                     }
 
+                                    //If we have no bits we can't place anything.
+                                    if(bitsAvailable <= 0)
+                                        return;
+
                                     while (i.hasNext()) {
+                                        int blk = vb.get(i.x(), i.y(), i.z());
+
                                         //If this is a place operation we only place in air.
-                                        if (operation == PLACE && (vb.get(i.x(), i.y(), i.z()) != VoxelBlob.AIR_BIT && !VoxelType.isFluid(vb.get(i.x(), i.y(), i.z()))))
+                                        if (operation == PLACE && (blk != VoxelBlob.AIR_BIT && !VoxelType.isFluid(blk)))
                                             continue;
+
+                                        //Track how many bits we've extracted and it's not a coloured bit.
+                                        if (operation == REPLACE && !VoxelType.isColoured(blk))
+                                            extracted.put(blk, extracted.getOrDefault(blk, 0L)+1);
 
                                         vb.set(i.x(), i.y(), i.z(), placeStateID);
                                         //Test durability
@@ -208,8 +218,8 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                             break;
                                     }
 
-                                    //Take the used resources
-                                    if(!isCreative) {
+                                    //Take the used resources, coloured bits don't take resources.
+                                    if(!isCreative && type != VoxelType.COLOURED) {
                                         //Iterate over every bag.
                                         for(ItemStack item : player.inventory.mainInventory) {
                                             if(item.getItem() instanceof StorageItem) {
@@ -217,11 +227,15 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                                 if(cap.isPresent()) {
                                                     BitStorage bs = cap.orElse(null);
                                                     if(type == VoxelType.BLOCKSTATE && item.getItem() instanceof BitBagItem) {
-                                                        if(bs.hasBlock(block.getBlock()))
+                                                        if(bs.hasBlock(block.getBlock())) {
                                                             bitsUsed = -bs.addAmount(block.getBlock(), -bitsUsed);
+                                                            ChiselModeManager.updateStackCapability(item, bs, player);
+                                                        }
                                                     } else if(item.getItem() instanceof BitBeakerItem) {
-                                                        if(bs.hasFluid(fluid.getFluid()))
+                                                        if(bs.hasFluid(fluid.getFluid())) {
                                                             bitsUsed = -bs.addAmount(fluid.getFluid(), -bitsUsed);
+                                                            ChiselModeManager.updateStackCapability(item, bs, player);
+                                                        }
                                                     }
 
                                                     //We can break early if we're done.
@@ -237,7 +251,6 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                 }
                                 break;
                                 case REMOVE: {
-                                    Map<Integer, Long> extracted = new HashMap<>();
                                     while (i.hasNext()) {
                                         final int blk = vb.get(i.x(), i.y(), i.z());
                                         if (blk == VoxelBlob.AIR_BIT)
@@ -252,71 +265,75 @@ public class PacketChisel implements NetworkRouter.ModPacket {
                                         if(durabilityTaken >= totalCapacity)
                                             break;
                                     }
-
-                                    //Give the player the bits that were extracted
-                                    for(int extr : extracted.keySet()) {
-                                        long toGive = extracted.get(extr);
-                                        VoxelType vt = VoxelType.getType(extr);
-                                        if(vt != VoxelType.BLOCKSTATE && vt != VoxelType.FLUIDSTATE)
-                                            continue;
-
-                                        Block b = ModUtil.getBlockState(extr).getBlock();
-                                        Fluid f = ModUtil.getFluidState(extr).getFluid();
-
-                                        //First round: find storages that already want the bits
-                                        for(ItemStack item : player.inventory.mainInventory) {
-                                            if(item.getItem() instanceof StorageItem) {
-                                                LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
-                                                if(cap.isPresent()) {
-                                                    BitStorage bs = cap.orElse(null);
-                                                    if(type == VoxelType.BLOCKSTATE && item.getItem() instanceof BitBagItem) {
-                                                        if(bs.hasBlock(block.getBlock())) {
-                                                            long h = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(b));
-                                                            bs.addAmount(b, h);
-                                                            toGive -= h;
-                                                        }
-                                                    } else {
-                                                        if(bs.hasFluid(fluid.getFluid()) && item.getItem() instanceof BitBeakerItem) {
-                                                            long g = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(f));
-                                                            bs.addAmount(f, g);
-                                                            toGive -= g;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        if(toGive <= 0)
-                                            continue;
-
-                                        //Second round: put the bits in the first possible storage
-                                        for(ItemStack item : player.inventory.mainInventory) {
-                                            if(item.getItem() instanceof StorageItem) {
-                                                LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
-                                                if(cap.isPresent()) {
-                                                    BitStorage bs = cap.orElse(null);
-                                                    if(vt == VoxelType.BLOCKSTATE && item.getItem() instanceof BitBagItem) {
-                                                        long h = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(b));
-                                                        bs.addAmount(b, h);
-                                                        toGive -= h;
-                                                    } else if(vt == VoxelType.FLUIDSTATE && item.getItem() instanceof BitBeakerItem) {
-                                                        long g = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(f));
-                                                        bs.addAmount(f, g);
-                                                        toGive -= g;
-                                                    }
-                                                }
-                                            }
-
-                                            //If we've deposited everything we're done.
-                                            if(toGive <= 0)
-                                                break;
-                                        }
-
-                                        //If there's still toGive left but nowhere to put it's voided...
-                                        //TODO Disable/Abort chiseling if you're not able to store all bits.
-                                    }
                                 }
                                 break;
+                            }
+
+                            //Give the player the bits that were extracted
+                            for(int extr : extracted.keySet()) {
+                                long toGive = extracted.get(extr);
+                                VoxelType vt = VoxelType.getType(extr);
+                                if(vt != VoxelType.BLOCKSTATE && vt != VoxelType.FLUIDSTATE)
+                                    continue;
+
+                                Block b = ModUtil.getBlockState(extr).getBlock();
+                                Fluid f = ModUtil.getFluidState(extr).getFluid();
+
+                                //First round: find storages that already want the bits
+                                for(ItemStack item : player.inventory.mainInventory) {
+                                    if(item.getItem() instanceof StorageItem) {
+                                        LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
+                                        if(cap.isPresent()) {
+                                            BitStorage bs = cap.orElse(null);
+                                            if(type == VoxelType.BLOCKSTATE && item.getItem() instanceof BitBagItem) {
+                                                if(bs.hasBlock(block.getBlock())) {
+                                                    long h = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(b));
+                                                    bs.addAmount(b, h);
+                                                    toGive -= h;
+                                                    ChiselModeManager.updateStackCapability(item, bs, player);
+                                                }
+                                            } else {
+                                                if(bs.hasFluid(fluid.getFluid()) && item.getItem() instanceof BitBeakerItem) {
+                                                    long g = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(f));
+                                                    bs.addAmount(f, g);
+                                                    toGive -= g;
+                                                    ChiselModeManager.updateStackCapability(item, bs, player);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if(toGive <= 0)
+                                    continue;
+
+                                //Second round: put the bits in the first possible storage
+                                for(ItemStack item : player.inventory.mainInventory) {
+                                    if(item.getItem() instanceof StorageItem) {
+                                        LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
+                                        if(cap.isPresent()) {
+                                            BitStorage bs = cap.orElse(null);
+                                            if(vt == VoxelType.BLOCKSTATE && item.getItem() instanceof BitBagItem) {
+                                                long h = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(b));
+                                                bs.addAmount(b, h);
+                                                toGive -= h;
+                                                ChiselModeManager.updateStackCapability(item, bs, player);
+                                            } else if(vt == VoxelType.FLUIDSTATE && item.getItem() instanceof BitBeakerItem) {
+                                                long g = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(f));
+                                                bs.addAmount(f, g);
+                                                toGive -= g;
+                                                ChiselModeManager.updateStackCapability(item, bs, player);
+                                            }
+                                        }
+                                    }
+
+                                    //If we've deposited everything we're done.
+                                    if(toGive <= 0)
+                                        break;
+                                }
+
+                                //If there's still toGive left but nowhere to put it's voided...
+                                //TODO Disable/Abort chiseling if you're not able to store all bits.
                             }
 
                             //We can use the durability taken to see if something happened because any operation will influence durability.

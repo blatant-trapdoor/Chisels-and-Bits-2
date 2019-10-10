@@ -74,6 +74,7 @@ public class BitBeakerItem extends StorageItem {
                         itemstack.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(b -> {
                             try {
                                 b.setAmount(fluid, b.getAmount(fluid) + (int) Math.pow(VoxelBlob.DIMENSION, 3));
+                                //Set mode causes a capability update here.
                                 ChiselModeManager.setMode(itemstack, SelectedItemMode.fromFluid(fluid));
                             } catch(Exception x) {
                                 x.printStackTrace();

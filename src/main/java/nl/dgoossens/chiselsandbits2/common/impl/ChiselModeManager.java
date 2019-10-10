@@ -1,10 +1,13 @@
 package nl.dgoossens.chiselsandbits2.common.impl;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
@@ -13,6 +16,7 @@ import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSetItemMode;
 import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSetMenuActionMode;
+import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSynchronizeBitStorage;
 
 import java.awt.*;
 
@@ -38,6 +42,13 @@ public class ChiselModeManager {
     public static void changeMenuActionMode(final MenuAction newAction) {
         final PacketSetMenuActionMode packet = new PacketSetMenuActionMode(newAction);
         NetworkRouter.sendToServer(packet);
+    }
+
+    /**
+     * Updates the stack capability from the server to the client.
+     */
+    public static void updateStackCapability(final ItemStack item, final BitStorage cap, final PlayerEntity player) {
+        NetworkRouter.sendTo(new PacketSynchronizeBitStorage(cap, player.inventory.getSlotFor(item)), (ServerPlayerEntity) player);
     }
 
     /**

@@ -46,7 +46,8 @@ public class ChiselItem extends TypedItem {
      */
     @Override
     public boolean hitEntity(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        stack.damageItem(1, attacker, l -> l.sendBreakAnimation(EquipmentSlotType.MAINHAND));
+        //Do 50 durability damage because otherwise it's barely noticable.
+        stack.damageItem(50, attacker, l -> l.sendBreakAnimation(EquipmentSlotType.MAINHAND));
         return true;
     }
 

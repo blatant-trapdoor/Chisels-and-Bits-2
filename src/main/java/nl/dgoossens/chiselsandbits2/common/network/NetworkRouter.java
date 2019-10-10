@@ -10,6 +10,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.common.network.packets.PacketChisel;
 import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSetItemMode;
 import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSetMenuActionMode;
+import nl.dgoossens.chiselsandbits2.common.network.packets.PacketSynchronizeBitStorage;
 
 public class NetworkRouter {
     private static final String PROTOCOL_VERSION = Integer.toString(1);
@@ -26,6 +27,7 @@ public class NetworkRouter {
         HANDLER.registerMessage(disc++, PacketChisel.class, PacketChisel::encode, PacketChisel::decode, PacketChisel.Handler::handle);
         HANDLER.registerMessage(disc++, PacketSetItemMode.class, PacketSetItemMode::encode, PacketSetItemMode::decode, PacketSetItemMode.Handler::handle);
         HANDLER.registerMessage(disc++, PacketSetMenuActionMode.class, PacketSetMenuActionMode::encode, PacketSetMenuActionMode::decode, PacketSetMenuActionMode.Handler::handle);
+        HANDLER.registerMessage(disc++, PacketSynchronizeBitStorage.class, PacketSynchronizeBitStorage::encode, PacketSynchronizeBitStorage::decode, PacketSynchronizeBitStorage.Handler::handle);
     }
 
     public static void sendToServer(final ModPacket packet) {

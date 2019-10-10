@@ -121,30 +121,8 @@ public class BitStorageImpl implements BitStorage {
         return blocks.getMap().getOrDefault(type, 0L);
     }
 
-    public void setAmount(final Block type, final long amount) {
-        blocks.add(type, Math.max(0, Math.min(amount, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get())));
-        selectedCache = null;
-    }
-
     public long getAmount(final Fluid type) {
         return fluids.getMap().getOrDefault(type, 0L);
-    }
-
-    public void setAmount(final Fluid type, final long amount) {
-        fluids.add(type, Math.max(0, Math.min(amount, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get())));
-        selectedCache = null;
-    }
-
-    public void addBookmark(final Color color) {
-        bookmarks.add(color);
-    }
-
-    public void setBookmark(final int index, final Color color) {
-        bookmarks.set(index, color);
-    }
-
-    public void clearBookmark(final int index) {
-        bookmarks.remove(index);
     }
 
     public boolean hasBlock(Block b) {
@@ -155,6 +133,33 @@ public class BitStorageImpl implements BitStorage {
         return fluids.keySet().contains(f);
     }
 
+    //-- METHODS THAT REQUIRE SAVING ---
+    /*
+        Here we horribly misuse the deprecated annotation because we need to remember to sync the data after using these.
+     */
+
+    @Deprecated
+    public void setAmount(final Fluid type, final long amount) {
+        fluids.add(type, Math.max(0, Math.min(amount, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get())));
+        selectedCache = null;
+    }
+
+    @Deprecated
+    public void setBookmark(final int index, final Color color) {
+        bookmarks.set(index, color);
+    }
+
+    @Deprecated
+    public void addBookmark(final Color color) {
+        bookmarks.add(color);
+    }
+
+    @Deprecated
+    public void clearBookmark(final int index) {
+        bookmarks.remove(index);
+    }
+
+    @Deprecated
     public long addAmount(Block type, long amount) {
         if(amount == 0) return 0;
         if(amount > 0) {
@@ -162,15 +167,16 @@ public class BitStorageImpl implements BitStorage {
             return 0;
         }
         long current = getAmount(type);
-        if(current > amount) {
-            setAmount(type, current - amount);
+        if(current > -amount) {
+            setAmount(type, current + amount);
             return 0;
         } else {
             blocks.remove(type);
-            return current - amount;
+            return current + amount;
         }
     }
 
+    @Deprecated
     public long addAmount(Fluid type, long amount) {
         if(amount == 0) return 0;
         if(amount > 0) {
@@ -178,12 +184,18 @@ public class BitStorageImpl implements BitStorage {
             return 0;
         }
         long current = getAmount(type);
-        if(current > amount) {
-            setAmount(type, current - amount);
+        if(current > -amount) {
+            setAmount(type, current + amount);
             return 0;
         } else {
             fluids.remove(type);
-            return current - amount;
+            return current + amount;
         }
+    }
+
+    @Deprecated
+    public void setAmount(final Block type, final long amount) {
+        blocks.add(type, Math.max(0, Math.min(amount, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get())));
+        selectedCache = null;
     }
 }
