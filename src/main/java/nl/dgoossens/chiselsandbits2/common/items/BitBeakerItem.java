@@ -65,7 +65,7 @@ public class BitBeakerItem extends StorageItem {
                 BlockState blockstate1 = worldIn.getBlockState(blockpos);
                 if (blockstate1.getBlock() instanceof IBucketPickupHandler) {
                     Fluid fluid = ((IBucketPickupHandler)blockstate1.getBlock()).pickupFluid(worldIn, blockpos, blockstate1);
-                    if (fluid != Fluids.EMPTY) {
+                    if (fluid != Fluids.EMPTY && fluid.isSource(fluid.getDefaultState())) {
                         playerIn.addStat(Stats.ITEM_USED.get(this));
 
                         SoundEvent soundevent = Fluids.EMPTY.getAttributes().getEmptySound();
