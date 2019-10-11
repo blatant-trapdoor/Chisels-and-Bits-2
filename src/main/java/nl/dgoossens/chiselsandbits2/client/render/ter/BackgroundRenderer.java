@@ -58,9 +58,9 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                 // no previous queues?
                 if (tessellator == null) {
                     synchronized (CBTessellator.class) {
-                        if (ChiseledBlockTER.activeTess.get() < ChiseledBlockTER.getMaxTessalators())
+                        if (ChiseledBlockTER.activeTess.get() < ChiseledBlockTER.getMaxTessalators()) {
                             tessellator = new CBTessellator(2109952);
-                        else Thread.sleep(10);
+                        } else Thread.sleep(10);
                     }
                 }
             }
@@ -68,10 +68,6 @@ public class BackgroundRenderer implements Callable<Tessellator> {
             final BufferBuilder buffer = tessellator.getBuffer();
 
             try {
-                try {
-                    //Finish drawing if the buffer was somehow drawing.
-                    buffer.finishDrawing();
-                } catch(IllegalStateException e) {}
                 buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
                 buffer.setTranslation(-chunkOffset.getX(), -chunkOffset.getY(), -chunkOffset.getZ());
             } catch (final IllegalStateException e) {
@@ -86,9 +82,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                         blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
 
                         if (Thread.interrupted()) {
-                            try {
-                                buffer.finishDrawing();
-                            } catch(IllegalStateException e) {}
+                            buffer.finishDrawing();
                             submitTessellator(tessellator);
                             return null;
                         }
@@ -97,9 +91,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
             }
 
             if (Thread.interrupted()) {
-                try {
-                    buffer.finishDrawing();
-                } catch(IllegalStateException e) {}
+                buffer.finishDrawing();
                 submitTessellator(tessellator);
                 return null;
             }

@@ -24,6 +24,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
@@ -497,7 +498,7 @@ public class RadialMenu extends Screen {
                     type = RegionType.DEFAULT;
                     return;
                 }
-                int b = CChiselBlockPacket.getSelectedBit(player, null);
+                int b = ChiselHandler.getSelectedBit(player, null);
                 if(b != s.getBitId()) {
                     //Highlighted = selected in this bitstorage but won't be used atm to build.
                     type = RegionType.HIGHLIGHTED;

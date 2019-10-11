@@ -21,12 +21,16 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+
+import static nl.dgoossens.chiselsandbits2.api.BitOperation.REMOVE;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -78,6 +82,14 @@ public class ChiselEvent {
         lastClick = System.currentTimeMillis();
 
         final BitOperation operation = leftClick ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.REPLACE) ? BitOperation.REPLACE : BitOperation.PLACE);
+
+        //Determine the placed bit, if this is REMOVE we set this to -1 to bypass any checks.
+        int placeStateID = ChiselHandler.getSelectedBit(player, null);
+
+        //If we couldn't find a selected type, don't chisel.
+        if(operation != BitOperation.REMOVE && placeStateID == VoxelBlob.AIR_BIT)
+            return;
+
         startChiselingBlock((BlockRayTraceResult) rtr, ChiselModeManager.getMode(player.getHeldItemMainhand()), player, operation);
     }
 
@@ -93,20 +105,11 @@ public class ChiselEvent {
         final BlockState state = player.world.getBlockState(pos);
         final Direction face = rayTrace.getFace();
         //We use a the constructor for BlockRayTraceResult from a method in BlockItemUseContext.
-        if (!state.isReplaceable(new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, new BlockRayTraceResult(new Vec3d((double)pos.getX() + 0.5D + (double)face.getXOffset() * 0.5D, (double)pos.getY() + 0.5D + (double)face.getYOffset() * 0.5D, (double)pos.getZ() + 0.5D + (double)face.getZOffset() * 0.5D), face, pos, false))))
+        if (!state.isReplaceable(new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, new BlockRayTraceResult(new Vec3d((double) pos.getX() + 0.5D + (double) face.getXOffset() * 0.5D, (double) pos.getY() + 0.5D + (double) face.getYOffset() * 0.5D, (double) pos.getZ() + 0.5D + (double) face.getZOffset() * 0.5D), face, pos, false))))
                 && !ChiselUtil.canChiselBlock(state)) return; //You can place on replacable blocks.
         if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
-        useChisel(operation, mode, player.world, rayTrace.getFace(), location);
-    }
 
-    /**
-     * Uses the chisel on a specific bit of a specific block.
-     * Does everything short of updating the voxel data. (and updating the durability of the used tool)
-     */
-    private static void useChisel(final BitOperation operation, final IItemMode mode, final World world, final Direction face, final BitLocation location) {
         final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode);
-        //The chiseled block redirects the breaking sound.
-        ChiselsAndBits2.getInstance().getClient().breakSound(world, location.getBlockPos(), world.getBlockState(location.getBlockPos()));
         NetworkRouter.sendToServer(pc);
     }
 }

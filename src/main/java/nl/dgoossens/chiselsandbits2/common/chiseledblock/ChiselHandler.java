@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.SoundType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.IFluidState;
@@ -11,10 +12,12 @@ import net.minecraft.item.ItemUseContext;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.util.LazyOptional;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
@@ -149,6 +152,10 @@ public class ChiselHandler {
 
                                         //If this is a place operation we only place in air.
                                         if (pkt.operation == PLACE && (blk != VoxelBlob.AIR_BIT && !VoxelType.isFluid(blk)))
+                                            continue;
+
+                                        //Don't waste durability on the same type.
+                                        if (pkt.operation == REPLACE && blk == placeStateID)
                                             continue;
 
                                         //Track how many bits we've extracted and it's not a coloured bit.
@@ -289,6 +296,10 @@ public class ChiselHandler {
                             if (durabilityTaken > 0) {
                                 //Actually apply the operation.
                                 tec.completeEditOperation(vb);
+
+                                //Send the breaking sound only if the block actually got changed.
+                                SoundType st = world.getBlockState(pos).getSoundType();
+                                world.playSound(null,pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, st.getBreakSound(), SoundCategory.BLOCKS, (st.getVolume() + 1.0F) / 16.0F, st.getPitch() * 0.9F);
 
                                 //Below follows some unnecessarily complex code to lower the durability of the chisel and to automatically move backup chisels to the slot to continue chiseling when the old one breaks.
                                 if(!isCreative) { //No tool damage in creative mode.

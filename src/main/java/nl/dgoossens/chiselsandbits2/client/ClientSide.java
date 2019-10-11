@@ -422,15 +422,6 @@ public class ClientSide {
         return Minecraft.getInstance().getTextureMap().getSprite(new ResourceLocation(""));
     }
 
-    public void breakSound(final World world, final BlockPos pos, final BlockState state) {
-        final Block block = state.getBlock();
-        final SoundType soundType = block.getSoundType(state, world, pos, Minecraft.getInstance().player);
-        world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                soundType.getBreakSound(), SoundCategory.BLOCKS,
-                (soundType.getVolume() + 1.0F) / 16.0F,
-                soundType.getPitch() * 0.9F, false);
-    }
-
     //--- ITEM SCROLL ---
     public RadialMenu getRadialMenu() {
         return radialMenu;

@@ -3,6 +3,7 @@ package nl.dgoossens.chiselsandbits2.client.render.ter;
 import com.google.common.base.Stopwatch;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
+import javafx.scene.layout.Background;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
@@ -88,13 +89,16 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
     }
 
     private static boolean handleFutureTracker(final RenderCache renderCache) {
-        if (renderCache.future != null && renderCache.future.isDone()) {
+        if (renderCache.hasFuture() && renderCache.getFuture().isDone()) {
             try {
-                final Tessellator t = renderCache.future.get();
-                getTracker().uploaders.offer(new UploadTracker(renderCache, t));
+                final Tessellator t = renderCache.getFuture().get();
+                t.getBuffer().finishDrawing();
+                BackgroundRenderer.submitTessellator(t);
             } catch (CancellationException cancel) { //We're fine if the future got cancelled.
             } catch (Exception x) {
                 x.printStackTrace();
+            } finally {
+                renderCache.resetFuture();
             }
             pendingTess.decrementAndGet();
             return true;
@@ -159,23 +163,42 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         }
         final RenderCache rc = te.getChunk(te.getWorld());
         final BlockPos chunkOffset = te.getChunk(te.getWorld()).chunkOffset();
+        boolean hasSubmitted = false;
 
         if (rc.needsRebuilding()) {
             //Rebuild!
             final int dynamicTess = getMaxTessalators();
-            if (pendingTess.get() < dynamicTess && rc.future == null) {
+            if (pendingTess.get() < dynamicTess && !rc.hasFuture()) {
                 try {
                     final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(16, 16, 16));
                     final FutureTask<Tessellator> newFuture = new FutureTask<>(new BackgroundRenderer(cache, chunkOffset, te.getChunk(te.getWorld()).getTileList()));
                     pool.submit(newFuture);
+                    hasSubmitted = true;
+
                     rc.rebuild();
-                    rc.future = newFuture;
+                    rc.setFuture(newFuture);
                     pendingTess.incrementAndGet();
                     addFutureTracker(rc);
                 } catch (RejectedExecutionException err) {
                     err.printStackTrace();
                     // Yar... ??
                 }
+            }
+        }
+
+        //If we've scheduled the rendering this tick but this block is new. Instant render!
+        //This avoids blinking blocks because background rendering doesn't get a model ready the first tick.
+        if (rc.hasFuture() && hasSubmitted && rc.isNew()) {
+            try {
+                final Tessellator tess = rc.getFuture().get(100, TimeUnit.MILLISECONDS);
+                rc.resetFuture();
+                pendingTess.decrementAndGet();
+
+                uploadVBO(new UploadTracker(rc, tess));
+            } catch(TimeoutException timeout) {
+                addFutureTracker(rc);
+            } catch(Exception ex) {
+                rc.resetFuture();
             }
         }
 
