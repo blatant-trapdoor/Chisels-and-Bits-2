@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.blocks;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
@@ -227,6 +228,13 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     public void completeEditOperation(final VoxelBlob vb) {
+        //Empty voxelblob = we need to destroy this block.
+        if(vb.filled() <= 0) {
+            System.out.println("Self destructing..");
+            world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
+            return;
+        }
+
         //final VoxelBlobStateReference before = getVoxelReference();
         setBlob(vb);
         //final VoxelBlobStateReference after = getVoxelReference();

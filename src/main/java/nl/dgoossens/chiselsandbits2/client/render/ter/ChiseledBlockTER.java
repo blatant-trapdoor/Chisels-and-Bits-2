@@ -92,8 +92,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         if (renderCache.hasFuture() && renderCache.getFuture().isDone()) {
             try {
                 final Tessellator t = renderCache.getFuture().get();
-                t.getBuffer().finishDrawing();
-                BackgroundRenderer.submitTessellator(t);
+                getTracker().uploaders.offer(new UploadTracker(renderCache, t));
             } catch (CancellationException cancel) { //We're fine if the future got cancelled.
             } catch (Exception x) {
                 x.printStackTrace();
