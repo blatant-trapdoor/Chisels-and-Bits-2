@@ -74,8 +74,9 @@ public class ChiselModeManager {
                     {
                         if(bs.listBlocks().size() <= 1) return; //You can't scroll without at least 2 elements.
                         int j = bs.getBlockIndex(current.getBlock());
-                        j++;
+                        j += (dwheel < 0 ? -1 : 1);
                         if(bs.listBlocks().size() <= j) j = 0;
+                        if(j < 0) j = bs.listBlocks().size() - 1;
                         changeItemMode(SelectedItemMode.fromBlock(bs.getBlock(j)));
                     }
                         break;
@@ -83,8 +84,9 @@ public class ChiselModeManager {
                     {
                         if(bs.listFluids().size() <= 1) return; //You can't scroll without at least 2 elements.
                         int j = bs.getFluidIndex(current.getFluid());
-                        j++;
+                        j += (dwheel < 0 ? -1 : 1);
                         if(bs.listFluids().size() <= j) j = 0;
+                        if(j < 0) j = bs.listFluids().size() - 1;
                         changeItemMode(SelectedItemMode.fromFluid(bs.getFluid(j)));
                     }
                         break;
@@ -92,8 +94,9 @@ public class ChiselModeManager {
                     {
                         if(bs.listColours().size() <= 1) return; //You can't scroll without at least 2 elements.
                         int j = bs.listColours().indexOf(current.getColour());
-                        j++;
+                        j += (dwheel < 0 ? -1 : 1);
                         if(bs.listColours().size() <= j) j = 0;
+                        if(j < 0) j = bs.listColours().size() - 1;
                         changeItemMode(SelectedItemMode.fromColour(bs.listColours().get(j)));
                     }
                         break;
