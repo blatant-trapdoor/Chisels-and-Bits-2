@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "chiselsandbits2:item/bit_beaker_border",
+    "layer1": "chiselsandbits2:item/bit_beaker_glass"
+  }
+}

@@ -6,10 +6,15 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.registry.BagBeakerColours;
 
-public class BitBagItemColor implements IItemColor {
+public class BagBeakerItemColor implements IItemColor {
+    private int layer;
+    public BagBeakerItemColor(int layer) {
+        this.layer = layer;
+    }
+
     @Override
     public int getColor(ItemStack stack, int tint) {
-        if (tint != 1) return -1;
+        if (tint != layer) return -1;
         BagBeakerColours colour = ChiselsAndBits2.getInstance().getItems().getBagBeakerColour(stack);
         return colour != null ? colour.getColour() : -1;
     }
