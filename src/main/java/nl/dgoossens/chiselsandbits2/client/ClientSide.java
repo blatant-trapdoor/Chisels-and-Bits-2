@@ -293,11 +293,14 @@ public class ClientSide {
                         final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + 2) * 2;
                         final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
 
-                        final TextureAtlasSprite sprite = chiselModeIcons.get(mode) == null ? ChiselsAndBits2.getInstance().getClient().getMissingIcon() : chiselModeIcons.get(mode).sprite;
+                        final TextureAtlasSprite sprite = chiselModeIcons.get(mode) == null ? null : chiselModeIcons.get(mode).sprite;
                         if (mode instanceof SelectedItemMode) {
                             if (mode.equals(SelectedItemMode.NONE_BAG)) continue;
                             ir.renderItemIntoGUI(((SelectedItemMode) mode).getStack(), x, y);
                         } else {
+                            //Don't render null sprite.
+                            if(sprite == null) continue;
+
                             GlStateManager.translatef(0, 0, 200); //The item models are also rendered 150 higher
                             GlStateManager.enableBlend();
                             int blitOffset = 0;
@@ -400,7 +403,10 @@ public class ClientSide {
         Minecraft.getInstance().getItemColors().register(new BagBeakerItemColor(1),
                 i.WHITE_BIT_BAG, i.BLACK_BIT_BAG, i.BLUE_BIT_BAG, i.BROWN_BIT_BAG, i.CYAN_BIT_BAG, i.GRAY_BIT_BAG,
                 i.GREEN_BIT_BAG, i.LIGHT_BLUE_BIT_BAG, i.LIGHT_GRAY_BIT_BAG, i.LIME_BIT_BAG, i.MAGENTA_BIT_BAG,
-                i.ORANGE_BIT_BAG, i.PINK_BIT_BAG, i.PURPLE_BIT_BAG, i.RED_BIT_BAG, i.YELLOW_BIT_BAG,
+                i.ORANGE_BIT_BAG, i.PINK_BIT_BAG, i.PURPLE_BIT_BAG, i.RED_BIT_BAG, i.YELLOW_BIT_BAG);
+
+        if(ChiselsAndBits2.showUnfinishedFeatures())
+            Minecraft.getInstance().getItemColors().register(new BagBeakerItemColor(1),
                 i.WHITE_TINTED_BIT_BEAKER, i.BLACK_TINTED_BIT_BEAKER, i.BLUE_TINTED_BIT_BEAKER, i.BROWN_TINTED_BIT_BEAKER, i.CYAN_TINTED_BIT_BEAKER, i.GRAY_TINTED_BIT_BEAKER,
                 i.GREEN_TINTED_BIT_BEAKER, i.LIGHT_BLUE_TINTED_BIT_BEAKER, i.LIGHT_GRAY_TINTED_BIT_BEAKER, i.LIME_TINTED_BIT_BEAKER, i.MAGENTA_TINTED_BIT_BEAKER,
                 i.ORANGE_TINTED_BIT_BEAKER, i.PINK_TINTED_BIT_BEAKER, i.PURPLE_TINTED_BIT_BEAKER, i.RED_TINTED_BIT_BEAKER, i.YELLOW_TINTED_BIT_BEAKER);

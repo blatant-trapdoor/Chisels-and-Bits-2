@@ -25,20 +25,25 @@ import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 @Mod(ChiselsAndBits2.MOD_ID)
 public class ChiselsAndBits2 {
     public static final String MOD_ID = "chiselsandbits2";
+
     private static ChiselsAndBits2 instance;
 
-    private final ModItems ITEMS = new ModItems();
-    private final ModBlocks BLOCKS = new ModBlocks();
-    private final ModConfiguration CONFIGURATION = new ModConfiguration();
-    private final NetworkRouter NETWORK_ROUTER = new NetworkRouter();
-    private final ChiselsAndBitsAPI API = new ChiselsAndBitsAPIImpl();
+    private final ModItems ITEMS;
+    private final ModBlocks BLOCKS;
+    private final ModConfiguration CONFIGURATION;
+    private final NetworkRouter NETWORK_ROUTER;
+    private final ChiselsAndBitsAPI API;
     private final SmartModelManager SMART_MODEL_MANAGER;
-
     private ClientSide CLIENT;
     private ModKeybindings KEYBINDINGS;
 
     public ChiselsAndBits2() {
         instance = this;
+        API = new ChiselsAndBitsAPIImpl();
+        CONFIGURATION = new ModConfiguration();
+        NETWORK_ROUTER = new NetworkRouter();
+        ITEMS = new ModItems();
+        BLOCKS = new ModBlocks();
         SMART_MODEL_MANAGER = new SmartModelManager();
 
         //Only register the client and keybindings classes when on the CLIENT distribution.
@@ -99,5 +104,13 @@ public class ChiselsAndBits2 {
 
     public SmartModelManager getModelManager() {
         return SMART_MODEL_MANAGER;
+    }
+
+    /**
+     * Temporary way to determine whether or not unfinished features should be shown.
+     */
+    @Deprecated
+    public static boolean showUnfinishedFeatures() {
+        return !getInstance().getConfig().disableUnfinishedFeatures.get();
     }
 }

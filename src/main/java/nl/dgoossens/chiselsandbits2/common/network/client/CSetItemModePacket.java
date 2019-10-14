@@ -55,6 +55,7 @@ public class CSetItemModePacket {
             final ItemStack ei = player.getHeldItemMainhand();
             if (ei.getItem() instanceof IItemMenu && pkt.type == ChiselModeManager.getMode(ei).getType()) {
                 ChiselModeManager.setMode(ei, pkt.newMode);
+                //TODO fake item selection instead of status message
                 Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent(ei.getItem().getHighlightTip(ei, ei.getDisplayName().getFormattedText())), true);
             }
         });

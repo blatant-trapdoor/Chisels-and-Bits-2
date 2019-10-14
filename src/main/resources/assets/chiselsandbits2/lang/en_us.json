@@ -2,7 +2,7 @@
   "itemGroup.chiselsandbits2": "Chisels & Bits 2",
 
   "item.chiselsandbits2.chisel": "Chisel",
-  "item.chiselsandbits2.chisel.help": "$ to chisel|$ to (re)place|$ to select|$ to display menu",
+  "item.chiselsandbits2.chisel.help": "$ to chisel|$ to (re)place|$ to display menu",
   "item.chiselsandbits2.pattern": "Pattern",
   "item.chiselsandbits2.pattern.help": "$ to place|$ to copy|$ to display menu",
   "item.chiselsandbits2.saw": "Saw",
@@ -38,7 +38,7 @@
   "item.chiselsandbits2.cyan_tinted_bit_beaker": "Cyan Tinted Bit Beaker",
 
   "item.chiselsandbits2.bit_bag": "Bit Bag",
-  "item.chiselsandbits2.bit_bag.help": "$ to open|$ to display quick menu",
+  "item.chiselsandbits2.bit_bag.help": "$ to display quick menu",
   "item.chiselsandbits2.white_bit_bag": "White Bit Bag",
   "item.chiselsandbits2.purple_bit_bag": "Purple Bit Bag",
   "item.chiselsandbits2.orange_bit_bag": "Orange Bit Bag",

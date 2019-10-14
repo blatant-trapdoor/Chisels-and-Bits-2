@@ -36,7 +36,6 @@ public class ChiselItem extends TypedItem {
         ItemTooltipWriter.addItemInformation(tooltip, "chisel.help",
                 Minecraft.getInstance().gameSettings.keyBindAttack,
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
-                ChiselsAndBits2.getInstance().getKeybindings().selectBitType,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
     }

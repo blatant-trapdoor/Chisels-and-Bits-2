@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -57,6 +58,19 @@ public class BitLocation {
         bitX = x;
         bitY = y;
         bitZ = z;
+    }
+
+    /**
+     * Get the bit location an entity is standing on top of.
+     */
+    public BitLocation(final Entity e) {
+        blockPos = e.getPosition();
+        double tx = e.posX - blockPos.getX();
+        double ty = e.posY - blockPos.getY();
+        double tz = e.posZ - blockPos.getZ();
+        bitX = snapToValid((int) Math.round(tx*16));
+        bitY = snapToValid((int) Math.round(ty*16) - 1); //Go down one bit.
+        bitZ = snapToValid((int) Math.round(tz*16));
     }
 
     public static BitLocation min(final BitLocation from, final BitLocation to) {

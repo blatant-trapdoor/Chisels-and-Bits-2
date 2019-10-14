@@ -509,13 +509,13 @@ public class RadialMenu extends Screen {
         }
     }
 
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onClickWithGuiOpen(InputEvent.MouseInputEvent e) {
         if(e.getButton() == GLFW.GLFW_MOUSE_BUTTON_1 && ChiselsAndBits2.getInstance().getClient().getRadialMenu().isVisible()) {
             ChiselsAndBits2.getInstance().getClient().getRadialMenu().setClicked(true);
-            //TODO e.setCanceled(true);
+            e.setCanceled(true);
         }
-    }
+    }*/
 
     public List<MenuRegion> getShownModes() {
         List<MenuRegion> modes = new ArrayList<>();

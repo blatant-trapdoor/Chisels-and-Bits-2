@@ -1,11 +1,17 @@
 package nl.dgoossens.chiselsandbits2.common.blocks;
 
 import net.minecraft.block.*;
+import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.particles.BlockParticleData;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.state.IProperty;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.Property;
@@ -13,17 +19,26 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IEnviromentBlockReader;
 import net.minecraft.world.IWorldReader;
+import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.ChiseledBlockItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nullable;
+import java.awt.*;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.LongAdder;
 
 public class ChiseledBlock extends Block implements BaseBlock {
     public ChiseledBlock(Properties properties) {
@@ -92,9 +107,48 @@ public class ChiseledBlock extends Block implements BaseBlock {
         return getPrimaryState(world, pos).getSlipperiness(world, pos, entity);
     }
 
+    //TODO make solid depending on a kind of fullBlock value just like C&B1, saves performance when you have large amounts of full block mixed blocks.
     @Override
     public boolean isSolid(BlockState state) {
         return false; //We say it's never solid to avoid shouldSideBeRendered from returning false somehow.
+    }
+
+    @Override
+    public boolean addLandingEffects(BlockState state1, ServerWorld worldserver, BlockPos pos, BlockState state2, LivingEntity entity, int numberOfParticles) {
+        try {
+            VoxelBlob tar = ((ChiseledBlockTileEntity) worldserver.getTileEntity(pos)).getVoxelReference().getVoxelBlob();
+            BitLocation location = new BitLocation(entity);
+            return spawnParticle(tar.getSafe(location.bitX, location.bitY, location.bitZ), worldserver, pos, entity, numberOfParticles);
+        } catch(Exception x) {}
+        return false;
+    }
+
+    private boolean spawnParticle(int i, ServerWorld worldserver, BlockPos pos, LivingEntity entity, int numberOfParticles) {
+        switch(VoxelType.getType(i)) {
+            case BLOCKSTATE:
+                worldserver.spawnParticle(new BlockParticleData(ParticleTypes.BLOCK, ModUtil.getBlockState(i)), entity.posX, entity.posY, entity.posZ, numberOfParticles, 0.0, 0.0, 0.0, 1);
+                return true;
+            case COLOURED:
+                Color c = ModUtil.getColourState(i);
+                worldserver.spawnParticle(new RedstoneParticleData(((float)c.getRed())/255.0f, ((float)c.getGreen())/255.0f, ((float)c.getBlue())/255.0f, ((float)c.getAlpha())/255.0f), entity.posX, entity.posY, entity.posZ, numberOfParticles, 0.0, 0.0, 0.0, 1);
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean addDestroyEffects(BlockState state, World world, BlockPos pos, ParticleManager manager) {
+        return false; //TODO add more effect compat
+    }
+
+    @Override
+    public boolean addHitEffects(BlockState state, World worldObj, RayTraceResult target, ParticleManager manager) {
+        return false;
+    }
+
+    @Override
+    public boolean addRunningEffects(BlockState state, World world, BlockPos pos, Entity entity) {
+        return false;
     }
 
     /**

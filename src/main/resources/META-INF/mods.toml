@@ -17,7 +17,7 @@ The successor to the original Chisels and Bits mod for minecraft 1.12. A mod abo
 [[dependencies.chiselsandbits2]]
     modId="forge"
     mandatory=true
-    versionRange="[28.1.39,)"
+    versionRange="[28.1.0,)"
     # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
     ordering="NONE"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER

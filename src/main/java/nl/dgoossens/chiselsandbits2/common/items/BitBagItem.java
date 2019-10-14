@@ -22,7 +22,6 @@ public class BitBagItem extends StorageItem {
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "bit_bag.help",
-                Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu);
     }
 }

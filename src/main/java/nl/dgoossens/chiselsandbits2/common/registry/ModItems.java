@@ -16,14 +16,18 @@ import java.util.Map;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModItems {
+    //Cached data to make colour lookups faster.
+    private Map<BagBeakerColours, BitBagItem> bags = new HashMap<>();
+    private Map<BagBeakerColours, BitBeakerItem> beakers = new HashMap<>();
+
     public final Item CHISEL = new ChiselItem(new Item.Properties().maxDamage(-1).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item PATTERN = new PatternItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item SAW = new SawItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item TAPE_MEASURE = new TapeMeasureItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item WRENCH = new WrenchItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item MALLET = new MalletItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item BLUEPRINT = new BlueprintItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
-    public final Item MORPHING_BIT = new MorphingBitItem(new Item.Properties().group(ModItemGroups.CHISELS_AND_BITS2));
+    public Item PATTERN;
+    public Item SAW;
+    public Item TAPE_MEASURE;
+    public Item WRENCH;
+    public Item MALLET;
+    public Item BLUEPRINT;
+    public Item MORPHING_BIT;
 
     //all of the coloured bit bags
     public final Item BIT_BAG = new BitBagItem();
@@ -44,57 +48,66 @@ public class ModItems {
     public final Item RED_BIT_BAG = new BitBagItem();
     public final Item BLACK_BIT_BAG = new BitBagItem();
 
-    public final Item BIT_BEAKER = new BitBeakerItem();
-    public final Item WHITE_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item ORANGE_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item MAGENTA_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item LIGHT_BLUE_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item YELLOW_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item LIME_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item PINK_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item GRAY_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item LIGHT_GRAY_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item CYAN_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item PURPLE_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item BLUE_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item BROWN_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item GREEN_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item RED_TINTED_BIT_BEAKER = new BitBeakerItem();
-    public final Item BLACK_TINTED_BIT_BEAKER = new BitBeakerItem();
+    public Item BIT_BEAKER;
+    public Item WHITE_TINTED_BIT_BEAKER;
+    public Item ORANGE_TINTED_BIT_BEAKER;
+    public Item MAGENTA_TINTED_BIT_BEAKER;
+    public Item LIGHT_BLUE_TINTED_BIT_BEAKER;
+    public Item YELLOW_TINTED_BIT_BEAKER;
+    public Item LIME_TINTED_BIT_BEAKER;
+    public Item PINK_TINTED_BIT_BEAKER;
+    public Item GRAY_TINTED_BIT_BEAKER;
+    public Item LIGHT_GRAY_TINTED_BIT_BEAKER;
+    public Item CYAN_TINTED_BIT_BEAKER;
+    public Item PURPLE_TINTED_BIT_BEAKER;
+    public Item BLUE_TINTED_BIT_BEAKER;
+    public Item BROWN_TINTED_BIT_BEAKER;
+    public Item GREEN_TINTED_BIT_BEAKER;
+    public Item RED_TINTED_BIT_BEAKER;
+    public Item BLACK_TINTED_BIT_BEAKER;
     
-    public final Item OAK_PALETTE = new PaletteItem();
-    public final Item SPRUCE_PALETTE = new PaletteItem();
-    public final Item BIRCH_PALETTE = new PaletteItem();
-    public final Item JUNGLE_PALETTE = new PaletteItem();
-    public final Item ACACIA_PALETTE = new PaletteItem();
-    public final Item DARK_OAK_PALETTE = new PaletteItem();
-    
-    @SubscribeEvent
-    public static void onItemRegistry(final RegistryEvent.Register<Item> e) {
-        //Register all items in this class automatically.
-        registerAll(e, ChiselsAndBits2.getInstance().getItems(), Item.class);
-    }
-
-    /**
-     * Internal method to automatically register all fields in the class to the registry.
-     */
-    static <T extends IForgeRegistryEntry<T>> void registerAll(final RegistryEvent.Register<T> register, final Object k, final Class<T> type) {
-        for (Field f : k.getClass().getFields()) {
-            if (!type.isAssignableFrom(f.getType())) continue;
-            try {
-                register.getRegistry().register(((ForgeRegistryEntry<T>) f.get(k)).setRegistryName(ChiselsAndBits2.MOD_ID,
-                        f.getName().toLowerCase()));
-            } catch (Exception x) {
-                x.printStackTrace();
-            }
-        }
-    }
-
-    //Cached data to make colour lookups faster.
-    private Map<BagBeakerColours, BitBagItem> bags = new HashMap<>();
-    private Map<BagBeakerColours, BitBeakerItem> beakers = new HashMap<>();
+    public Item OAK_PALETTE;
+    public Item SPRUCE_PALETTE;
+    public Item BIRCH_PALETTE;
+    public Item JUNGLE_PALETTE;
+    public Item ACACIA_PALETTE;
+    public Item DARK_OAK_PALETTE;
     
     public ModItems() {
+        //Temporarily initialise in constructor but only if the feature is finished
+        if(ChiselsAndBits2.showUnfinishedFeatures()) {
+            PATTERN = new PatternItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+            SAW = new SawItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+            TAPE_MEASURE = new TapeMeasureItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+            WRENCH = new WrenchItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+            MALLET = new MalletItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
+            BLUEPRINT = new BlueprintItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+            MORPHING_BIT = new MorphingBitItem(new Item.Properties().group(ModItemGroups.CHISELS_AND_BITS2));
+            OAK_PALETTE = new PaletteItem();
+            SPRUCE_PALETTE = new PaletteItem();
+            BIRCH_PALETTE = new PaletteItem();
+            JUNGLE_PALETTE = new PaletteItem();
+            ACACIA_PALETTE = new PaletteItem();
+            DARK_OAK_PALETTE = new PaletteItem();
+            BIT_BEAKER = new BitBeakerItem();
+            WHITE_TINTED_BIT_BEAKER = new BitBeakerItem();
+            ORANGE_TINTED_BIT_BEAKER = new BitBeakerItem();
+            MAGENTA_TINTED_BIT_BEAKER = new BitBeakerItem();
+            LIGHT_BLUE_TINTED_BIT_BEAKER = new BitBeakerItem();
+            YELLOW_TINTED_BIT_BEAKER = new BitBeakerItem();
+            LIME_TINTED_BIT_BEAKER = new BitBeakerItem();
+            PINK_TINTED_BIT_BEAKER = new BitBeakerItem();
+            GRAY_TINTED_BIT_BEAKER = new BitBeakerItem();
+            LIGHT_GRAY_TINTED_BIT_BEAKER = new BitBeakerItem();
+            CYAN_TINTED_BIT_BEAKER = new BitBeakerItem();
+            PURPLE_TINTED_BIT_BEAKER = new BitBeakerItem();
+            BLUE_TINTED_BIT_BEAKER = new BitBeakerItem();
+            BROWN_TINTED_BIT_BEAKER = new BitBeakerItem();
+            GREEN_TINTED_BIT_BEAKER = new BitBeakerItem();
+            RED_TINTED_BIT_BEAKER = new BitBeakerItem();
+            BLACK_TINTED_BIT_BEAKER = new BitBeakerItem();
+        }
+
         //Build the caches
         for (Field f : getClass().getFields()) {
             if(f.getName().endsWith("_BIT_BAG")) {
@@ -148,5 +161,28 @@ public class ModItems {
             }
         } catch(Exception x) {}
         return null;
+    }
+
+    /**
+     * Internal method to automatically register all fields in the class to the registry.
+     */
+    static <T extends IForgeRegistryEntry<T>> void registerAll(final RegistryEvent.Register<T> register, final Object k, final Class<T> type) {
+        for (Field f : k.getClass().getFields()) {
+            if (!type.isAssignableFrom(f.getType())) continue;
+            try {
+                ForgeRegistryEntry<T> g = (ForgeRegistryEntry<T>) f.get(k);
+                if(g!=null)
+                    register.getRegistry().register(g.setRegistryName(ChiselsAndBits2.MOD_ID,
+                        f.getName().toLowerCase()));
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onItemRegistry(final RegistryEvent.Register<Item> e) {
+        //Register all items in this class automatically.
+        registerAll(e, ChiselsAndBits2.getInstance().getItems(), Item.class);
     }
 }

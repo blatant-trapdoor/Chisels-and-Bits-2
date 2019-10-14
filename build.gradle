@@ -22,7 +22,7 @@ repositories {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
 
-version = '2.0'
+version = '0.0.1-alpha'
 group = 'nl.dgoossens.chiselsandbits2'
 archivesBaseName = 'chiselsandbits2'
 
@@ -85,7 +85,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.14.4-28.1.39'
+    minecraft 'net.minecraftforge:forge:1.14.4-28.1.0'
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api")
     runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
 }

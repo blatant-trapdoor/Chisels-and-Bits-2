@@ -214,7 +214,13 @@ public class ModelUtil implements CacheClearable {
                     in "net.minecraft.client.renderer.texture.AtlasTexture"
          */
         try {
-            Field f = map.getClass().getDeclaredField("mapUploadedSprites");
+            Field f = null;
+            for(Field fe : AtlasTexture.class.getDeclaredFields()) {
+                //We abuse the fact that AtlasTexture only has one map and that's the one we need.
+                if(Map.class.isAssignableFrom(fe.getType()))
+                    f = fe;
+            }
+            if(f == null) throw new RuntimeException("Unable to lookup textures.");
             f.setAccessible(true);
             mapRegisteredSprites = (Map<ResourceLocation, TextureAtlasSprite>) f.get(map);
         } catch (Exception x) {

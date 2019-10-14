@@ -44,6 +44,7 @@ public class CSetMenuActionModePacket {
             //Only tape measures support colour at the moment.
             if ((ei.getItem() instanceof TapeMeasureItem || ei.getItem() instanceof ChiselItem) && ChiselModeManager.getMode(ei).getType() == pkt.newMode.getAssociatedType()) {
                 ChiselModeManager.setMenuActionMode(ei, pkt.newMode);
+                //TODO fake item selection instead of status message
                 Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent(ei.getItem().getHighlightTip(ei, ei.getDisplayName().getFormattedText())), true);
             }
         });
