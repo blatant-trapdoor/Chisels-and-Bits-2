@@ -3,8 +3,8 @@
     "item": "chiselsandbits2:wrench"
   },
   "pattern": [
-    " P ",
-    " SP",
+    " I ",
+    " PI",
     "S  "
   ],
   "type": "minecraft:crafting_shaped",
@@ -14,6 +14,9 @@
     },
     "S": {
       "tag": "forge:rods/wooden"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
     }
   }
 }

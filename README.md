@@ -6,6 +6,8 @@ This mod is currently in very early alpha phases. This means that here is curren
 
 The current textures for the palette and bit beaker are placeholders, if anyone'd like to make some textures I'd love to use them!
 
+You can find the original mod for Minecraft 1.8-1.12 by AlgorithmX2 at: https://github.com/AlgorithmX2/Chisels-and-Bits !
+
 <br/> <br/>
 
 #### Differences from the original mod

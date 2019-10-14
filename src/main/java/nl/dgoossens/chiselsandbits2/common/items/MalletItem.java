@@ -12,6 +12,7 @@ import net.minecraft.item.ItemTier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
@@ -54,7 +55,7 @@ public class MalletItem extends TypedItem {
      */
     @Override
     public int getItemEnchantability() {
-        return ItemTier.WOOD.getEnchantability();
+        return ItemTier.IRON.getEnchantability();
     }
 
     /**
@@ -62,7 +63,7 @@ public class MalletItem extends TypedItem {
      */
     @Override
     public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
-        if (ItemTags.PLANKS.contains(repair.getItem())) return true; //Can repair with wooden planks.
+        if (Tags.Items.INGOTS_IRON.contains(repair.getItem())) return true; //Can repair with wooden planks.
         return super.getIsRepairable(toRepair, repair);
     }
 

@@ -3,17 +3,17 @@
     "item": "chiselsandbits2:mallet"
   },
   "pattern": [
-    " PL",
-    " SP",
-    "S  "
+    "NIN",
+    " S ",
+    " S "
   ],
   "type": "minecraft:crafting_shaped",
   "key": {
-    "L": {
-      "tag": "minecraft:logs"
+    "N": {
+      "tag": "forge:nuggets/iron"
     },
-    "P": {
-      "tag": "minecraft:planks"
+    "I": {
+      "tag": "forge:ingots/iron"
     },
     "S": {
       "tag": "forge:rods/wooden"
