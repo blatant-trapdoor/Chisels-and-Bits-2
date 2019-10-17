@@ -1,7 +1,6 @@
 package nl.dgoossens.chiselsandbits2.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.block.Block;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
@@ -23,10 +22,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -55,14 +51,19 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIte
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.*;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
+import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import org.lwjgl.opengl.GL11;
 
+import javax.annotation.Nullable;
+import java.awt.*;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientSide {
@@ -73,6 +74,56 @@ public class ClientSide {
     public static TextureAtlasSprite sortIcon;
     public static TextureAtlasSprite swapIcon;
     public static TextureAtlasSprite placeIcon;
+
+    //--- TAPE MEASURE ---
+    private List<Measurement> tapeMeasurements = new ArrayList<>();
+    private BitLocation tapeMeasureCache;
+
+    public void useTapeMeasure(BlockRayTraceResult rayTrace) {
+        final BitLocation location = new BitLocation(rayTrace, true, BitOperation.REMOVE);
+        if(tapeMeasureCache == null) {
+            //First Selection
+            tapeMeasureCache = location;
+        } else {
+            //Second Selection
+            final PlayerEntity player = Minecraft.getInstance().player;
+            final ItemStack stack = player.getHeldItemMainhand();
+
+            //Security measure.
+            if(!(stack.getItem() instanceof TapeMeasureItem)) return;
+
+            while(tapeMeasurements.size() >= ChiselsAndBits2.getInstance().getConfig().tapeMeasureLimit.get()) {
+                tapeMeasurements.remove(0); //Remove the oldest one.
+            }
+            tapeMeasurements.add(new Measurement(tapeMeasureCache, location, ChiselModeManager.getMenuActionMode(stack), (ItemMode) ChiselModeManager.getMode(stack)));
+            tapeMeasureCache = null;
+        }
+    }
+
+    /**
+     * Renders the tape measure boxes.
+     */
+    public void renderTapeMeasureBoxes(float partialTicks) {
+        final PlayerEntity player = Minecraft.getInstance().player;
+        for(Measurement box : tapeMeasurements)
+            renderSelectionBox(true, player, box.first, box.second, partialTicks, BitOperation.REMOVE, new Color(box.colour.getColour()), box.mode);
+    }
+
+    /**
+     * Represents a box drawn by the tape measure.
+     */
+    public static class Measurement {
+        private BitLocation first, second;
+        private MenuAction colour;
+        private ItemMode mode;
+
+        public Measurement(BitLocation first, BitLocation second, MenuAction colour, ItemMode mode) {
+            this.first = BitLocation.min(first, second);
+            this.second = BitLocation.max(first, second);
+            this.colour = colour;
+            this.mode = mode;
+        }
+    }
 
     //--- TICK & RENDERING ---
     private RadialMenu radialMenu = new RadialMenu();
@@ -168,8 +219,10 @@ public class ClientSide {
                 handleMenuAction(ma);
         }
 
-        if (keybindings.clearTapeMeasure.isPressed() && keybindings.clearTapeMeasure.getKeyModifier().isActive(KeyConflictContext.IN_GAME)) {
-            System.out.println("CLEAR TAPE MEASURE");
+        if (Minecraft.getInstance().player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem &&
+                keybindings.clearTapeMeasure.isPressed() &&
+                keybindings.clearTapeMeasure.getKeyModifier().isActive(KeyConflictContext.IN_GAME)) {
+            ChiselsAndBits2.getInstance().getClient().tapeMeasurements.clear();
         }
     }
 
@@ -346,7 +399,8 @@ public class ClientSide {
     public static void drawHighlights(final DrawBlockHighlightEvent e) {
         final PlayerEntity player = Minecraft.getInstance().player;
         //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
-        if (player.getHeldItemMainhand().getItem() instanceof ChiselItem) {
+        boolean tapeMeasure = player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem;
+        if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof ChiselItem) {
             final RayTraceResult rayTrace = ChiselUtil.rayTrace(player);
             if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK)
                 return;
@@ -356,31 +410,24 @@ public class ClientSide {
             final TileEntity data = world.getTileEntity(location.blockPos);
 
             //We only show this box if this block is chiselable and this block at this position is chiselable.
-            if (!ChiselUtil.canChiselBlock(world.getBlockState(location.blockPos))) return;
+            if (!tapeMeasure && !ChiselUtil.canChiselBlock(world.getBlockState(location.blockPos))) return;
             //The highlight not showing up when you can't chisel in a specific block isn't worth all of the code that needs to be checked for it.
             //if(!ChiselUtil.canChiselPosition(location.getBlockPos(), player, state, ((BlockRayTraceResult) mop).getFace())) return;
 
             //Rendering drawn region bounding box
-            final BitLocation other = ChiselsAndBits2.getInstance().getClient().selectionStart;
-            final BitOperation operation = ChiselsAndBits2.getInstance().getClient().operation;
-            if (ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION) && other != null) {
-                final ChiselIterator oneEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
-                final ChiselIterator otherEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, other.bitX, other.bitY, other.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
-
-                final AxisAlignedBB a = oneEnd.getBoundingBox(VoxelBlob.NULL_BLOB, false).offset(location.blockPos.getX(), location.blockPos.getY(), location.blockPos.getZ());
-                final AxisAlignedBB b = otherEnd.getBoundingBox(VoxelBlob.NULL_BLOB, false).offset(other.blockPos.getX(), other.blockPos.getY(), other.blockPos.getZ());
-
-                final AxisAlignedBB bb = a.union(b);
-                final double maxSize = ChiselsAndBits2.getInstance().getConfig().maxDrawnRegionSize.get() + 0.001;
-                if (bb.maxX - bb.minX <= maxSize && bb.maxY - bb.minY <= maxSize && bb.maxZ - bb.minZ <= maxSize)
-                    RenderingAssistant.drawSelectionBoundingBoxIfExistsWithColor(bb, BlockPos.ZERO, player, e.getPartialTicks(), false, 0, 0, 0, 102, 32);
+            final BitLocation other = tapeMeasure ? ChiselsAndBits2.getInstance().getClient().tapeMeasureCache : ChiselsAndBits2.getInstance().getClient().selectionStart;
+            final BitOperation operation = tapeMeasure ? BitOperation.REMOVE : ChiselsAndBits2.getInstance().getClient().operation;
+            if ((tapeMeasure || ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
+                ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, e.getPartialTicks(), operation, new Color(ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ChiselModeManager.getMode(player.getHeldItemMainhand()));
                 e.setCanceled(true);
                 return;
             }
+            //Tape measure never displays the small cube.
+            if(tapeMeasure) return;
 
             //This method call is super complicated, but it saves having way more local variables than necessary.
             // (although I don't know if limiting local variables actually matters)
-            RenderingAssistant.drawSelectionBoundingBoxIfExistsWithColor(
+            RenderingAssistant.drawSelectionBoundingBoxIfExists(
                     ChiselTypeIterator.create(
                             VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ,
                             new VoxelRegionSrc(world, location.blockPos, 1),
@@ -397,12 +444,46 @@ public class ClientSide {
     }
 
     /**
-     * For rendering the block placement ghost.
+     * Renders the selection boxes as used by the tape measure and drawn region mode.
+     */
+    public void renderSelectionBox(boolean tapeMeasure, PlayerEntity player, BitLocation location, BitLocation other, float partialTicks, BitOperation operation, @Nullable Color c, @Nullable ItemMode mode) {
+        AxisAlignedBB bb = null;
+
+        //Don't do these calculations if we don't have to.
+        if (!tapeMeasure || !mode.equals(ItemMode.TAPEMEASURE_DISTANCE)) {
+            final ChiselIterator oneEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
+            final ChiselIterator otherEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, other.bitX, other.bitY, other.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
+
+            final AxisAlignedBB a = oneEnd.getBoundingBox(VoxelBlob.NULL_BLOB, false).offset(location.blockPos.getX(), location.blockPos.getY(), location.blockPos.getZ());
+            final AxisAlignedBB b = otherEnd.getBoundingBox(VoxelBlob.NULL_BLOB, false).offset(other.blockPos.getX(), other.blockPos.getY(), other.blockPos.getZ());
+
+            bb = a.union(b);
+        }
+
+        if(tapeMeasure) {
+            //Draw for the tape measure in the selected colour.
+            //Tape measure also has no size restriction.
+            //TODO draw length indicator
+            if(!mode.equals(ItemMode.TAPEMEASURE_DISTANCE)) RenderingAssistant.drawSelectionBoundingBoxIfExists(bb, BlockPos.ZERO, player, partialTicks, false, c.getRed(), c.getGreen(), c.getBlue(), 102, 32);
+            else RenderingAssistant.drawLineWithColor(new Vec3d(location.blockPos.getX(), location.blockPos.getY(), location.blockPos.getZ()), new Vec3d(other.blockPos.getX(), other.blockPos.getY(), other.blockPos.getZ()), BlockPos.ZERO, player, partialTicks, false, c.getRed(), c.getGreen(), c.getBlue(), 102, 32);
+        } else {
+            final double maxSize = ChiselsAndBits2.getInstance().getConfig().maxDrawnRegionSize.get() + 0.001;
+            if (bb.maxX - bb.minX <= maxSize && bb.maxY - bb.minY <= maxSize && bb.maxZ - bb.minZ <= maxSize) {
+                RenderingAssistant.drawSelectionBoundingBoxIfExists(bb, BlockPos.ZERO, player, partialTicks, false, 0, 0, 0, 102, 32);
+            }
+        }
+    }
+
+    /**
+     * For rendering the block placement ghost and static tape measurements.
      */
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void drawLast(final RenderWorldLastEvent e) {
         if (Minecraft.getInstance().gameSettings.hideGUI) return;
+
+        //Draw tape measure boxes
+        ChiselsAndBits2.getInstance().getClient().renderTapeMeasureBoxes(e.getPartialTicks());
 
         final PlayerEntity player = Minecraft.getInstance().player;
         final RayTraceResult mop = Minecraft.getInstance().objectMouseOver;

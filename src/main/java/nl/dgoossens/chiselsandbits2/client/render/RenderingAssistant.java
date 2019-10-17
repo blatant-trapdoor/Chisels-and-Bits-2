@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Random;
 
 public class RenderingAssistant {
-    public static void drawSelectionBoundingBoxIfExistsWithColor(final AxisAlignedBB bb, final BlockPos blockPos, final PlayerEntity player, final float partialTicks, final boolean normalBoundingBox, final int red, final int green, final int blue, final int alpha, final int seeThruAlpha) {
+    public static void drawSelectionBoundingBoxIfExists(final AxisAlignedBB bb, final BlockPos blockPos, final PlayerEntity player, final float partialTicks, final boolean normalBoundingBox, final int red, final int green, final int blue, final int alpha, final int seeThruAlpha) {
         if (bb != null) {
             final double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
             final double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks + player.getEyeHeight();

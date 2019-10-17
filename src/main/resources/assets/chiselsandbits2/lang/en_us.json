@@ -8,7 +8,7 @@
   "item.chiselsandbits2.saw": "Saw",
   "item.chiselsandbits2.saw.help": "$ to saw blocks in half|$ to display menu",
   "item.chiselsandbits2.tape_measure": "Tape Measure",
-  "item.chiselsandbits2.tape_measure.help": "$ to drag and measure spaces|$ to clear previous measurements|$ to display modes",
+  "item.chiselsandbits2.tape_measure.help": "$ on two points to measure spaces|$ to clear previous measurements|$ to display modes",
   "item.chiselsandbits2.wrench": "Wrench",
   "item.chiselsandbits2.wrench.help": "$ to use|$ to display menu",
   "item.chiselsandbits2.mallet": "Mallet",

@@ -21,6 +21,7 @@ public class ModConfiguration {
     // --- SERVER VALUES ---
     public ForgeConfigSpec.DoubleValue maxDrawnRegionSize;
 
+    public ForgeConfigSpec.IntValue tapeMeasureLimit;
     public ForgeConfigSpec.IntValue chiselDurability;
     public ForgeConfigSpec.IntValue typeSlotsPerBag;
     public ForgeConfigSpec.IntValue typeSlotsPerBeaker;
@@ -96,6 +97,10 @@ public class ModConfiguration {
             ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
             builder.comment("General Settings");
             builder.push("general");
+
+            tapeMeasureLimit = builder
+                    .comment("The maximum of measurements of the tape measure you can have at once.")
+                    .defineInRange("tapeMeasureLimit", 5, 1, 20);
 
             maxDrawnRegionSize = builder
                     .comment("At how many blocks the width/length of the drawn region selection should be capped")
