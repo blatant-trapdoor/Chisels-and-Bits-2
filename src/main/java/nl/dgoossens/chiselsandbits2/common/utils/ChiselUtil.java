@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.common.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -61,6 +62,8 @@ public class ChiselUtil {
     public static boolean canChiselPosition(final BlockPos pos, final PlayerEntity player, final BlockState state, final Direction face) {
         if (!player.getHeldItemMainhand().getItem().equals(ChiselsAndBits2.getInstance().getItems().CHISEL))
             return false; //The chisel needs to be in the main hand!
+        //You can't break unbreakable blocks = negative hardness.
+        if (state.getBlock().getBlockHardness(state, player.getEntityWorld(), pos) < 0) return false;
         if (!player.getEntityWorld().getWorldBorder().contains(pos)) return false;
         if (!player.getEntityWorld().isBlockModifiable(player, pos)) return false;
         if (!player.canPlayerEdit(pos, face, player.getHeldItemMainhand())) return false;

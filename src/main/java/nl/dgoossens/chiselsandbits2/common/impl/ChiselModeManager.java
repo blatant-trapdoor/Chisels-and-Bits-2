@@ -1,11 +1,14 @@
 package nl.dgoossens.chiselsandbits2.common.impl;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.IngameGui;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
@@ -17,6 +20,7 @@ import nl.dgoossens.chiselsandbits2.common.network.client.CSetMenuActionModePack
 import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
 
 import java.awt.*;
+import java.lang.reflect.Field;
 
 import static nl.dgoossens.chiselsandbits2.api.ItemMode.*;
 
@@ -30,6 +34,10 @@ public class ChiselModeManager {
     public static void changeItemMode(final IItemMode newMode) {
         final CSetItemModePacket packet = new CSetItemModePacket(newMode);
         NetworkRouter.sendToServer(packet);
+
+        //Show item mode change in hotbar
+        if(packet.isValid(Minecraft.getInstance().player))
+            reshowHighligtedStack();
     }
 
     /**
@@ -40,6 +48,28 @@ public class ChiselModeManager {
     public static void changeMenuActionMode(final MenuAction newAction) {
         final CSetMenuActionModePacket packet = new CSetMenuActionModePacket(newAction);
         NetworkRouter.sendToServer(packet);
+
+        //Show item mode change in hotbar
+        if(packet.isValid(Minecraft.getInstance().player))
+            reshowHighligtedStack();
+    }
+
+    /**
+     * Reshows the highlighted stack item.
+     */
+    private static void reshowHighligtedStack() {
+        try {
+            IngameGui ig = Minecraft.getInstance().ingameGUI;
+            Field f = ObfuscationReflectionHelper.findField(IngameGui.class, "highlightingItemStack");
+            f.setAccessible(true);
+            f.set(ig, Minecraft.getInstance().player.getHeldItemMainhand());
+
+            Field f2 = ObfuscationReflectionHelper.findField(IngameGui.class, "remainingHighlightTicks");
+            f2.setAccessible(true);
+            f2.set(ig, 40);
+        } catch(Exception x) {
+            x.printStackTrace();
+        }
     }
 
     /**

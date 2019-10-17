@@ -4,20 +4,26 @@ import net.minecraft.block.*;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.particles.BlockParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.state.IProperty;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.Property;
+import net.minecraft.tileentity.ShulkerBoxTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -28,6 +34,8 @@ import net.minecraft.world.IEnviromentBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.storage.loot.LootContext;
+import net.minecraft.world.storage.loot.LootParameters;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -36,11 +44,14 @@ import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nullable;
 import java.awt.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.LongAdder;
 
 public class ChiseledBlock extends Block implements BaseBlock {
+    public static final ResourceLocation field_220169_b = new ResourceLocation("block_drop");
+
     public ChiseledBlock(Properties properties) {
         super(properties);
     }
@@ -163,4 +174,45 @@ public class ChiseledBlock extends Block implements BaseBlock {
 
     /*@Override
     public IBlockSlot getSlot(BlockState state) { return ChiselsAndBits2.getAPI().getChiselsAndBitsSlot(); }*/
+
+    //-- HANDLE BLOCK DROPS, COPIED FROM BLOCKSHULKERBOX.JAVA ---
+    /**
+     * Called before the Block is set to air in the world. Called regardless of if the player's tool can actually collect
+     * this block.
+     */
+    public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player) {
+        if(player.isCreative()) {
+            super.onBlockHarvested(worldIn, pos, state, player);
+            return;
+        }
+        TileEntity tileentity = worldIn.getTileEntity(pos);
+        if (tileentity instanceof ChiseledBlockTileEntity) {
+            ChiseledBlockTileEntity cte = (ChiseledBlockTileEntity) tileentity;
+            ItemEntity itementity = new ItemEntity(worldIn, (double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), cte.getItemStack());
+            itementity.setDefaultPickupDelay();
+            worldIn.addEntity(itementity);
+        }
+
+        super.onBlockHarvested(worldIn, pos, state, player);
+    }
+
+    /**
+     * Handle block dropping properly from alternative sources, e.g. explosions.
+     */
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+        TileEntity tileentity = builder.get(LootParameters.BLOCK_ENTITY);
+        if (tileentity instanceof ChiseledBlockTileEntity)
+            builder = builder.withDynamicDrop(field_220169_b, (p_220168_1_, p_220168_2_) -> {
+                ((ChiseledBlockTileEntity) tileentity).getItemStack();
+            });
+        return super.getDrops(state, builder);
+    }
+
+    @Override
+    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
+        TileEntity te = world.getTileEntity(pos);
+        if(te instanceof ChiseledBlockTileEntity)
+            return ((ChiseledBlockTileEntity) te).getItemStack();
+        return ItemStack.EMPTY;
+    }
 }

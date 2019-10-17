@@ -15,6 +15,8 @@ import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.model.data.IModelData;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -59,7 +61,7 @@ public abstract class BaseSmartModel implements IBakedModel, IForgeBakedModel {
 
     @Override
     public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand) {
-        return null;
+        return Collections.emptyList();
     }
 
     public IBakedModel handleBlockState(final BlockState state, final Random rand, @Nonnull final IModelData modelData) {
@@ -83,7 +85,8 @@ public abstract class BaseSmartModel implements IBakedModel, IForgeBakedModel {
             parent = p;
         }
 
-        public IBakedModel handleItemState(final IBakedModel originalModel, final ItemStack stack, final World world, final LivingEntity entity) {
+        @Nullable
+        public IBakedModel getModelWithOverrides(IBakedModel originalModel, ItemStack stack, @Nullable World world, @Nullable LivingEntity entity) {
             return parent.handleItemState(originalModel, stack, world, entity);
         }
     }

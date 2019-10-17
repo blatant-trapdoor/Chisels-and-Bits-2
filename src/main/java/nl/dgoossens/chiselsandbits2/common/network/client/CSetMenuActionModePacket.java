@@ -1,6 +1,7 @@
 package nl.dgoossens.chiselsandbits2.common.network.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
@@ -40,13 +41,17 @@ public class CSetMenuActionModePacket {
     public static void handle(final CSetMenuActionModePacket pkt, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayerEntity player = ctx.get().getSender();
-            final ItemStack ei = player.getHeldItemMainhand();
             //Only tape measures support colour at the moment.
-            if ((ei.getItem() instanceof TapeMeasureItem || ei.getItem() instanceof ChiselItem) && ChiselModeManager.getMode(ei).getType() == pkt.newMode.getAssociatedType()) {
-                ChiselModeManager.setMenuActionMode(ei, pkt.newMode);
-                //TODO fake item selection instead of status message
-                Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent(ei.getItem().getHighlightTip(ei, ei.getDisplayName().getFormattedText())), true);
+            if (pkt.isValid(player)) {
+                ChiselModeManager.setMenuActionMode(player.getHeldItemMainhand(), pkt.newMode);
+                //Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent(ei.getItem().getHighlightTip(ei, ei.getDisplayName().getFormattedText())), true);
             }
         });
+    }
+
+    public boolean isValid(PlayerEntity player) {
+        if(player == null) return false;
+        final ItemStack ei = player.getHeldItemMainhand();
+        return (ei.getItem() instanceof TapeMeasureItem || ei.getItem() instanceof ChiselItem) && ChiselModeManager.getMode(ei).getType() == newMode.getAssociatedType();
     }
 }

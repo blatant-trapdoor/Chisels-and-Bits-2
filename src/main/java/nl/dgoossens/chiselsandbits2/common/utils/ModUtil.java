@@ -5,7 +5,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
+import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
@@ -80,5 +83,57 @@ public class ModUtil {
     public static int getColourId(final Color colour) {
         //We built our own int instead of getting the colour value because we do some trickery to the MSBs.
         return 0b10000000000000000000000000000000 + ((colour.getAlpha() / 4) << 24) + (colour.getRed() << 16) + (colour.getGreen() << 8) + colour.getBlue();
+    }
+
+    /**
+     * Calculates the partial offset used by ghost rendering.
+     */
+    public static BlockPos getPartialOffset(final Direction side, final BlockPos partial, final IntegerBox modelBounds ) {
+        int offset_x = modelBounds.minX;
+        int offset_y = modelBounds.minY;
+        int offset_z = modelBounds.minZ;
+
+        final int partial_x = partial.getX();
+        final int partial_y = partial.getY();
+        final int partial_z = partial.getZ();
+
+        int middle_x = (modelBounds.maxX - modelBounds.minX) / -2;
+        int middle_y = (modelBounds.maxY - modelBounds.minY) / -2;
+        int middle_z = (modelBounds.maxZ - modelBounds.minZ) / -2;
+
+        switch (side) {
+            case DOWN:
+                offset_y = modelBounds.maxY;
+                middle_y = 0;
+                break;
+            case EAST:
+                offset_x = modelBounds.minX;
+                middle_x = 0;
+                break;
+            case NORTH:
+                offset_z = modelBounds.maxZ;
+                middle_z = 0;
+                break;
+            case SOUTH:
+                offset_z = modelBounds.minZ;
+                middle_z = 0;
+                break;
+            case UP:
+                offset_y = modelBounds.minY;
+                middle_y = 0;
+                break;
+            case WEST:
+                offset_x = modelBounds.maxX;
+                middle_x = 0;
+                break;
+            default:
+                throw new NullPointerException();
+        }
+
+        final int t_x = -offset_x + middle_x + partial_x;
+        final int t_y = -offset_y + middle_y + partial_y;
+        final int t_z = -offset_z + middle_z + partial_z;
+
+        return new BlockPos(t_x, t_y, t_z);
     }
 }

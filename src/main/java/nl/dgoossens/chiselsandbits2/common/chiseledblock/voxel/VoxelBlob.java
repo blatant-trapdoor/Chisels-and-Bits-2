@@ -40,6 +40,7 @@ public final class VoxelBlob implements IVoxelSrc {
     public final static int ARRAY_SIZE = DIMENSION3;
     public final static int DIMENSION_MINUS_ONE = DIMENSION - 1;
 
+    public final static VoxelBlob NULL_BLOB = new VoxelBlob();
 
     private final int[] values = new int[ARRAY_SIZE];
     private int best_buffer_size = 26;

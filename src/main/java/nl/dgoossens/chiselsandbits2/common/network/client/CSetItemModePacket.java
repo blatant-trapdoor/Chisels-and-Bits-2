@@ -1,10 +1,9 @@
 package nl.dgoossens.chiselsandbits2.common.network.client;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
@@ -52,12 +51,16 @@ public class CSetItemModePacket {
         ctx.get().enqueueWork(() -> {
             if (pkt.newMode == null) return;
             ServerPlayerEntity player = ctx.get().getSender();
-            final ItemStack ei = player.getHeldItemMainhand();
-            if (ei.getItem() instanceof IItemMenu && pkt.type == ChiselModeManager.getMode(ei).getType()) {
-                ChiselModeManager.setMode(ei, pkt.newMode);
-                //TODO fake item selection instead of status message
-                Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent(ei.getItem().getHighlightTip(ei, ei.getDisplayName().getFormattedText())), true);
+            if (pkt.isValid(player)) {
+                ChiselModeManager.setMode(player.getHeldItemMainhand(), pkt.newMode);
+                //Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent(ei.getItem().getHighlightTip(ei, ei.getDisplayName().getFormattedText())), true);
             }
         });
+    }
+
+    public boolean isValid(PlayerEntity player) {
+        if(player == null) return false;
+        final ItemStack ei = player.getHeldItemMainhand();
+        return (ei.getItem() instanceof IItemMenu && type == ChiselModeManager.getMode(ei).getType());
     }
 }

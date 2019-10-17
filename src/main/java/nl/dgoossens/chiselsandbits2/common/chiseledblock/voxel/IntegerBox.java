@@ -6,7 +6,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 public final class IntegerBox {
     public static final IntegerBox NULL = new IntegerBox(0, 0, 0, 0, 0, 0);
 
-    public double minX, minY, minZ, maxX, maxY, maxZ;
+    public int minX, minY, minZ, maxX, maxY, maxZ;
 
     public IntegerBox(final int x1, final int y1, final int z1, final int x2, final int y2, final int z2) {
         minX = x1;

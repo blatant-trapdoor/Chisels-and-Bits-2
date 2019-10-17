@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.common.blocks;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.IFluidState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
@@ -41,6 +42,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     private int primaryBlock;
     private VoxelBlobStateReference voxelBlob;
     private VoxelNeighborRenderTracker renderTracker;
+    private ItemStack itemCache;
 
     public ChiseledBlockTileEntity() {
         super(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK_TILE);
@@ -65,6 +67,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
         requestModelDataUpdate();
         cachedShape = null;
         collisionShape = null;
+        itemCache = null;
         recalculateShape();
         if (chunk != null) chunk.rebuild();
     }
@@ -72,6 +75,16 @@ public class ChiseledBlockTileEntity extends TileEntity {
     public VoxelNeighborRenderTracker getRenderTracker() {
         if (renderTracker == null) renderTracker = new VoxelNeighborRenderTracker();
         return renderTracker;
+    }
+
+    /**
+     * Get the item stack this tile entity would become when the block is broken.
+     */
+    public ItemStack getItemStack() {
+        //We cache the item because apparently Waila spammed getPickBlock at some point in the past causing lagg. Caching can't hurt though.
+        if(itemCache == null)
+            itemCache = buildItemStack();
+        return itemCache;
     }
 
     @Nonnull
@@ -125,6 +138,25 @@ public class ChiseledBlockTileEntity extends TileEntity {
         if (cachedShape == null && getVoxelReference() != null) {
             cachedShape = VoxelShapes.create(getVoxelReference().getVoxelBlob().getBounds().toBoundingBox());
         }
+    }
+
+    /**
+     * Builds an item stack for a chiseled block.
+     */
+    public ItemStack buildItemStack() {
+        VoxelBlob blob = getBlob();
+        if(blob.filled() == 0)
+            return ItemStack.EMPTY;
+
+        final NBTBlobConverter c = new NBTBlobConverter();
+        c.setBlob(blob);
+
+        final CompoundNBT comp = new CompoundNBT();
+        c.writeChiselData(comp);
+
+        final ItemStack stack = new ItemStack(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK, 1);
+        stack.setTagInfo(ModUtil.NBT_BLOCKENTITYTAG, comp);
+        return stack;
     }
 
     /**

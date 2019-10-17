@@ -20,6 +20,7 @@ import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.ItemMode;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
@@ -109,7 +110,22 @@ public class ChiselEvent {
                 && !ChiselUtil.canChiselBlock(state)) return; //You can place on replacable blocks.
         if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
 
-        final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode);
-        NetworkRouter.sendToServer(pc);
+        if(ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) {
+            ClientSide clientSide = ChiselsAndBits2.getInstance().getClient();
+            //If we don't have a selection start yet select the clicked location.
+            if(!clientSide.hasSelectionStart(operation)) {
+                clientSide.setSelectionStart(operation, location);
+                return;
+            }
+        }
+
+        if(ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) {
+            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, mode);
+            ChiselsAndBits2.getInstance().getClient().resetSelectionStart();
+            NetworkRouter.sendToServer(pc);
+        } else {
+            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode);
+            NetworkRouter.sendToServer(pc);
+        }
     }
 }

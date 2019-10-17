@@ -11,6 +11,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import org.lwjgl.opengl.GL11;
@@ -47,18 +48,7 @@ public class RenderingAssistant {
         }
     }
 
-    /*public static void drawLineWithColor(
-            final Vec3d a,
-            final Vec3d b,
-            final BlockPos blockPos,
-            final PlayerEntity player,
-            final float partialTicks,
-            final boolean NormalBoundingBox,
-            final int red,
-            final int green,
-            final int blue,
-            final int alpha,
-            final int seeThruAlpha) {
+    public static void drawLineWithColor(final Vec3d a, final Vec3d b, final BlockPos blockPos, final PlayerEntity player, final float partialTicks, final boolean normalBoundingBox, final int red, final int green, final int blue, final int alpha, final int seeThruAlpha) {
         if(a != null && b != null) {
             final double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
             final double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
@@ -73,7 +63,7 @@ public class RenderingAssistant {
 
             final Vec3d a2 = a.add(-x + blockPos.getX(), -y + blockPos.getY(), -z + blockPos.getZ());
             final Vec3d b2 = b.add(-x + blockPos.getX(), -y + blockPos.getY(), -z + blockPos.getZ());
-            if(!NormalBoundingBox)
+            if(!normalBoundingBox)
                 renderLine(a2, b2, red, green, blue, alpha);
 
             GlStateManager.disableDepthTest();
@@ -85,7 +75,7 @@ public class RenderingAssistant {
             GlStateManager.enableTexture();
             GlStateManager.disableBlend();
         }
-    }*/
+    }
 
     public static void renderQuads(
             final int alpha,
@@ -158,51 +148,32 @@ public class RenderingAssistant {
         GlStateManager.popAttributes();
     }
 
-    /*public static void renderLine(
-            final Vec3d a,
-            final Vec3d b,
-            final int red,
-            final int green,
-            final int blue,
-            final int alpha) {
+    public static void renderLine(final Vec3d a, final Vec3d b, final int red, final int green, final int blue, final int alpha) {
         final Tessellator tess = Tessellator.getInstance();
         final BufferBuilder buffer = tess.getBuffer();
         buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
         buffer.pos(a.getX(), a.getY(), a.getZ()).color(red, green, blue, alpha).endVertex();
         buffer.pos(b.getX(), b.getY(), b.getZ()).color(red, green, blue, alpha).endVertex();
         tess.draw();
-    }*/
+    }
 
-    public static int getTint(
-            final int alpha,
-            final int tintIndex,
-            final World worldObj,
-            final BlockPos blockPos) {
+    public static int getTint(final int alpha, final int tintIndex, final World worldObj, final BlockPos blockPos) {
         return alpha | Minecraft.getInstance().getBlockColors().getColor(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), worldObj, blockPos, tintIndex);
     }
 
-    public static void renderModel(
-            final IBakedModel model,
-            final World worldObj,
-            final BlockPos blockPos,
-            final int alpha) {
+    public static void renderModel(final IBakedModel model, final World worldObj, final BlockPos blockPos, final int alpha) {
         final Tessellator tessellator = Tessellator.getInstance();
         final BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
 
-        for (final Direction enumfacing : Direction.values()) {
-            renderQuads(alpha, buffer, model.getQuads(null, enumfacing, new Random()), worldObj, blockPos);
-        }
+        for (final Direction face : Direction.values())
+            renderQuads(alpha, buffer, model.getQuads(null, face, new Random()), worldObj, blockPos);
 
         renderQuads(alpha, buffer, model.getQuads(null, null, new Random()), worldObj, blockPos);
         tessellator.draw();
     }
 
-    /*public static void renderGhostModel(
-            final IBakedModel baked,
-            final World worldObj,
-            final BlockPos blockPos,
-            final boolean isUnplaceable) {
+    public static void renderGhostModel(final IBakedModel baked, final World worldObj, final BlockPos blockPos, final boolean isUnplaceable) {
         final int alpha = isUnplaceable ? 0x22000000 : 0xaa000000;
         GlStateManager.bindTexture(Minecraft.getInstance().getTextureMap().getGlTextureId());
         GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -218,5 +189,5 @@ public class RenderingAssistant {
         renderModel(baked, worldObj, blockPos, alpha);
 
         GlStateManager.disableBlend();
-    }*/
+    }
 }

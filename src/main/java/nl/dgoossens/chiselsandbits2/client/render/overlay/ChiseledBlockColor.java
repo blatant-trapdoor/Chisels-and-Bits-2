@@ -24,9 +24,8 @@ public class ChiseledBlockColor implements IBlockColor {
         int v = tint >> TINT_BITS;
         int tintValue = tint & TINT_MASK;
 
-        if(VoxelType.isColoured(tint)) {
+        if(VoxelType.isColoured(tint))
             return ModUtil.getColourState(tint).hashCode();
-        }
 
         if(VoxelType.isFluid(tint)) {
             final IFluidState fstate = ModUtil.getFluidState(tint);

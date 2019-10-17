@@ -1,22 +1,30 @@
 package nl.dgoossens.chiselsandbits2.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.block.Block;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
@@ -34,20 +42,24 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.BagBeakerItemColor;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.*;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import org.lwjgl.opengl.GL11;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -61,6 +73,7 @@ public class ClientSide {
     public static TextureAtlasSprite sortIcon;
     public static TextureAtlasSprite swapIcon;
     public static TextureAtlasSprite placeIcon;
+
     //--- TICK & RENDERING ---
     private RadialMenu radialMenu = new RadialMenu();
 
@@ -175,7 +188,7 @@ public class ClientSide {
 
             KeyBinding modeMenu = ChiselsAndBits2.getInstance().getKeybindings().modeMenu;
             //isKeyDown breaks when using ALT for some reason, so we do it custom.
-            if(modeMenu.isDefault()) radialMenu.setPressingButton(Screen.hasAltDown());
+            if (modeMenu.isDefault()) radialMenu.setPressingButton(Screen.hasAltDown());
             else radialMenu.setPressingButton(modeMenu.isKeyDown());
 
             if (radialMenu.isPressingButton() && !radialMenu.hasClicked() && (player.getHeldItemMainhand().getItem() instanceof IItemMenu)) {
@@ -299,7 +312,7 @@ public class ClientSide {
                             ir.renderItemIntoGUI(((SelectedItemMode) mode).getStack(), x, y);
                         } else {
                             //Don't render null sprite.
-                            if(sprite == null) continue;
+                            if (sprite == null) continue;
 
                             GlStateManager.translatef(0, 0, 200); //The item models are also rendered 150 higher
                             GlStateManager.enableBlend();
@@ -347,6 +360,24 @@ public class ClientSide {
             //The highlight not showing up when you can't chisel in a specific block isn't worth all of the code that needs to be checked for it.
             //if(!ChiselUtil.canChiselPosition(location.getBlockPos(), player, state, ((BlockRayTraceResult) mop).getFace())) return;
 
+            //Rendering drawn region bounding box
+            final BitLocation other = ChiselsAndBits2.getInstance().getClient().selectionStart;
+            final BitOperation operation = ChiselsAndBits2.getInstance().getClient().operation;
+            if (ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION) && other != null) {
+                final ChiselIterator oneEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
+                final ChiselIterator otherEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, other.bitX, other.bitY, other.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
+
+                final AxisAlignedBB a = oneEnd.getBoundingBox(VoxelBlob.NULL_BLOB, false).offset(location.blockPos.getX(), location.blockPos.getY(), location.blockPos.getZ());
+                final AxisAlignedBB b = otherEnd.getBoundingBox(VoxelBlob.NULL_BLOB, false).offset(other.blockPos.getX(), other.blockPos.getY(), other.blockPos.getZ());
+
+                final AxisAlignedBB bb = a.union(b);
+                final double maxSize = ChiselsAndBits2.getInstance().getConfig().maxDrawnRegionSize.get() + 0.001;
+                if (bb.maxX - bb.minX <= maxSize && bb.maxY - bb.minY <= maxSize && bb.maxZ - bb.minZ <= maxSize)
+                    RenderingAssistant.drawSelectionBoundingBoxIfExistsWithColor(bb, BlockPos.ZERO, player, e.getPartialTicks(), false, 0, 0, 0, 102, 32);
+                e.setCanceled(true);
+                return;
+            }
+
             //This method call is super complicated, but it saves having way more local variables than necessary.
             // (although I don't know if limiting local variables actually matters)
             RenderingAssistant.drawSelectionBoundingBoxIfExistsWithColor(
@@ -372,8 +403,93 @@ public class ClientSide {
     @OnlyIn(Dist.CLIENT)
     public static void drawLast(final RenderWorldLastEvent e) {
         if (Minecraft.getInstance().gameSettings.hideGUI) return;
-        //TODO render block placement ghost
 
+        final PlayerEntity player = Minecraft.getInstance().player;
+        final RayTraceResult mop = Minecraft.getInstance().objectMouseOver;
+        if(mop == null) return;
+        final World world = player.world;
+        final ItemStack currentItem = player.getHeldItemMainhand();
+        final Direction face = ((BlockRayTraceResult) mop).getFace();
+
+        //TODO add pattern ghost rendering!
+
+        if(currentItem.getItem() instanceof BlockItem && ((BlockItem) currentItem.getItem()).getBlock() instanceof ChiseledBlock) {
+            if (mop.getType() != RayTraceResult.Type.BLOCK) return;
+            if (!currentItem.hasTag()) return;
+            BlockPos offset = ((BlockRayTraceResult) mop).getPos();
+
+            //TODO allow for ghost showing merge options
+            boolean canMerge = false;
+            //TODO determine if it can merge
+            //If you can't place it we render it in red.
+            boolean isPlaceable = ChiselHandler.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
+
+            if (ChiselsAndBits2.getInstance().getKeybindings().offgridPlacement.isKeyDown()) {
+                final BitLocation bl = new BitLocation((BlockRayTraceResult) mop, true, BitOperation.PLACE);
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), e.getPartialTicks(), isPlaceable);
+            } else {
+                //If we can already place where we're looking we don't have to move.
+                if(!canMerge && !isPlaceable)
+                    offset = offset.offset(((BlockRayTraceResult) mop).getFace());
+
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, offset, face, BlockPos.ZERO, e.getPartialTicks(), isPlaceable);
+            }
+        }
+    }
+
+    private IBakedModel ghostCache = null;
+    private BlockPos previousPosition;
+    private BlockPos previousPartial;
+    private int displayStatus = 0;
+    private IntegerBox modelBounds;
+
+    /**
+     * Shows the ghost of the chiseled block in item at the position offset by the partial in bits.
+     */
+    private void showGhost(ItemStack item, BlockPos pos, Direction face, BlockPos partial, float partialTicks, boolean isPlaceable) {
+        final PlayerEntity player = Minecraft.getInstance().player;
+        IBakedModel model = null;
+        if(ghostCache != null && pos.equals(previousPosition) && partial.equals(previousPartial))
+            model = ghostCache;
+        else {
+            previousPosition = pos;
+            previousPartial = partial;
+
+            final NBTBlobConverter c = new NBTBlobConverter();
+            c.readChiselData(item.getChildTag(ModUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
+            VoxelBlob blob = c.getVoxelBlob();
+            modelBounds = blob.getBounds();
+
+            model = Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(item, player.getEntityWorld(), player);
+            ghostCache = model;
+
+            if ( displayStatus != 0 ) {
+                GlStateManager.deleteLists( displayStatus, 1 );
+                displayStatus = 0;
+            }
+        }
+
+        final double x = player.lastTickPosX + ( player.posX - player.lastTickPosX ) * partialTicks;
+        final double y = player.lastTickPosY + ( player.posY - player.lastTickPosY ) * partialTicks + player.getEyeHeight();
+        final double z = player.lastTickPosZ + ( player.posZ - player.lastTickPosZ ) * partialTicks;
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translated(pos.getX() - x, pos.getY() - y, pos.getZ() - z);
+        if (!partial.equals(BlockPos.ZERO)) {
+            final BlockPos t = ModUtil.getPartialOffset(face, partial, modelBounds);
+            final double fullScale = 1.0 / VoxelBlob.DIMENSION;
+            GlStateManager.translated(t.getX() * fullScale, t.getY() * fullScale, t.getZ() * fullScale);
+        }
+
+        if (displayStatus == 0) {
+            displayStatus = GLAllocation.generateDisplayLists(1);
+            GlStateManager.newList(displayStatus, GL11.GL_COMPILE_AND_EXECUTE);
+            RenderingAssistant.renderGhostModel(model, player.world, pos, isPlaceable);
+            GlStateManager.endList();
+        } else
+            GlStateManager.callList(displayStatus);
+
+        GlStateManager.popMatrix();
     }
 
     /**
@@ -399,21 +515,48 @@ public class ClientSide {
         ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, new ChiseledBlockTER());
         Minecraft.getInstance().getBlockColors().register(new ChiseledBlockColor(),
                 ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK);
+        Minecraft.getInstance().getItemColors().register(new ChiseledBlockItemColor(),
+                Item.getItemFromBlock(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK));
+
         final ModItems i = ChiselsAndBits2.getInstance().getItems();
         Minecraft.getInstance().getItemColors().register(new BagBeakerItemColor(1),
                 i.WHITE_BIT_BAG, i.BLACK_BIT_BAG, i.BLUE_BIT_BAG, i.BROWN_BIT_BAG, i.CYAN_BIT_BAG, i.GRAY_BIT_BAG,
                 i.GREEN_BIT_BAG, i.LIGHT_BLUE_BIT_BAG, i.LIGHT_GRAY_BIT_BAG, i.LIME_BIT_BAG, i.MAGENTA_BIT_BAG,
                 i.ORANGE_BIT_BAG, i.PINK_BIT_BAG, i.PURPLE_BIT_BAG, i.RED_BIT_BAG, i.YELLOW_BIT_BAG);
 
-        if(ChiselsAndBits2.showUnfinishedFeatures())
+        if (ChiselsAndBits2.showUnfinishedFeatures())
             Minecraft.getInstance().getItemColors().register(new BagBeakerItemColor(1),
-                i.WHITE_TINTED_BIT_BEAKER, i.BLACK_TINTED_BIT_BEAKER, i.BLUE_TINTED_BIT_BEAKER, i.BROWN_TINTED_BIT_BEAKER, i.CYAN_TINTED_BIT_BEAKER, i.GRAY_TINTED_BIT_BEAKER,
-                i.GREEN_TINTED_BIT_BEAKER, i.LIGHT_BLUE_TINTED_BIT_BEAKER, i.LIGHT_GRAY_TINTED_BIT_BEAKER, i.LIME_TINTED_BIT_BEAKER, i.MAGENTA_TINTED_BIT_BEAKER,
-                i.ORANGE_TINTED_BIT_BEAKER, i.PINK_TINTED_BIT_BEAKER, i.PURPLE_TINTED_BIT_BEAKER, i.RED_TINTED_BIT_BEAKER, i.YELLOW_TINTED_BIT_BEAKER);
+                    i.WHITE_TINTED_BIT_BEAKER, i.BLACK_TINTED_BIT_BEAKER, i.BLUE_TINTED_BIT_BEAKER, i.BROWN_TINTED_BIT_BEAKER, i.CYAN_TINTED_BIT_BEAKER, i.GRAY_TINTED_BIT_BEAKER,
+                    i.GREEN_TINTED_BIT_BEAKER, i.LIGHT_BLUE_TINTED_BIT_BEAKER, i.LIGHT_GRAY_TINTED_BIT_BEAKER, i.LIME_TINTED_BIT_BEAKER, i.MAGENTA_TINTED_BIT_BEAKER,
+                    i.ORANGE_TINTED_BIT_BEAKER, i.PINK_TINTED_BIT_BEAKER, i.PURPLE_TINTED_BIT_BEAKER, i.RED_TINTED_BIT_BEAKER, i.YELLOW_TINTED_BIT_BEAKER);
 
         //We've got both normal and mod event bus events.
         MinecraftForge.EVENT_BUS.register(getClass());
         FMLJavaModLoadingContext.get().getModEventBus().register(getClass());
+    }
+
+    //--- TAPE MEASURE / DRAWN REGION SELECTION ---
+    private BitLocation selectionStart;
+    private BitOperation operation;
+
+    public void setSelectionStart(BitOperation operation, BitLocation bitLoc) {
+        selectionStart = bitLoc;
+        this.operation = operation;
+    }
+
+    public boolean hasSelectionStart(BitOperation operation) {
+        if(!operation.equals(this.operation)) return false;
+        return selectionStart != null;
+    }
+
+    public BitLocation getSelectionStart(BitOperation operation) {
+        if(!operation.equals(this.operation)) return null;
+        return selectionStart;
+    }
+
+    public void resetSelectionStart() {
+        selectionStart = null;
+        operation = null;
     }
 
     //--- UTILITY METHODS ---
