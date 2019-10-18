@@ -24,6 +24,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -95,7 +96,7 @@ public class ClientSide {
             while(tapeMeasurements.size() >= ChiselsAndBits2.getInstance().getConfig().tapeMeasureLimit.get()) {
                 tapeMeasurements.remove(0); //Remove the oldest one.
             }
-            tapeMeasurements.add(new Measurement(tapeMeasureCache, location, ChiselModeManager.getMenuActionMode(stack), (ItemMode) ChiselModeManager.getMode(stack)));
+            tapeMeasurements.add(new Measurement(tapeMeasureCache, location, ChiselModeManager.getMenuActionMode(stack), (ItemMode) ChiselModeManager.getMode(stack), player.dimension));
             tapeMeasureCache = null;
         }
     }
@@ -105,8 +106,10 @@ public class ClientSide {
      */
     public void renderTapeMeasureBoxes(float partialTicks) {
         final PlayerEntity player = Minecraft.getInstance().player;
-        for(Measurement box : tapeMeasurements)
+        for(Measurement box : tapeMeasurements) {
+            if(!player.dimension.equals(box.dimension)) continue;
             renderSelectionBox(true, player, box.first, box.second, partialTicks, BitOperation.REMOVE, new Color(box.colour.getColour()), box.mode);
+        }
     }
 
     /**
@@ -114,14 +117,16 @@ public class ClientSide {
      */
     public static class Measurement {
         private BitLocation first, second;
+        private DimensionType dimension;
         private MenuAction colour;
         private ItemMode mode;
 
-        public Measurement(BitLocation first, BitLocation second, MenuAction colour, ItemMode mode) {
+        public Measurement(BitLocation first, BitLocation second, MenuAction colour, ItemMode mode, DimensionType dimension) {
             this.first = BitLocation.min(first, second);
             this.second = BitLocation.max(first, second);
             this.colour = colour;
             this.mode = mode;
+            this.dimension = dimension;
         }
     }
 
