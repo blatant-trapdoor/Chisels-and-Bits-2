@@ -397,49 +397,51 @@ public class ClientSide {
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void drawHighlights(final DrawBlockHighlightEvent e) {
-        final PlayerEntity player = Minecraft.getInstance().player;
-        //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
-        boolean tapeMeasure = player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem;
-        if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof ChiselItem) {
-            final RayTraceResult rayTrace = ChiselUtil.rayTrace(player);
-            if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK)
-                return;
+        if(Minecraft.getInstance().objectMouseOver.getType() == RayTraceResult.Type.BLOCK) {
+            final PlayerEntity player = Minecraft.getInstance().player;
+            //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
+            boolean tapeMeasure = player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem;
+            if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof ChiselItem) {
+                final RayTraceResult rayTrace = ChiselUtil.rayTrace(player);
+                if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK)
+                    return;
 
-            final World world = Minecraft.getInstance().world;
-            final BitLocation location = new BitLocation((BlockRayTraceResult) rayTrace, true, BitOperation.REMOVE); //We always show the removal box, never the placement one.
-            final TileEntity data = world.getTileEntity(location.blockPos);
+                final World world = Minecraft.getInstance().world;
+                final BitLocation location = new BitLocation((BlockRayTraceResult) rayTrace, true, BitOperation.REMOVE); //We always show the removal box, never the placement one.
+                final TileEntity data = world.getTileEntity(location.blockPos);
 
-            //We only show this box if this block is chiselable and this block at this position is chiselable.
-            if (!tapeMeasure && !ChiselUtil.canChiselBlock(world.getBlockState(location.blockPos))) return;
-            //The highlight not showing up when you can't chisel in a specific block isn't worth all of the code that needs to be checked for it.
-            //if(!ChiselUtil.canChiselPosition(location.getBlockPos(), player, state, ((BlockRayTraceResult) mop).getFace())) return;
+                //We only show this box if this block is chiselable and this block at this position is chiselable.
+                if (!tapeMeasure && !ChiselUtil.canChiselBlock(world.getBlockState(location.blockPos))) return;
+                //The highlight not showing up when you can't chisel in a specific block isn't worth all of the code that needs to be checked for it.
+                //if(!ChiselUtil.canChiselPosition(location.getBlockPos(), player, state, ((BlockRayTraceResult) mop).getFace())) return;
 
-            //Rendering drawn region bounding box
-            final BitLocation other = tapeMeasure ? ChiselsAndBits2.getInstance().getClient().tapeMeasureCache : ChiselsAndBits2.getInstance().getClient().selectionStart;
-            final BitOperation operation = tapeMeasure ? BitOperation.REMOVE : ChiselsAndBits2.getInstance().getClient().operation;
-            if ((tapeMeasure || ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
-                ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, e.getPartialTicks(), operation, new Color(ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ChiselModeManager.getMode(player.getHeldItemMainhand()));
+                //Rendering drawn region bounding box
+                final BitLocation other = tapeMeasure ? ChiselsAndBits2.getInstance().getClient().tapeMeasureCache : ChiselsAndBits2.getInstance().getClient().selectionStart;
+                final BitOperation operation = tapeMeasure ? BitOperation.REMOVE : ChiselsAndBits2.getInstance().getClient().operation;
+                if ((tapeMeasure || ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
+                    ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, e.getPartialTicks(), operation, new Color(ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ChiselModeManager.getMode(player.getHeldItemMainhand()));
+                    e.setCanceled(true);
+                    return;
+                }
+                //Tape measure never displays the small cube.
+                if(tapeMeasure) return;
+
+                //This method call is super complicated, but it saves having way more local variables than necessary.
+                // (although I don't know if limiting local variables actually matters)
+                RenderingAssistant.drawSelectionBoundingBoxIfExists(
+                        ChiselTypeIterator.create(
+                                VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ,
+                                new VoxelRegionSrc(world, location.blockPos, 1),
+                                ChiselModeManager.getMode(player.getHeldItemMainhand()),
+                                ((BlockRayTraceResult) rayTrace).getFace(),
+                                false
+                        ).getBoundingBox(
+                                !(data instanceof ChiseledBlockTileEntity) ? (new VoxelBlob().fill(ModUtil.getStateId(world.getBlockState(location.blockPos))))
+                                        : ((ChiseledBlockTileEntity) data).getBlob(), true
+                        ),
+                        location.blockPos, player, e.getPartialTicks(), false, 0, 0, 0, 102, 32);
                 e.setCanceled(true);
-                return;
             }
-            //Tape measure never displays the small cube.
-            if(tapeMeasure) return;
-
-            //This method call is super complicated, but it saves having way more local variables than necessary.
-            // (although I don't know if limiting local variables actually matters)
-            RenderingAssistant.drawSelectionBoundingBoxIfExists(
-                    ChiselTypeIterator.create(
-                            VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ,
-                            new VoxelRegionSrc(world, location.blockPos, 1),
-                            ChiselModeManager.getMode(player.getHeldItemMainhand()),
-                            ((BlockRayTraceResult) rayTrace).getFace(),
-                            false
-                    ).getBoundingBox(
-                            !(data instanceof ChiseledBlockTileEntity) ? (new VoxelBlob().fill(ModUtil.getStateId(world.getBlockState(location.blockPos))))
-                                    : ((ChiseledBlockTileEntity) data).getBlob(), true
-                    ),
-                    location.blockPos, player, e.getPartialTicks(), false, 0, 0, 0, 102, 32);
-            e.setCanceled(true);
         }
     }
 
@@ -487,7 +489,7 @@ public class ClientSide {
 
         final PlayerEntity player = Minecraft.getInstance().player;
         final RayTraceResult mop = Minecraft.getInstance().objectMouseOver;
-        if(mop == null) return;
+        if(!(mop instanceof BlockRayTraceResult)) return;
         final World world = player.world;
         final ItemStack currentItem = player.getHeldItemMainhand();
         final Direction face = ((BlockRayTraceResult) mop).getFace();
@@ -513,6 +515,7 @@ public class ClientSide {
                 if(!canMerge && !isPlaceable)
                     offset = offset.offset(((BlockRayTraceResult) mop).getFace());
 
+                isPlaceable = ChiselHandler.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
                 ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, offset, face, BlockPos.ZERO, e.getPartialTicks(), isPlaceable);
             }
         }
@@ -565,7 +568,7 @@ public class ClientSide {
         if (displayStatus == 0) {
             displayStatus = GLAllocation.generateDisplayLists(1);
             GlStateManager.newList(displayStatus, GL11.GL_COMPILE_AND_EXECUTE);
-            RenderingAssistant.renderGhostModel(model, player.world, pos, isPlaceable);
+            RenderingAssistant.renderGhostModel(model, player.world, pos, !isPlaceable);
             GlStateManager.endList();
         } else
             GlStateManager.callList(displayStatus);

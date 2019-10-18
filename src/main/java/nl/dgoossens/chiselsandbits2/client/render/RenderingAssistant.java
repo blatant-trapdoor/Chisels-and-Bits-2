@@ -16,6 +16,7 @@ import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import org.lwjgl.opengl.GL11;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Random;
 
@@ -77,16 +78,11 @@ public class RenderingAssistant {
         }
     }
 
-    public static void renderQuads(
-            final int alpha,
-            final BufferBuilder renderer,
-            final List<BakedQuad> quads,
-            final World worldObj,
-            final BlockPos blockPos) {
+    public static void renderQuads(final BufferBuilder renderer, final List<BakedQuad> quads, final World worldObj, final BlockPos blockPos, final boolean showSilhouette) {
         int i = 0;
         for (final int j = quads.size(); i < j; ++i) {
             final BakedQuad bakedquad = quads.get(i);
-            final int color = bakedquad.getTintIndex() == -1 ? alpha | 0xffffff : getTint(alpha, bakedquad.getTintIndex(), worldObj, blockPos);
+            int color = showSilhouette ? new Color(45, 45, 45, 45).hashCode() : Minecraft.getInstance().getBlockColors().getColor(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), worldObj, blockPos, bakedquad.getTintIndex());
             net.minecraftforge.client.model.pipeline.LightUtil.renderQuadColor(renderer, bakedquad, color);
         }
     }
@@ -157,24 +153,19 @@ public class RenderingAssistant {
         tess.draw();
     }
 
-    public static int getTint(final int alpha, final int tintIndex, final World worldObj, final BlockPos blockPos) {
-        return alpha | Minecraft.getInstance().getBlockColors().getColor(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), worldObj, blockPos, tintIndex);
-    }
-
-    public static void renderModel(final IBakedModel model, final World worldObj, final BlockPos blockPos, final int alpha) {
+    public static void renderModel(final IBakedModel model, final World worldObj, final BlockPos blockPos, final boolean showSilhoutte) {
         final Tessellator tessellator = Tessellator.getInstance();
         final BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
 
         for (final Direction face : Direction.values())
-            renderQuads(alpha, buffer, model.getQuads(null, face, new Random()), worldObj, blockPos);
+            renderQuads(buffer, model.getQuads(null, face, new Random()), worldObj, blockPos, showSilhoutte);
 
-        renderQuads(alpha, buffer, model.getQuads(null, null, new Random()), worldObj, blockPos);
+        renderQuads(buffer, model.getQuads(null, null, new Random()), worldObj, blockPos, showSilhoutte);
         tessellator.draw();
     }
 
-    public static void renderGhostModel(final IBakedModel baked, final World worldObj, final BlockPos blockPos, final boolean isUnplaceable) {
-        final int alpha = isUnplaceable ? 0x22000000 : 0xaa000000;
+    public static void renderGhostModel(final IBakedModel baked, final World worldObj, final BlockPos blockPos, final boolean notPlaceable) {
         GlStateManager.bindTexture(Minecraft.getInstance().getTextureMap().getGlTextureId());
         GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -183,10 +174,10 @@ public class RenderingAssistant {
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GlStateManager.colorMask(false, false, false, false);
 
-        renderModel(baked, worldObj, blockPos, alpha);
+        renderModel(baked, worldObj, blockPos, notPlaceable);
         GlStateManager.colorMask(true, true, true, true);
         GlStateManager.depthFunc(GL11.GL_LEQUAL);
-        renderModel(baked, worldObj, blockPos, alpha);
+        renderModel(baked, worldObj, blockPos, notPlaceable);
 
         GlStateManager.disableBlend();
     }
