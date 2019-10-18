@@ -512,9 +512,9 @@ public class ClientSide {
             //If you can't place it we render it in red.
             boolean isPlaceable = ChiselHandler.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
 
-            if (ChiselsAndBits2.getInstance().getKeybindings().offgridPlacement.isKeyDown()) {
+            if (player.isSneaking()) {
                 final BitLocation bl = new BitLocation((BlockRayTraceResult) mop, true, BitOperation.PLACE);
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), e.getPartialTicks(), isPlaceable);
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), e.getPartialTicks(), !isPlaceable);
             } else {
                 //If we can already place where we're looking we don't have to move.
                 if(!canMerge && !isPlaceable)

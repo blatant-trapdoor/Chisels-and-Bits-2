@@ -33,9 +33,7 @@ public class ModKeybindings {
 
     public KeyBinding
             selectBitType = new KeyBinding("Select Bit Type", CONFLICT, InputMappings.Type.MOUSE.getOrMakeInput(2), CATEGORY), //Middle Mouseclick
-            offgridPlacement = new KeyBinding("Offgrid Placement", CONFLICT, KeyModifier.NONE, getKey(340), CATEGORY), //Left Shift
             modeMenu = new KeyBinding("Radial Menu", CONFLICT, KeyModifier.NONE, getKey(342), CATEGORY), //Left Alt
-            scoopFluid = new KeyBinding("Scoop Up Fluid", CONFLICT, KeyModifier.SHIFT, InputMappings.Type.MOUSE.getOrMakeInput(1), CATEGORY), //Shift Rightclick
             copyPattern = new KeyBinding("Copy Pattern", CONFLICT, KeyModifier.SHIFT, InputMappings.Type.MOUSE.getOrMakeInput(1), CATEGORY), //Shift Rightclick
             clearTapeMeasure = new KeyBinding("Clear Measurements", CONFLICT, KeyModifier.SHIFT, InputMappings.Type.MOUSE.getOrMakeInput(0), CATEGORY); //Shift Leftclick
 

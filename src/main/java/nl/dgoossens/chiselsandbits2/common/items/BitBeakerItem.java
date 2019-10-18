@@ -46,14 +46,13 @@ public class BitBeakerItem extends StorageItem {
     }
 
     //This method was largely copied from BucketItem.java.
+    //We use onItemRightClick instead of onItemUse because onItemUse only triggers when clicking a block. (which excludes liquids)
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
         ItemStack itemstack = playerIn.getHeldItem(handIn);
         if(!playerIn.isSneaking()) return new ActionResult<>(ActionResultType.PASS, itemstack);
 
         RayTraceResult raytraceresult = rayTrace(worldIn, playerIn, RayTraceContext.FluidMode.SOURCE_ONLY);
-        ActionResult<ItemStack> ret = net.minecraftforge.event.ForgeEventFactory.onBucketUse(playerIn, worldIn, itemstack, raytraceresult);
-        if (ret != null) return ret;
         if (raytraceresult.getType() == RayTraceResult.Type.MISS) {
             return new ActionResult<>(ActionResultType.PASS, itemstack);
         } else if (raytraceresult.getType() != RayTraceResult.Type.BLOCK) {

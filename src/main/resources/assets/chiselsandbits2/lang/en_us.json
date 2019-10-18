@@ -65,6 +65,7 @@
   "item.chiselsandbits2.acacia_palette": "Acacia Palette",
 
   "block.chiselsandbits2.chiseled_block": "Chiseled Block",
+  "item.chiselsandbits2.chiseled_block.help": "Sneak to place off-grid",
 
   "general.chiselsandbits2.no_keybinding": "No Key Bound",
   "general.chiselsandbits2.empty_slot": "Empty Slot",
