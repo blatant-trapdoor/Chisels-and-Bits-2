@@ -15,35 +15,6 @@ import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 import java.util.HashMap;
 
 public class SmartModelManager {
-    private final HashMap<ResourceLocation, IBakedModel> models = new HashMap<>();
-
-    public SmartModelManager() {
-        ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
-        add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/chiseled_block"), smartModel);
-        add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "chiseled_block"), smartModel);
-        CacheType.DEFAULT.register(smartModel);
-        CacheType.DEFAULT.register(new ModelUtil());
-    }
-
-    private void add(
-            final ResourceLocation modelLocation,
-            final IBakedModel modelGen) {
-        if (modelLocation == null) return;
-        final ResourceLocation second = new ResourceLocation(modelLocation.getNamespace(), modelLocation.getPath().substring(1 + modelLocation.getPath().lastIndexOf('/')));
-
-        if (modelGen instanceof CacheClearable)
-            CacheType.MODEL.register((CacheClearable) modelGen);
-
-        models.put(modelLocation, modelGen);
-        models.put(second, modelGen);
-
-        models.put(new ModelResourceLocation(modelLocation, "normal"), modelGen);
-        models.put(new ModelResourceLocation(second, "normal"), modelGen);
-
-        models.put(new ModelResourceLocation(modelLocation, "inventory"), modelGen);
-        models.put(new ModelResourceLocation(second, "inventory"), modelGen);
-    }
-
     @SubscribeEvent
     public void textureStitchEvent(final TextureStitchEvent.Post e) {
         GfxRenderState.gfxRefresh++;
@@ -53,8 +24,12 @@ public class SmartModelManager {
     @SubscribeEvent
     public void onModelBakeEvent(final ModelBakeEvent event) {
         CacheType.MODEL.call();
-        for (final ResourceLocation rl : models.keySet())
-            event.getModelRegistry().put(rl, models.get(rl));
+
+        ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
+        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getRegistryName(), ""), smartModel);
+        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getRegistryName(), "inventory"), smartModel);
+        CacheType.DEFAULT.register(smartModel);
+        CacheType.DEFAULT.register(new ModelUtil());
     }
 
     @SubscribeEvent

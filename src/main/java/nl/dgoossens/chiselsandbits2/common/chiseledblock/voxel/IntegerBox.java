@@ -18,7 +18,7 @@ public final class IntegerBox {
     }
 
     public AxisAlignedBB toBoundingBox() {
-        return new AxisAlignedBB(minX / 16, minY / 16, minZ / 16, (maxX + 1) / 16, (maxY + 1) / 16, (maxZ + 1) / 16);
+        return new AxisAlignedBB(((double)minX) / 16, ((double)minY) / 16, ((double)minZ) / 16, (((double)maxX) + 1) / 16, (((double)maxY) + 1) / 16, (((double)maxZ) + 1) / 16);
     }
 
     public void move(final Direction side, final int scale) {

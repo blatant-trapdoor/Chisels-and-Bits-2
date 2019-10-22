@@ -256,6 +256,20 @@ public final class VoxelBlob implements IVoxelSrc {
     }
 
     /**
+     * Returns {@link #AIR_BIT} if this blob is made up of several
+     * bit types. Otherwise returns the bit type this is made of.
+     */
+    public int singleType() {
+        int i = values[0];
+        for(int v : values) {
+            //If that value is not the same we return AIR_BIT.
+            if(v != i)
+                return AIR_BIT;
+        }
+        return i;
+    }
+
+    /**
      * Get the state id of the most common state.
      * Will return 0 if the block is empty.
      */

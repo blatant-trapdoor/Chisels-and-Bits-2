@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.blocks;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.ItemStack;
@@ -135,9 +136,8 @@ public class ChiseledBlockTileEntity extends TileEntity {
             collisionShape = base.simplify();
         }
 
-        if (cachedShape == null && getVoxelReference() != null) {
+        if (cachedShape == null && getVoxelReference() != null)
             cachedShape = VoxelShapes.create(getVoxelReference().getVoxelBlob().getBounds().toBoundingBox());
-        }
     }
 
     /**
@@ -264,6 +264,19 @@ public class ChiseledBlockTileEntity extends TileEntity {
         if(vb.filled() <= 0) {
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
             return;
+        }
+        //Turn to full block if made of one type.
+        int singleType = vb.singleType();
+        if(singleType != VoxelBlob.AIR_BIT) {
+            VoxelType type = VoxelType.getType(singleType);
+            switch(type) {
+                case BLOCKSTATE:
+                    world.setBlockState(pos, ModUtil.getBlockState(singleType), 3);
+                    return;
+                case FLUIDSTATE:
+                    world.setBlockState(pos, ModUtil.getFluidState(singleType).getBlockState(), 3);
+                    return;
+            }
         }
 
         //final VoxelBlobStateReference before = getVoxelReference();

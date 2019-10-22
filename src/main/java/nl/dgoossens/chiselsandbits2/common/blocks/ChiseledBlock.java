@@ -1,41 +1,34 @@
 package nl.dgoossens.chiselsandbits2.common.blocks;
 
 import net.minecraft.block.*;
+import net.minecraft.client.particle.DiggingParticle;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.particles.BlockParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.particles.RedstoneParticleData;
-import net.minecraft.state.IProperty;
-import net.minecraft.state.IntegerProperty;
-import net.minecraft.state.Property;
-import net.minecraft.tileentity.ShulkerBoxTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IEnviromentBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.storage.loot.LootParameters;
+import nl.dgoossens.chiselsandbits2.api.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -45,9 +38,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.Random;
 
 public class ChiseledBlock extends Block implements BaseBlock {
     public static final ResourceLocation field_220169_b = new ResourceLocation("block_drop");
@@ -127,38 +118,141 @@ public class ChiseledBlock extends Block implements BaseBlock {
     @Override
     public boolean addLandingEffects(BlockState state1, ServerWorld worldserver, BlockPos pos, BlockState state2, LivingEntity entity, int numberOfParticles) {
         try {
-            VoxelBlob tar = ((ChiseledBlockTileEntity) worldserver.getTileEntity(pos)).getVoxelReference().getVoxelBlob();
+            //Add landing effects of the bit type right below the entity.
             BitLocation location = new BitLocation(entity);
-            return spawnParticle(tar.getSafe(location.bitX, location.bitY, location.bitZ), worldserver, pos, entity, numberOfParticles);
+            VoxelBlob tar = ((ChiseledBlockTileEntity) worldserver.getTileEntity(location.getBlockPos())).getVoxelReference().getVoxelBlob();
+            int i = tar.getSafe(location.bitX, location.bitY, location.bitZ);
+            switch(VoxelType.getType(i)) {
+                case BLOCKSTATE:
+                    worldserver.spawnParticle(new BlockParticleData(ParticleTypes.BLOCK, ModUtil.getBlockState(i)), entity.posX, entity.posY, entity.posZ, numberOfParticles, 0.0, 0.0, 0.0, 1);
+                    return true;
+                case FLUIDSTATE:
+                    worldserver.spawnParticle(new BlockParticleData(ParticleTypes.BLOCK, ModUtil.getFluidState(i).getBlockState()), entity.posX, entity.posY, entity.posZ, numberOfParticles, 0.0, 0.0, 0.0, 1);
+                    return true;
+                case COLOURED:
+                    Color c = ModUtil.getColourState(i);
+                    worldserver.spawnParticle(new RedstoneParticleData(((float)c.getRed())/255.0f, ((float)c.getGreen())/255.0f, ((float)c.getBlue())/255.0f, ((float)c.getAlpha())/255.0f), entity.posX, entity.posY, entity.posZ, numberOfParticles, 0.0, 0.0, 0.0, 1);
+                    return true;
+            }
         } catch(Exception x) {}
-        return false;
-    }
-
-    private boolean spawnParticle(int i, ServerWorld worldserver, BlockPos pos, LivingEntity entity, int numberOfParticles) {
-        switch(VoxelType.getType(i)) {
-            case BLOCKSTATE:
-                worldserver.spawnParticle(new BlockParticleData(ParticleTypes.BLOCK, ModUtil.getBlockState(i)), entity.posX, entity.posY, entity.posZ, numberOfParticles, 0.0, 0.0, 0.0, 1);
-                return true;
-            case COLOURED:
-                Color c = ModUtil.getColourState(i);
-                worldserver.spawnParticle(new RedstoneParticleData(((float)c.getRed())/255.0f, ((float)c.getGreen())/255.0f, ((float)c.getBlue())/255.0f, ((float)c.getAlpha())/255.0f), entity.posX, entity.posY, entity.posZ, numberOfParticles, 0.0, 0.0, 0.0, 1);
-                return true;
-        }
         return false;
     }
 
     @Override
     public boolean addDestroyEffects(BlockState state, World world, BlockPos pos, ParticleManager manager) {
-        return false; //TODO add more effect compat
+        try {
+
+        } catch(Exception x) {}
+        return false;
+    }
+
+    //Add the block destroy effects exactly as the ParticleManager would, but with a custom colour.
+    private void addBlockDestroyEffects(ParticleManager manager, World world, BlockPos pos, BlockState state, float red, float green, float blue, float alpha) {
+        if (!state.isAir(world, pos) && !state.addDestroyEffects(world, pos, manager)) {
+            VoxelShape voxelshape = state.getShape(world, pos);
+            double d0 = 0.25D;
+            voxelshape.forEachBox((p_199284_3_, p_199284_5_, p_199284_7_, p_199284_9_, p_199284_11_, p_199284_13_) -> {
+                double d1 = Math.min(1.0D, p_199284_9_ - p_199284_3_);
+                double d2 = Math.min(1.0D, p_199284_11_ - p_199284_5_);
+                double d3 = Math.min(1.0D, p_199284_13_ - p_199284_7_);
+                int i = Math.max(2, MathHelper.ceil(d1 / 0.25D));
+                int j = Math.max(2, MathHelper.ceil(d2 / 0.25D));
+                int k = Math.max(2, MathHelper.ceil(d3 / 0.25D));
+
+                for(int l = 0; l < i; ++l) {
+                    for(int i1 = 0; i1 < j; ++i1) {
+                        for(int j1 = 0; j1 < k; ++j1) {
+                            double d4 = ((double)l + 0.5D) / (double)i;
+                            double d5 = ((double)i1 + 0.5D) / (double)j;
+                            double d6 = ((double)j1 + 0.5D) / (double)k;
+                            double d7 = d4 * d1 + p_199284_3_;
+                            double d8 = d5 * d2 + p_199284_5_;
+                            double d9 = d6 * d3 + p_199284_7_;
+                            Particle particle = (new DiggingParticle(world, (double)pos.getX() + d7, (double)pos.getY() + d8, (double)pos.getZ() + d9, d4 - 0.5D, d5 - 0.5D, d6 - 0.5D, state)).setBlockPos(pos);
+                            particle.setColor(red, green, blue);
+                            manager.addEffect(particle);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     @Override
-    public boolean addHitEffects(BlockState state, World worldObj, RayTraceResult target, ParticleManager manager) {
+    public boolean addHitEffects(BlockState state, World world, RayTraceResult target, ParticleManager manager) {
+        try {
+            BitLocation location = new BitLocation((BlockRayTraceResult) target, true, BitOperation.REMOVE);
+            VoxelBlob tar = ((ChiseledBlockTileEntity) world.getTileEntity(location.getBlockPos())).getVoxelReference().getVoxelBlob();
+            int i = tar.getSafe(location.bitX, location.bitY, location.bitZ);
+            switch(VoxelType.getType(i)) {
+                case BLOCKSTATE:
+                    addBlockHitEffects(manager, world, ((BlockRayTraceResult) target).getPos(), ((BlockRayTraceResult) target).getFace(), ModUtil.getBlockState(i), 1.0f, 1.0f, 1.0f, 1.0f);
+                    return true;
+                case FLUIDSTATE:
+                    addBlockHitEffects(manager, world, ((BlockRayTraceResult) target).getPos(), ((BlockRayTraceResult) target).getFace(), ModUtil.getFluidState(i).getBlockState(), 1.0f, 1.0f, 1.0f, 1.0f);
+                    return true;
+                case COLOURED:
+                    Color c = ModUtil.getColourState(i);
+                    addBlockHitEffects(manager, world, ((BlockRayTraceResult) target).getPos(), ((BlockRayTraceResult) target).getFace(), Blocks.WHITE_CONCRETE.getDefaultState(), ((float)c.getRed())/255.0f, ((float)c.getGreen())/255.0f, ((float)c.getBlue())/255.0f, ((float)c.getAlpha())/255.0f);
+                    return true;
+            }
+        } catch(Exception x) {}
         return false;
+    }
+
+    //Add the block hit effects exactly as the ParticleManager would, but with a custom blockstate type.
+    private void addBlockHitEffects(ParticleManager manager, World world, BlockPos pos, Direction side, BlockState blockstate, float red, float green, float blue, float alpha) {
+        if (blockstate.getRenderType() != BlockRenderType.INVISIBLE) {
+            int i = pos.getX();
+            int j = pos.getY();
+            int k = pos.getZ();
+            float f = 0.1F;
+            AxisAlignedBB axisalignedbb = blockstate.getShape(world, pos).getBoundingBox();
+            Random rand = new Random();
+            double d0 = (double) i + rand.nextDouble() * (axisalignedbb.maxX - axisalignedbb.minX - (double) 0.2F) + (double) 0.1F + axisalignedbb.minX;
+            double d1 = (double) j + rand.nextDouble() * (axisalignedbb.maxY - axisalignedbb.minY - (double) 0.2F) + (double) 0.1F + axisalignedbb.minY;
+            double d2 = (double) k + rand.nextDouble() * (axisalignedbb.maxZ - axisalignedbb.minZ - (double) 0.2F) + (double) 0.1F + axisalignedbb.minZ;
+            if (side == Direction.DOWN)
+                d1 = (double) j + axisalignedbb.minY - (double) 0.1F;
+            if (side == Direction.UP)
+                d1 = (double) j + axisalignedbb.maxY + (double) 0.1F;
+            if (side == Direction.NORTH)
+                d2 = (double) k + axisalignedbb.minZ - (double) 0.1F;
+            if (side == Direction.SOUTH)
+                d2 = (double) k + axisalignedbb.maxZ + (double) 0.1F;
+            if (side == Direction.WEST)
+                d0 = (double) i + axisalignedbb.minX - (double) 0.1F;
+            if (side == Direction.EAST)
+                d0 = (double) i + axisalignedbb.maxX + (double) 0.1F;
+
+            Particle particle = (new DiggingParticle(world, d0, d1, d2, 0.0D, 0.0D, 0.0D, blockstate)).setBlockPos(pos).multiplyVelocity(0.2F).multipleParticleScaleBy(0.6F);
+            particle.setColor(red, green, blue);
+            manager.addEffect(particle);
+        }
     }
 
     @Override
     public boolean addRunningEffects(BlockState state, World world, BlockPos pos, Entity entity) {
+        try {
+            //Add running effects of the bit type right below the entity.
+            Vec3d vec3d = entity.getMotion();
+            BitLocation location = new BitLocation(entity);
+            VoxelBlob tar = ((ChiseledBlockTileEntity) world.getTileEntity(location.getBlockPos())).getVoxelReference().getVoxelBlob();
+            int i = tar.getSafe(location.bitX, location.bitY, location.bitZ);
+            Random random = new Random();
+            switch(VoxelType.getType(i)) {
+                case BLOCKSTATE:
+                    world.addParticle(new BlockParticleData(ParticleTypes.BLOCK, ModUtil.getBlockState(i)), entity.posX + ((double)random.nextFloat() - 0.5D) * (double)entity.getSize(entity.getPose()).width, entity.posY + 0.1D, entity.posZ + ((double)random.nextFloat() - 0.5D) * (double)entity.getSize(entity.getPose()).width, vec3d.x * -4.0D, 1.5D, vec3d.z * -4.0D);
+                    return true;
+                case FLUIDSTATE:
+                    world.addParticle(new BlockParticleData(ParticleTypes.BLOCK,ModUtil.getFluidState(i).getBlockState()), entity.posX + ((double)random.nextFloat() - 0.5D) * (double)entity.getSize(entity.getPose()).width, entity.posY + 0.1D, entity.posZ + ((double)random.nextFloat() - 0.5D) * (double)entity.getSize(entity.getPose()).width, vec3d.x * -4.0D, 1.5D, vec3d.z * -4.0D);
+                    return true;
+                case COLOURED:
+                    Color c = ModUtil.getColourState(i);
+                    world.addParticle(new RedstoneParticleData(((float)c.getRed())/255.0f, ((float)c.getGreen())/255.0f, ((float)c.getBlue())/255.0f, ((float)c.getAlpha())/255.0f), entity.posX + ((double)random.nextFloat() - 0.5D) * (double)entity.getSize(entity.getPose()).width, entity.posY + 0.1D, entity.posZ + ((double)random.nextFloat() - 0.5D) * (double)entity.getSize(entity.getPose()).width, vec3d.x * -4.0D, 1.5D, vec3d.z * -4.0D);
+                    return true;
+            }
+        } catch(Exception x) {}
         return false;
     }
 

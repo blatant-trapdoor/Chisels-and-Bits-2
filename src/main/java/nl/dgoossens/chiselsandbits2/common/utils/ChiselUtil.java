@@ -15,11 +15,14 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChiselUtil {
     private static Map<Block, Boolean> supportedBlocks = new ConcurrentHashMap<>();
+    private static Set<Block> testedBlocks = new HashSet<>();
     public static boolean ACTIVELY_TRACING = false;
 
     /**
@@ -38,11 +41,16 @@ public class ChiselUtil {
     private static void testBlock(final BlockState block) {
         //We determine if a block can be chiseled by whether or not the shape of it can be turned into a VoxelBlob.
         final Block blk = block.getBlock();
+        //Don't test twice!
+        if(testedBlocks.contains(blk)) return;
+        testedBlocks.add(blk);
+
         if (blk instanceof ChiseledBlock) {
             supportedBlocks.put(blk, true);
             return;
         }
         if (blk.hasTileEntity(block)) return;
+
         DummyEnvironmentWorldReader dummyWorld = new DummyEnvironmentWorldReader() {
             @Override
             public BlockState getBlockState(BlockPos pos) {
@@ -50,8 +58,8 @@ public class ChiselUtil {
                 return super.getBlockState(pos);
             }
         };
-        VoxelShape shape = block.getCollisionShape(dummyWorld, BlockPos.ZERO);
-        if (!shape.equals(VoxelShapes.fullCube())) return; //You can only chisel blocks without a special shape.
+        if (block.getBlockHardness(dummyWorld, BlockPos.ZERO) < 0) return; //Can't break unbreakable blocks. (they have -1 hardness)
+        if (!block.getCollisionShape(dummyWorld, BlockPos.ZERO).equals(VoxelShapes.fullCube())) return; //You can only chisel blocks without a special shape.
         supportedBlocks.put(blk, true);
     }
 
@@ -62,8 +70,6 @@ public class ChiselUtil {
     public static boolean canChiselPosition(final BlockPos pos, final PlayerEntity player, final BlockState state, final Direction face) {
         if (!player.getHeldItemMainhand().getItem().equals(ChiselsAndBits2.getInstance().getItems().CHISEL))
             return false; //The chisel needs to be in the main hand!
-        //You can't break unbreakable blocks = negative hardness.
-        if (state.getBlock().getBlockHardness(state, player.getEntityWorld(), pos) < 0) return false;
         if (!player.getEntityWorld().getWorldBorder().contains(pos)) return false;
         if (!player.getEntityWorld().isBlockModifiable(player, pos)) return false;
         if (!player.canPlayerEdit(pos, face, player.getHeldItemMainhand())) return false;

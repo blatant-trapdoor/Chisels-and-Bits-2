@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 public class BitLocation {
     private static final double ONE_32ND = 0.5 / VoxelBlob.DIMENSION;
 
-    public final BlockPos blockPos;
+    public BlockPos blockPos;
     public int bitX, bitY, bitZ;
 
     public BitLocation(BlockRayTraceResult mop, final boolean absHit, final BitOperation type) {
@@ -69,8 +69,13 @@ public class BitLocation {
         double ty = e.posY - blockPos.getY();
         double tz = e.posZ - blockPos.getZ();
         bitX = snapToValid((int) Math.round(tx*16));
-        bitY = snapToValid((int) Math.round(ty*16) - 1); //Go down one bit.
+        bitY = snapToValid((int) Math.round(ty*16)) - 1;
         bitZ = snapToValid((int) Math.round(tz*16));
+
+        if(bitY < 0) {
+            blockPos = blockPos.offset(Direction.DOWN);
+            bitY = 15;
+        }
     }
 
     public static BitLocation min(final BitLocation from, final BitLocation to) {
