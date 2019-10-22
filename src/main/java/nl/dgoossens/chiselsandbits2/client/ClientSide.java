@@ -5,6 +5,7 @@ import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.ItemRenderer;
@@ -13,6 +14,7 @@ import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -68,6 +70,10 @@ import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientSide {
+    private static final double BIT_SIZE = 1.0 / 16.0;
+    private static final double BLOCK_SIZE = 1.0;
+    private static final double HALF_BIT = BIT_SIZE / 2.0f;
+
     //--- SPRITES ---
     private static final HashMap<IItemMode, SpriteIconPositioning> chiselModeIcons = new HashMap<>();
     private static final HashMap<MenuAction, SpriteIconPositioning> menuActionIcons = new HashMap<>();
@@ -122,8 +128,8 @@ public class ClientSide {
         private ItemMode mode;
 
         public Measurement(BitLocation first, BitLocation second, MenuAction colour, ItemMode mode, DimensionType dimension) {
-            this.first = BitLocation.min(first, second);
-            this.second = BitLocation.max(first, second);
+            this.first = first;
+            this.second = second;
             this.colour = colour;
             this.mode = mode;
             this.dimension = dimension;
@@ -458,8 +464,15 @@ public class ClientSide {
 
         //Don't do these calculations if we don't have to.
         if (!tapeMeasure || !mode.equals(ItemMode.TAPEMEASURE_DISTANCE)) {
-            final ChiselIterator oneEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
-            final ChiselIterator otherEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, other.bitX, other.bitY, other.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
+            ChiselIterator oneEnd, otherEnd;
+            if(mode.equals(ItemMode.TAPEMEASURE_BLOCK)) {
+                boolean x = location.blockPos.getX() > other.blockPos.getX(), y = location.blockPos.getY() > other.blockPos.getY(), z = location.blockPos.getZ() > other.blockPos.getZ();
+                oneEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, x ? 15 : 0, y ? 15 : 0, z ? 15 : 0, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
+                otherEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, !x ? 15 : 0, !y ? 15 : 0, !z ? 15 : 0, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
+            } else {
+                oneEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
+                otherEnd = ChiselTypeIterator.create(VoxelBlob.DIMENSION, other.bitX, other.bitY, other.bitZ, VoxelBlob.NULL_BLOB, ItemMode.CHISEL_SINGLE, Direction.UP, operation.equals(BitOperation.PLACE));
+            }
 
             final AxisAlignedBB a = oneEnd.getBoundingBox(VoxelBlob.NULL_BLOB, false).offset(location.blockPos.getX(), location.blockPos.getY(), location.blockPos.getZ());
             final AxisAlignedBB b = otherEnd.getBoundingBox(VoxelBlob.NULL_BLOB, false).offset(other.blockPos.getX(), other.blockPos.getY(), other.blockPos.getZ());
@@ -468,17 +481,120 @@ public class ClientSide {
         }
 
         if(tapeMeasure) {
-            //Draw for the tape measure in the selected colour.
-            //Tape measure also has no size restriction.
-            //TODO draw length indicator
-            if(!mode.equals(ItemMode.TAPEMEASURE_DISTANCE)) RenderingAssistant.drawSelectionBoundingBoxIfExists(bb, BlockPos.ZERO, player, partialTicks, false, c.getRed(), c.getGreen(), c.getBlue(), 102, 32);
-            else RenderingAssistant.drawLineWithColor(new Vec3d(location.blockPos.getX(), location.blockPos.getY(), location.blockPos.getZ()), new Vec3d(other.blockPos.getX(), other.blockPos.getY(), other.blockPos.getZ()), BlockPos.ZERO, player, partialTicks, false, c.getRed(), c.getGreen(), c.getBlue(), 102, 32);
+            //Draw length indicator
+            final Vec3d v = player.getEyePosition(partialTicks);
+            final double x = v.getX();
+            final double y = v.getY();
+            final double z = v.getZ();
+
+            if(mode.equals(ItemMode.TAPEMEASURE_DISTANCE)) {
+                final Vec3d a = buildTapeMeasureDistanceVector(location);
+                final Vec3d b = buildTapeMeasureDistanceVector(other);
+
+                RenderingAssistant.drawLineWithColor(a, b, BlockPos.ZERO, player, partialTicks, false, c.getRed(), c.getGreen(), c.getBlue(), 102, 32);
+
+                GlStateManager.disableDepthTest();
+                GlStateManager.disableCull();
+
+                final double length = a.distanceTo(b) + BIT_SIZE;
+                renderTapeMeasureLabel(partialTicks, (a.getX() + b.getX()) * 0.5 - x, (a.getY() + b.getY()) * 0.5 - y, (a.getZ() + b.getZ()) * 0.5 - z, length, c.getRed(), c.getGreen(), c.getBlue());
+
+                GlStateManager.enableDepthTest();
+                GlStateManager.enableCull();
+            } else {
+                RenderingAssistant.drawSelectionBoundingBoxIfExists(bb, BlockPos.ZERO, player, partialTicks, false, c.getRed(), c.getGreen(), c.getBlue(), 102, 32);
+
+                GlStateManager.disableDepthTest();
+                GlStateManager.disableCull();
+
+                final double lengthX = bb.maxX - bb.minX;
+                final double lengthY = bb.maxY - bb.minY;
+                final double lengthZ = bb.maxZ - bb.minZ;
+                renderTapeMeasureLabel(partialTicks, bb.minX - x, (bb.maxY + bb.minY) * 0.5 - y, bb.minZ - z, lengthY, c.getRed(), c.getGreen(), c.getBlue());
+                renderTapeMeasureLabel(partialTicks, (bb.minX + bb.maxX) * 0.5 - x, bb.minY - y, bb.minZ - z, lengthX, c.getRed(), c.getGreen(), c.getBlue());
+                renderTapeMeasureLabel(partialTicks, bb.minX - x, bb.minY - y, (bb.minZ + bb.maxZ) * 0.5 - z, lengthZ, c.getRed(), c.getGreen(), c.getBlue());
+
+                GlStateManager.enableDepthTest();
+                GlStateManager.enableCull();
+            }
         } else {
             final double maxSize = ChiselsAndBits2.getInstance().getConfig().maxDrawnRegionSize.get() + 0.001;
             if (bb.maxX - bb.minX <= maxSize && bb.maxY - bb.minY <= maxSize && bb.maxZ - bb.minZ <= maxSize) {
                 RenderingAssistant.drawSelectionBoundingBoxIfExists(bb, BlockPos.ZERO, player, partialTicks, false, 0, 0, 0, 102, 32);
             }
         }
+    }
+
+    /**
+     * Renders the label next to the tape measure bounding box.
+     */
+    private void renderTapeMeasureLabel(final float partialTicks, final double x, final double y, final double z, final double len, final int red, final int green, final int blue) {
+        final double letterSize = 5.0;
+        final double zScale = 0.001;
+
+        final FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
+        final String size = formatTapeMeasureLabel(len);
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translated(x, y + getScale(len) * letterSize, z);
+        final Entity view = Minecraft.getInstance().getRenderViewEntity();
+        if (view != null) {
+            final float yaw = view.prevRotationYaw + (view.rotationYaw - view.prevRotationYaw) * partialTicks;
+            GlStateManager.rotated(180 + -yaw, 0f, 1f, 0f);
+
+            final float pitch = view.prevRotationPitch + (view.rotationPitch - view.prevRotationPitch) * partialTicks;
+            GlStateManager.rotated(-pitch, 1f, 0f, 0f);
+        }
+        GlStateManager.scaled(getScale(len), -getScale(len), zScale);
+        GlStateManager.translated(-fontRenderer.getStringWidth(size) * 0.5, 0, 0);
+        fontRenderer.drawStringWithShadow(size, 0, 0, red << 16 | green << 8 | blue);
+        GlStateManager.popMatrix();
+    }
+
+    /**
+     * Get the scale of the tape measure label based on the length of the measured area.
+     */
+    private double getScale(final double maxLen) {
+        final double maxFontSize = 0.04;
+        final double minFontSize = 0.004;
+
+        final double delta = Math.min(1.0, maxLen / 4.0);
+        double scale = maxFontSize * delta + minFontSize * (1.0 - delta);
+        if (maxLen < 0.25)
+            scale = minFontSize;
+
+        return Math.min(maxFontSize, scale);
+    }
+
+    /**
+     * Format the label of the tape measure into the proper format.
+     */
+    private String formatTapeMeasureLabel(final double d) {
+        final double blocks = Math.floor(d);
+        final double bits = d - blocks;
+
+        final StringBuilder b = new StringBuilder();
+
+        if (blocks > 0)
+            b.append((int) blocks).append("m");
+
+        if (bits * 16 > 0.9999) {
+            if (b.length() > 0)
+                b.append(" ");
+            b.append((int) (bits * 16)).append("b");
+        }
+
+        return b.toString();
+    }
+
+    /**
+     * Builds the vector pointing to a bit location's bit.
+     */
+    private Vec3d buildTapeMeasureDistanceVector(BitLocation a) {
+        final double ax = a.blockPos.getX() + BIT_SIZE * a.bitX + HALF_BIT;
+        final double ay = a.blockPos.getY() + BIT_SIZE * a.bitY + HALF_BIT;
+        final double az = a.blockPos.getZ() + BIT_SIZE * a.bitZ + HALF_BIT;
+        return new Vec3d(ax, ay, az);
     }
 
     /**
@@ -558,9 +674,10 @@ public class ClientSide {
             }
         }
 
-        final double x = player.lastTickPosX + ( player.posX - player.lastTickPosX ) * partialTicks;
-        final double y = player.lastTickPosY + ( player.posY - player.lastTickPosY ) * partialTicks + player.getEyeHeight();
-        final double z = player.lastTickPosZ + ( player.posZ - player.lastTickPosZ ) * partialTicks;
+        final Vec3d v = player.getEyePosition(partialTicks);
+        final double x = v.getX();
+        final double y = v.getY();
+        final double z = v.getZ();
 
         GlStateManager.pushMatrix();
         GlStateManager.translated(pos.getX() - x, pos.getY() - y, pos.getZ() - z);

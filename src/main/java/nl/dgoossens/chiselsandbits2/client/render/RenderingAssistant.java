@@ -23,9 +23,10 @@ import java.util.Random;
 public class RenderingAssistant {
     public static void drawSelectionBoundingBoxIfExists(final AxisAlignedBB bb, final BlockPos blockPos, final PlayerEntity player, final float partialTicks, final boolean normalBoundingBox, final int red, final int green, final int blue, final int alpha, final int seeThruAlpha) {
         if (bb != null) {
-            final double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
-            final double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks + player.getEyeHeight();
-            final double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
+            final Vec3d v = player.getEyePosition(partialTicks);
+            final double x = v.getX();
+            final double y = v.getY();
+            final double z = v.getZ();
 
             GlStateManager.enableBlend();
             GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
@@ -51,9 +52,10 @@ public class RenderingAssistant {
 
     public static void drawLineWithColor(final Vec3d a, final Vec3d b, final BlockPos blockPos, final PlayerEntity player, final float partialTicks, final boolean normalBoundingBox, final int red, final int green, final int blue, final int alpha, final int seeThruAlpha) {
         if(a != null && b != null) {
-            final double x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
-            final double y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
-            final double z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
+            final Vec3d v = player.getEyePosition(partialTicks);
+            final double x = v.getX();
+            final double y = v.getY();
+            final double z = v.getZ();
 
             GlStateManager.enableBlend();
             GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
@@ -88,12 +90,7 @@ public class RenderingAssistant {
     }
 
     // Custom replacement of 1.9.4 -> 1.10's method that changed.
-    public static void renderBoundingBox(
-            final AxisAlignedBB boundingBox,
-            final int red,
-            final int green,
-            final int blue,
-            final int alpha) {
+    public static void renderBoundingBox(final AxisAlignedBB boundingBox, final int red, final int green, final int blue, final int alpha) {
         GlStateManager.pushLightingAttributes(); // glShadeMode( GL_LIGHTING_BIT );
         final Tessellator tess = Tessellator.getInstance();
         final BufferBuilder buffer = tess.getBuffer();

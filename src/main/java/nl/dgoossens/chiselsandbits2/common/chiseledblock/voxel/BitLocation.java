@@ -17,7 +17,7 @@ public class BitLocation {
     private static final double ONE_32ND = 0.5 / VoxelBlob.DIMENSION;
 
     public final BlockPos blockPos;
-    public final int bitX, bitY, bitZ;
+    public int bitX, bitY, bitZ;
 
     public BitLocation(BlockRayTraceResult mop, final boolean absHit, final BitOperation type) {
         final BlockPos absOffset = absHit ? mop.getPos() : BlockPos.ZERO;
