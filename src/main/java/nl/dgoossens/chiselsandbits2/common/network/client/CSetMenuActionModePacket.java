@@ -1,15 +1,13 @@
 package nl.dgoossens.chiselsandbits2.common.network.client;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
-import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
 
 import java.util.function.Supplier;
@@ -52,6 +50,6 @@ public class CSetMenuActionModePacket {
     public boolean isValid(PlayerEntity player) {
         if(player == null) return false;
         final ItemStack ei = player.getHeldItemMainhand();
-        return (ei.getItem() instanceof TapeMeasureItem || ei.getItem() instanceof ChiselItem) && ChiselModeManager.getMode(ei).getType() == newMode.getAssociatedType();
+        return (ei.getItem() instanceof TapeMeasureItem || ei.getItem() instanceof ChiselHandler.BitModifyItem) && ChiselModeManager.getMode(ei).getType() == newMode.getAssociatedType();
     }
 }

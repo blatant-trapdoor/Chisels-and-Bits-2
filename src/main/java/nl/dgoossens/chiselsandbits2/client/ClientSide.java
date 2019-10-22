@@ -53,7 +53,6 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterato
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.*;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
-import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
@@ -255,7 +254,8 @@ public class ClientSide {
                 break;
             case PLACE:
             case SWAP:
-                ChiselModeManager.changeMenuActionMode(action);
+                //Swap to the other one.
+                ChiselModeManager.changeMenuActionMode(action.equals(MenuAction.PLACE) ? MenuAction.SWAP : MenuAction.PLACE);
                 break;
             case BLACK:
             case WHITE:
@@ -364,7 +364,7 @@ public class ClientSide {
             final PlayerEntity player = Minecraft.getInstance().player;
             //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
             boolean tapeMeasure = player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem;
-            if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof ChiselItem) {
+            if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof ChiselHandler.BitModifyItem) {
                 final RayTraceResult rayTrace = ChiselUtil.rayTrace(player);
                 if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK)
                     return;

@@ -3,6 +3,7 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.IFluidState;
@@ -48,7 +49,7 @@ public class ChiselHandler {
      */
     public static void handle(final CChiselBlockPacket pkt, final PlayerEntity player) {
         ItemStack chisel = player.getHeldItemMainhand();
-        if (!(chisel.getItem() instanceof ChiselItem))
+        if (!(chisel.getItem() instanceof BitModifyItem))
             return; //Extra security, if you're somehow no longer holding a chisel we cancel.
 
         final World world = player.world;
@@ -301,6 +302,20 @@ public class ChiselHandler {
 
                                 //Below follows some unnecessarily complex code to lower the durability of the chisel and to automatically move backup chisels to the slot to continue chiseling when the old one breaks.
                                 if (!isCreative) { //No tool damage in creative mode.
+                                    //Swap chisel to a chisel item if it's currently not
+                                    if(!(chisel.getItem() instanceof ChiselItem)) {
+                                        for (int s = 0; s < player.inventory.mainInventory.size(); s++) {
+                                            ItemStack item = player.inventory.mainInventory.get(s);
+                                            if(item.getItem() instanceof ChiselItem) {
+                                                chisel = item;
+                                                break;
+                                            }
+                                        }
+
+                                        if(!(chisel.getItem() instanceof ChiselItem))
+                                            throw new IllegalArgumentException("Expected valid chisel but found none");
+                                    }
+
                                     int usesLeft = chisel.getMaxDamage() - chisel.getDamage();
                                     //While there is durability to be taken we'll keep damaging tools.
                                     usesLeft -= durabilityTaken;
@@ -358,7 +373,30 @@ public class ChiselHandler {
         }
     }
 
+    /**
+     * Get the selected item mode.
+     */
+    public static SelectedItemMode getSelectedMode() {
+        long stamp = 0;
+
+        for (ItemStack item : Minecraft.getInstance().player.inventory.mainInventory) {
+            if (item.getItem() instanceof StorageItem) {
+                long l = ChiselModeManager.getSelectionTime(item);
+                if (l > stamp) {
+                    stamp = l;
+                    return ChiselModeManager.getSelectedItem(item);
+                }
+            }
+        }
+        //Default is the empty bag slot.
+        return SelectedItemMode.NONE_BAG;
+    }
+
+    /**
+     * Get the currently selected bit type.
+     */
     public static int getSelectedBit(final PlayerEntity player, final ItemModeType type) {
+        //TODO cache this value so we can query it really often from the morphing bit
         int ret = VoxelBlob.AIR_BIT;
         long stamp = 0;
 
@@ -439,4 +477,9 @@ public class ChiselHandler {
         }
         return ChiselTypeIterator.create(VoxelBlob.DIMENSION, pkt.from.bitX, pkt.from.bitY, pkt.from.bitZ, vb, pkt.mode, pkt.side, place.equals(PLACE));
     }
+
+    //Interfaces to use to designate which items can place or remove bits.
+    public static interface BitPlaceItem extends BitModifyItem {}
+    public static interface BitRemoveItem extends BitModifyItem {}
+    public static interface BitModifyItem {}
 }

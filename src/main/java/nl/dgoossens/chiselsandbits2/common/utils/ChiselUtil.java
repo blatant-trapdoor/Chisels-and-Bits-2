@@ -14,6 +14,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -68,8 +69,8 @@ public class ChiselUtil {
      * event.
      */
     public static boolean canChiselPosition(final BlockPos pos, final PlayerEntity player, final BlockState state, final Direction face) {
-        if (!player.getHeldItemMainhand().getItem().equals(ChiselsAndBits2.getInstance().getItems().CHISEL))
-            return false; //The chisel needs to be in the main hand!
+        if (!(player.getHeldItemMainhand().getItem() instanceof ChiselHandler.BitModifyItem))
+            return false; //A valid item needs to be in the main hand!
         if (!player.getEntityWorld().getWorldBorder().contains(pos)) return false;
         if (!player.getEntityWorld().isBlockModifiable(player, pos)) return false;
         if (!player.canPlayerEdit(pos, face, player.getHeldItemMainhand())) return false;

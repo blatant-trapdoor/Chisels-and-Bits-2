@@ -12,6 +12,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
@@ -182,7 +183,7 @@ public class ChiselModeManager {
         return (stack.getItem() instanceof BitBagItem) ? SelectedItemMode.NONE_BAG :
                 (stack.getItem() instanceof BitBeakerItem) ? SelectedItemMode.NONE_BEAKER :
                         (stack.getItem() instanceof PaletteItem) ? SelectedItemMode.NONE_BOOKMARK :
-                                (stack.getItem() instanceof ChiselItem) ? CHISEL_SINGLE :
+                                (stack.getItem() instanceof ChiselHandler.BitModifyItem) ? CHISEL_SINGLE :
                                         (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
                                                 (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
                                                         (stack.getItem() instanceof WrenchItem) ? WRENCH_ROTATE :

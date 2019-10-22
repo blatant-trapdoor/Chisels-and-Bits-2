@@ -25,7 +25,6 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
-import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
@@ -73,7 +72,7 @@ public class ChiselEvent {
         final PlayerEntity player = Minecraft.getInstance().player;
         RayTraceResult rtr = ChiselUtil.rayTrace(player);
         if (rtr == null || rtr.getType() != RayTraceResult.Type.BLOCK) return;
-        if (!(player.getHeldItemMainhand().getItem() instanceof ChiselItem)) return;
+        if (!((!leftClick && player.getHeldItemMainhand().getItem() instanceof ChiselHandler.BitPlaceItem) || (leftClick && player.getHeldItemMainhand().getItem() instanceof ChiselHandler.BitRemoveItem))) return;
         e.setCanceled(true);
 
         if (System.currentTimeMillis() - lastClick < 150) return;
