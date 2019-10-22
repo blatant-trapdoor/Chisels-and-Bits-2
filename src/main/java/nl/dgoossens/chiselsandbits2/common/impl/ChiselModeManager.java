@@ -8,7 +8,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
@@ -37,7 +36,7 @@ public class ChiselModeManager {
 
         //Show item mode change in hotbar
         if(packet.isValid(Minecraft.getInstance().player))
-            reshowHighligtedStack();
+            reshowHighlightedStack();
     }
 
     /**
@@ -51,20 +50,41 @@ public class ChiselModeManager {
 
         //Show item mode change in hotbar
         if(packet.isValid(Minecraft.getInstance().player))
-            reshowHighligtedStack();
+            reshowHighlightedStack();
     }
 
     /**
      * Reshows the highlighted stack item.
      */
-    private static void reshowHighligtedStack() {
+    private static void reshowHighlightedStack() {
         try {
             IngameGui ig = Minecraft.getInstance().ingameGUI;
-            Field f = ObfuscationReflectionHelper.findField(IngameGui.class, "highlightingItemStack");
+            //IngameGui#highlightingItemStack
+            Field f = null;
+            for(Field fe : IngameGui.class.getDeclaredFields()) {
+                //We abuse the fact that IngameGui only has one ItemStack and that's the one we need.
+                if(ItemStack.class.isAssignableFrom(fe.getType())) {
+                    f = fe;
+                    break;
+                }
+            }
+            if(f == null) throw new RuntimeException("Unable to lookup textures.");
             f.setAccessible(true);
             f.set(ig, Minecraft.getInstance().player.getHeldItemMainhand());
 
-            Field f2 = ObfuscationReflectionHelper.findField(IngameGui.class, "remainingHighlightTicks");
+            //IngameGui#remainingHighlightTicks
+            Field f2 = null;
+            int i = 0;
+            for(Field fe : IngameGui.class.getDeclaredFields()) {
+                //We want the third int type field which is remainingHighlightTicks.
+                if(Integer.TYPE.isAssignableFrom(fe.getType())) {
+                    i++;
+                    if(i==3) {
+                        f2 = fe;
+                        break;
+                    }
+                }
+            }
             f2.setAccessible(true);
             f2.set(ig, 40);
         } catch(Exception x) {
