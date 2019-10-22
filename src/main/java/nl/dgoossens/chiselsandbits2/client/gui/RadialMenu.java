@@ -17,8 +17,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
@@ -27,8 +25,6 @@ import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
-import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -239,37 +235,32 @@ public class RadialMenu extends Screen {
     }
 
     /**
-     * Renders the icons as retrieved from {@link ClientSide#getIconForAction(MenuAction)} or {@link ClientSide#getIconForMode(IItemMode)}.
+     * Renders the icons as retrieved from {@link ClientSide#getMenuActionIconLocation(MenuAction)} or {@link ClientSide#getModeIconLocation(IItemMode)}.
      * Called both before and after textures are enabled for rendering the flat colours.
      */
     private void renderIcons(double middle_x, double middle_y, BufferBuilder buffer, boolean textures) {
         for (final MenuRegion mnuRgn : modes) {
-            if(!textures) //Menu regions don't render wihout textures.
+            if(!textures) //Menu regions don't render without textures.
+                continue;
+            if (ClientSide.getModeIconLocation(mnuRgn.mode) == null)
                 continue;
 
             final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
             final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
+            final double x1 = x - 7;
+            final double x2 = x + 9;
+            final double y1 = y - 8;
+            final double y2 = y + 8;
 
-            final SpriteIconPositioning sip = ClientSide.getIconForMode(mnuRgn.mode);
-            if (sip == null)
-                continue;
-
-            final double scalex = 15 * sip.width * 0.5;
-            final double scaley = 15 * sip.height * 0.5;
-            final double x1 = x - scalex;
-            final double x2 = x + scalex;
-            final double y1 = y - scaley;
-            final double y2 = y + scaley;
-
-            final TextureAtlasSprite sprite = sip.sprite;
+            final TextureAtlasSprite sprite = Minecraft.getInstance().getTextureMap().getSprite(ClientSide.getModeIconLocation(mnuRgn.mode));
 
             final float f = 1.0f;
             final float a = 1.0f * visibility;
 
-            final double u1 = sip.left * 16.0;
-            final double u2 = (sip.left + sip.width) * 16.0;
-            final double v1 = sip.top * 16.0;
-            final double v2 = (sip.top + sip.height) * 16.0;
+            final double u1 = 0;
+            final double u2 = 16;
+            final double v1 = 0;
+            final double v2 = 16;
 
             buffer.pos(middle_x + x1, middle_y + y1, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v1)).color(f, f, f, a).endVertex();
             buffer.pos(middle_x + x1, middle_y + y2, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v2)).color(f, f, f, a).endVertex();
@@ -279,8 +270,8 @@ public class RadialMenu extends Screen {
 
         for (final MenuButton btn : buttons) {
             //Depending on whether we want textures or not, continue.
-            if(btn.icon == null && textures) continue;
-            if(btn.icon != null && !textures) continue;
+            if(btn.sprite == null && textures) continue;
+            if(btn.sprite != null && !textures) continue;
 
             final float a = 0.8f * visibility;
 
@@ -298,8 +289,8 @@ public class RadialMenu extends Screen {
             final float green = ((btn.color >> 8 & 0xff) / 255.0f);
             final float blue = ((btn.color & 0xff) / 255.0f);
 
-            if (btn.icon != null) {
-                TextureAtlasSprite sprite = btn.icon.sprite;
+            if (btn.sprite != null) {
+                TextureAtlasSprite sprite = btn.sprite;
                 buffer.pos(middle_x + btnx1, middle_y + btny1, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v1)).color(red, green, blue, a).endVertex();
                 buffer.pos(middle_x + btnx1, middle_y + btny2, blitOffset).tex(sprite.getInterpolatedU(u1), sprite.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
                 buffer.pos(middle_x + btnx2, middle_y + btny2, blitOffset).tex(sprite.getInterpolatedU(u2), sprite.getInterpolatedV(v2)).color(red, green, blue, a).endVertex();
@@ -446,17 +437,17 @@ public class RadialMenu extends Screen {
 
     private static class MenuButton {
         final MenuAction action;
+        TextureAtlasSprite sprite;
         double x1, x2;
         double y1, y2;
         boolean highlighted;
-        SpriteIconPositioning icon;
         int color;
         String name;
         Direction textSide;
 
         public MenuButton(final MenuAction action, final double x, final double y, final Direction textSide) {
-            this(action, x, y, 0, textSide);
-            this.icon = ClientSide.getIconForAction(action);
+            this(action, x, y, 0xffffffff, textSide);
+            sprite = Minecraft.getInstance().getTextureMap().getSprite(ClientSide.getMenuActionIconLocation(action));
         }
 
         public MenuButton(final MenuAction action, final double x, final double y, final int col, final Direction textSide) {
@@ -542,8 +533,8 @@ public class RadialMenu extends Screen {
         }
 
         if (tool == ItemModeType.CHISEL) {
-            buttons.add(new MenuButton(MenuAction.PLACE, -TEXT_DISTANCE - 18, -20, Direction.WEST));
-            buttons.add(new MenuButton(MenuAction.REPLACE, -TEXT_DISTANCE - 18, 4, Direction.WEST));
+            if (ChiselModeManager.getMenuActionMode(getMinecraft().player.getHeldItemMainhand()).equals(MenuAction.PLACE)) buttons.add(new MenuButton(MenuAction.PLACE, -TEXT_DISTANCE - 18, -20, Direction.WEST));
+            else buttons.add(new MenuButton(MenuAction.SWAP, -TEXT_DISTANCE - 18, -20, Direction.WEST));
         }
 
         if (tool == ItemModeType.TAPEMEASURE) {

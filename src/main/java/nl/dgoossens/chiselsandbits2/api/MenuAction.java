@@ -10,7 +10,7 @@ import net.minecraft.item.DyeColor;
  */
 public enum MenuAction {
     PLACE,
-    REPLACE,
+    SWAP,
 
     UNDO,
     REDO,
@@ -55,6 +55,21 @@ public enum MenuAction {
         return colour;
     }
 
+    public boolean hasIcon() {
+        switch(this) {
+            case PLACE:
+            case SWAP:
+            case UNDO:
+            case REDO:
+            case ROLL_X:
+            case ROLL_Y:
+            case ROLL_Z:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     /**
      * Get the localized key from this Menu Action.
      */
@@ -80,7 +95,7 @@ public enum MenuAction {
             case ROLL_Z:
                 return ItemModeType.PATTERN;
             case PLACE:
-            case REPLACE:
+            case SWAP:
                 return ItemModeType.CHISEL;
             case UNDO:
             case REDO:

@@ -5,6 +5,6 @@ package nl.dgoossens.chiselsandbits2.api;
  */
 public enum BitOperation {
     PLACE,
-    REPLACE, //Place and replace can be toggled between using buttons in the menu.
+    SWAP, //Swap removes the current bit and replaces it with the new bit. (combo of PLACE/REMOVE)
     REMOVE
 }

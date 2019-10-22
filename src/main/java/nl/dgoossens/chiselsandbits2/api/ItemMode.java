@@ -70,6 +70,13 @@ public enum ItemMode implements IItemMode {
     }
 
     /**
+     * Returns whether or not this mode has an icon.
+     */
+    public boolean hasIcon() {
+        return true;
+    }
+
+    /**
      * Returns false when a item mode should not have a hotkey.
      */
     public boolean hasHotkey() {

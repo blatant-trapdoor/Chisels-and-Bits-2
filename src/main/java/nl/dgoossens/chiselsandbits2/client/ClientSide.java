@@ -74,13 +74,9 @@ public class ClientSide {
     private static final double BLOCK_SIZE = 1.0;
     private static final double HALF_BIT = BIT_SIZE / 2.0f;
 
-    //--- SPRITES ---
-    private static final HashMap<IItemMode, SpriteIconPositioning> chiselModeIcons = new HashMap<>();
-    private static final HashMap<MenuAction, SpriteIconPositioning> menuActionIcons = new HashMap<>();
-    public static TextureAtlasSprite trashIcon;
-    public static TextureAtlasSprite sortIcon;
-    public static TextureAtlasSprite swapIcon;
-    public static TextureAtlasSprite placeIcon;
+    //--- ICON LOCATIONS ---
+    private static final HashMap<IItemMode, ResourceLocation> modeIconLocations = new HashMap<>();
+    private static final HashMap<MenuAction, ResourceLocation> menuActionLocations = new HashMap<>();
 
     //--- TAPE MEASURE ---
     private List<Measurement> tapeMeasurements = new ArrayList<>();
@@ -139,78 +135,34 @@ public class ClientSide {
     //--- TICK & RENDERING ---
     private RadialMenu radialMenu = new RadialMenu();
 
-    public static SpriteIconPositioning getIconForMode(final IItemMode mode) {
-        return chiselModeIcons.get(mode);
+    public static ResourceLocation getModeIconLocation(final IItemMode mode) {
+        return modeIconLocations.get(mode);
     }
 
-    public static SpriteIconPositioning getIconForAction(final MenuAction action) {
-        return menuActionIcons.get(action);
+    public static ResourceLocation getMenuActionIconLocation(final MenuAction action) {
+        return menuActionLocations.get(action);
     }
 
-    @SubscribeEvent   //TODO waiting for PR https://github.com/MinecraftForge/MinecraftForge/pull/6032
+    @SubscribeEvent
     public static void registerIconTextures(final TextureStitchEvent.Pre e) {
-        /*swapIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/swap"));
-        placeIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/place"));
-        trashIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/trash"));
-        sortIcon = e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/sort"));
+        if(!e.getMap().getBasePath().equals("textures")) return;
 
-        for(final MenuAction menuAction : MenuAction.values()) {
-            menuActionIcons.put(menuAction, new SpriteIconPositioning(e.getMap().addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/"+menuAction.name().toLowerCase()))));
+        e.addSprite(new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/swap"));
+        e.addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/place"));
+        e.addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/trash"));
+        e.addSprite(new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/sort"));
+
+        for (final MenuAction menuAction : MenuAction.values()) {
+            if (!menuAction.hasIcon()) continue;
+            menuActionLocations.put(menuAction, new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/" + menuAction.name().toLowerCase()));
+            e.addSprite(menuActionLocations.get(menuAction));
         }
 
-        for(final ItemMode itemMode : ItemMode.values()) {
-            final SpriteIconPositioning sip = new SpriteIconPositioning();
-
-            final ResourceLocation png = new ResourceLocation( ChiselsAndBits2.MOD_ID, "textures/icons/" + itemMode.getTypelessName().toLowerCase() + ".png" );
-
-            sip.sprite = e.getMap().addSprite( new ResourceLocation( ChiselsAndBits2.MOD_ID, "icons/" + itemMode.getTypelessName().toLowerCase() ) );
-
-            try {
-                final IResource iresource = Minecraft.getInstance().getResourceManager().getResource(png);
-                final BufferedImage bi;
-                try {
-                    bi = ImageIO.read(iresource.getInputStream());
-                } finally {
-                    IOUtils.closeQuietly(iresource.getInputStream());
-                }
-
-                int bottom = 0;
-                int right = 0;
-                sip.left = bi.getWidth();
-                sip.top = bi.getHeight();
-
-                for ( int x = 0; x < bi.getWidth(); x++ )
-                {
-                    for ( int y = 0; y < bi.getHeight(); y++ )
-                    {
-                        final int color = bi.getRGB( x, y );
-                        final int a = color >> 24 & 0xff;
-                        if ( a > 0 )
-                        {
-                            sip.left = Math.min( sip.left, x );
-                            right = Math.max( right, x );
-
-                            sip.top = Math.min( sip.top, y );
-                            bottom = Math.max( bottom, y );
-                        }
-                    }
-                }
-
-                sip.height = bottom - sip.top + 1;
-                sip.width = right - sip.left + 1;
-
-                sip.left /= bi.getWidth();
-                sip.width /= bi.getWidth();
-                sip.top /= bi.getHeight();
-                sip.height /= bi.getHeight();
-            } catch(final IOException ex) {
-                sip.height = 1;
-                sip.width = 1;
-                sip.left = 0;
-                sip.top = 0;
-            }
-            chiselModeIcons.put(itemMode, sip);
-        }*/
+        for (final ItemMode itemMode : ItemMode.values()) {
+            if (!itemMode.hasIcon()) continue;
+            modeIconLocations.put(itemMode, new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/" + itemMode.getTypelessName().toLowerCase()));
+            e.addSprite(modeIconLocations.get(itemMode));
+        }
     }
 
     /**
@@ -302,7 +254,7 @@ public class ClientSide {
                 System.out.println("ROLL_Z");
                 break;
             case PLACE:
-            case REPLACE:
+            case SWAP:
                 ChiselModeManager.changeMenuActionMode(action);
                 break;
             case BLACK:
@@ -370,7 +322,7 @@ public class ClientSide {
                         final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + 2) * 2;
                         final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
 
-                        final TextureAtlasSprite sprite = chiselModeIcons.get(mode) == null ? null : chiselModeIcons.get(mode).sprite;
+                        final ResourceLocation sprite = modeIconLocations.get(mode);
                         if (mode instanceof SelectedItemMode) {
                             if (mode.equals(SelectedItemMode.NONE_BAG)) continue;
                             ir.renderItemIntoGUI(((SelectedItemMode) mode).getStack(), x, y);
@@ -388,7 +340,7 @@ public class ClientSide {
                             } catch (Exception rx) {
                                 rx.printStackTrace();
                             }
-                            AbstractGui.blit(x + 2, y + 2, blitOffset, 16, 16, sprite);
+                            AbstractGui.blit(x + 2, y + 2, blitOffset, 16, 16, Minecraft.getInstance().getTextureMap().getSprite(sprite));
                             GlStateManager.disableBlend();
                             GlStateManager.translatef(0, 0, -200);
                         }

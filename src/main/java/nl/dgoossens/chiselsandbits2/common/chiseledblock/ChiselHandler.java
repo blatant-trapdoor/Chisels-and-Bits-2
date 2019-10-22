@@ -118,7 +118,7 @@ public class ChiselHandler {
 
                             //Handle the operation
                             switch (pkt.operation) {
-                                case REPLACE:
+                                case SWAP:
                                 case PLACE: {
                                     //Determine our resources, not needed if this is a REMOVE operation
                                     long bitsUsed = 0, bitsAvailable = 0;
@@ -153,11 +153,11 @@ public class ChiselHandler {
                                             continue;
 
                                         //Don't waste durability on the same type.
-                                        if (pkt.operation == REPLACE && blk == placeStateID)
+                                        if (pkt.operation == SWAP && blk == placeStateID)
                                             continue;
 
                                         //Track how many bits we've extracted and it's not a coloured bit.
-                                        if (pkt.operation == REPLACE && !VoxelType.isColoured(blk))
+                                        if (pkt.operation == SWAP && !VoxelType.isColoured(blk))
                                             extracted.put(blk, extracted.getOrDefault(blk, 0L) + 1);
 
                                         vb.set(i.x(), i.y(), i.z(), placeStateID);

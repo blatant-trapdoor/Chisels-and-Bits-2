@@ -127,7 +127,7 @@
   "general.chiselsandbits2.menuaction.roll_y": "Rotate Y Axis",
   "general.chiselsandbits2.menuaction.roll_z": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.place": "Place",
-  "general.chiselsandbits2.menuaction.replace": "Replace",
+  "general.chiselsandbits2.menuaction.swap": "Swap",
   "general.chiselsandbits2.menuaction.white": "White",
   "general.chiselsandbits2.menuaction.black": "Black",
   "general.chiselsandbits2.menuaction.cyan": "Cyan",
@@ -151,5 +151,5 @@
   "general.chiselsandbits2.menuaction.roll_y.hotkey": "Rotate Y Axis",
   "general.chiselsandbits2.menuaction.roll_z.hotkey": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.place.hotkey": "Placement Mode",
-  "general.chiselsandbits2.menuaction.replace.hotkey": "Replace Mode"
+  "general.chiselsandbits2.menuaction.swap.hotkey": "Swap Mode"
 }

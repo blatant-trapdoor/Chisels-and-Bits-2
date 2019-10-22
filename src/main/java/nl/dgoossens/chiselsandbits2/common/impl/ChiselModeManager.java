@@ -41,7 +41,7 @@ public class ChiselModeManager {
 
     /**
      * Set the menu action mode of an itemstack.
-     * MenuAction#COLOURS and MenuAction#PLACE/MenuAction#REPLACE
+     * MenuAction#COLOURS and MenuAction#PLACE/MenuAction#SWAP
      * are accepted.
      */
     public static void changeMenuActionMode(final MenuAction newAction) {

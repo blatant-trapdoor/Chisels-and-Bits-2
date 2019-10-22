@@ -11,7 +11,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -30,8 +29,6 @@ import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-
-import static nl.dgoossens.chiselsandbits2.api.BitOperation.REMOVE;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -59,7 +56,7 @@ public class ChiselEvent {
         if(System.currentTimeMillis()-lastClick < 150) return;
         lastClick = System.currentTimeMillis();
 
-        final BitOperation operation = e.isAttack() ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.REPLACE) ? BitOperation.REPLACE : BitOperation.PLACE);
+        final BitOperation operation = e.isAttack() ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
         startChiselingBlock((BlockRayTraceResult) rtr, ChiselModeManager.getMode(player.getHeldItemMainhand()), player, operation);
     }*/
 
@@ -82,7 +79,7 @@ public class ChiselEvent {
         if (System.currentTimeMillis() - lastClick < 150) return;
         lastClick = System.currentTimeMillis();
 
-        final BitOperation operation = leftClick ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.REPLACE) ? BitOperation.REPLACE : BitOperation.PLACE);
+        final BitOperation operation = leftClick ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
 
         //Determine the placed bit, if this is REMOVE we set this to -1 to bypass any checks.
         int placeStateID = ChiselHandler.getSelectedBit(player, null);
