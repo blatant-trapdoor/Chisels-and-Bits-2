@@ -18,6 +18,11 @@ public abstract class StorageItem extends TypedItem {
     }
 
     @Override
+    public boolean showIconInHotbar() {
+        return true;
+    }
+
+    @Override
     public ICapabilityProvider initCapabilities(final ItemStack stack, final CompoundNBT nbt) {
         return new StorageCapabilityProvider();
     }

@@ -16,6 +16,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -310,6 +312,9 @@ public class ClientSide {
             Minecraft.getInstance().getProfiler().startSection("chiselsandbit2-toolbaricons");
             final PlayerEntity player = Minecraft.getInstance().player;
             if (!player.isSpectator()) {
+                //If at least one item wants to render something
+                if (!hasToolbarIconItem(player.inventory)) return;
+
                 final ItemRenderer ir = Minecraft.getInstance().getItemRenderer();
                 GlStateManager.translatef(0, 0, 50);
                 GlStateManager.scalef(0.5f, 0.5f, 1);
@@ -317,7 +322,7 @@ public class ClientSide {
                 Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
                 RenderHelper.enableGUIStandardItemLighting();
                 for (int slot = 8; slot >= 0; --slot) {
-                    if (player.inventory.mainInventory.get(slot).getItem() instanceof IItemMenu) {
+                    if (player.inventory.mainInventory.get(slot).getItem() instanceof IItemMenu && ((IItemMenu) player.inventory.mainInventory.get(slot).getItem()).showIconInHotbar()) {
                         final IItemMode mode = ChiselModeManager.getMode(player.inventory.mainInventory.get(slot));
                         final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + 2) * 2;
                         final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
@@ -352,6 +357,18 @@ public class ClientSide {
             }
             Minecraft.getInstance().getProfiler().endSection();
         }
+    }
+
+    /**
+     * Returns true if this player inventory's hotbar has at least one item
+     * which wants to render a toolbar icon.
+     */
+    private static boolean hasToolbarIconItem(PlayerInventory inventory) {
+        for (int slot = 8; slot >= 0; --slot) {
+            if (inventory.mainInventory.get(slot).getItem() instanceof IItemMenu && ((IItemMenu) inventory.mainInventory.get(slot).getItem()).showIconInHotbar())
+                return true;
+        }
+        return false;
     }
 
     /**

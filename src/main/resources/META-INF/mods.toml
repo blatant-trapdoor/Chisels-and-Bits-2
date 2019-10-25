@@ -1,13 +1,13 @@
 modLoader="javafml"
 loaderVersion="[28,)"
-issueTrackerURL="https://github.com/daniel-goossens/Chisels-and-Bits2/issues"
+issueTrackerURL="https://github.com/Aeltumn/Chisels-and-Bits2/issues"
 
 [[mods]]
 modId="chiselsandbits2"
 version="${file.jarVersion}"
 displayName="Chisels & Bits 2"
 # updateJSONURL=""
-# displayURL=""
+displayURL="https://github.com/Aeltumn/Chisels-And-Bits2/"
 logoFile="chiselsandbits2.png"
 credits="Original mod created by AlgorithmX2"
 authors="Aeltumn, AlgorithmX2"

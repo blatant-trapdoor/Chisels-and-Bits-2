@@ -21,6 +21,11 @@ public class MorphingBitItem extends TypedItem implements ChiselHandler.BitPlace
     }
 
     @Override
+    public boolean showIconInHotbar() {
+        return true;
+    }
+
+    @Override
     public ItemModeType getAssociatedType() {
         return ItemModeType.CHISEL;
     }

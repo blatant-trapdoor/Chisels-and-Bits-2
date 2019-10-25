@@ -26,6 +26,11 @@ public class MalletItem extends TypedItem {
     }
 
     @Override
+    public boolean showIconInHotbar() {
+        return true;
+    }
+
+    @Override
     public ItemModeType getAssociatedType() {
         return ItemModeType.MALLET;
     }

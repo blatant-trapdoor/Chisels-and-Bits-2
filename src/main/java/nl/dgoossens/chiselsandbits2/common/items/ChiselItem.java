@@ -27,6 +27,11 @@ public class ChiselItem extends TypedItem implements ChiselHandler.BitPlaceItem,
     }
 
     @Override
+    public boolean showIconInHotbar() {
+        return true;
+    }
+
+    @Override
     public ItemModeType getAssociatedType() {
         return ItemModeType.CHISEL;
     }

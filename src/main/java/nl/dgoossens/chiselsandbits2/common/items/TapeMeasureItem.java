@@ -21,6 +21,11 @@ public class TapeMeasureItem extends TypedItem {
     }
 
     @Override
+    public boolean showIconInHotbar() {
+        return false;
+    }
+
+    @Override
     public ItemModeType getAssociatedType() {
         return ItemModeType.TAPEMEASURE;
     }
