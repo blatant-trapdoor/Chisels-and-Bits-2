@@ -15,7 +15,7 @@ import java.util.List;
 public class BitBagItem extends StorageItem {
     @Override
     public ItemModeType getAssociatedType() {
-        return ItemModeType.SELECTED_BLOCK;
+        return ItemModeType.SELECTED;
     }
 
     @Override

@@ -35,8 +35,9 @@ public abstract class StorageItem extends TypedItem {
     @Override
     public double getDurabilityForDisplay(ItemStack stack) {
         SelectedItemMode s = ChiselModeManager.getSelectedItem(stack);
+        if(s == null) return 0;
         BitStorage store = stack.getCapability(StorageCapabilityProvider.STORAGE).orElse(null);
         if(store == null) return 0;
-        return (double) (ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - (s.getType() == ItemModeType.SELECTED_BLOCK ? store.getAmount(s.getBlock()) : store.getAmount(s.getFluid()))) / (double) ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get();
+        return (double) (ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - store.get(s.getVoxelWrapper())) / (double) ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get();
     }
 }

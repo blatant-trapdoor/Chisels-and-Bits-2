@@ -14,6 +14,7 @@ public class ModConfiguration {
     public ForgeConfigSpec.DoubleValue radialMenuVolume;
     public ForgeConfigSpec.BooleanValue enableToolbarIcons;
     public ForgeConfigSpec.BooleanValue enableModeScrolling;
+    public ForgeConfigSpec.BooleanValue enablePlacementGhost;
 
     public ForgeConfigSpec.BooleanValue enableVivecraftCompatibility;
     public ForgeConfigSpec.BooleanValue disableUnfinishedFeatures;
@@ -51,6 +52,10 @@ public class ModConfiguration {
             enableModeScrolling = builder
                     .comment("When enabled the mode of a tool will be changed when using the scroll wheel whilst shifting and holding the item")
                     .define("enableModeScrolling", true);
+
+            enablePlacementGhost = builder
+                    .comment("Disable to stop ghost preview blocks from showing whilst holding a chiseled block.")
+                    .define("enablePlacementGhost", true);
 
             builder.pop();
 

@@ -5,7 +5,9 @@ import net.minecraft.client.gui.IngameGui;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.ByteNBT;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -18,6 +20,7 @@ import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetMenuActionModePacket;
 import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
+import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import java.awt.*;
 import java.lang.reflect.Field;
@@ -118,40 +121,14 @@ public class ChiselModeManager {
             IItemMode i = getMode(item);
             if(!(i instanceof SelectedItemMode)) return; //Just in case.
             SelectedItemMode current = ((SelectedItemMode) i);
-            item.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(c -> {
-                BitStorageImpl bs = (BitStorageImpl) c;
-                switch(currentMode.getType()) {
-                    case SELECTED_BLOCK:
-                    {
-                        if(bs.listBlocks().size() <= 1) return; //You can't scroll without at least 2 elements.
-                        int j = bs.getBlockIndex(current.getBlock());
-                        j += (dwheel < 0 ? -1 : 1);
-                        if(bs.listBlocks().size() <= j) j = 0;
-                        if(j < 0) j = bs.listBlocks().size() - 1;
-                        changeItemMode(SelectedItemMode.fromBlock(bs.getBlock(j)));
-                    }
-                        break;
-                    case SELECTED_FLUID:
-                    {
-                        if(bs.listFluids().size() <= 1) return; //You can't scroll without at least 2 elements.
-                        int j = bs.getFluidIndex(current.getFluid());
-                        j += (dwheel < 0 ? -1 : 1);
-                        if(bs.listFluids().size() <= j) j = 0;
-                        if(j < 0) j = bs.listFluids().size() - 1;
-                        changeItemMode(SelectedItemMode.fromFluid(bs.getFluid(j)));
-                    }
-                        break;
-                    case SELECTED_BOOKMARK:
-                    {
-                        if(bs.listColours().size() <= 1) return; //You can't scroll without at least 2 elements.
-                        int j = bs.listColours().indexOf(current.getColour());
-                        j += (dwheel < 0 ? -1 : 1);
-                        if(bs.listColours().size() <= j) j = 0;
-                        if(j < 0) j = bs.listColours().size() - 1;
-                        changeItemMode(SelectedItemMode.fromColour(bs.listColours().get(j)));
-                    }
-                        break;
-                }
+            item.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(bs -> {
+                if(bs.list().size() <= 1) return; //You can't scroll without at least 2 elements.
+                VoxelWrapper wrapper = current.getVoxelWrapper();
+                int j = bs.getSlot(wrapper);
+                j += (dwheel < 0 ? -1 : 1);
+                if(bs.list().size() <= j) j = 0;
+                if(j < 0) j = bs.list().size() - 1;
+                changeItemMode(SelectedItemMode.fromVoxelWrapper(wrapper));
             });
         }
     }
@@ -174,21 +151,21 @@ public class ChiselModeManager {
         final CompoundNBT nbt = stack.getTag();
         if (nbt != null && nbt.contains("mode")) {
             try {
-                return resolveMode(nbt.getString("mode"), stack);
+                return resolveMode(nbt.getString("mode"), nbt.getBoolean("isDynamic"), nbt.getInt("dynamicId"));
             } catch (final Exception x) {
                 x.printStackTrace();
             }
         }
 
-        return (stack.getItem() instanceof BitBagItem) ? SelectedItemMode.NONE_BAG :
-                (stack.getItem() instanceof BitBeakerItem) ? SelectedItemMode.NONE_BEAKER :
-                        (stack.getItem() instanceof PaletteItem) ? SelectedItemMode.NONE_BOOKMARK :
-                                (stack.getItem() instanceof ChiselHandler.BitModifyItem) ? CHISEL_SINGLE :
-                                        (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
-                                                (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
-                                                        (stack.getItem() instanceof WrenchItem) ? WRENCH_ROTATE :
-                                                                (stack.getItem() instanceof BlueprintItem) ? BLUEPRINT_UNKNOWN :
-                                                                        MALLET_UNKNOWN;
+        return (stack.getItem() instanceof BitBagItem) ||
+                (stack.getItem() instanceof BitBeakerItem) ||
+                (stack.getItem() instanceof PaletteItem) ? SelectedItemMode.NONE :
+                (stack.getItem() instanceof ChiselHandler.BitModifyItem) ? CHISEL_SINGLE :
+                        (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
+                                (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
+                                        (stack.getItem() instanceof WrenchItem) ? WRENCH_ROTATE :
+                                                (stack.getItem() instanceof BlueprintItem) ? BLUEPRINT_UNKNOWN :
+                                                        MALLET_UNKNOWN;
     }
 
     /**
@@ -220,11 +197,10 @@ public class ChiselModeManager {
      * Resolves an IItemMode from the output of
      * {@link IItemMode#getName()}
      */
-    public static IItemMode resolveMode(final String name, final ItemStack item) {
-        if(item != null && item.getItem() instanceof PaletteItem) {
-            return name.equalsIgnoreCase("null") ? SelectedItemMode.NONE_BOOKMARK : SelectedItemMode.fromColour(new Color(Integer.valueOf(name), true));
-        } else if(item != null && item.getItem() instanceof StorageItem) {
-            return SelectedItemMode.fromName(name, item.getItem() instanceof BitBeakerItem);
+    public static IItemMode resolveMode(final String name, final boolean isDynamic, final int dynamicId) {
+        if(isDynamic) {
+            //Dynamic Item Mode
+            return name.equals(SelectedItemMode.NONE.getName()) ? SelectedItemMode.NONE : SelectedItemMode.fromVoxelType(dynamicId);
         } else {
             try {
                 return ItemMode.valueOf(name);
@@ -239,6 +215,8 @@ public class ChiselModeManager {
     public static void setMode(final ItemStack stack, final IItemMode mode) {
         if (stack != null) {
             stack.setTagInfo("mode", new StringNBT(mode.getName()));
+            stack.setTagInfo("isDynamic", new ByteNBT(mode.getType().isDynamic() ? (byte) 1 : (byte) 0));
+            stack.setTagInfo("dynamicId", new IntNBT(mode.getDynamicId()));
             if(mode.getType().isDynamic())
                 stack.setTagInfo("timestamp", new LongNBT(System.currentTimeMillis()));
         }

@@ -1,5 +1,8 @@
 package nl.dgoossens.chiselsandbits2.api;
 
+/**
+ * The possible types of a given bit.
+ */
 public enum VoxelType {
     BLOCKSTATE,
     COLOURED,
@@ -37,6 +40,13 @@ public enum VoxelType {
      */
     public static boolean isColoured(int bit) {
         return (bit & 0b11000000000000000000000000000000) == 0b10000000000000000000000000000000;
+    }
+
+    /**
+     * Most efficient check to see if a bit is a coloured bit.
+     */
+    public static boolean isBlock(int bit) {
+        return (bit & 0b11000000000000000000000000000000) == 0b11000000000000000000000000000000;
     }
 
     /**

@@ -68,6 +68,7 @@ public class ChiselHandler {
         final VoxelType type = VoxelType.getType(placeStateID);
         final Block block = ModUtil.getBlockState(placeStateID).getBlock();
         final Fluid fluid = ModUtil.getFluidState(placeStateID).getFluid();
+        final VoxelWrapper wrapper = VoxelWrapper.forAbstract(placeStateID);
         final boolean isCreative = player.isCreative();
 
         final BlockPos from = pkt.from.blockPos;
@@ -132,12 +133,8 @@ public class ChiselHandler {
                                         for (ItemStack item : player.inventory.mainInventory) {
                                             if (item.getItem() instanceof StorageItem) {
                                                 LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
-                                                if (cap.isPresent()) {
-                                                    if (type == VoxelType.BLOCKSTATE && item.getItem() instanceof BitBagItem)
-                                                        bitsAvailable += cap.orElse(null).getAmount(block);
-                                                    else if (item.getItem() instanceof BitBeakerItem)
-                                                        bitsAvailable += cap.orElse(null).getAmount(fluid);
-                                                }
+                                                if (cap.isPresent())
+                                                    bitsAvailable += cap.orElse(null).get(wrapper);
                                             }
                                         }
                                     }
@@ -181,16 +178,9 @@ public class ChiselHandler {
                                                 LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
                                                 if (cap.isPresent()) {
                                                     BitStorage bs = cap.orElse(null);
-                                                    if (type == VoxelType.BLOCKSTATE && item.getItem() instanceof BitBagItem) {
-                                                        if (bs.hasBlock(block.getBlock())) {
-                                                            bitsUsed = -bs.addAmount(block.getBlock(), -bitsUsed);
-                                                            ChiselModeManager.updateStackCapability(item, bs, player);
-                                                        }
-                                                    } else if (item.getItem() instanceof BitBeakerItem) {
-                                                        if (bs.hasFluid(fluid.getFluid())) {
-                                                            bitsUsed = -bs.addAmount(fluid.getFluid(), -bitsUsed);
-                                                            ChiselModeManager.updateStackCapability(item, bs, player);
-                                                        }
+                                                    if (bs.has(wrapper)) {
+                                                        bitsUsed = -bs.add(wrapper, -bitsUsed);
+                                                        ChiselModeManager.updateStackCapability(item, bs, player);
                                                     }
 
                                                     //We can break early if we're done.
@@ -240,20 +230,11 @@ public class ChiselHandler {
                                         LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
                                         if (cap.isPresent()) {
                                             BitStorage bs = cap.orElse(null);
-                                            if (type == VoxelType.BLOCKSTATE && item.getItem() instanceof BitBagItem) {
-                                                if (bs.hasBlock(block.getBlock())) {
-                                                    long h = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(b));
-                                                    bs.addAmount(b, h);
-                                                    toGive -= h;
-                                                    ChiselModeManager.updateStackCapability(item, bs, player);
-                                                }
-                                            } else {
-                                                if (bs.hasFluid(fluid.getFluid()) && item.getItem() instanceof BitBeakerItem) {
-                                                    long g = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(f));
-                                                    bs.addAmount(f, g);
-                                                    toGive -= g;
-                                                    ChiselModeManager.updateStackCapability(item, bs, player);
-                                                }
+                                            if (bs.has(wrapper)) {
+                                                long h = Math.min(toGive, bs.queryRoom(wrapper));
+                                                bs.add(wrapper, h);
+                                                toGive -= h;
+                                                ChiselModeManager.updateStackCapability(item, bs, player);
                                             }
                                         }
                                     }
@@ -268,17 +249,10 @@ public class ChiselHandler {
                                         LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
                                         if (cap.isPresent()) {
                                             BitStorage bs = cap.orElse(null);
-                                            if (vt == VoxelType.BLOCKSTATE && item.getItem() instanceof BitBagItem) {
-                                                long h = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(b));
-                                                bs.addAmount(b, h);
-                                                toGive -= h;
-                                                ChiselModeManager.updateStackCapability(item, bs, player);
-                                            } else if (vt == VoxelType.FLUIDSTATE && item.getItem() instanceof BitBeakerItem) {
-                                                long g = Math.min(toGive, ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - bs.getAmount(f));
-                                                bs.addAmount(f, g);
-                                                toGive -= g;
-                                                ChiselModeManager.updateStackCapability(item, bs, player);
-                                            }
+                                            long h = Math.min(toGive, bs.queryRoom(wrapper));
+                                            bs.add(wrapper, h);
+                                            toGive -= h;
+                                            ChiselModeManager.updateStackCapability(item, bs, player);
                                         }
                                     }
 
@@ -389,13 +363,13 @@ public class ChiselHandler {
             }
         }
         //Default is the empty bag slot.
-        return SelectedItemMode.NONE_BAG;
+        return SelectedItemMode.NONE;
     }
 
     /**
      * Get the currently selected bit type.
      */
-    public static int getSelectedBit(final PlayerEntity player, final ItemModeType type) {
+    public static int getSelectedBit(final PlayerEntity player, final VoxelType type) {
         //TODO cache this value so we can query it really often from the morphing bit
         int ret = VoxelBlob.AIR_BIT;
         long stamp = 0;
@@ -405,9 +379,9 @@ public class ChiselHandler {
             if (item.getItem() instanceof StorageItem) {
                 if (type != null) {
                     //Cancel if we don't want this type.
-                    if (type == ItemModeType.SELECTED_BLOCK && !(item.getItem() instanceof BitBagItem)) continue;
-                    if (type == ItemModeType.SELECTED_FLUID && !(item.getItem() instanceof BitBeakerItem)) continue;
-                    if (type == ItemModeType.SELECTED_BOOKMARK && !(item.getItem() instanceof PaletteItem)) continue;
+                    if (type == VoxelType.BLOCKSTATE && !(item.getItem() instanceof BitBagItem)) continue;
+                    if (type == VoxelType.FLUIDSTATE && !(item.getItem() instanceof BitBeakerItem)) continue;
+                    if (type == VoxelType.COLOURED && !(item.getItem() instanceof PaletteItem)) continue;
                 }
 
                 long l = ChiselModeManager.getSelectionTime(item);

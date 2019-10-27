@@ -40,10 +40,8 @@ public class CSetMenuActionModePacket {
         ctx.get().enqueueWork(() -> {
             ServerPlayerEntity player = ctx.get().getSender();
             //Only tape measures support colour at the moment.
-            if (pkt.isValid(player)) {
+            if (pkt.isValid(player))
                 ChiselModeManager.setMenuActionMode(player.getHeldItemMainhand(), pkt.newMode);
-                //Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent(ei.getItem().getHighlightTip(ei, ei.getDisplayName().getFormattedText())), true);
-            }
         });
     }
 

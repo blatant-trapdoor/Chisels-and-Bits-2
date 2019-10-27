@@ -1,28 +1,17 @@
 package nl.dgoossens.chiselsandbits2.api;
 
-import net.minecraft.block.Block;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 
-import java.awt.*;
 import java.util.List;
 
+/**
+ * Represents an interface capable of storing bits of any type.
+ */
 public interface BitStorage {
     /**
-     * Returns a list of all types of blocks in this storage.
+     * Lists the bits stored in this storage.
      */
-    List<Block> listBlocks();
-
-    /**
-     * Returns a list of all types of blocks in this storage.
-     */
-    List<Fluid> listFluids();
-
-    /**
-     * Returns a list of all bookmarked colours in this storage.
-     */
-    List<Color> listColours();
+    List<VoxelWrapper> list();
 
     /**
      * Returns a set of all types of blocks in this storage.
@@ -31,59 +20,54 @@ public interface BitStorage {
     List<IItemMode> listTypesAsItemModes(Item item);
 
     /**
-     * Get the amount of block bits stored for a given type.
+     * Adds a wrapper to the first empty slot.
+     * @return How much couldn't be put into the bag.
      */
-    long getAmount(final Block type);
+    long add(final VoxelWrapper w, final long amount);
 
     /**
-     * Set the amount of block bits stored for a given type.
+     * Sets a given voxel type to a given amount.
      */
-    void setAmount(final Block type, final long amount);
+    void set(final VoxelWrapper w, final long amount);
 
     /**
-     * Adds to the amount of block bits stored for a given type.
-     * If this amount if negative and it would result in a negative amount of bits to remain we return the amount of bits we're short.
+     * Returns whether this storage stores a given voxel type.
      */
-    long addAmount(final Block type, final long amount);
+    boolean has(VoxelWrapper b);
 
     /**
-     * Get the amount of fluid bits stored for a given type.
+     * Gets the current amount of the voxel type.
      */
-    long getAmount(final Fluid type);
+    long get(final VoxelWrapper w);
 
     /**
-     * Set the amount of fluid bits stored for a given type.
+     * Return the amount of bits of a given voxel type that can be stored.
      */
-    void setAmount(final Fluid type, final long amount);
+    long queryRoom(final VoxelWrapper w);
 
     /**
-     * Adds to the amount of fluid bits stored for a given type.
-     * If this amount if negative and it would result in a negative amount of bits to remain we return the amount of bits we're short.
+     * Get the slot a given voxel wrapper is located in. If it has no slot this method
+     * will return -1.
      */
-    long addAmount(final Fluid type, final long amount);
+    int getSlot(final VoxelWrapper w);
 
     /**
-     * Adds a bookmark to a given slot.
+     * Sets a given slot to a given amount.
      */
-    void addBookmark(final Color color);
+    void setSlot(final int index, final VoxelWrapper w, final long amount);
 
     /**
-     * Sets a bookmark to a given slot.
+     * Removes the given slot.
      */
-    void setBookmark(final int index, final Color color);
+    void clearSlot(final int index);
 
     /**
-     * Removes the bookmark at a given slot.
+     * Gets the voxel typ this storage is limited to.
      */
-    void clearBookmark(final int index);
+    VoxelType getType();
 
     /**
-     * Returns whether this storage stores a given block.
+     * Set the voxel type this storage is limited to.
      */
-    boolean hasBlock(Block b);
-
-    /**
-     * Returns whether this storage stores a given fluid.
-     */
-    boolean hasFluid(Fluid f);
+    void setType(VoxelType voxelType);
 }

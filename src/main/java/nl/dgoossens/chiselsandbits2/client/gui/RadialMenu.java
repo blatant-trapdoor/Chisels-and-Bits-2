@@ -197,7 +197,7 @@ public class RadialMenu extends Screen {
                     switchTo = mnuRgn.mode;
                 }
 
-                if(mnuRgn.mode.getType() == ItemModeType.SELECTED_BOOKMARK) {
+                if(mnuRgn.mode instanceof SelectedItemMode && ((SelectedItemMode) mnuRgn.mode).getVoxelType() == VoxelType.COLOURED) {
                     if(f < 0.1f) f = 0.4f;
                     Color color = ((SelectedItemMode) mnuRgn.mode).getColour();
                     int red = (int) Math.round(color.getRed()*f), green = (int) Math.round(color.getGreen()*f), blue = (int) Math.round(color.getBlue()*f), alp = (int) Math.round(color.getAlpha()*a);
@@ -342,7 +342,7 @@ public class RadialMenu extends Screen {
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5;
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5;
                 Color base = new Color(255, 255, 255);
-                if(mnuRgn.mode.getType() == ItemModeType.SELECTED_BOOKMARK)
+                if(mnuRgn.mode instanceof SelectedItemMode && ((SelectedItemMode) mnuRgn.mode).getVoxelType() == VoxelType.COLOURED)
                     base = ((SelectedItemMode) mnuRgn.mode).getColour();
                 int color = new Color(base.getRed(), base.getGreen(), base.getBlue(),(int) Math.round((212-(!mnuRgn.highlighted ? remove : 0))*visibility*(((double)base.getAlpha())/255))).hashCode();
 
@@ -366,7 +366,7 @@ public class RadialMenu extends Screen {
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
-                if(mnuRgn.mode.getType() == ItemModeType.SELECTED_BOOKMARK) {
+                if(((SelectedItemMode) mnuRgn.mode).getVoxelType() == VoxelType.COLOURED) {
                     //We're currently not using this system.
                     /*if(buffer==null)
                         continue;
@@ -406,12 +406,12 @@ public class RadialMenu extends Screen {
             if (mnuRgn.mode instanceof SelectedItemMode) {
                 SelectedItemMode s = (SelectedItemMode) mnuRgn.mode;
                 //None or bookmarks don't have amounts.
-                if (SelectedItemMode.isNone(s) || s.getType() == ItemModeType.SELECTED_BOOKMARK) continue;
+                if (SelectedItemMode.isNone(s) || s.getVoxelType() == VoxelType.COLOURED) continue;
 
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
-                getItemRenderer().renderDurabilityBar(ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - (s.getType() == ItemModeType.SELECTED_BLOCK ? store.getAmount(s.getBlock()) : store.getAmount(s.getFluid())),
+                getItemRenderer().renderDurabilityBar(ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - store.get(s.getVoxelWrapper()),
                         ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get(), (int) Math.round(middle_x + x - 9), (int) Math.round(middle_y + y - 7));
             }
         }

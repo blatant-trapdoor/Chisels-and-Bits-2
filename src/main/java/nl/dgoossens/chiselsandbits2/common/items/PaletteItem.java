@@ -15,7 +15,7 @@ import java.util.List;
 public class PaletteItem extends StorageItem {
     @Override
     public ItemModeType getAssociatedType() {
-        return ItemModeType.SELECTED_BOOKMARK;
+        return ItemModeType.SELECTED;
     }
 
     @Override

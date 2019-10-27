@@ -171,6 +171,9 @@ public class ClientSide {
      */
     @SubscribeEvent
     public static void onKeyInput(final InputEvent.KeyInputEvent e) {
+        //Return if not in game.
+        if (Minecraft.getInstance().player == null) return;
+
         final ModKeybindings keybindings = ChiselsAndBits2.getInstance().getKeybindings();
         for (ItemMode im : keybindings.modeHotkeys.keySet()) {
             KeyBinding kb = keybindings.modeHotkeys.get(im);
@@ -329,7 +332,7 @@ public class ClientSide {
 
                         final ResourceLocation sprite = modeIconLocations.get(mode);
                         if (mode instanceof SelectedItemMode) {
-                            if (mode.equals(SelectedItemMode.NONE_BAG)) continue;
+                            if (((SelectedItemMode) mode).getVoxelType() == VoxelType.COLOURED) continue;
                             ir.renderItemIntoGUI(((SelectedItemMode) mode).getStack(), x, y);
                         } else {
                             //Don't render null sprite.
@@ -377,6 +380,14 @@ public class ClientSide {
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void drawHighlights(final DrawBlockHighlightEvent e) {
+        if(Minecraft.getInstance().objectMouseOver.getType() == RayTraceResult.Type.BLOCK)
+            if(ChiselsAndBits2.getInstance().getClient().drawBlockHighlight(e.getPartialTicks())) e.setCanceled(true);
+    }
+
+    /**
+     * Draws the highlights around blocks. Called from RenderWorldLastEvent to render on top of blocks as the normal event renders partially behind them.
+     */
+    public boolean drawBlockHighlight(float partialTicks) {
         if(Minecraft.getInstance().objectMouseOver.getType() == RayTraceResult.Type.BLOCK) {
             final PlayerEntity player = Minecraft.getInstance().player;
             //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
@@ -384,14 +395,14 @@ public class ClientSide {
             if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof ChiselHandler.BitModifyItem) {
                 final RayTraceResult rayTrace = ChiselUtil.rayTrace(player);
                 if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK)
-                    return;
+                    return false;
 
                 final World world = Minecraft.getInstance().world;
                 final BitLocation location = new BitLocation((BlockRayTraceResult) rayTrace, true, BitOperation.REMOVE); //We always show the removal box, never the placement one.
                 final TileEntity data = world.getTileEntity(location.blockPos);
 
                 //We only show this box if this block is chiselable and this block at this position is chiselable.
-                if (!tapeMeasure && !ChiselUtil.canChiselBlock(world.getBlockState(location.blockPos))) return;
+                if (!tapeMeasure && !ChiselUtil.canChiselBlock(world.getBlockState(location.blockPos))) return false;
                 //The highlight not showing up when you can't chisel in a specific block isn't worth all of the code that needs to be checked for it.
                 //if(!ChiselUtil.canChiselPosition(location.getBlockPos(), player, state, ((BlockRayTraceResult) mop).getFace())) return;
 
@@ -399,12 +410,11 @@ public class ClientSide {
                 final BitLocation other = tapeMeasure ? ChiselsAndBits2.getInstance().getClient().tapeMeasureCache : ChiselsAndBits2.getInstance().getClient().selectionStart;
                 final BitOperation operation = tapeMeasure ? BitOperation.REMOVE : ChiselsAndBits2.getInstance().getClient().operation;
                 if ((tapeMeasure || ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
-                    ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, e.getPartialTicks(), operation, new Color(ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ChiselModeManager.getMode(player.getHeldItemMainhand()));
-                    e.setCanceled(true);
-                    return;
+                    ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, partialTicks, operation, new Color(ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ChiselModeManager.getMode(player.getHeldItemMainhand()));
+                    return true;
                 }
                 //Tape measure never displays the small cube.
-                if(tapeMeasure) return;
+                if(tapeMeasure) return false;
 
                 //This method call is super complicated, but it saves having way more local variables than necessary.
                 // (although I don't know if limiting local variables actually matters)
@@ -419,10 +429,11 @@ public class ClientSide {
                                 !(data instanceof ChiseledBlockTileEntity) ? (new VoxelBlob().fill(ModUtil.getStateId(world.getBlockState(location.blockPos))))
                                         : ((ChiseledBlockTileEntity) data).getBlob(), true
                         ),
-                        location.blockPos, player, e.getPartialTicks(), false, 0, 0, 0, 102, 32);
-                e.setCanceled(true);
+                        location.blockPos, player, partialTicks, false, 0, 0, 0, 102, 32);
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -574,8 +585,23 @@ public class ClientSide {
     public static void drawLast(final RenderWorldLastEvent e) {
         if (Minecraft.getInstance().gameSettings.hideGUI) return;
 
-        //Draw tape measure boxes
-        ChiselsAndBits2.getInstance().getClient().renderTapeMeasureBoxes(e.getPartialTicks());
+        ClientSide client = ChiselsAndBits2.getInstance().getClient();
+        client.renderTapeMeasureBoxes(e.getPartialTicks());
+        client.renderPlacementGhost(e.getPartialTicks());
+    }
+
+    private IBakedModel ghostCache = null;
+    private BlockPos previousPosition;
+    private BlockPos previousPartial;
+    private int displayStatus = 0;
+    private IntegerBox modelBounds;
+
+    /**
+     * Renders the placement ghost when holding a chiseled block or pattern.
+     */
+    public void renderPlacementGhost(float partialTicks) {
+        //If placement ghosts are disabled, don't render anything.
+        if (!ChiselsAndBits2.getInstance().getConfig().enablePlacementGhost.get()) return;
 
         final PlayerEntity player = Minecraft.getInstance().player;
         final RayTraceResult mop = Minecraft.getInstance().objectMouseOver;
@@ -583,8 +609,6 @@ public class ClientSide {
         final World world = player.world;
         final ItemStack currentItem = player.getHeldItemMainhand();
         final Direction face = ((BlockRayTraceResult) mop).getFace();
-
-        //TODO add pattern ghost rendering!
 
         if(currentItem.getItem() instanceof BlockItem && ((BlockItem) currentItem.getItem()).getBlock() instanceof ChiseledBlock) {
             if (mop.getType() != RayTraceResult.Type.BLOCK) return;
@@ -599,23 +623,17 @@ public class ClientSide {
 
             if (player.isSneaking()) {
                 final BitLocation bl = new BitLocation((BlockRayTraceResult) mop, true, BitOperation.PLACE);
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), e.getPartialTicks(), !isPlaceable);
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !isPlaceable);
             } else {
                 //If we can already place where we're looking we don't have to move.
                 if(!canMerge && !isPlaceable)
                     offset = offset.offset(((BlockRayTraceResult) mop).getFace());
 
                 isPlaceable = ChiselHandler.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, offset, face, BlockPos.ZERO, e.getPartialTicks(), isPlaceable);
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, offset, face, BlockPos.ZERO, partialTicks, isPlaceable);
             }
         }
     }
-
-    private IBakedModel ghostCache = null;
-    private BlockPos previousPosition;
-    private BlockPos previousPartial;
-    private int displayStatus = 0;
-    private IntegerBox modelBounds;
 
     /**
      * Shows the ghost of the chiseled block in item at the position offset by the partial in bits.

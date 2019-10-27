@@ -18,10 +18,8 @@ public enum ItemModeType {
     BLUEPRINT,
     MALLET,
 
-    //Dynamic Types
-    SELECTED_BLOCK,
-    SELECTED_FLUID,
-    SELECTED_BOOKMARK,
+    //Dynamic Type
+    SELECTED,
     ;
 
     private List<IItemMode> cache;
@@ -30,7 +28,7 @@ public enum ItemModeType {
      * Get all item modes associated with this type.
      */
     public List<IItemMode> getItemModes(final ItemStack item) {
-        if (this == SELECTED_BLOCK || this == SELECTED_FLUID || this == SELECTED_BOOKMARK)
+        if (this == SELECTED)
             return item.getCapability(StorageCapabilityProvider.STORAGE).map(s -> s.listTypesAsItemModes(item.getItem())).orElse(new ArrayList<>());
         if (cache == null)
             cache = Stream.of(ItemMode.values()).filter(f -> f.name().startsWith(name())).collect(Collectors.toList());
@@ -42,6 +40,6 @@ public enum ItemModeType {
      * attached, static types are defined by the ItemMode enum.
      */
     public boolean isDynamic() {
-        return this == SELECTED_BLOCK || this == SELECTED_FLUID || this == SELECTED_BOOKMARK;
+        return this == SELECTED;
     }
 }

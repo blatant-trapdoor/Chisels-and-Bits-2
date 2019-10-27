@@ -55,6 +55,8 @@ public class CChiselBlockPacket {
 
         buf.writeEnumValue(msg.operation);
         buf.writeVarInt(msg.side.ordinal());
+        buf.writeBoolean(msg.mode.getType().isDynamic());
+        buf.writeVarInt(msg.mode.getDynamicId());
         buf.writeString(msg.mode.getName());
     }
 
@@ -66,7 +68,9 @@ public class CChiselBlockPacket {
         pc.operation = buffer.readEnumValue(BitOperation.class);
         pc.side = Direction.values()[buffer.readVarInt()];
         try {
-            pc.mode = ChiselModeManager.resolveMode(buffer.readString(), null);
+            boolean isDynamic = buffer.readBoolean();
+            int dynamicId = buffer.readVarInt();
+            pc.mode = ChiselModeManager.resolveMode(buffer.readString(), isDynamic, dynamicId);
         } catch (Exception x) {
             x.printStackTrace();
         }

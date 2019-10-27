@@ -29,6 +29,8 @@ public class CSetItemModePacket {
 
     public static void encode(CSetItemModePacket msg, PacketBuffer buf) {
         buf.writeInt(msg.type.ordinal());
+        buf.writeBoolean(msg.type.isDynamic());
+        buf.writeInt(!msg.type.isDynamic() ? 0 : msg.newMode.getDynamicId());
         buf.writeString(msg.newMode.getName());
     }
 
@@ -36,11 +38,9 @@ public class CSetItemModePacket {
         CSetItemModePacket pc = new CSetItemModePacket();
         pc.type = ItemModeType.values()[buffer.readInt()];
         try {
-            pc.newMode = ChiselModeManager.resolveMode(buffer.readString(),
-                    pc.type == ItemModeType.SELECTED_BLOCK ? new ItemStack(ChiselsAndBits2.getInstance().getItems().BIT_BAG) :
-                    pc.type == ItemModeType.SELECTED_FLUID ? new ItemStack(ChiselsAndBits2.getInstance().getItems().BIT_BEAKER) :
-                    pc.type == ItemModeType.SELECTED_BOOKMARK ? new ItemStack(ChiselsAndBits2.getInstance().getItems().OAK_PALETTE) :
-                    null);
+            boolean dynamic = buffer.readBoolean();
+            int dynamicId = buffer.readInt();
+            pc.newMode = ChiselModeManager.resolveMode(buffer.readString(), dynamic, dynamicId);
         } catch (final Exception x) {
             x.printStackTrace();
         }
@@ -51,10 +51,8 @@ public class CSetItemModePacket {
         ctx.get().enqueueWork(() -> {
             if (pkt.newMode == null) return;
             ServerPlayerEntity player = ctx.get().getSender();
-            if (pkt.isValid(player)) {
+            if (pkt.isValid(player))
                 ChiselModeManager.setMode(player.getHeldItemMainhand(), pkt.newMode);
-                //Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent(ei.getItem().getHighlightTip(ei, ei.getDisplayName().getFormattedText())), true);
-            }
         });
     }
 

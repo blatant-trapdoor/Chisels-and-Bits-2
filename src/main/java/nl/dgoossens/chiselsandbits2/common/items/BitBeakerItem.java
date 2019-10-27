@@ -21,6 +21,7 @@ import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
 import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
+import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapability;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -33,7 +34,7 @@ import java.util.List;
 public class BitBeakerItem extends StorageItem {
     @Override
     public ItemModeType getAssociatedType() {
-        return ItemModeType.SELECTED_FLUID;
+        return ItemModeType.SELECTED;
     }
 
     @Override
@@ -72,9 +73,10 @@ public class BitBeakerItem extends StorageItem {
                         playerIn.playSound(soundevent, 1.0F, 1.0F);
                         itemstack.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(b -> {
                             try {
-                                b.setAmount(fluid, b.getAmount(fluid) + (int) Math.pow(VoxelBlob.DIMENSION, 3));
+                                VoxelWrapper<Fluid> wrapper = VoxelWrapper.forFluid(fluid);
+                                b.set(wrapper, b.get(wrapper) + (int) Math.pow(VoxelBlob.DIMENSION, 3));
                                 //Set mode causes a capability update here.
-                                ChiselModeManager.setMode(itemstack, SelectedItemMode.fromFluid(fluid));
+                                ChiselModeManager.setMode(itemstack, SelectedItemMode.fromVoxelWrapper(wrapper));
                             } catch(Exception x) {
                                 x.printStackTrace();
                             }

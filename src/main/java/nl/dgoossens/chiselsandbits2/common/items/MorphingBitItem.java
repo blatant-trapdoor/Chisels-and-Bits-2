@@ -9,6 +9,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
+import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
@@ -41,6 +42,8 @@ public class MorphingBitItem extends TypedItem implements ChiselHandler.BitPlace
 
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        return displayName + " - " + ChiselHandler.getSelectedMode().getLocalizedName();
+        SelectedItemMode s = ChiselHandler.getSelectedMode();
+        if(SelectedItemMode.isNone(s)) return displayName;
+        return displayName + " - " + s.getLocalizedName();
     }
 }

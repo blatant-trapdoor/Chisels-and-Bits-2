@@ -23,4 +23,12 @@ public interface IItemMode {
      * Get the name of this item mode as it can be stored in NBT.
      */
     String getName();
+
+    /**
+     * Get the id of this dynamic item mode, this is used to resolve a dynamic mode
+     * when sent in a packet.
+     */
+    public default int getDynamicId() {
+        return 0;
+    }
 }
