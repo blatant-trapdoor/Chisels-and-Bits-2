@@ -33,16 +33,16 @@ public class RenderingAssistant {
             GL11.glLineWidth(2.0F);
             GlStateManager.disableTexture();
             GlStateManager.depthMask(false);
+            GlStateManager.shadeModel(GL11.GL_FLAT);
 
             final AxisAlignedBB bb2 = bb.expand(0.002D, 0.002D, 0.002D).offset(-x + blockPos.getX(), -y + blockPos.getY(), -z + blockPos.getZ());
-
             if (!normalBoundingBox)
                 renderBoundingBox(bb2, red, green, blue, alpha);
 
-            GlStateManager.enableDepthTest();
-
+            GlStateManager.disableDepthTest();
             renderBoundingBox(bb2, red, green, blue, seeThruAlpha);
 
+            GlStateManager.shadeModel(Minecraft.isAmbientOcclusionEnabled() ? GL11.GL_SMOOTH : GL11.GL_FLAT);
             GlStateManager.enableDepthTest();
             GlStateManager.depthMask(true);
             GlStateManager.enableTexture();
@@ -91,10 +91,8 @@ public class RenderingAssistant {
 
     // Custom replacement of 1.9.4 -> 1.10's method that changed.
     public static void renderBoundingBox(final AxisAlignedBB boundingBox, final int red, final int green, final int blue, final int alpha) {
-        GlStateManager.pushLightingAttributes(); // glShadeMode( GL_LIGHTING_BIT );
         final Tessellator tess = Tessellator.getInstance();
         final BufferBuilder buffer = tess.getBuffer();
-        GlStateManager.shadeModel(GL11.GL_FLAT);
         buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
 
         final double minX = boundingBox.minX;
@@ -138,15 +136,16 @@ public class RenderingAssistant {
         buffer.pos(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
 
         tess.draw();
-        GlStateManager.popAttributes();
     }
 
     public static void renderLine(final Vec3d a, final Vec3d b, final int red, final int green, final int blue, final int alpha) {
         final Tessellator tess = Tessellator.getInstance();
         final BufferBuilder buffer = tess.getBuffer();
         buffer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION_COLOR);
+
         buffer.pos(a.getX(), a.getY(), a.getZ()).color(red, green, blue, alpha).endVertex();
         buffer.pos(b.getX(), b.getY(), b.getZ()).color(red, green, blue, alpha).endVertex();
+
         tess.draw();
     }
 
