@@ -279,11 +279,11 @@ public class ChiseledBlockTileEntity extends TileEntity {
             }
         }
 
-        //final VoxelBlobStateReference before = getVoxelReference();
+        final VoxelBlobStateReference before = getVoxelReference();
         setBlob(vb);
-        //final VoxelBlobStateReference after = getVoxelReference();
+        final VoxelBlobStateReference after = getVoxelReference();
 
-        //TODO UndoTracker.getInstance().add(getWorld(), getPos(), before, after);
+        ChiselsAndBits2.getInstance().getClient().getUndoTracker().add(getWorld(), getPos(), before, after);
     }
 
     public void fillWith(final int stateId) {

@@ -79,7 +79,7 @@ public class ChiselHandler {
         final int minZ = Math.min(from.getZ(), to.getZ());
         final int maxZ = Math.max(from.getZ(), to.getZ());
 
-        //TODO UndoTracker.getInstance().beginGroup( who );
+        ChiselsAndBits2.getInstance().getClient().getUndoTracker().beginGroup(player);
 
         try {
             for (int xOff = minX; xOff <= maxX; ++xOff) {
@@ -340,7 +340,7 @@ public class ChiselHandler {
                 }
             }
         } finally {
-            //TODO UndoTracker.getInstance().endGroup( who );
+            ChiselsAndBits2.getInstance().getClient().getUndoTracker().endGroup(player);
         }
     }
 

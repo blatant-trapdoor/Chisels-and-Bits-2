@@ -21,6 +21,7 @@ public class ModConfiguration {
 
     // --- SERVER VALUES ---
     public ForgeConfigSpec.DoubleValue maxDrawnRegionSize;
+    public ForgeConfigSpec.IntValue maxUndoLevel;
 
     public ForgeConfigSpec.IntValue tapeMeasureLimit;
     public ForgeConfigSpec.IntValue chiselDurability;
@@ -28,6 +29,7 @@ public class ModConfiguration {
     public ForgeConfigSpec.IntValue typeSlotsPerBeaker;
     public ForgeConfigSpec.IntValue bookmarksPerPalette;
     public ForgeConfigSpec.LongValue bitsPerTypeSlot;
+
 
     public ForgeConfigSpec.BooleanValue showBitsAvailableAsDurability;
 
@@ -105,18 +107,24 @@ public class ModConfiguration {
 
             tapeMeasureLimit = builder
                     .comment("The maximum of measurements of the tape measure you can have at once.")
-                    .defineInRange("tapeMeasureLimit", 5, 1, 20);
+                    .defineInRange("tapeMeasureLimit", 10, 1, Integer.MAX_VALUE);
 
             maxDrawnRegionSize = builder
                     .comment("At how many blocks the width/length of the drawn region selection should be capped")
                     .defineInRange("maxDrawnRegionSize", 4.0, 1.0, 16.0);
 
+            maxUndoLevel = builder
+                    .comment("The maximum amount of possible undo operations that will be remembered at any time.")
+                    .defineInRange("maxUndoLevel", 32, 1, Integer.MAX_VALUE);
+
             typeSlotsPerBag = builder
                     .comment("How many slots for unique blocks the bit bag have")
                     .defineInRange("typeSlotsPerBag", 12, 3, 12);
+
             typeSlotsPerBeaker = builder
                     .comment("How many slots for unique fluids the bit beaker has")
                     .defineInRange("typeSlotsPerBeaker", 4, 3, 12);
+
             bookmarksPerPalette = builder
                     .comment("How many slots you have for bookmarks in the palette")
                     .defineInRange("bookmarksPerPalette", 12, 3, 12);

@@ -151,5 +151,8 @@
   "general.chiselsandbits2.menuaction.roll_y.hotkey": "Rotate Y Axis",
   "general.chiselsandbits2.menuaction.roll_z.hotkey": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.place.hotkey": "Placement Mode",
-  "general.chiselsandbits2.menuaction.swap.hotkey": "Swap Mode"
+  "general.chiselsandbits2.menuaction.swap.hotkey": "Swap Mode",
+
+  "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
+  "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo..."
 }

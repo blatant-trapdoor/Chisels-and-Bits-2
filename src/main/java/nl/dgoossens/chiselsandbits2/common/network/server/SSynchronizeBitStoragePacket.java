@@ -46,11 +46,10 @@ public class SSynchronizeBitStoragePacket {
     public static void handle(final SSynchronizeBitStoragePacket pkt, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             PlayerEntity target;
-            if(ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT) {
+            if(ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT)
                 target = Minecraft.getInstance().player;
-            } else {
+            else
                 target = ctx.get().getSender();
-            }
 
             target.inventory.getStackInSlot(pkt.inventorySlot).getCapability(StorageCapabilityProvider.STORAGE).ifPresent(storage -> {
                 StorageCapabilityProvider.STORAGE.readNBT(storage, null, pkt.nbt);
