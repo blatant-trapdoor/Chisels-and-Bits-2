@@ -56,5 +56,6 @@ public class SSynchronizeBitStoragePacket {
                 StorageCapabilityProvider.STORAGE.readNBT(storage, null, pkt.nbt);
             });
         });
+        ctx.get().setPacketHandled(true);
     }
 }

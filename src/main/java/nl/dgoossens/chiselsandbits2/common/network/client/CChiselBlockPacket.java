@@ -81,5 +81,6 @@ public class CChiselBlockPacket {
         ctx.get().enqueueWork(() ->
                 ChiselHandler.handle(pkt, ctx.get().getSender())
         );
+        ctx.get().setPacketHandled(true);
     }
 }

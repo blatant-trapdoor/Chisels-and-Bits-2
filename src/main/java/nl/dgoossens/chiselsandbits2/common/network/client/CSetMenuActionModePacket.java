@@ -43,6 +43,7 @@ public class CSetMenuActionModePacket {
             if (pkt.isValid(player))
                 ChiselModeManager.setMenuActionMode(player.getHeldItemMainhand(), pkt.newMode);
         });
+        ctx.get().setPacketHandled(true);
     }
 
     public boolean isValid(PlayerEntity player) {

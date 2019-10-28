@@ -13,14 +13,16 @@ import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStorage
 
 public class NetworkRouter {
     private static final String PROTOCOL_VERSION = Integer.toString(1);
-    private static final SimpleChannel HANDLER = NetworkRegistry.ChannelBuilder
-            .named(new ResourceLocation(ChiselsAndBits2.MOD_ID, "main_channel"))
-            .clientAcceptedVersions(PROTOCOL_VERSION::equals)
-            .serverAcceptedVersions(PROTOCOL_VERSION::equals)
-            .networkProtocolVersion(() -> PROTOCOL_VERSION)
-            .simpleChannel();
+    private static final SimpleChannel HANDLER = NetworkRegistry.newSimpleChannel(
+            new ResourceLocation(ChiselsAndBits2.MOD_ID, "main"),
+            () -> PROTOCOL_VERSION,
+            PROTOCOL_VERSION::equals,
+            PROTOCOL_VERSION::equals);
 
-    public NetworkRouter() {
+    /**
+     * Registers all packets.
+     */
+    public void init() {
         int disc = 0;
         HANDLER.registerMessage(disc++, CChiselBlockPacket.class, CChiselBlockPacket::encode, CChiselBlockPacket::decode, CChiselBlockPacket::handle);
         HANDLER.registerMessage(disc++, CSetItemModePacket.class, CSetItemModePacket::encode, CSetItemModePacket::decode, CSetItemModePacket::handle);

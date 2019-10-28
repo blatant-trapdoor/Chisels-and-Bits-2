@@ -71,6 +71,7 @@ public class ChiselsAndBits2 {
         MinecraftForge.EVENT_BUS.register(NETWORK_ROUTER);
 
         FMLJavaModLoadingContext.get().getModEventBus().register(SMART_MODEL_MANAGER);
+        NETWORK_ROUTER.init();
         CapabilityManager.INSTANCE.register(BitStorage.class, new StorageCapability(), BitStorageImpl::new);
     }
 

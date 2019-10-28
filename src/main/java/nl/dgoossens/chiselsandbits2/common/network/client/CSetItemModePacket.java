@@ -54,6 +54,7 @@ public class CSetItemModePacket {
             if (pkt.isValid(player))
                 ChiselModeManager.setMode(player.getHeldItemMainhand(), pkt.newMode);
         });
+        ctx.get().setPacketHandled(true);
     }
 
     public boolean isValid(PlayerEntity player) {
