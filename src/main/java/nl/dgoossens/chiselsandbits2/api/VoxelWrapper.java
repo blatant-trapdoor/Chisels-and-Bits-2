@@ -14,34 +14,27 @@ import java.awt.*;
  * interface.
  */
 public class VoxelWrapper<T> {
-    private Block block;
-    private Fluid fluid;
-    private Color colour;
     private int id;
     private VoxelType type;
 
     private VoxelWrapper(Block b) {
         type = VoxelType.BLOCKSTATE;
-        block = b;
+        id = ModUtil.getStateId(b.getDefaultState());
     }
 
     private VoxelWrapper(Fluid f) {
         type = VoxelType.FLUIDSTATE;
-        fluid = f;
+        id = ModUtil.getFluidId(f.getDefaultState());
     }
 
     private VoxelWrapper(Color c) {
         type = VoxelType.COLOURED;
-        colour = c;
+        id = ModUtil.getColourId(c);
     }
 
     private VoxelWrapper(int bit) {
         type = VoxelType.getType(bit);
-        switch(type) {
-            case BLOCKSTATE: block = ModUtil.getBlockState(bit).getBlock();
-            case FLUIDSTATE: fluid = ModUtil.getFluidState(bit).getFluid();
-            case COLOURED: colour = ModUtil.getColourState(bit);
-        }
+        id = bit;
     }
 
     /**
@@ -50,9 +43,9 @@ public class VoxelWrapper<T> {
     @Nullable
     public T get() {
         switch(type) {
-            case BLOCKSTATE: return (T) block;
-            case FLUIDSTATE: return (T) fluid;
-            case COLOURED: return (T) colour;
+            case BLOCKSTATE: return (T) ModUtil.getBlockState(id).getBlock();
+            case FLUIDSTATE: return (T) ModUtil.getFluidState(id).getFluid();
+            case COLOURED: return (T) ModUtil.getColourState(id);
             default: return null;
         }
     }
@@ -61,19 +54,6 @@ public class VoxelWrapper<T> {
      * Get the bit id for this voxel wrapper.
      */
     public int getId() {
-        if(id != 0) return id;
-        switch(type) {
-            case BLOCKSTATE:
-                id = ModUtil.getStateId(block.getDefaultState());
-                break;
-            case FLUIDSTATE:
-                id = ModUtil.getFluidId(fluid.getDefaultState());
-                break;
-            case COLOURED:
-                id = ModUtil.getColourId(colour);
-                break;
-            default: return VoxelBlob.AIR_BIT;
-        }
         return id;
     }
 

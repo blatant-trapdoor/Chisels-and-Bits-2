@@ -66,8 +66,6 @@ public class ChiselHandler {
             return;
 
         final VoxelType type = VoxelType.getType(placeStateID);
-        final Block block = ModUtil.getBlockState(placeStateID).getBlock();
-        final Fluid fluid = ModUtil.getFluidState(placeStateID).getFluid();
         final VoxelWrapper wrapper = VoxelWrapper.forAbstract(placeStateID);
         final boolean isCreative = player.isCreative();
 
@@ -221,8 +219,7 @@ public class ChiselHandler {
                                 if (vt != VoxelType.BLOCKSTATE && vt != VoxelType.FLUIDSTATE)
                                     continue;
 
-                                Block b = ModUtil.getBlockState(extr).getBlock();
-                                Fluid f = ModUtil.getFluidState(extr).getFluid();
+                                VoxelWrapper w = VoxelWrapper.forAbstract(extr);
 
                                 //First round: find storages that already want the bits
                                 for (ItemStack item : player.inventory.mainInventory) {
@@ -230,9 +227,9 @@ public class ChiselHandler {
                                         LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
                                         if (cap.isPresent()) {
                                             BitStorage bs = cap.orElse(null);
-                                            if (bs.has(wrapper)) {
-                                                long h = Math.min(toGive, bs.queryRoom(wrapper));
-                                                bs.add(wrapper, h);
+                                            if (bs.has(w)) {
+                                                long h = Math.min(toGive, bs.queryRoom(w));
+                                                bs.add(w, h);
                                                 toGive -= h;
                                                 ChiselModeManager.updateStackCapability(item, bs, player);
                                             }
@@ -249,8 +246,8 @@ public class ChiselHandler {
                                         LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
                                         if (cap.isPresent()) {
                                             BitStorage bs = cap.orElse(null);
-                                            long h = Math.min(toGive, bs.queryRoom(wrapper));
-                                            bs.add(wrapper, h);
+                                            long h = Math.min(toGive, bs.queryRoom(w));
+                                            bs.add(w, h);
                                             toGive -= h;
                                             ChiselModeManager.updateStackCapability(item, bs, player);
                                         }
