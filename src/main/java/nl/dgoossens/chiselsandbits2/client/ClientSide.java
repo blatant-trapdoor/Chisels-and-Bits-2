@@ -33,6 +33,7 @@ import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.BagBeakerItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockItemColor;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.MorphingBitItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
@@ -65,6 +66,8 @@ public class ClientSide extends ClientSideHelper {
                 ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK);
         Minecraft.getInstance().getItemColors().register(new ChiseledBlockItemColor(),
                 Item.getItemFromBlock(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK));
+        Minecraft.getInstance().getItemColors().register(new MorphingBitItemColor(),
+                ChiselsAndBits2.getInstance().getItems().MORPHING_BIT);
 
         final ModItems i = ChiselsAndBits2.getInstance().getItems();
         Minecraft.getInstance().getItemColors().register(new BagBeakerItemColor(1),
@@ -250,10 +253,12 @@ public class ClientSide extends ClientSideHelper {
                 GlStateManager.color4f(1, 1, 1, 1.0f);
                 Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
                 RenderHelper.enableGUIStandardItemLighting();
-                for (int slot = 8; slot >= 0; --slot) {
-                    if (player.inventory.mainInventory.get(slot).getItem() instanceof IItemMenu && ((IItemMenu) player.inventory.mainInventory.get(slot).getItem()).showIconInHotbar()) {
-                        final IItemMode mode = ChiselModeManager.getMode(player.inventory.mainInventory.get(slot));
-                        final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + 2) * 2;
+                for (int slot = 8; slot >= -1; --slot) {
+                    //-1 is the off-hand
+                    ItemStack item = slot == -1 ? player.inventory.offHandInventory.get(0) : player.inventory.mainInventory.get(slot);
+                    if (item.getItem() instanceof IItemMenu && ((IItemMenu) item.getItem()).showIconInHotbar()) {
+                        final IItemMode mode = ChiselModeManager.getMode(item);
+                        final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + (slot == -1 ? -9 : 0) + 2) * 2;
                         final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
 
                         final ResourceLocation sprite = modeIconLocations.get(mode);

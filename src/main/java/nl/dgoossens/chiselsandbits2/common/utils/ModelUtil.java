@@ -108,7 +108,6 @@ public class ModelUtil implements CacheClearable {
     private static ModelQuadLayer[] getInnerCachedFace(final int cacheVal, final int stateID, final Random weight, final Direction face) {
         final BlockState state = ModUtil.getBlockState(stateID);
         final IFluidState fluid = ModUtil.getFluidState(stateID);
-        final Color colour = ModUtil.getColourState(stateID);
 
         switch (VoxelType.getType(stateID)) {
             case BLOCKSTATE: {

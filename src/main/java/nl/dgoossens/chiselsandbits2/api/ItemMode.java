@@ -24,7 +24,7 @@ public enum ItemMode implements IItemMode {
 
     PATTERN_REPLACE, //I've actually rarely used patterns myself so I'll go experiment with them once I fromName around to them, then I'll probably add some more modes.
     PATTERN_ADDITIVE,
-    PATTERN_REPLACEMENT,
+    PATTERN_PLACEMENT,
     PATTERN_IMPOSE,
 
     TAPEMEASURE_BIT,
@@ -73,7 +73,8 @@ public enum ItemMode implements IItemMode {
      * Returns whether or not this mode has an icon.
      */
     public boolean hasIcon() {
-        return true;
+        //Unknown's have no icons.
+        return this != BLUEPRINT_UNKNOWN && this != MALLET_UNKNOWN;
     }
 
     /**

@@ -527,9 +527,8 @@ public class RadialMenu extends Screen {
 
         ItemModeType tool = ChiselModeManager.getMode(getMinecraft().player.getHeldItemMainhand()).getType();
         if (tool == ItemModeType.PATTERN) {
-            buttons.add(new MenuButton(MenuAction.ROLL_X, -TEXT_DISTANCE - 18, -33, Direction.WEST));
-            buttons.add(new MenuButton(MenuAction.ROLL_Y, -TEXT_DISTANCE - 18, -9, Direction.WEST));
-            buttons.add(new MenuButton(MenuAction.ROLL_Z, -TEXT_DISTANCE - 18, 15, Direction.WEST));
+            buttons.add(new MenuButton(MenuAction.ROLL_X, -TEXT_DISTANCE - 18, -20, Direction.WEST));
+            buttons.add(new MenuButton(MenuAction.ROLL_Z, -TEXT_DISTANCE - 18, 4, Direction.WEST));
         }
 
         if (tool == ItemModeType.CHISEL) {

@@ -15,7 +15,6 @@ public enum MenuAction {
     REDO,
 
     ROLL_X,
-    ROLL_Y,
     ROLL_Z,
 
     WHITE(16383998),
@@ -55,7 +54,6 @@ public enum MenuAction {
             case UNDO:
             case REDO:
             case ROLL_X:
-            case ROLL_Y:
             case ROLL_Z:
                 return true;
             default:
@@ -84,7 +82,6 @@ public enum MenuAction {
     public ItemModeType getAssociatedType() {
         switch (this) {
             case ROLL_X:
-            case ROLL_Y:
             case ROLL_Z:
                 return ItemModeType.PATTERN;
             case PLACE:

@@ -48,7 +48,17 @@ public class ModKeybindings {
         //Generate Hotkeys
         for (MenuAction ma : MenuAction.values())
             if (ma.hasHotkey()) {
-                KeyBinding kb = new KeyBinding("general.chiselsandbits2.menuaction." + ma.name().toLowerCase() + ".hotkey", CONFLICT, NONE, HOTKEYS);
+                InputMappings.Input def = NONE;
+                KeyModifier mod = KeyModifier.NONE;
+                //Undo and redo are set by default to Ctl+Z and Ctl+Y
+                if(ma.equals(MenuAction.UNDO)) {
+                    def = getKey(90);
+                    mod = KeyModifier.CONTROL;
+                } else if(ma.equals(MenuAction.REDO)) {
+                    def = getKey(89);
+                    mod = KeyModifier.CONTROL;
+                }
+                KeyBinding kb = new KeyBinding("general.chiselsandbits2.menuaction." + ma.name().toLowerCase() + ".hotkey", CONFLICT, mod, def, HOTKEYS);
                 actionHotkeys.put(ma, kb);
                 ClientRegistry.registerKeyBinding(kb);
             }

@@ -1,6 +1,7 @@
 package nl.dgoossens.chiselsandbits2.client.render.models.helpers;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledTintColor;
 
 public class ModelQuadLayer {
     public float[] uvs;
@@ -27,7 +28,7 @@ public class ModelQuadLayer {
 
             if (0x00 <= cache.tint && cache.tint <= 0xff) {
                 cache.color = 0xffffffff;
-                cache.tint = (stateid << 8) | cache.tint;
+                cache.tint = (stateid << ChiseledTintColor.TINT_BITS) | cache.tint;
             } else
                 cache.tint = -1;
 

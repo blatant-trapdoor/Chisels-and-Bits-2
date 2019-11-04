@@ -148,9 +148,6 @@ public class ClientSideHelper {
             case ROLL_X:
                 System.out.println("ROLL_X");
                 break;
-            case ROLL_Y:
-                System.out.println("ROLL_Y");
-                break;
             case ROLL_Z:
                 System.out.println("ROLL_Z");
                 break;
