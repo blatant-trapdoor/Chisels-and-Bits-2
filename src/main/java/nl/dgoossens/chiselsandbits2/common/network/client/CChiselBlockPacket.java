@@ -78,9 +78,7 @@ public class CChiselBlockPacket {
     }
 
     public static void handle(final CChiselBlockPacket pkt, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() ->
-                ChiselHandler.handle(pkt, ctx.get().getSender())
-        );
+        ctx.get().enqueueWork(() -> ChiselHandler.handle(pkt, ctx.get().getSender()));
         ctx.get().setPacketHandled(true);
     }
 }

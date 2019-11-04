@@ -67,6 +67,8 @@
   "block.chiselsandbits2.chiseled_block": "Chiseled Block",
   "item.chiselsandbits2.chiseled_block.help": "Sneak to place off-grid",
 
+  "stat.chiselsandbits2.bits_chiseled": "Bits Chiseled",
+
   "general.chiselsandbits2.no_keybinding": "No Key Bound",
   "general.chiselsandbits2.empty_slot": "Empty Slot",
   "general.chiselsandbits2.none": "None",
@@ -152,6 +154,8 @@
   "general.chiselsandbits2.menuaction.roll_z.hotkey": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.place.hotkey": "Placement Mode",
   "general.chiselsandbits2.menuaction.swap.hotkey": "Swap Mode",
+
+  "general.chiselsandbits2.info.need_chisel": "You need a chisel in your inventory to be able to chisel.",
 
   "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
   "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo..."

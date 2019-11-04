@@ -75,7 +75,7 @@ public enum MenuAction {
      * (tape measure colours do not have hotkeys)
      */
     public boolean hasHotkey() {
-        return colour != 0;
+        return colour == 0;
     }
 
     /**

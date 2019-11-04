@@ -17,6 +17,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.LazyOptional;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -31,6 +32,7 @@ import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import javax.annotation.Nonnull;
@@ -48,11 +50,17 @@ public class ChiselHandler {
      * Handles an incoming {@link CChiselBlockPacket} packet.
      */
     public static void handle(final CChiselBlockPacket pkt, final PlayerEntity player) {
-        ItemStack chisel = player.getHeldItemMainhand();
-        if (!(chisel.getItem() instanceof BitModifyItem))
-            return; //Extra security, if you're somehow no longer holding a chisel we cancel.
+        if (!(player.getHeldItemMainhand().getItem() instanceof BitModifyItem))
+            return; //Extra security, if you're somehow no longer holding a valid item that can chisel we cancel.
 
         final World world = player.world;
+        final InventoryUtils.CalculatedInventory inventory = InventoryUtils.buildInventory(player);
+
+        //Cancel chiseling early on if possible (but not if creative)
+        if (inventory.getAvailableDurability() == 0 && !player.isCreative()) {
+            player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.need_chisel"), true);
+            return;
+        }
 
         //If world.getServer() is null we return to make the "if (world.getServer().isBlockProtected(world, pos, player))" never fail.
         if (world.getServer() == null)
@@ -82,10 +90,11 @@ public class ChiselHandler {
         ChiselsAndBits2.getInstance().getClient().getUndoTracker().beginGroup(player);
 
         try {
+            //Uses to be added to the statistic
             for (int xOff = minX; xOff <= maxX; ++xOff) {
                 for (int yOff = minY; yOff <= maxY; ++yOff) {
                     for (int zOff = minZ; zOff <= maxZ; ++zOff) {
-
+                        boolean changed = false;
                         final BlockPos pos = new BlockPos(xOff, yOff, zOff);
                         //If we can't chisel here, don't chisel.
                         //This method is specifically a server only method, the client already does checking if we can chisel somewhere through ChiselUtil#canChiselPosition.
@@ -101,20 +110,6 @@ public class ChiselHandler {
                             final VoxelBlob vb = tec.getBlob();
                             final ChiselIterator i = getIterator(pkt, new VoxelRegionSrc(world, pos, 1), pos, pkt.operation);
                             final Map<Integer, Long> extracted = new HashMap<>();
-
-                            //Determine the capacity = the durability we have to use
-                            int durabilityTaken = 0;
-                            int totalCapacity = 0;
-
-                            //In creative we don't care about the capacity.
-                            if (isCreative) totalCapacity = Integer.MAX_VALUE;
-                            else {
-                                //Determine the maximum durability that the player has.
-                                for (ItemStack item : player.inventory.mainInventory) {
-                                    if (item.getItem() instanceof ChiselItem)
-                                        totalCapacity += (chisel.getMaxDamage() - chisel.getDamage());
-                                }
-                            }
 
                             //Handle the operation
                             switch (pkt.operation) {
@@ -152,20 +147,19 @@ public class ChiselHandler {
                                         if (pkt.operation == SWAP && blk == placeStateID)
                                             continue;
 
-                                        //Track how many bits we've extracted and it's not a coloured bit.
-                                        if (pkt.operation == SWAP && !VoxelType.isColoured(blk))
-                                            extracted.put(blk, extracted.getOrDefault(blk, 0L) + 1);
+                                        if (inventory.damageChisel()) {
+                                            vb.set(i.x(), i.y(), i.z(), placeStateID);
+                                            changed = true;
 
-                                        vb.set(i.x(), i.y(), i.z(), placeStateID);
-                                        //Test durability
-                                        durabilityTaken += 1;
-                                        if (durabilityTaken >= totalCapacity)
-                                            break;
+                                            //Track how many bits we've extracted and it's not a coloured bit.
+                                            if (pkt.operation == SWAP && !VoxelType.isColoured(blk))
+                                                extracted.put(blk, extracted.getOrDefault(blk, 0L) + 1);
 
-                                        //Test resources
-                                        bitsUsed += 1;
-                                        if (bitsUsed >= bitsAvailable)
-                                            break;
+                                            //Test resources
+                                            bitsUsed += 1;
+                                            if (bitsUsed >= bitsAvailable)
+                                                break;
+                                        } else break; //If damage chisel is false once it will never become true again, so this break saves time.
                                     }
 
                                     //Take the used resources, coloured bits don't take resources.
@@ -199,14 +193,14 @@ public class ChiselHandler {
                                         if (blk == VoxelBlob.AIR_BIT)
                                             continue; //We don't need to remove air bits.
 
-                                        //Track how many bits we've extracted and it's not a coloured bit.
-                                        if (!VoxelType.isColoured(blk))
-                                            extracted.put(blk, extracted.getOrDefault(blk, 0L) + 1);
+                                        if (inventory.damageChisel()) {
+                                            vb.clear(i.x(), i.y(), i.z());
+                                            changed = true;
 
-                                        vb.clear(i.x(), i.y(), i.z());
-                                        durabilityTaken++;
-                                        if (durabilityTaken >= totalCapacity)
-                                            break;
+                                            //Track how many bits we've extracted and it's not a coloured bit.
+                                            if (!VoxelType.isColoured(blk))
+                                                extracted.put(blk, extracted.getOrDefault(blk, 0L) + 1);
+                                        } else break; //If damage chisel is false once it will never become true again, so this break saves time.
                                     }
                                 }
                                 break;
@@ -257,89 +251,22 @@ public class ChiselHandler {
                                     if (toGive <= 0)
                                         break;
                                 }
-
-                                //If there's still toGive left but nowhere to put it's voided...
-                                //TODO Disable/Abort chiseling if you're not able to store all bits.
                             }
 
-                            //We can use the durability taken to see if something happened because any operation will influence durability.
-                            if (durabilityTaken > 0) {
-                                //Actually apply the operation.
-                                tec.completeEditOperation(vb);
+                            //Actually apply the operation.
+                            tec.completeEditOperation(vb);
 
-                                //Send the breaking sound only if the block actually got changed.
+                            //Send the breaking sound only if the block actually got changed.
+                            if (changed) {
                                 SoundType st = world.getBlockState(pos).getSoundType();
                                 world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, st.getBreakSound(), SoundCategory.BLOCKS, (st.getVolume() + 1.0F) / 16.0F, st.getPitch() * 0.9F);
-
-                                //Below follows some unnecessarily complex code to lower the durability of the chisel and to automatically move backup chisels to the slot to continue chiseling when the old one breaks.
-                                if (!isCreative) { //No tool damage in creative mode.
-                                    //Swap chisel to a chisel item if it's currently not
-                                    if(!(chisel.getItem() instanceof ChiselItem)) {
-                                        for (int s = 0; s < player.inventory.mainInventory.size(); s++) {
-                                            ItemStack item = player.inventory.mainInventory.get(s);
-                                            if(item.getItem() instanceof ChiselItem) {
-                                                chisel = item;
-                                                break;
-                                            }
-                                        }
-
-                                        if(!(chisel.getItem() instanceof ChiselItem))
-                                            throw new IllegalArgumentException("Expected valid chisel but found none");
-                                    }
-
-                                    int usesLeft = chisel.getMaxDamage() - chisel.getDamage();
-                                    //While there is durability to be taken we'll keep damaging tools.
-                                    usesLeft -= durabilityTaken;
-                                    while (durabilityTaken > 0) {
-                                        //Remember the mode of the current chisel.
-                                        IItemMode mode = ChiselModeManager.getMode(chisel);
-
-                                        //We'll break the chisel as much as possible to the max of its durability.
-                                        int capacity = Math.min(chisel.getMaxDamage() - chisel.getDamage(), durabilityTaken);
-                                        chisel.damageItem(capacity, player, (p) -> {
-                                            p.sendBreakAnimation(Hand.MAIN_HAND);
-                                        });
-                                        //Decrease the owed durability with as much as we've removed.
-                                        durabilityTaken -= capacity;
-
-                                        //Move new chisel to the front if the previous one broke so operations don't get halted halfway unnecessarily.
-                                        boolean done = false;
-                                        //Give a new one if the old chisel broke. (which is always the case if usesLeft < 0)
-                                        if (usesLeft < 0 || chisel.getDamage() == chisel.getMaxDamage()) {
-                                            for (int s = 0; s < player.inventory.mainInventory.size(); s++) {
-                                                ItemStack item = player.inventory.mainInventory.get(s);
-                                                if (item.getItem() instanceof ChiselItem) {
-                                                    player.inventory.removeStackFromSlot(s);
-                                                    //The previous item broke so the slot is always free.
-                                                    player.inventory.mainInventory.set(player.inventory.currentItem, item);
-                                                    ChiselModeManager.setMode(item, mode); //Keep the mode from your old chisel. Just a little quality of life!
-                                                    chisel = item;
-                                                    done = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-
-                                        if (usesLeft < 0) { //If the current chisel item didn't have enough to last the operation we need to update our variables for the next round of the while loop.
-                                            //If done failed we should have aborted the operation at some point, so this is a really bad scenario.
-                                            if (!done)
-                                                throw new IllegalArgumentException("Expected valid chisel but found none");
-
-                                            usesLeft = chisel.getMaxDamage() - chisel.getDamage();
-                                            usesLeft -= durabilityTaken;
-                                        }
-                                    }
-
-                                    //Just for security, even though this should never happen.
-                                    if (durabilityTaken > 0)
-                                        throw new RuntimeException("Player didn't pay off durability debt, how did this happen?");
-                                }
                             }
                         }
                     }
                 }
             }
         } finally {
+            inventory.apply();
             ChiselsAndBits2.getInstance().getClient().getUndoTracker().endGroup(player);
         }
     }

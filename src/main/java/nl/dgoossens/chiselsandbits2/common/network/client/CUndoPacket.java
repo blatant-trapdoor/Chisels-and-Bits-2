@@ -31,7 +31,7 @@ public class CUndoPacket {
     }
 
     public boolean handle(final PlayerEntity player) {
-
+        return false;
     }
 
     public static void encode(CUndoPacket msg, PacketBuffer buf) {
@@ -61,7 +61,7 @@ public class CUndoPacket {
 
     public static void handle(final CUndoPacket pkt, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->
-                pkt.handle(ctx.get().getSender());
+                pkt.handle(ctx.get().getSender())
         );
         ctx.get().setPacketHandled(true);
     }

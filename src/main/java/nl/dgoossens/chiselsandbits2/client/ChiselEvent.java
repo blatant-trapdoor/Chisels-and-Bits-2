@@ -115,13 +115,13 @@ public class ChiselEvent {
             }
         }
 
-        if(ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) {
+        if(ItemMode.CHISEL_DRAWN_REGION.equals(ChiselModeManager.getMode(player.getHeldItemMainhand()))) {
             final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, mode);
             ChiselsAndBits2.getInstance().getClient().resetSelectionStart();
-            NetworkRouter.sendToServer(pc);
+            ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
         } else {
             final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode);
-            NetworkRouter.sendToServer(pc);
+            ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
         }
     }
 }

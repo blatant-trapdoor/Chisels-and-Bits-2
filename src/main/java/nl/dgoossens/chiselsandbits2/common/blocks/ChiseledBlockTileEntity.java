@@ -265,6 +265,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
             return;
         }
+
         //Turn to full block if made of one type.
         int singleType = vb.singleType();
         if(singleType != VoxelBlob.AIR_BIT) {

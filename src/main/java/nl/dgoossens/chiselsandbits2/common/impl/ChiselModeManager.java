@@ -36,7 +36,7 @@ public class ChiselModeManager {
      */
     public static void changeItemMode(final IItemMode newMode) {
         final CSetItemModePacket packet = new CSetItemModePacket(newMode);
-        NetworkRouter.sendToServer(packet);
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
 
         //Show item mode change in hotbar
         if(packet.isValid(Minecraft.getInstance().player))
@@ -50,7 +50,7 @@ public class ChiselModeManager {
      */
     public static void changeMenuActionMode(final MenuAction newAction) {
         final CSetMenuActionModePacket packet = new CSetMenuActionModePacket(newAction);
-        NetworkRouter.sendToServer(packet);
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
 
         //Show item mode change in hotbar
         if(packet.isValid(Minecraft.getInstance().player))
@@ -100,7 +100,7 @@ public class ChiselModeManager {
      * Updates the stack capability from the server to the client.
      */
     public static void updateStackCapability(final ItemStack item, final BitStorage cap, final PlayerEntity player) {
-        NetworkRouter.sendTo(new SSynchronizeBitStoragePacket(cap, player.inventory.getSlotFor(item)), (ServerPlayerEntity) player);
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SSynchronizeBitStoragePacket(cap, player.inventory.getSlotFor(item)), (ServerPlayerEntity) player);
     }
 
     /**
@@ -148,6 +148,9 @@ public class ChiselModeManager {
      * mode is found!
      */
     public static IItemMode getMode(final ItemStack stack) {
+        //Prevent unnecessary resolving or random MALLET_UNKNOWN shenanigans.
+        if(!(stack.getItem() instanceof IItemMenu)) return null;
+
         final CompoundNBT nbt = stack.getTag();
         if (nbt != null && nbt.contains("mode")) {
             try {

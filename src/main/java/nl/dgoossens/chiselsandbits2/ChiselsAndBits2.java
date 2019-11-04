@@ -21,6 +21,7 @@ import nl.dgoossens.chiselsandbits2.common.registry.ModBlocks;
 import nl.dgoossens.chiselsandbits2.common.registry.ModConfiguration;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
+import nl.dgoossens.chiselsandbits2.common.registry.ModStatistics;
 
 @Mod(ChiselsAndBits2.MOD_ID)
 public class ChiselsAndBits2 {
@@ -34,6 +35,7 @@ public class ChiselsAndBits2 {
     private final NetworkRouter NETWORK_ROUTER;
     private final ChiselsAndBitsAPI API;
     private final SmartModelManager SMART_MODEL_MANAGER;
+    private final ModStatistics STATISTICS;
     private ClientSide CLIENT;
     private ModKeybindings KEYBINDINGS;
 
@@ -45,6 +47,7 @@ public class ChiselsAndBits2 {
         ITEMS = new ModItems();
         BLOCKS = new ModBlocks();
         SMART_MODEL_MANAGER = new SmartModelManager();
+        STATISTICS = new ModStatistics();
 
         //Only register the client and keybindings classes when on the CLIENT distribution.
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
@@ -105,6 +108,10 @@ public class ChiselsAndBits2 {
 
     public SmartModelManager getModelManager() {
         return SMART_MODEL_MANAGER;
+    }
+
+    public ModStatistics getStatistics() {
+        return STATISTICS;
     }
 
     /**
