@@ -43,7 +43,7 @@ public class MorphingBitItem extends TypedItem implements ChiselHandler.BitPlace
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
         SelectedItemMode s = ChiselHandler.getSelectedMode();
-        if(SelectedItemMode.isNone(s)) return displayName;
-        return displayName + " - " + s.getLocalizedName();
+        if(SelectedItemMode.isNone(s)) return super.getHighlightTip(item, displayName);
+        return super.getHighlightTip(item, displayName) + " - " + s.getLocalizedName();
     }
 }

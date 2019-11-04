@@ -7,7 +7,7 @@ import nl.dgoossens.chiselsandbits2.api.ItemMode;
 
 public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIterator {
     public final Direction side;
-    final IItemMode mode;
+    protected final IItemMode mode;
     private final int full_size;
     private final int max_dim;
     private final int original_x;
@@ -20,15 +20,7 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
     private int x, y, z;
     private int offset = -1;
 
-    public ChiselTypeIterator(
-            final int dim,
-            final int x,
-            final int y,
-            final int z,
-            final int x_size,
-            final int y_size,
-            final int z_size,
-            final Direction side) {
+    public ChiselTypeIterator(final int dim, final int x, final int y, final int z, final int x_size, final int y_size, final int z_size, final Direction side) {
         full_size = dim;
         max_dim = dim - 1;
         mode = ItemMode.CHISEL_DRAWN_REGION;
@@ -175,30 +167,6 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
         original_z = Math.max(0, Math.min(full_size - z_range, z + offset));
     }
 
-    public static ChiselIterator create(
-            final int dim,
-            final int x,
-            final int y,
-            final int z,
-            final IVoxelSrc source,
-            final IItemMode mode,
-            final Direction side,
-            final boolean place) {
-        if (mode.equals(ItemMode.CHISEL_CONNECTED_MATERIAL)) {
-            return new ChiselExtrudeIterator.ChiselExtrudeMaterialIterator(dim, x, y, z, source, mode, side, place);
-        }
-
-        if (mode == ItemMode.CHISEL_CONNECTED_PLANE) {
-            return new ChiselExtrudeIterator(dim, x, y, z, source, mode, side, place);
-        }
-
-        if (mode == ItemMode.CHISEL_SAME_MATERIAL) {
-            return new ChiselMaterialIterator(dim, x, y, z, source, mode, side, place);
-        }
-
-        return new ChiselTypeIterator(dim, x, y, z, source, mode, side);
-    }
-
     @Override
     public boolean hasNext() {
         if (++offset != 0) {
@@ -242,4 +210,19 @@ public class ChiselTypeIterator extends BaseChiselIterator implements ChiselIter
         return side;
     }
 
+    /**
+     * Create a new chisel iterator, the type of which is automatically determined.
+     */
+    public static ChiselIterator create(final int dim, final int x, final int y, final int z, final IVoxelSrc source, final IItemMode mode, final Direction side, final boolean place) {
+        if (mode.equals(ItemMode.CHISEL_CONNECTED_MATERIAL))
+            return new ChiselExtrudeIterator.ChiselExtrudeMaterialIterator(dim, x, y, z, source, mode, side, place);
+
+        if (mode == ItemMode.CHISEL_CONNECTED_PLANE)
+            return new ChiselExtrudeIterator(dim, x, y, z, source, mode, side, place);
+
+        if (mode == ItemMode.CHISEL_SAME_MATERIAL)
+            return new ChiselMaterialIterator(dim, x, y, z, source, mode, side, place);
+
+        return new ChiselTypeIterator(dim, x, y, z, source, mode, side);
+    }
 }

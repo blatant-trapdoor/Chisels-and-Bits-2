@@ -41,6 +41,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
@@ -76,7 +77,7 @@ public class ClientSideHelper {
     protected List<Measurement> tapeMeasurements = new ArrayList<>();
     protected BitLocation tapeMeasureCache;
     protected BitLocation selectionStart;
-    protected BitOperation operation;
+    private BitOperation operation;
 
     //Ghost Rendering
     protected IBakedModel ghostCache = null;
@@ -84,6 +85,36 @@ public class ClientSideHelper {
     protected BlockPos previousPartial;
     protected int displayStatus = 0;
     protected IntegerBox modelBounds;
+
+    /**
+     * Cleans up some data when a player leaves the current save game.
+     * To be more exact: this should be called whenever the previously assumed dimensions
+     * are no longer the same. E.g. switching multiplayer servers.
+     */
+    public void clean() {
+        tapeMeasurements.clear();
+        tapeMeasureCache = null;
+        selectionStart = null;
+        operation = null;
+
+        ghostCache = null;
+        previousPartial = null;
+        previousPosition = null;
+        displayStatus = 0;
+        modelBounds = null;
+
+        getUndoTracker().clean();
+    }
+
+    /**
+     * Get the current bit operation.
+     */
+    protected BitOperation getOperation() {
+        if(operation != null) return operation;
+        //Morphing bit is mainly meant for placement so we show the placement highlight preferred over the removal highlight.
+        if(Minecraft.getInstance().player.getHeldItemMainhand().getItem() instanceof MorphingBitItem) return BitOperation.PLACE;
+        return BitOperation.REMOVE;
+    }
 
     /**
      * Get the sprite used for missing icons.
@@ -273,7 +304,7 @@ public class ClientSideHelper {
 
                 //Rendering drawn region bounding box
                 final BitLocation other = tapeMeasure ? ChiselsAndBits2.getInstance().getClient().tapeMeasureCache : ChiselsAndBits2.getInstance().getClient().selectionStart;
-                final BitOperation operation = tapeMeasure ? BitOperation.REMOVE : ChiselsAndBits2.getInstance().getClient().operation;
+                final BitOperation operation = tapeMeasure ? BitOperation.REMOVE : ChiselsAndBits2.getInstance().getClient().getOperation();
                 if ((tapeMeasure || ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
                     ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, partialTicks, operation, new Color(ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ChiselModeManager.getMode(player.getHeldItemMainhand()));
                     return true;
@@ -289,7 +320,7 @@ public class ClientSideHelper {
                                 new VoxelRegionSrc(world, location.blockPos, 1),
                                 ChiselModeManager.getMode(player.getHeldItemMainhand()),
                                 ((BlockRayTraceResult) rayTrace).getFace(),
-                                false
+                                operation.equals(BitOperation.PLACE)
                         ).getBoundingBox(
                                 !(data instanceof ChiseledBlockTileEntity) ? (new VoxelBlob().fill(ModUtil.getStateId(world.getBlockState(location.blockPos))))
                                         : ((ChiseledBlockTileEntity) data).getBlob(), true

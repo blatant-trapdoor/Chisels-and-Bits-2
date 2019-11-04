@@ -88,26 +88,6 @@ public class ClientSide extends ClientSideHelper {
     }
 
     /**
-     * Cleans up some data when a player leaves the current save game.
-     * To be more exact: this should be called whenever the previously assumed dimensions
-     * are no longer the same. E.g. switching multiplayer servers.
-     */
-    public void clean() {
-        tapeMeasurements.clear();
-        tapeMeasureCache = null;
-        selectionStart = null;
-        operation = null;
-
-        ghostCache = null;
-        previousPartial = null;
-        previousPosition = null;
-        displayStatus = 0;
-        modelBounds = null;
-
-        getUndoTracker().clean();
-    }
-
-    /**
      * Call the clean method.
      */
     @SubscribeEvent

@@ -5,7 +5,6 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 
 public abstract class BaseChiselIterator implements ChiselIterator {
-
     @Override
     public IntegerBox getVoxelBox(final VoxelBlob vb, final boolean boundSolids) {
         final IntegerBox box = new IntegerBox(0, 0, 0, 0, 0, 0);
@@ -37,9 +36,9 @@ public abstract class BaseChiselIterator implements ChiselIterator {
 
     @Override
     public AxisAlignedBB getBoundingBox(final VoxelBlob NULL_BLOB, final boolean boundSolids) {
-        final float One16thf = 1.0f / NULL_BLOB.DIMENSION;
+        final float oneSixteenth = 1.0f / NULL_BLOB.DIMENSION;
         final IntegerBox box = getVoxelBox(NULL_BLOB, boundSolids);
 
-        return box != null ? new AxisAlignedBB(box.minX * One16thf, box.minY * One16thf, box.minZ * One16thf, (box.maxX + 1) * One16thf, (box.maxY + 1) * One16thf, (box.maxZ + 1) * One16thf) : null;
+        return box != null ? new AxisAlignedBB(box.minX * oneSixteenth, box.minY * oneSixteenth, box.minZ * oneSixteenth, (box.maxX + 1) * oneSixteenth, (box.maxY + 1) * oneSixteenth, (box.maxZ + 1) * oneSixteenth) : null;
     }
 }
