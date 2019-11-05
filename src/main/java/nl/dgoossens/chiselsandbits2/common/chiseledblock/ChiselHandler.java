@@ -66,15 +66,8 @@ public class ChiselHandler {
         if (world.getServer() == null)
             return;
 
-        //Determine the placed bit, if this is REMOVE we set this to -1 to bypass any checks.
-        int placeStateID = pkt.operation == REMOVE ? -1 : getSelectedBit(player, null);
-
-        //If we couldn't find a selected type, don't chisel.
-        if (placeStateID == VoxelBlob.AIR_BIT)
-            return;
-
-        final VoxelType type = VoxelType.getType(placeStateID);
-        final VoxelWrapper wrapper = VoxelWrapper.forAbstract(placeStateID);
+        final VoxelType type = VoxelType.getType(pkt.placedBit);
+        final VoxelWrapper wrapper = VoxelWrapper.forAbstract(pkt.placedBit);
         final boolean isCreative = player.isCreative();
 
         final BlockPos from = pkt.from.blockPos;
@@ -102,7 +95,7 @@ public class ChiselHandler {
                             continue;
 
                         //Replace the block with a chiseled block.
-                        replaceWithChiseled(player, world, pos, world.getBlockState(pos), placeStateID, pkt.side);
+                        replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.placedBit, pkt.side);
 
                         final TileEntity te = world.getTileEntity(pos);
                         if (te instanceof ChiseledBlockTileEntity) {
@@ -144,11 +137,11 @@ public class ChiselHandler {
                                             continue;
 
                                         //Don't waste durability on the same type.
-                                        if (pkt.operation == SWAP && blk == placeStateID)
+                                        if (pkt.operation == SWAP && blk == pkt.placedBit)
                                             continue;
 
                                         if (inventory.damageChisel()) {
-                                            vb.set(i.x(), i.y(), i.z(), placeStateID);
+                                            vb.set(i.x(), i.y(), i.z(), pkt.placedBit);
                                             changed = true;
 
                                             //Track how many bits we've extracted and it's not a coloured bit.
@@ -288,36 +281,6 @@ public class ChiselHandler {
         }
         //Default is the empty bag slot.
         return SelectedItemMode.NONE;
-    }
-
-    /**
-     * Get the currently selected bit type.
-     */
-    public static int getSelectedBit(final PlayerEntity player, final VoxelType type) {
-        //TODO cache this value so we can query it really often from the morphing bit
-        int ret = VoxelBlob.AIR_BIT;
-        long stamp = 0;
-
-        //Scan all storage containers for the most recently selected one.
-        for (ItemStack item : player.inventory.mainInventory) {
-            if (item.getItem() instanceof StorageItem) {
-                if (type != null) {
-                    //Cancel if we don't want this type.
-                    if (type == VoxelType.BLOCKSTATE && !(item.getItem() instanceof BitBagItem)) continue;
-                    if (type == VoxelType.FLUIDSTATE && !(item.getItem() instanceof BitBeakerItem)) continue;
-                    if (type == VoxelType.COLOURED && !(item.getItem() instanceof PaletteItem)) continue;
-                }
-
-                long l = ChiselModeManager.getSelectionTime(item);
-                if (l > stamp) {
-                    stamp = l;
-                    int ne = Optional.ofNullable(ChiselModeManager.getSelectedItem(item)).map(SelectedItemMode::getBitId).orElse(VoxelBlob.AIR_BIT);
-                    if (ne != VoxelBlob.AIR_BIT)
-                        ret = ne;
-                }
-            }
-        }
-        return ret;
     }
 
     /**

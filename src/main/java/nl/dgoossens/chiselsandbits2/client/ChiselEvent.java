@@ -28,6 +28,7 @@ import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -79,14 +80,6 @@ public class ChiselEvent {
         lastClick = System.currentTimeMillis();
 
         final BitOperation operation = leftClick ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
-
-        //Determine the placed bit, if this is REMOVE we set this to -1 to bypass any checks.
-        int placeStateID = ChiselHandler.getSelectedBit(player, null);
-
-        //If we couldn't find a selected type, don't chisel.
-        if(operation != BitOperation.REMOVE && placeStateID == VoxelBlob.AIR_BIT)
-            return;
-
         startChiselingBlock((BlockRayTraceResult) rtr, ChiselModeManager.getMode(player.getHeldItemMainhand()), player, operation);
     }
 
@@ -102,8 +95,8 @@ public class ChiselEvent {
         final BlockState state = player.world.getBlockState(pos);
         final Direction face = rayTrace.getFace();
         //We use a the constructor for BlockRayTraceResult from a method in BlockItemUseContext.
-        if (!state.isReplaceable(new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, new BlockRayTraceResult(new Vec3d((double) pos.getX() + 0.5D + (double) face.getXOffset() * 0.5D, (double) pos.getY() + 0.5D + (double) face.getYOffset() * 0.5D, (double) pos.getZ() + 0.5D + (double) face.getZOffset() * 0.5D), face, pos, false))))
-                && !ChiselUtil.canChiselBlock(state)) return; //You can place on replacable blocks.
+        BlockItemUseContext context = new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, new BlockRayTraceResult(new Vec3d((double) pos.getX() + 0.5D + (double) face.getXOffset() * 0.5D, (double) pos.getY() + 0.5D + (double) face.getYOffset() * 0.5D, (double) pos.getZ() + 0.5D + (double) face.getZOffset() * 0.5D), face, pos, false)));
+        if (!state.isReplaceable(context) && !ChiselUtil.canChiselBlock(state)) return; //You can place on replacable blocks.
         if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
 
         if(ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) {
@@ -115,12 +108,22 @@ public class ChiselEvent {
             }
         }
 
+        //Default for remove operations, we only get a placed bit when not removing
+        int placedBit = -1;
+        if(!operation.equals(BitOperation.REMOVE))
+            placedBit = ChiselModeManager.getSelectedBitMode(player, null).getPlacementBitId(context);
+        //We determine the placed bit on the client and include it in the packet so we can reuse the BlockItemUseContext from earlier.
+
+        //If we couldn't find a selected type, don't chisel.
+        if (placedBit == VoxelBlob.AIR_BIT)
+            return;
+
         if(ItemMode.CHISEL_DRAWN_REGION.equals(ChiselModeManager.getMode(player.getHeldItemMainhand()))) {
-            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, mode);
+            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, mode, placedBit);
             ChiselsAndBits2.getInstance().getClient().resetSelectionStart();
             ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
         } else {
-            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode);
+            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode, placedBit);
             ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
         }
     }

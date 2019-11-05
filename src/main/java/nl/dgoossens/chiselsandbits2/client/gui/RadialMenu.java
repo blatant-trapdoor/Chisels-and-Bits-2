@@ -489,7 +489,7 @@ public class RadialMenu extends Screen {
                     type = RegionType.DEFAULT;
                     return;
                 }
-                int b = ChiselHandler.getSelectedBit(player, null);
+                int b = ChiselModeManager.getSelectedBit(player, null);
                 if(b != s.getBitId()) {
                     //Highlighted = selected in this bitstorage but won't be used atm to build.
                     type = RegionType.HIGHLIGHTED;

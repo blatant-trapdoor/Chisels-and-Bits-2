@@ -7,8 +7,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.client.render.models.BaseSmartModel;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 
 import java.util.*;
 
@@ -25,7 +25,7 @@ public class MorphingBitSmartModel extends BaseSmartModel implements CacheCleara
 
     @Override
     public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, LivingEntity entity) {
-        return getCachedModel(entity instanceof PlayerEntity ? ChiselHandler.getSelectedBit((PlayerEntity) entity, null) : VoxelBlob.AIR_BIT);
+        return getCachedModel(entity instanceof PlayerEntity ? ChiselModeManager.getSelectedBit((PlayerEntity) entity, null) : VoxelBlob.AIR_BIT);
     }
 
     @Override

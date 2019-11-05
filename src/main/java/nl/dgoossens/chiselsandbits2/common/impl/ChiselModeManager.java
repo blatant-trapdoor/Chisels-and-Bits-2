@@ -15,6 +15,7 @@ import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
@@ -24,6 +25,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 import java.awt.*;
 import java.lang.reflect.Field;
+import java.util.*;
 
 import static nl.dgoossens.chiselsandbits2.api.ItemMode.*;
 
@@ -248,5 +250,47 @@ public class ChiselModeManager {
      */
     public static void setMenuActionMode(final ItemStack stack, final MenuAction action) {
         if (stack != null) stack.setTagInfo("menuAction", new StringNBT(action.name()));
+    }
+
+    //--- SELECTED BIT ---
+    private static Map<UUID, SelectedItemMode> selected = new HashMap<>();
+
+    /**
+     * Gets the currently selected bit type as a selected item mode.
+     */
+    public static SelectedItemMode getSelectedBitMode(final PlayerEntity player, final VoxelType filter) {
+        if(!selected.containsKey(player.getUniqueID())) {
+            long stamp = 0;
+
+            //Scan all storage containers for the most recently selected one.
+            for (ItemStack item : player.inventory.mainInventory) {
+                if (item.getItem() instanceof StorageItem) {
+                    if (filter != null) {
+                        //Cancel if we don't want this type.
+                        if (filter == VoxelType.BLOCKSTATE && !(item.getItem() instanceof BitBagItem)) continue;
+                        if (filter == VoxelType.FLUIDSTATE && !(item.getItem() instanceof BitBeakerItem)) continue;
+                        if (filter == VoxelType.COLOURED && !(item.getItem() instanceof PaletteItem)) continue;
+                    }
+
+                    long l = ChiselModeManager.getSelectionTime(item);
+                    if (l > stamp) {
+                        stamp = l;
+                        SelectedItemMode im = ChiselModeManager.getSelectedItem(item);
+                        if(im != null && im.getBitId() != VoxelBlob.AIR_BIT)
+                            selected.put(player.getUniqueID(), im);
+                    }
+                }
+            }
+            if(!selected.containsKey(player.getUniqueID()))
+                selected.put(player.getUniqueID(), SelectedItemMode.NONE);
+        }
+        return selected.get(player.getUniqueID());
+    }
+
+    /**
+     * Get the currently selected bit type.
+     */
+    public static int getSelectedBit(final PlayerEntity player, final VoxelType type) {
+        return getSelectedBitMode(player, type).getBitId();
     }
 }

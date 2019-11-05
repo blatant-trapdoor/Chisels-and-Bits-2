@@ -5,6 +5,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -128,6 +129,20 @@ public class SelectedItemMode implements IItemMode {
         return value;
     }
 
+    /**
+     * Get the bit id that should be placed.
+     * This factors in blockstate properties, like leaves will always place as 0 distance from log
+     * or how logs will place rotated.
+     */
+    public int getPlacementBitId(BlockItemUseContext context) {
+        switch(type) {
+            case BLOCKSTATE:
+                return ModUtil.getStateId(getBlock().getStateForPlacement(context));
+            default:
+                return value;
+        }
+    }
+
     @Override
     public String toString() {
         return getLocalizedName();
@@ -155,7 +170,7 @@ public class SelectedItemMode implements IItemMode {
     }
 
     /**
-     * Builds a selected item mdoe from a block/fluid resource name.
+     * Builds a selected item mode from a block/fluid resource name.
      */
     public static SelectedItemMode fromName(final String key, final boolean fluid) {
         if (key.equalsIgnoreCase("null")) return NONE;
