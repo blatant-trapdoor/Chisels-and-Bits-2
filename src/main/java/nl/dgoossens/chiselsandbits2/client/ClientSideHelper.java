@@ -3,6 +3,7 @@ package nl.dgoossens.chiselsandbits2.client;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -358,10 +359,10 @@ public class ClientSideHelper {
 
         if(tapeMeasure) {
             //Draw length indicator
-            final Vec3d v = player.getEyePosition(partialTicks);
-            final double x = v.getX();
-            final double y = v.getY();
-            final double z = v.getZ();
+            final ActiveRenderInfo renderInfo = Minecraft.getInstance().gameRenderer.getActiveRenderInfo();
+            final double x = renderInfo.getProjectedView().x;
+            final double y = renderInfo.getProjectedView().y;
+            final double z = renderInfo.getProjectedView().z;
 
             if(mode.equals(ItemMode.TAPEMEASURE_DISTANCE)) {
                 final Vec3d a = buildTapeMeasureDistanceVector(location);
@@ -538,10 +539,10 @@ public class ClientSideHelper {
             }
         }
 
-        final Vec3d v = player.getEyePosition(partialTicks);
-        final double x = v.getX();
-        final double y = v.getY();
-        final double z = v.getZ();
+        final ActiveRenderInfo renderInfo = Minecraft.getInstance().gameRenderer.getActiveRenderInfo();
+        final double x = renderInfo.getProjectedView().x;
+        final double y = renderInfo.getProjectedView().y;
+        final double z = renderInfo.getProjectedView().z;
 
         GlStateManager.pushMatrix();
         GlStateManager.translated(pos.getX() - x, pos.getY() - y, pos.getZ() - z);

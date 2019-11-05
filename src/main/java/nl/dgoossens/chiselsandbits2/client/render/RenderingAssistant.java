@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.client.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.model.BakedQuad;
@@ -23,10 +24,10 @@ import java.util.Random;
 public class RenderingAssistant {
     public static void drawSelectionBoundingBoxIfExists(final AxisAlignedBB bb, final BlockPos blockPos, final PlayerEntity player, final float partialTicks, final boolean normalBoundingBox, final int red, final int green, final int blue, final int alpha, final int seeThruAlpha) {
         if (bb != null) {
-            final Vec3d v = player.getEyePosition(partialTicks);
-            final double x = v.getX();
-            final double y = v.getY();
-            final double z = v.getZ();
+            final ActiveRenderInfo renderInfo = Minecraft.getInstance().gameRenderer.getActiveRenderInfo();
+            final double x = renderInfo.getProjectedView().x;
+            final double y = renderInfo.getProjectedView().y;
+            final double z = renderInfo.getProjectedView().z;
 
             GlStateManager.enableBlend();
             GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
@@ -52,10 +53,10 @@ public class RenderingAssistant {
 
     public static void drawLineWithColor(final Vec3d a, final Vec3d b, final BlockPos blockPos, final PlayerEntity player, final float partialTicks, final boolean normalBoundingBox, final int red, final int green, final int blue, final int alpha, final int seeThruAlpha) {
         if(a != null && b != null) {
-            final Vec3d v = player.getEyePosition(partialTicks);
-            final double x = v.getX();
-            final double y = v.getY();
-            final double z = v.getZ();
+            final ActiveRenderInfo renderInfo = Minecraft.getInstance().gameRenderer.getActiveRenderInfo();
+            final double x = renderInfo.getProjectedView().x;
+            final double y = renderInfo.getProjectedView().y;
+            final double z = renderInfo.getProjectedView().z;
 
             GlStateManager.enableBlend();
             GlStateManager.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
