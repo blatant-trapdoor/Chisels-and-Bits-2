@@ -16,6 +16,9 @@ The following features were added/changed in Chisels & Bits 2:
 * New bit beaker which will replace the Bit Tank, the beaker can scoop up any fluid and place the fluids in chiseled blocks.
 * Bits are now no longer separate items for each block type, instead there's now a single "Morphing Bit" which can take on the name and texture of any chiselable block. (more information later)
 
+
+* (originally suggested by weeryan17) A pattern book in which you can easily store your patterns and cycle between them.
+
 And the following features are planned but not implemented in any way yet:
 * Compatibility with the new multipart API in forge which will allow even more mods than ever before to be compatible with chisels & bits, for example being able to put power cables in the same space as C&B bits.
 * Finishing C&B's original 'Project Blueprint': (https://github.com/AlgorithmX2/Chisels-and-Bits/issues/337)

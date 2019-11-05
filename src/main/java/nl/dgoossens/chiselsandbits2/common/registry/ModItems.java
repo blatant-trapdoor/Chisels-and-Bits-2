@@ -28,6 +28,7 @@ public class ModItems {
     public Item MALLET;
     public Item BLUEPRINT;
     public final Item MORPHING_BIT = new MorphingBitItem(new Item.Properties().group(ModItemGroups.CHISELS_AND_BITS2));
+    public Item PATTERN_BOOK;
 
     //all of the coloured bit bags
     public final Item BIT_BAG = new BitBagItem();
@@ -81,6 +82,7 @@ public class ModItems {
             WRENCH = new WrenchItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
             MALLET = new MalletItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
             BLUEPRINT = new BlueprintItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
+            PATTERN_BOOK = new Item(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
             OAK_PALETTE = new PaletteItem();
             SPRUCE_PALETTE = new PaletteItem();
             BIRCH_PALETTE = new PaletteItem();
