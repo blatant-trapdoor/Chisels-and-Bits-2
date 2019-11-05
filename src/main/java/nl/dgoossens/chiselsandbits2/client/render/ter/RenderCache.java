@@ -88,6 +88,7 @@ public class RenderCache {
      * This will destroy the current renderer and it's data.
      */
     public void rebuild() {
+        if(needsRebuilding() && future == null) return;
         setRenderState(null);
         if (future != null) future.cancel(true);
         future = null;

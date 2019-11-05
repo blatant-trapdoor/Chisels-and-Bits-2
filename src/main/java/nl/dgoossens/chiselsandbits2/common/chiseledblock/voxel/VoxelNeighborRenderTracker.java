@@ -5,6 +5,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.IStateRef;
 import nl.dgoossens.chiselsandbits2.client.render.ModelRenderState;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
@@ -23,10 +24,12 @@ public final class VoxelNeighborRenderTracker {
     private ModelRenderState lrs = null;
     private byte isDynamic;
     private int faceCount;
+    private boolean invalid;
 
-    public VoxelNeighborRenderTracker() {
+    public VoxelNeighborRenderTracker(IBlockReader world, BlockPos pos) {
         isDynamic = IS_DYNAMIC | IS_LOCKED;
         faceCount = ChiselsAndBits2.getInstance().getConfig().dynamicModelFaceCount.get();
+        update(world, pos);
     }
 
     public void unlockDynamic() {
@@ -37,7 +40,7 @@ public final class VoxelNeighborRenderTracker {
      * Updates the tracked neighbouring voxel references.
      */
     public void update(IBlockReader world, BlockPos pos) {
-        //System.out.println("Updating NEIGHBOURS " + pos);
+        if(world == null || pos == null) return; //No point in updating if we have no world/pos.
         for (Direction d : Direction.values()) {
             final TileEntity te = world.getTileEntity(pos.offset(d));
             if (te instanceof ChiseledBlockTileEntity) {
@@ -47,6 +50,36 @@ public final class VoxelNeighborRenderTracker {
                 }
             }
         }
+    }
+
+    //Checks all neighbours and sees if any have changed to no longer be a chiseled block.
+    public void validate(final IBlockReader world, final BlockPos pos) {
+        for (Direction d : Direction.values()) {
+            final TileEntity te = world.getTileEntity(pos.offset(d));
+            if(te instanceof ChiseledBlockTileEntity) {
+                if(sides.get(d) == null) {
+                    invalidate();
+                    return;
+                }
+            } else {
+                if(sides.get(d) != null) {
+                    invalidate();
+                    return;
+                }
+            }
+        }
+    }
+
+    public void invalidate() {
+        invalid = true;
+    }
+
+    public boolean isValid() {
+        if(invalid) {
+            invalid = false;
+            return false;
+        }
+        return true;
     }
 
     public void setFaceCount(final int fc) {

@@ -76,7 +76,6 @@ public class BackgroundRenderer implements Callable<Tessellator> {
 
             for (final ChiseledBlockTileEntity tx : myPrivateList) {
                 if (!tx.isRemoved()) {
-                    tx.getRenderTracker().update(tx.getWorld(), tx.getPos()); //Update the render tracker first.
                     final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
                     if (!model.isEmpty()) {
                         blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());

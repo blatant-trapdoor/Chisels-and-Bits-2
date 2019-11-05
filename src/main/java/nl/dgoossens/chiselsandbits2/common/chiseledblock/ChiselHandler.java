@@ -300,22 +300,21 @@ public class ChiselHandler {
 
     public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final Direction face) {
         Block target = originalState.getBlock();
+        if(target.equals(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK)) return;
+
         IFluidState fluid = world.getFluidState(pos);
         boolean isAir = isBlockReplaceable(player, world, pos, face, true);
 
         if (ChiselUtil.canChiselBlock(originalState) || isAir) {
             int blockId = isAir ? fragmentBlockStateID : ModUtil.getStateId(originalState);
-
-            if (!target.equals(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK)) {
-                world.setBlockState(pos, ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), 3);
-                final ChiseledBlockTileEntity te = (ChiseledBlockTileEntity) world.getTileEntity(pos);
-                if (te != null) {
-                    if (!isAir) te.fillWith(blockId);
-                    else {
-                        //If there was a fluid previously make this a fluid block instead of an air block.
-                        if (fluid.isEmpty()) te.fillWith(VoxelBlob.AIR_BIT);
-                        else te.fillWith(ModUtil.getFluidId(fluid));
-                    }
+            world.setBlockState(pos, ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), 3);
+            final ChiseledBlockTileEntity te = (ChiseledBlockTileEntity) world.getTileEntity(pos);
+            if (te != null) {
+                if (!isAir) te.fillWith(blockId);
+                else {
+                    //If there was a fluid previously make this a fluid block instead of an air block.
+                    if (fluid.isEmpty()) te.fillWith(VoxelBlob.AIR_BIT);
+                    else te.fillWith(ModUtil.getFluidId(fluid));
                 }
             }
         }

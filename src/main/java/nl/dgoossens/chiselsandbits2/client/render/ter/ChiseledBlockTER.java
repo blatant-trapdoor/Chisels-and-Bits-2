@@ -201,6 +201,14 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             }
         }
 
+        //Only check this if this isn't new.
+        if(!rc.isNew() && !rc.needsRebuilding()) {
+            //Let the render tracker check if no neighbours changed somehow.
+            te.getRenderTracker().validate(te.getWorld(), te.getPos());
+            if(!te.getRenderTracker().isValid())
+                te.invalidate();
+        }
+
         final GfxRenderState dl = rc.getRenderState();
         if (dl != null && dl.shouldRender()) {
             if (!dl.validForUse()) {

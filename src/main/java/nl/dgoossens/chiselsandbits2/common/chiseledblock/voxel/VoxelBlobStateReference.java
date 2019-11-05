@@ -1,15 +1,15 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
+import net.minecraft.block.Blocks;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import nl.dgoossens.chiselsandbits2.api.IStateRef;
+import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
+import java.awt.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public final class VoxelBlobStateReference implements IStateRef {
     private static Map<VoxelBlobStateInstance, WeakReference<VoxelBlobStateInstance>> serverRefs = Collections.synchronizedMap(new WeakHashMap<>());
@@ -19,7 +19,8 @@ public final class VoxelBlobStateReference implements IStateRef {
     private final VoxelBlobStateInstance data;
 
     public VoxelBlobStateReference() {
-        this(VoxelBlob.AIR_BIT);
+        //Build the default voxel state reference
+        this(findDefaultBytes());
     }
 
     public VoxelBlobStateReference(final VoxelBlob blob) {
@@ -54,6 +55,17 @@ public final class VoxelBlobStateReference implements IStateRef {
 
         final VoxelBlob vb = new VoxelBlob();
         vb.fill(stateId);
+        return vb.blobToBytes(VoxelVersions.getDefault());
+    }
+
+    private static byte[] findDefaultBytes() {
+        final VoxelBlob vb = new VoxelBlob();
+        int b = ModUtil.getStateId(Blocks.GOLD_BLOCK.getDefaultState());
+        for(int y = 1; y <= 12; y++)
+            for(int x = 2; x <= 13; x++)
+                for(int z = 2; z <= 13; z++) {
+                    vb.set(x, y, z, b);
+                }
         return vb.blobToBytes(VoxelVersions.getDefault());
     }
 

@@ -40,7 +40,8 @@ public class MorphingBitBaked extends BaseBakedBlockModel {
      */
     public MorphingBitBaked(int bitId) {
         //If this is AIR, use a nice transparent gray bit colour.
-        if(bitId == VoxelBlob.AIR_BIT) bitId = ModUtil.getColourId(new Color(86, 86, 86, 175));
+        if(bitId == VoxelBlob.AIR_BIT)
+            bitId = ModUtil.getColourId(new Color(86, 86, 86, 175));
 
         final FaceBakery faceBakery = new FaceBakery();
 

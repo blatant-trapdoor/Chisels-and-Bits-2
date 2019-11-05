@@ -24,6 +24,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 
 import javax.annotation.Nonnull;
+import java.awt.*;
 import java.util.Random;
 
 public class ChiseledBlockSmartModel extends BaseSmartModel implements CacheClearable {
@@ -49,19 +50,19 @@ public class ChiseledBlockSmartModel extends BaseSmartModel implements CacheClea
     }
 
     public static ChiseledBlockBaked getCachedModel(final ChiseledBlockTileEntity te) {
-        return getCachedModel(te.getPrimaryBlock(), te.getVoxelReference(), te.getRenderTracker().getRenderState(te.getVoxelReference()), getModelFormat());
+        return getCachedModel(te.getPrimaryBlock(), te.getVoxelReference(), te.getRenderTracker(), te.getRenderTracker().getRenderState(te.getVoxelReference()), getModelFormat());
     }
 
     private static VertexFormat getModelFormat() {
         return !ForgeMod.forgeLightPipelineEnabled ? DefaultVertexFormats.ITEM : ChiselsAndBitsBakedQuad.VERTEX_FORMAT;
     }
 
-    private static ChiseledBlockBaked getCachedModel(final Integer primaryBlock, final VoxelBlobStateReference reference, final ModelRenderState mrs, final VertexFormat format) {
+    private static ChiseledBlockBaked getCachedModel(final Integer primaryBlock, final VoxelBlobStateReference reference, final VoxelNeighborRenderTracker renderTracker, final ModelRenderState mrs, final VertexFormat format) {
         if (reference == null)
             return new ChiseledBlockBaked(primaryBlock, null, new ModelRenderState(), format);
 
         ChiseledBlockBaked out = null;
-        if (format == getModelFormat()) out = modelCache.get(mrs);
+        if ((renderTracker == null || renderTracker.isValid()) && format == getModelFormat()) out = modelCache.get(mrs);
         if (out == null) {
             out = new ChiseledBlockBaked(primaryBlock, reference, mrs, format);
             if (out.isEmpty()) //Add the breaking texture the model
@@ -76,18 +77,19 @@ public class ChiseledBlockSmartModel extends BaseSmartModel implements CacheClea
 
     @Override
     public IBakedModel handleBlockState(final BlockState myState, final Random rand, @Nonnull final IModelData modelData) {
-        if (myState == null) return NullBakedModel.instance;
-
         VoxelBlobStateReference data = modelData.getData(ChiseledBlockTileEntity.VOXEL_DATA);
+        if (data == null)
+            data = new VoxelBlobStateReference(); //Full gray block is default (this gets used in statistics menu)
+
         VoxelNeighborRenderTracker rTracker = modelData.getData(ChiseledBlockTileEntity.NEIGHBOUR_RENDER_TRACKER);
         int primaryBlock = modelData.hasProperty(ChiseledBlockTileEntity.PRIMARY_BLOCKSTATE) ? modelData.getData(ChiseledBlockTileEntity.PRIMARY_BLOCKSTATE) : 0;
         if (rTracker == null)
-            rTracker = new VoxelNeighborRenderTracker();
+            rTracker = new VoxelNeighborRenderTracker(null, null);
 
         if (rTracker.isDynamic())
             return ChiseledBlockBaked.createFromTexture(ModelUtil.getBreakingTexture(primaryBlock));
 
-        ChiseledBlockBaked baked = getCachedModel(primaryBlock, data, rTracker.getRenderState(data), getModelFormat());
+        ChiseledBlockBaked baked = getCachedModel(primaryBlock, data, rTracker, rTracker.getRenderState(data), getModelFormat());
         rTracker.setFaceCount(baked.faceCount());
         return baked;
     }
@@ -98,14 +100,17 @@ public class ChiseledBlockSmartModel extends BaseSmartModel implements CacheClea
         if (mdl != null) return mdl;
 
         CompoundNBT c = stack.getTag();
-        if (c == null) return this;
-
-        c = c.getCompound(ModUtil.NBT_BLOCKENTITYTAG);
+        if (c == null)
+            c = new CompoundNBT();
+        else
+            c = c.getCompound(ModUtil.NBT_BLOCKENTITYTAG);
 
         byte[] vdata = c.getByteArray(NBTBlobConverter.NBT_VERSIONED_VOXEL);
-        final int blockP = c.getInt(NBTBlobConverter.NBT_PRIMARY_STATE);
+        final int blockP = c.contains(NBTBlobConverter.NBT_PRIMARY_STATE) ? c.getInt(NBTBlobConverter.NBT_PRIMARY_STATE) : VoxelBlob.AIR_BIT;
+        //If the NBT defines no data, we render a gray coloured block. (this fixes things like statistics menu and /give where a NBT-less item stack is created.
+        VoxelBlobStateReference state = c.contains(NBTBlobConverter.NBT_VERSIONED_VOXEL) ? new VoxelBlobStateReference(vdata) : new VoxelBlobStateReference();
 
-        mdl = getCachedModel(blockP, new VoxelBlobStateReference(vdata), null, DefaultVertexFormats.ITEM);
+        mdl = getCachedModel(blockP, state, null, null, DefaultVertexFormats.ITEM);
         itemToModel.put(stack, mdl);
         return mdl;
     }

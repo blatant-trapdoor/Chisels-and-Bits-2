@@ -2,7 +2,6 @@ package nl.dgoossens.chiselsandbits2.common.blocks;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
@@ -15,8 +14,6 @@ import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -70,11 +67,35 @@ public class ChiseledBlockTileEntity extends TileEntity {
         collisionShape = null;
         itemCache = null;
         recalculateShape();
-        if (chunk != null) chunk.rebuild();
+
+        //Only update on client
+        if (world != null && world.isRemote) {
+            invalidate();
+
+            //Update/invalidate neighbours to get them re-rendered
+            for(Direction d : Direction.values()) {
+                try {
+                    BlockState neighbour = world.getBlockState(pos.offset(d));
+                    if(neighbour.getBlock() instanceof ChiseledBlock) {
+                        ((ChiseledBlockTileEntity) world.getTileEntity(pos.offset(d))).invalidate();
+                        getRenderTracker().update(world, pos); //Update the render tracker information of the neighbouring blocks.
+                    }
+                } catch(Exception x) {
+                    x.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void invalidate() {
+        if (getChunk(world) != null)
+            chunk.rebuild();
+
+        getRenderTracker().invalidate();
     }
 
     public VoxelNeighborRenderTracker getRenderTracker() {
-        if (renderTracker == null) renderTracker = new VoxelNeighborRenderTracker();
+        if (renderTracker == null) renderTracker = new VoxelNeighborRenderTracker(world, pos);
         return renderTracker;
     }
 
