@@ -76,7 +76,7 @@ public class BitBeakerItem extends StorageItem {
                                 VoxelWrapper<Fluid> wrapper = VoxelWrapper.forFluid(fluid);
                                 b.set(wrapper, b.get(wrapper) + (int) Math.pow(VoxelBlob.DIMENSION, 3));
                                 //Set mode causes a capability update here.
-                                ChiselModeManager.setMode(itemstack, SelectedItemMode.fromVoxelWrapper(wrapper));
+                                ChiselModeManager.setMode(playerIn, itemstack, SelectedItemMode.fromVoxelWrapper(wrapper));
                             } catch(Exception x) {
                                 x.printStackTrace();
                             }

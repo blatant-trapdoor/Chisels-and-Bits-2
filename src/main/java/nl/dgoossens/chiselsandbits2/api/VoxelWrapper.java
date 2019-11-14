@@ -50,6 +50,17 @@ public class VoxelWrapper<T> {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof VoxelWrapper) {
+            VoxelWrapper o = (VoxelWrapper) obj;
+            if(type != o.type) return false;
+            //Use equals so we don't have multiple types of the same block in a bag.
+            return get().equals(o.get());
+        }
+        return super.equals(obj);
+    }
+
     /**
      * Get the bit id for this voxel wrapper.
      */

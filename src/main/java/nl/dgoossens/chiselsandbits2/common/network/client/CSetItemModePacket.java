@@ -52,7 +52,7 @@ public class CSetItemModePacket {
             if (pkt.newMode == null) return;
             ServerPlayerEntity player = ctx.get().getSender();
             if (pkt.isValid(player))
-                ChiselModeManager.setMode(player.getHeldItemMainhand(), pkt.newMode);
+                ChiselModeManager.setMode(player, player.getHeldItemMainhand(), pkt.newMode);
         });
         ctx.get().setPacketHandled(true);
     }

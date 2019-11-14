@@ -57,18 +57,28 @@ public class ChiselHandler {
         final InventoryUtils.CalculatedInventory inventory = InventoryUtils.buildInventory(player);
 
         //Cancel chiseling early on if possible (but not if creative)
-        if (inventory.getAvailableDurability() == 0 && !player.isCreative()) {
+        if (inventory.getAvailableDurability() <= 0 && !player.isCreative()) {
             player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.need_chisel"), true);
             return;
+        }
+
+        final VoxelWrapper wrapper = VoxelWrapper.forAbstract(pkt.placedBit);
+
+        //Placement/swap which means we need to track extracted bits
+        if(!pkt.operation.equals(REMOVE)) {
+            inventory.trackMaterialUsage(wrapper);
+
+            //Cancel chiseling early on if possible (but not if creative)
+            //This shouldn't ever happen because you can't have a material selected that you don't have.
+            if (inventory.getAvailableMaterial() <= 0 && !player.isCreative()) {
+                player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.need_bits"), true);
+                return;
+            }
         }
 
         //If world.getServer() is null we return to make the "if (world.getServer().isBlockProtected(world, pos, player))" never fail.
         if (world.getServer() == null)
             return;
-
-        final VoxelType type = VoxelType.getType(pkt.placedBit);
-        final VoxelWrapper wrapper = VoxelWrapper.forAbstract(pkt.placedBit);
-        final boolean isCreative = player.isCreative();
 
         final BlockPos from = pkt.from.blockPos;
         final BlockPos to = pkt.to.blockPos;
@@ -108,29 +118,8 @@ public class ChiselHandler {
                             switch (pkt.operation) {
                                 case SWAP:
                                 case PLACE: {
-                                    //Determine our resources, not needed if this is a REMOVE operation
-                                    long bitsUsed = 0, bitsAvailable = 0;
-                                    //In creative you can use as many as you want.
-                                    if (type == VoxelType.COLOURED || isCreative) {
-                                        //You can use as many coloured bits as you want.
-                                        bitsAvailable = Integer.MAX_VALUE;
-                                    } else {
-                                        //Count up all of the bits of our type we have in all of our storages
-                                        for (ItemStack item : player.inventory.mainInventory) {
-                                            if (item.getItem() instanceof StorageItem) {
-                                                LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
-                                                if (cap.isPresent())
-                                                    bitsAvailable += cap.orElse(null).get(wrapper);
-                                            }
-                                        }
-                                    }
-
-                                    //If we have no bits we can't place anything.
-                                    if (bitsAvailable <= 0)
-                                        return;
-
                                     while (i.hasNext()) {
-                                        int blk = vb.get(i.x(), i.y(), i.z());
+                                        final int blk = vb.get(i.x(), i.y(), i.z());
 
                                         //If this is a place operation we only place in air.
                                         if (pkt.operation == PLACE && (blk != VoxelBlob.AIR_BIT && !VoxelType.isFluid(blk)))
@@ -140,43 +129,14 @@ public class ChiselHandler {
                                         if (pkt.operation == SWAP && blk == pkt.placedBit)
                                             continue;
 
-                                        if (inventory.damageChisel()) {
-                                            vb.set(i.x(), i.y(), i.z(), pkt.placedBit);
+                                        if (inventory.hasMaterial() && inventory.damageChisel()) {
+                                            inventory.extractBit(vb, i.x(), i.y(), i.z());
                                             changed = true;
 
                                             //Track how many bits we've extracted and it's not a coloured bit.
                                             if (pkt.operation == SWAP && !VoxelType.isColoured(blk))
                                                 extracted.put(blk, extracted.getOrDefault(blk, 0L) + 1);
-
-                                            //Test resources
-                                            bitsUsed += 1;
-                                            if (bitsUsed >= bitsAvailable)
-                                                break;
                                         } else break; //If damage chisel is false once it will never become true again, so this break saves time.
-                                    }
-
-                                    //Take the used resources, coloured bits don't take resources.
-                                    if (!isCreative && type != VoxelType.COLOURED) {
-                                        //Iterate over every bag.
-                                        for (ItemStack item : player.inventory.mainInventory) {
-                                            if (item.getItem() instanceof StorageItem) {
-                                                LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
-                                                if (cap.isPresent()) {
-                                                    BitStorage bs = cap.orElse(null);
-                                                    if (bs.has(wrapper)) {
-                                                        bitsUsed = -bs.add(wrapper, -bitsUsed);
-                                                        ChiselModeManager.updateStackCapability(item, bs, player);
-                                                    }
-
-                                                    //We can break early if we're done.
-                                                    if (bitsUsed <= 0)
-                                                        break;
-                                                }
-                                            }
-                                        }
-
-                                        if (bitsUsed > 0)
-                                            throw new RuntimeException("Player didn't pay off resource debt, how did this happen?");
                                     }
                                 }
                                 break;
@@ -206,6 +166,8 @@ public class ChiselHandler {
                                 if (vt != VoxelType.BLOCKSTATE && vt != VoxelType.FLUIDSTATE)
                                     continue;
 
+                                //TODO: normalize this wrapper, i.e. turn any wooden log into default state of wooden log (make a new voxelwrapper from the get() result)
+                                //  e.g. cast to block and then build from block, this way it's always the block default
                                 VoxelWrapper w = VoxelWrapper.forAbstract(extr);
 
                                 //First round: find storages that already want the bits

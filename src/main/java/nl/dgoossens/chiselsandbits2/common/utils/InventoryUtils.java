@@ -5,11 +5,18 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
+import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
+
+import java.util.*;
 
 /**
  * Utilities for managing durability usage and bag contents.
@@ -32,8 +39,11 @@ public class InventoryUtils {
      */
     public static class CalculatedInventory {
         private PlayerEntity player;
-        private int durability;
-        private int usedDurability;
+        private long durability, usedDurability;
+        private long bitsAvailable, bitsUsed;
+        private VoxelWrapper bitPlaced;
+        private Map<Integer, BitStorage> bitStorages = new HashMap<>();
+        private Set<Integer> modifiedBitStorages = new HashSet<>();
 
         public CalculatedInventory(PlayerEntity player) {
             this.player = player;
@@ -43,12 +53,70 @@ public class InventoryUtils {
                 if (item.getItem() instanceof ChiselItem)
                     durability += (item.getMaxDamage() - item.getDamage());
             }
+            for (ItemStack item : player.inventory.offHandInventory) {
+                if (item.getItem() instanceof ChiselItem)
+                    durability += (item.getMaxDamage() - item.getDamage());
+            }
+
+            //Scan for storages
+            for (int i = 0; i < player.inventory.mainInventory.size(); i++) {
+                ItemStack item = player.inventory.mainInventory.get(i);
+                if(item.getItem() instanceof StorageItem)
+                    bitStorages.put(i, item.getCapability(StorageCapabilityProvider.STORAGE).orElse(null));
+            }
+            for (int i = 0; i < player.inventory.offHandInventory.size(); i++) {
+                ItemStack item = player.inventory.offHandInventory.get(i);
+                //Negative slot numbers for offhand item(s)
+                if(item.getItem() instanceof StorageItem)
+                    bitStorages.put(-i, item.getCapability(StorageCapabilityProvider.STORAGE).orElse(null));
+            }
+
+            bitStorages.entrySet().removeIf(e -> e.getValue() == null);
         }
+
+        /**
+         * Starts tracking how much of the bit type to place is stored, these will be used
+         * when placement happens.
+         */
+        public void trackMaterialUsage(VoxelWrapper wrapper) {
+            bitPlaced = wrapper;
+
+            //Calculate available bits
+            for(BitStorage store : bitStorages.values())
+                bitsAvailable += store.get(wrapper);
+        }
+
+        /**
+         * Returns whether there is still at least one bit worth of material to use.
+         */
+        public boolean hasMaterial() {
+            if(player.isCreative()) return true;
+            return bitsUsed < bitsAvailable;
+        }
+
+        /**
+         * Extracts and replaces the bit in the voxelblob at the specified coordinates.
+         */
+        public void extractBit(VoxelBlob voxelBlob, int x, int y, int z) {
+            if(!player.isCreative()) {
+                if(bitsUsed >= bitsAvailable) return;
+                bitsUsed++;
+            }
+            voxelBlob.set(x, y, z, bitPlaced.getId());
+        }
+
+        /**
+         * Gets the total available materials.
+         */
+        public long getAvailableMaterial() {
+            return bitsAvailable;
+        }
+
 
         /**
          * Gets the total available durability.
          */
-        public int getAvailableDurability() {
+        public long getAvailableDurability() {
             return durability;
         }
 
@@ -76,6 +144,46 @@ public class InventoryUtils {
          */
         public void apply() {
             applyDurabilityChanges();
+            applyMaterialUsage();
+            applyMaterialGain();
+
+            //Send updates for all modified bit bags
+            for(int i : modifiedBitStorages) {
+                if(i < 0) {
+                    ChiselModeManager.updateStackCapability(player.inventory.offHandInventory.get(-i), bitStorages.get(i), player);
+                    continue;
+                }
+                ChiselModeManager.updateStackCapability(player.inventory.mainInventory.get(i), bitStorages.get(i), player);
+            }
+            modifiedBitStorages.clear();
+        }
+
+        /**
+         * Removes materials from all bit storages in the inventory.
+         */
+        private void applyMaterialUsage() {
+            if(player.isCreative()) return; //We don't need to take materials for creative players.
+            if(bitsUsed > 0) {
+                for(int slot : bitStorages.keySet()) {
+                    if(bitsUsed <= 0) break;
+
+                    BitStorage bs = bitStorages.get(slot);
+                    if(!bs.has(bitPlaced)) continue;
+                    long capacity = Math.min(bitsUsed, bs.get(bitPlaced));
+                    bs.add(bitPlaced, -capacity);
+                    modifiedBitStorages.add(slot);
+                    bitsUsed -= capacity;
+
+                    //TODO if this causes the bag to no longer have this type of bit, select the same bit type on another bag containing this type to avoid random switching
+                }
+            }
+        }
+
+        /**
+         * Adds extracted materials to available bit storages.
+         */
+        private void applyMaterialGain() {
+
         }
 
         /**
@@ -85,7 +193,7 @@ public class InventoryUtils {
             ItemStack selectedItem = player.getHeldItemMainhand();
             if (usedDurability > 0) {
                 //Update the bits chiseled statistic
-                player.addStat(ChiselsAndBits2.getInstance().getStatistics().BITS_CHISELED, usedDurability);
+                player.addStat(ChiselsAndBits2.getInstance().getStatistics().BITS_CHISELED, (int) usedDurability);
 
                 if (player.isCreative()) return; //We don't need to do the rest for creative players.
 
@@ -110,7 +218,7 @@ public class InventoryUtils {
 
                         ItemStack newChisel = player.inventory.getStackInSlot(foundChisel);
                         if (oldMode != null)
-                            ChiselModeManager.setMode(newChisel, oldMode);
+                            ChiselModeManager.setMode(player, newChisel, oldMode);
                         player.inventory.removeStackFromSlot(foundChisel);
                         player.inventory.setInventorySlotContents(targetSlot, newChisel);
                         if (!target.isEmpty())
@@ -123,9 +231,9 @@ public class InventoryUtils {
                     //Prevent unnecessary mode fetching.
                     oldMode = !(target.getItem() instanceof IItemMenu) ? oldMode : ChiselModeManager.getMode(target);
                     //Get the maximum we can take from this chisel.
-                    int capacity = Math.min(usedDurability, target.getMaxDamage() - target.getDamage());
+                    long capacity = Math.min(usedDurability, target.getMaxDamage() - target.getDamage());
                     //Take durability from the current item.
-                    target.damageItem(capacity, player, (p) -> p.sendBreakAnimation(Hand.MAIN_HAND));
+                    target.damageItem((int) capacity, player, (p) -> p.sendBreakAnimation(Hand.MAIN_HAND));
                     usedDurability -= capacity;
                 }
             }

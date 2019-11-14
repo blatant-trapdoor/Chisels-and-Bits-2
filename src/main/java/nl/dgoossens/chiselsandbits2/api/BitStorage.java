@@ -1,17 +1,21 @@
 package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.item.Item;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 
 /**
  * Represents an interface capable of storing bits of any type.
+ * Any methods that modify the bit storage may only be ran on the client, it is read-only
+ * on the client-side.
  */
 public interface BitStorage {
     /**
-     * Lists the bits stored in this storage.
+     * Returns how many slots this storage has.
      */
-    List<VoxelWrapper> list();
+    int getSlots();
 
     /**
      * Returns a set of all types of blocks in this storage.
@@ -62,6 +66,11 @@ public interface BitStorage {
     void clearSlot(final int index);
 
     /**
+     * Get the voxel wrapper in a given slot.
+     */
+    VoxelWrapper getSlotContent(final int index);
+
+    /**
      * Gets the voxel typ this storage is limited to.
      */
     VoxelType getType();
@@ -70,4 +79,14 @@ public interface BitStorage {
      * Set the voxel type this storage is limited to.
      */
     void setType(VoxelType voxelType);
+
+    /**
+     * Returns the amount of slots that have been occupied by a bit type.
+     */
+    int getOccupiedSlotCount();
+
+    /**
+     * Validates the
+     */
+    void validate();
 }

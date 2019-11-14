@@ -11,6 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -111,12 +112,14 @@ public class ChiselEvent {
         //Default for remove operations, we only get a placed bit when not removing
         int placedBit = -1;
         if(!operation.equals(BitOperation.REMOVE))
-            placedBit = ChiselModeManager.getSelectedBitMode(player, null).getPlacementBitId(context);
+            placedBit = ChiselModeManager.getSelectedBitMode(player).getPlacementBitId(context);
         //We determine the placed bit on the client and include it in the packet so we can reuse the BlockItemUseContext from earlier.
 
         //If we couldn't find a selected type, don't chisel.
-        if (placedBit == VoxelBlob.AIR_BIT)
+        if (placedBit == VoxelBlob.AIR_BIT) {
+            player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.no_selected_type"), true);
             return;
+        }
 
         if(ItemMode.CHISEL_DRAWN_REGION.equals(ChiselModeManager.getMode(player.getHeldItemMainhand()))) {
             final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, mode, placedBit);

@@ -36,13 +36,23 @@ public class ChiselModeManager {
     /**
      * Set the main item mode of an itemstack.
      */
-    public static void changeItemMode(final IItemMode newMode) {
+    public static void changeItemMode(final ItemStack item, final IItemMode newMode) {
+        if(newMode instanceof SelectedItemMode && !(item.getItem() instanceof StorageItem)) {
+            throw new RuntimeException("Can't set mode of item stack to selected item mode if item is not a storage item.");
+        }
+
         final CSetItemModePacket packet = new CSetItemModePacket(newMode);
         ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
+
+        //Update stack on client
+        setMode(Minecraft.getInstance().player, item, newMode);
 
         //Show item mode change in hotbar
         if(packet.isValid(Minecraft.getInstance().player))
             reshowHighlightedStack();
+
+        if(newMode instanceof SelectedItemMode)
+            selected.remove(Minecraft.getInstance().player.getUniqueID());
     }
 
     /**
@@ -103,6 +113,18 @@ public class ChiselModeManager {
      */
     public static void updateStackCapability(final ItemStack item, final BitStorage cap, final PlayerEntity player) {
         ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SSynchronizeBitStoragePacket(cap, player.inventory.getSlotFor(item)), (ServerPlayerEntity) player);
+        validateSelectedBitType(player, item);
+    }
+
+    private static void validateSelectedBitType(final PlayerEntity player, final ItemStack item) {
+        //Check if selected type is no longer valid
+        SelectedItemMode selected = getSelectedItem(item);
+        if(selected == null) return;
+        BitStorage storage = item.getCapability(StorageCapabilityProvider.STORAGE).orElse(null);
+        if(storage == null) return;
+        VoxelWrapper sel = selected.getVoxelWrapper();
+        if(storage.get(sel) <= 0)
+            setMode(player, item, SelectedItemMode.NONE);
     }
 
     /**
@@ -118,19 +140,19 @@ public class ChiselModeManager {
                 if (offset >= values().length) offset = 0;
                 if (offset < 0) offset = values().length - 1;
             } while (ItemMode.values()[offset].getType() != currentMode.getType());
-            changeItemMode(ItemMode.values()[offset]);
+            changeItemMode(item, ItemMode.values()[offset]);
         } else {
             IItemMode i = getMode(item);
             if(!(i instanceof SelectedItemMode)) return; //Just in case.
             SelectedItemMode current = ((SelectedItemMode) i);
             item.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(bs -> {
-                if(bs.list().size() <= 1) return; //You can't scroll without at least 2 elements.
+                if(bs.getOccupiedSlotCount() <= 1) return; //You can't scroll without at least 2 elements.
                 VoxelWrapper wrapper = current.getVoxelWrapper();
                 int j = bs.getSlot(wrapper);
                 j += (dwheel < 0 ? -1 : 1);
-                if(bs.list().size() <= j) j = 0;
-                if(j < 0) j = bs.list().size() - 1;
-                changeItemMode(SelectedItemMode.fromVoxelWrapper(wrapper));
+                if(bs.getOccupiedSlotCount() <= j) j = 0;
+                if(j < 0) j = bs.getOccupiedSlotCount() - 1;
+                changeItemMode(item, SelectedItemMode.fromVoxelWrapper(wrapper));
             });
         }
     }
@@ -217,7 +239,7 @@ public class ChiselModeManager {
     /**
      * Set the mode of this itemstack to this enum value.
      */
-    public static void setMode(final ItemStack stack, final IItemMode mode) {
+    public static void setMode(final PlayerEntity player, final ItemStack stack, final IItemMode mode) {
         if (stack != null) {
             stack.setTagInfo("mode", new StringNBT(mode.getName()));
             stack.setTagInfo("isDynamic", new ByteNBT(mode.getType().isDynamic() ? (byte) 1 : (byte) 0));
@@ -225,6 +247,8 @@ public class ChiselModeManager {
             if(mode.getType().isDynamic())
                 stack.setTagInfo("timestamp", new LongNBT(System.currentTimeMillis()));
         }
+
+        selected.remove(player.getUniqueID());
     }
 
     /**
@@ -258,20 +282,13 @@ public class ChiselModeManager {
     /**
      * Gets the currently selected bit type as a selected item mode.
      */
-    public static SelectedItemMode getSelectedBitMode(final PlayerEntity player, final VoxelType filter) {
+    public static SelectedItemMode getSelectedBitMode(final PlayerEntity player) {
         if(!selected.containsKey(player.getUniqueID())) {
             long stamp = 0;
 
             //Scan all storage containers for the most recently selected one.
             for (ItemStack item : player.inventory.mainInventory) {
                 if (item.getItem() instanceof StorageItem) {
-                    if (filter != null) {
-                        //Cancel if we don't want this type.
-                        if (filter == VoxelType.BLOCKSTATE && !(item.getItem() instanceof BitBagItem)) continue;
-                        if (filter == VoxelType.FLUIDSTATE && !(item.getItem() instanceof BitBeakerItem)) continue;
-                        if (filter == VoxelType.COLOURED && !(item.getItem() instanceof PaletteItem)) continue;
-                    }
-
                     long l = ChiselModeManager.getSelectionTime(item);
                     if (l > stamp) {
                         stamp = l;
@@ -290,7 +307,7 @@ public class ChiselModeManager {
     /**
      * Get the currently selected bit type.
      */
-    public static int getSelectedBit(final PlayerEntity player, final VoxelType type) {
-        return getSelectedBitMode(player, type).getBitId();
+    public static int getSelectedBit(final PlayerEntity player) {
+        return getSelectedBitMode(player).getBitId();
     }
 }

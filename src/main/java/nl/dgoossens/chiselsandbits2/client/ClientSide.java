@@ -133,7 +133,7 @@ public class ClientSide extends ClientSideHelper {
         for (ItemMode im : keybindings.modeHotkeys.keySet()) {
             KeyBinding kb = keybindings.modeHotkeys.get(im);
             if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME))
-                ChiselModeManager.changeItemMode(im);
+                ChiselModeManager.changeItemMode(Minecraft.getInstance().player.getHeldItemMainhand(), im);
         }
         for (MenuAction ma : keybindings.actionHotkeys.keySet()) {
             KeyBinding kb = keybindings.actionHotkeys.get(ma);
@@ -179,7 +179,7 @@ public class ClientSide extends ClientSideHelper {
                     }
 
                     if (radialMenu.hasSwitchTo())
-                        ChiselModeManager.changeItemMode(radialMenu.getSwitchTo());
+                        ChiselModeManager.changeItemMode(Minecraft.getInstance().player.getHeldItemMainhand(), radialMenu.getSwitchTo());
 
                     if (radialMenu.hasAction())
                         handleMenuAction(radialMenu.getAction());
