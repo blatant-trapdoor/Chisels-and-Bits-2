@@ -207,9 +207,6 @@ public class ClientSide extends ClientSideHelper {
                 final MainWindow window = e.getWindow();
                 radialMenu.configure(window); //Setup the height/width scales
                 if (radialMenu.isVisible()) {
-                    if (radialMenu.getMinecraft().isGameFocused())
-                        KeyBinding.unPressAllKeys();
-
                     int i = (int) (radialMenu.getMinecraft().mouseHelper.getMouseX() * (double) window.getScaledWidth() / (double) window.getWidth());
                     int j = (int) (radialMenu.getMinecraft().mouseHelper.getMouseY() * (double) window.getScaledHeight() / (double) window.getHeight());
 

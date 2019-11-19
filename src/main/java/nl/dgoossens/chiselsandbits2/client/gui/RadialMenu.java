@@ -22,7 +22,6 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import org.lwjgl.opengl.GL11;
@@ -48,7 +47,7 @@ public class RadialMenu extends Screen {
     private List<MenuRegion> modes;
     private List<MenuButton> buttons;
     private boolean actionUsed = false;
-    private boolean gameFocused = true;
+    private boolean currentlyShown = false;
     private boolean pressedButton = false;
     private boolean clicked = false;
     private MainWindow window;
@@ -62,10 +61,9 @@ public class RadialMenu extends Screen {
 
     public void updateGameFocus() {
         //Switch the game focus state if the game is focus doesn't match the visibility.
-        if ((gameFocused && isVisible()) || (!gameFocused && !isVisible())) {
-            gameFocused = !gameFocused;
-            getMinecraft().setGameFocused(gameFocused);
-            if (!gameFocused) {
+        if ((!currentlyShown && isVisible()) || (currentlyShown && !isVisible())) {
+            currentlyShown = !currentlyShown;
+            if (currentlyShown) {
                 getMinecraft().mouseHelper.ungrabMouse();
                 if (ChiselsAndBits2.getInstance().getConfig().enableVivecraftCompatibility.get()) getMinecraft().currentScreen = this;
             } else {
