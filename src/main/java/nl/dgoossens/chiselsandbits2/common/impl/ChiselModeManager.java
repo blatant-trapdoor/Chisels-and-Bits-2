@@ -252,6 +252,13 @@ public class ChiselModeManager {
     }
 
     /**
+     * Force recalculates this client player's selected bit type.
+     */
+    public static void recalculateSelectedBit() {
+        selected.remove(Minecraft.getInstance().player.getUniqueID());
+    }
+
+    /**
      * Fetch the menu action associated to this item,
      * can be a colour or place/replace.
      */

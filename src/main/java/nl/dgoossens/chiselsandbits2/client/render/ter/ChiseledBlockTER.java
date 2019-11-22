@@ -49,21 +49,28 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
     private static final WeakHashMap<World, WorldTracker> worldTrackers = new WeakHashMap<>();
     private static ThreadPoolExecutor pool;
     private static boolean lastFancy = false;
+
     int isConfigured = 0;
+    ThreadFactory threadFactory = null;
 
     public ChiseledBlockTER() { //Only one instance is ever initialised
-        if (pool != null) throw new UnsupportedOperationException("ChiseledBlockTER was initialised a second time!");
-        final ThreadFactory threadFactory = (r) -> {
+        if (threadFactory != null) throw new UnsupportedOperationException("ChiseledBlockTER was initialised a second time!");
+        threadFactory = (r) -> {
             final Thread t = new Thread(r);
             t.setPriority(Thread.NORM_PRIORITY - 1);
             t.setName("C&B Dynamic Render Thread");
             return t;
         };
+        restartPool();
+    }
 
-        int processors = Runtime.getRuntime().availableProcessors();
-        if (ModUtil.isLowMemoryMode()) processors = 1;
-        pool = new ThreadPoolExecutor(1, processors, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(64), threadFactory);
-        pool.allowCoreThreadTimeOut(false);
+    private void restartPool() {
+        if(pool == null || pool.isTerminated()) {
+            int processors = Runtime.getRuntime().availableProcessors();
+            if (ModUtil.isLowMemoryMode()) processors = 1;
+            pool = new ThreadPoolExecutor(1, processors, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(64), threadFactory);
+            pool.allowCoreThreadTimeOut(false);
+        }
     }
 
     protected static int getMaxTessalators() {
@@ -170,6 +177,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
                 try {
                     final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(16, 16, 16));
                     final FutureTask<Tessellator> newFuture = new FutureTask<>(new BackgroundRenderer(cache, chunkOffset, te.getChunk(te.getWorld()).getTileList()));
+                    restartPool(); //Restart pool if need be
                     pool.submit(newFuture);
                     hasSubmitted = true;
 

@@ -9,6 +9,7 @@ import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.api.BitStorage;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
+import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 
 import java.util.function.Supplier;
 
@@ -54,6 +55,7 @@ public class SSynchronizeBitStoragePacket {
             target.inventory.getStackInSlot(pkt.inventorySlot).getCapability(StorageCapabilityProvider.STORAGE).ifPresent(storage -> {
                 StorageCapabilityProvider.STORAGE.readNBT(storage, null, pkt.nbt);
             });
+            ChiselModeManager.recalculateSelectedBit();
         });
         ctx.get().setPacketHandled(true);
     }

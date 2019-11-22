@@ -384,8 +384,8 @@ public class RadialMenu extends Screen {
                     if(buffer!=null)
                         continue;
 
-                    //We use minecraft's (actually forge's) item renderer instead of our own here because we can't support alpha in item rendering anyways.
-                    getMinecraft().getItemRenderer().renderItemIntoGUI(((SelectedItemMode) mnuRgn.mode).getStack(), (int) Math.round(middle_x + x - w), (int) Math.round(middle_y + y - w));
+                    //We use minecrafts (actually forges) item renderer instead of our own here because we can't support alpha in item rendering anyways.
+                    getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(null, ((SelectedItemMode) mnuRgn.mode).getStack(), (int) Math.round(middle_x + x - w), (int) Math.round(middle_y + y - w));
                 }
             }
         }
