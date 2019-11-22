@@ -3,7 +3,6 @@ package nl.dgoossens.chiselsandbits2.client.render.ter;
 import com.google.common.base.Stopwatch;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
-import javafx.scene.layout.Background;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockRendererDispatcher;

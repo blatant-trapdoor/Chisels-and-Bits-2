@@ -53,6 +53,7 @@ public class MorphingBitBaked extends BaseBakedBlockModel {
 
         Random rand = new Random();
         for (final Direction myFace : Direction.values()) {
+            //We use the shadeBitId to make it look shaded.
             final ModelQuadLayer[] layers = ModelUtil.getCachedFace(bitId, rand, myFace);
 
             if (layers == null || layers.length == 0)
@@ -92,7 +93,7 @@ public class MorphingBitBaked extends BaseBakedBlockModel {
                         throw new NullPointerException();
                 }
 
-                generic.add(faceBakery.makeBakedQuad(toB, fromB, bpf, clayer.sprite, myFace, mr, bpr, false));
+                generic.add(faceBakery.makeBakedQuad(toB, fromB, bpf, clayer.sprite, myFace, mr, bpr, true));
             }
         }
 
