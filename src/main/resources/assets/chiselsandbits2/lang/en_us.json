@@ -165,8 +165,10 @@
 
   "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
   "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo...",
-  "general.chiselsandbits2.undo.block_changed": "Target block was modified, can't apply changes",
-  "general.chiselsandbits2.undo.missing_bits": "You don't have the required bits to perform this action.",
+  "general.chiselsandbits2.undo.error_undo": "Undo couldn't be performed successfully, block must have changed",
+  "general.chiselsandbits2.undo.error_redo": "Redo couldn't be performed successfully, block must have changed",
+  "general.chiselsandbits2.undo.missing_bits": "Your bits ran out whilst performing this action",
+  "general.chiselsandbits2.undo.missing_durability": "Your chisel broke whilst performing this action",
 
   "advancements.story.craft_chisel.title": "A World of Bits",
   "advancements.story.craft_chisel.description": "Obtain a chisel",

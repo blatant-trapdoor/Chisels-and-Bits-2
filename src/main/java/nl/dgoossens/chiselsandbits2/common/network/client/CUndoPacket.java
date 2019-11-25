@@ -1,8 +1,13 @@
 package nl.dgoossens.chiselsandbits2.common.network.client;
 
+import net.minecraft.block.SoundType;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -10,12 +15,18 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.BitAccess;
+import nl.dgoossens.chiselsandbits2.api.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
+import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
 
 import java.util.*;
 import java.util.function.Supplier;
+
+import static nl.dgoossens.chiselsandbits2.api.BitOperation.SWAP;
 
 /**
  * Executes the undo action.
@@ -24,59 +35,89 @@ import java.util.function.Supplier;
 public class CUndoPacket {
     private BlockPos pos;
     private VoxelBlobStateReference before, after;
+    private boolean redo; //true = redo, false = undo
+    private int groupId;
 
     private CUndoPacket() {}
 
-    public CUndoPacket(final BlockPos pos, final VoxelBlobStateReference before, final VoxelBlobStateReference after) {
+    public CUndoPacket(final BlockPos pos, final VoxelBlobStateReference before, final VoxelBlobStateReference after, final boolean redo, final int groupId) {
         this.pos = pos;
         this.after = after;
         this.before = before;
+        this.redo = redo;
+        this.groupId = groupId;
     }
 
-    public boolean handle(final PlayerEntity player, boolean applyChanges) {
+
+    public void handle(final ServerPlayerEntity player) {
+        if(!isValid(groupId))
+            return; //If this group is invalid, don't even try.
+
         if(!inRange(player)) {
             player.sendStatusMessage(new TranslationTextComponent("general."+ ChiselsAndBits2.MOD_ID+".info.out_of_range"), true);
-            return false;
+            invaliate();
+            return;
         }
         try {
             final World world = player.getEntityWorld();
             final Optional<BitAccess> baOpt = ChiselsAndBits2.getInstance().getAPI().getBitAccess(world, pos);
             if(baOpt.isPresent()) {
-                final BitAccess ba = baOpt.get();
                 final VoxelBlob bbef = before.getVoxelBlob();
                 final VoxelBlob baft = after.getVoxelBlob();
 
-                final VoxelBlob target = ba.getNativeBlob();
+                //If before and after are equal we call it good enough.
+                if(bbef.equals(baft))
+                    return;
 
-                if(target.equals(bbef)) {
-                    boolean success = true;
+                final BitAccess ba = baOpt.get();
+                final VoxelBlob vb = ba.getNativeBlob();
+                InventoryUtils.CalculatedInventory inventory = InventoryUtils.buildInventory(player);
 
-                    final BitIterator bi = new BitIterator();
-                    while(bi.hasNext()) {
-                        final int inBef = bi.getNext(bbef);
-                        final int inAft = bi.getNext(baft);
+                final BitIterator i = new BitIterator();
+                while(i.hasNext()) {
+                    final int inBef = i.getNext(bbef);
+                    final int inAft = i.getNext(baft);
 
-                        if(inBef != inAft) {
-
+                    //If we need to set it to air and it currently isn't air
+                    if(inBef != 0 && inAft == 0)
+                        if(inventory.removeBit(vb, i.x, i.y, i.z)) {
+                            player.sendStatusMessage(new TranslationTextComponent("general."+ ChiselsAndBits2.MOD_ID+".undo.missing_durability"), true);
+                            invaliate();
+                            return; //This will only be false if we have no more chisel in which case we can call it quits.
                         }
-                    }
-
-                    if(success) {
-                        if(applyChanges) {
-
+                    else {
+                        switch(inventory.placeBit(vb, i.x, i.y, i.z, BitOperation.SWAP, inAft)) {
+                            case 2:
+                                //If we don't have materials we quit.
+                                player.sendStatusMessage(new TranslationTextComponent("general."+ ChiselsAndBits2.MOD_ID+".undo.missing_bits"), true);
+                                invaliate();
+                                return;
+                            case 1: //If the chisel runs out of durability we can also quit.
+                                player.sendStatusMessage(new TranslationTextComponent("general."+ ChiselsAndBits2.MOD_ID+".undo.missing_durability"), true);
+                                invaliate();
+                                return;
                         }
-                        return true;
-                    } else {
-                        player.sendStatusMessage(new TranslationTextComponent("general."+ ChiselsAndBits2.MOD_ID+".undo.missing_bits"), true);
-                        return false;
                     }
                 }
+
+                //Make this a undo group of its own
+                ChiselsAndBits2.getInstance().getClient().getUndoTracker().beginGroup(player);
+
+                //Actually apply the operation.
+                TileEntity te = world.getTileEntity(pos);
+                if(te instanceof ChiseledBlockTileEntity)
+                    ((ChiseledBlockTileEntity) te).completeEditOperation(player, vb);
+
+                inventory.playSound(world, pos);
+                inventory.apply();
+
+                ChiselsAndBits2.getInstance().getClient().getUndoTracker().endGroup(player);
             }
         } catch(Exception x) {
             x.printStackTrace();
-            player.sendStatusMessage(new TranslationTextComponent("general."+ ChiselsAndBits2.MOD_ID+".undo.block_changed"), true);
+            player.sendStatusMessage(new TranslationTextComponent("general."+ ChiselsAndBits2.MOD_ID+".undo.error_"+(redo ? "redo" : "undo")), true);
+            invaliate();
         }
-        return false;
     }
 
     private boolean inRange(final PlayerEntity player) {
@@ -92,6 +133,8 @@ public class CUndoPacket {
         final byte[] aft = msg.after.getByteArray();
         buf.writeVarInt(aft.length);
         buf.writeBytes(aft);
+        buf.writeBoolean(msg.redo);
+        buf.writeVarInt(msg.groupId);
     }
 
     public static CUndoPacket decode(PacketBuffer buffer) {
@@ -106,13 +149,49 @@ public class CUndoPacket {
 
         pc.before = new VoxelBlobStateReference(ta);
         pc.after = new VoxelBlobStateReference(tb);
+
+        pc.redo = buffer.readBoolean();
+        pc.groupId = buffer.readVarInt();
         return pc;
     }
 
     public static void handle(final CUndoPacket pkt, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() ->
-                pkt.handle(ctx.get().getSender(), true)
-        );
+        ctx.get().enqueueWork(() -> pkt.handle(ctx.get().getSender()));
         ctx.get().setPacketHandled(true);
+    }
+
+    //--- STATIC GROUP ID MANAGEMENT ---
+    private static int latestGroupId = 0;
+    private static boolean didFail = false;
+
+    /**
+     * Starts a new group of packets and gets their id.
+     * This method is only going to get called on the client side.
+     */
+    public static int nextGroupId() {
+        latestGroupId++;
+        return latestGroupId;
+    }
+
+    /**
+     * Checks if a group id is still valid.
+     * This method will only be called on the server side.
+     */
+    public static boolean isValid(int groupId) {
+        if(groupId == latestGroupId) {
+            //Is this the same group we've had previously?
+            return !didFail; //Return if this group has failed or not
+        }
+        //This is a new group, update the group id and give this group a fresh chance.
+        latestGroupId = groupId;
+        didFail = false;
+        return true;
+    }
+
+    /**
+     * Invalidates the current group, it has failed.
+     */
+    public static void invaliate() {
+        didFail = true;
     }
 }

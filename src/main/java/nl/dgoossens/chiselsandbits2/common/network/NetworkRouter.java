@@ -10,6 +10,8 @@ import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetMenuActionModePacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CUndoPacket;
+import nl.dgoossens.chiselsandbits2.common.network.server.SAddUndoStep;
+import nl.dgoossens.chiselsandbits2.common.network.server.SGroupMethod;
 import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
 
 public class NetworkRouter {
@@ -30,6 +32,9 @@ public class NetworkRouter {
         HANDLER.registerMessage(disc++, CSetMenuActionModePacket.class, CSetMenuActionModePacket::encode, CSetMenuActionModePacket::decode, CSetMenuActionModePacket::handle);
         HANDLER.registerMessage(disc++, CUndoPacket.class, CUndoPacket::encode, CUndoPacket::decode, CUndoPacket::handle);
         HANDLER.registerMessage(disc++, SSynchronizeBitStoragePacket.class, SSynchronizeBitStoragePacket::encode, SSynchronizeBitStoragePacket::decode, SSynchronizeBitStoragePacket::handle);
+        HANDLER.registerMessage(disc++, SAddUndoStep.class, SAddUndoStep::encode, SAddUndoStep::decode, SAddUndoStep::handle);
+        HANDLER.registerMessage(disc++, SGroupMethod.BeginGroup.class, SGroupMethod.BeginGroup::encode, SGroupMethod.BeginGroup::decode, SGroupMethod.BeginGroup::handle);
+        HANDLER.registerMessage(disc++, SGroupMethod.EndGroup.class, SGroupMethod.EndGroup::encode, SGroupMethod.EndGroup::decode, SGroupMethod.EndGroup::handle);
     }
 
     /**

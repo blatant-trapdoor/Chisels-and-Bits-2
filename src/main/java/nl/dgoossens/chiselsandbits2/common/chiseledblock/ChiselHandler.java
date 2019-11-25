@@ -61,21 +61,17 @@ public class ChiselHandler {
         final BlockPos from = pkt.from.blockPos;
         final BlockPos to = pkt.to.blockPos;
 
-        final int minX = Math.min(from.getX(), to.getX());
         final int maxX = Math.max(from.getX(), to.getX());
-        final int minY = Math.min(from.getY(), to.getY());
         final int maxY = Math.max(from.getY(), to.getY());
-        final int minZ = Math.min(from.getZ(), to.getZ());
         final int maxZ = Math.max(from.getZ(), to.getZ());
 
         ChiselsAndBits2.getInstance().getClient().getUndoTracker().beginGroup(player);
 
         try {
             //Uses to be added to the statistic
-            for (int xOff = minX; xOff <= maxX; ++xOff) {
-                for (int yOff = minY; yOff <= maxY; ++yOff) {
-                    for (int zOff = minZ; zOff <= maxZ; ++zOff) {
-                        boolean changed = false;
+            for (int xOff = Math.min(from.getX(), to.getX()); xOff <= maxX; ++xOff) {
+                for (int yOff = Math.min(from.getY(), to.getY()); yOff <= maxY; ++yOff) {
+                    for (int zOff = Math.min(from.getZ(), to.getZ()); zOff <= maxZ; ++zOff) {
                         final BlockPos pos = new BlockPos(xOff, yOff, zOff);
                         //If we can't chisel here, don't chisel.
                         //This method is specifically a server only method, the client already does checking if we can chisel somewhere through ChiselUtil#canChiselPosition.
@@ -95,57 +91,22 @@ public class ChiselHandler {
                             switch (pkt.operation) {
                                 case SWAP:
                                 case PLACE: {
-                                    while (i.hasNext()) {
-                                        final int blk = vb.get(i.x(), i.y(), i.z());
-
-                                        //If this is a place operation we only place in air.
-                                        if (pkt.operation == PLACE && (blk != VoxelBlob.AIR_BIT && !VoxelType.isFluid(blk)))
-                                            continue;
-
-                                        //Don't waste durability on the same type.
-                                        if (pkt.operation == SWAP && blk == pkt.placedBit)
-                                            continue;
-
-                                        if (inventory.hasMaterial() && inventory.damageChisel()) {
-                                            //These two ifs need to be separate so one can fail but the other doesn't have to.
-                                            //However we check hasMaterial early to ensure that this one will succeed true to avoid damage loss.
-                                            if(inventory.canPlaceBit()) {
-                                                vb.set(i.x(), i.y(), i.z(), pkt.placedBit);
-                                                changed = true;
-
-                                                //Track how many bits we've extracted and it's not a coloured bit.
-                                                if (pkt.operation == SWAP)
-                                                    inventory.addMaterial(VoxelWrapper.forAbstract(blk), 1);
-                                            } else break; //If can place bit is false once it will never become true again, so this break saves time.
-                                        } else break; //If damage chisel is false once it will never become true again, so this break saves time.
-                                    }
+                                    while (i.hasNext())
+                                        if(inventory.placeBit(vb, i.x(), i.y(), i.z(), pkt.operation, pkt.placedBit) != 0) break;
                                 }
                                 break;
                                 case REMOVE: {
-                                    while (i.hasNext()) {
-                                        final int blk = vb.get(i.x(), i.y(), i.z());
-                                        if (blk == VoxelBlob.AIR_BIT)
-                                            continue; //We don't need to remove air bits.
-
-                                        if (inventory.damageChisel()) {
-                                            vb.clear(i.x(), i.y(), i.z());
-                                            changed = true;
-
-                                            inventory.addMaterial(VoxelWrapper.forAbstract(blk), 1);
-                                        } else break; //If damage chisel is false once it will never become true again, so this break saves time.
-                                    }
+                                    while (i.hasNext())
+                                        if(inventory.removeBit(vb, i.x(), i.y(), i.z())) break;
                                 }
                                 break;
                             }
 
                             //Actually apply the operation.
-                            tec.completeEditOperation(vb);
+                            tec.completeEditOperation(player, vb);
 
-                            //Send the breaking sound only if the block actually got changed.
-                            if (changed) {
-                                SoundType st = world.getBlockState(pos).getSoundType();
-                                world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, st.getBreakSound(), SoundCategory.BLOCKS, (st.getVolume() + 1.0F) / 16.0F, st.getPitch() * 0.9F);
-                            }
+                            //Play sound if necessary
+                            inventory.playSound(world, pos);
                         }
                     }
                 }

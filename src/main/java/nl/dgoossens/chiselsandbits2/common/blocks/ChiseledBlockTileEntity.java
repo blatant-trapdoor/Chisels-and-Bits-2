@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.common.blocks;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
@@ -279,7 +280,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
         }
     }
 
-    public void completeEditOperation(final VoxelBlob vb) {
+    public void completeEditOperation(final PlayerEntity player, final VoxelBlob vb) {
         //Empty voxelblob = we need to destroy this block.
         if(vb.filled() <= 0) {
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
@@ -304,7 +305,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
         setBlob(vb);
         final VoxelBlobStateReference after = getVoxelReference();
 
-        ChiselsAndBits2.getInstance().getClient().getUndoTracker().add(getWorld(), getPos(), before, after);
+        ChiselsAndBits2.getInstance().getClient().getUndoTracker().add(player, getWorld(), getPos(), before, after);
     }
 
     public void fillWith(final int stateId) {

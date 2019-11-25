@@ -1,11 +1,18 @@
 package nl.dgoossens.chiselsandbits2.common.utils;
 
+import net.minecraft.block.SoundType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
@@ -13,11 +20,15 @@ import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 
 import java.util.*;
 import java.util.function.Function;
+
+import static nl.dgoossens.chiselsandbits2.api.BitOperation.PLACE;
+import static nl.dgoossens.chiselsandbits2.api.BitOperation.SWAP;
 
 /**
  * Utilities for managing durability usage and bag contents.
@@ -34,35 +45,27 @@ public class InventoryUtils {
     }
 
     /**
-     * A calculated inventory object which tracks the current storage for bits and available durability.
-     * Changes made to the CalculatedInventory happen to the real inventory (when apply() is called), changes to the real inventory do not change the calculated inventory!
-     * aka this is a kind of cache to avoid having to redetermine the available durability for each individual bit modified
+     * Builds an inventory snapshot that can be queried for information. Variant of the CalculatedInventory that can only
+     * be queried, not modified.
+     *
+     * @deprecated Draft API: Not fully finished, for now don't try to do these calculations on the client side. Let the server handle it.
      */
-    public static class CalculatedInventory {
-        private ServerPlayerEntity player;
-        private long durability, usedDurability;
-        private long bitsAvailable, bitsUsed;
-        private VoxelWrapper bitPlaced;
-        private Map<Integer, BitStorage> bitStorages = new HashMap<>();
-        private Set<Integer> modifiedBitStorages = new HashSet<>();
-        private Map<Integer, Integer> lastModifiedSlot = new HashMap<>(); //The last modified slot of the bit bag, this slot will be selected if possible.
-        private int nextSelect = -1; //The slot to be selected next.
-        private SelectedItemMode selectedMode = null; //The mode to be selected next.
-        private HashMap<VoxelWrapper, Long> extracted = new HashMap<>();
-        private boolean wastingBits = false;
+    @Deprecated
+    public static InventorySnapshot takeSnapshot(PlayerEntity player) {
+        return new InventorySnapshot(player);
+    }
 
-        public CalculatedInventory(ServerPlayerEntity player) {
+    /**
+     * An inventory snapshot which can only be queried for information. Lite version of the CalculatedInventory.
+     */
+    public static class InventorySnapshot {
+        private PlayerEntity player;
+        Map<Integer, BitStorage> bitStorages = new HashMap<>();
+        long bitsAvailable, bitsUsed;
+        VoxelWrapper bitPlaced;
+
+        public InventorySnapshot(PlayerEntity player) {
             this.player = player;
-
-            //Calculate durability
-            for (ItemStack item : player.inventory.mainInventory) {
-                if (item.getItem() instanceof ChiselItem)
-                    durability += (item.getMaxDamage() - item.getDamage());
-            }
-            for (ItemStack item : player.inventory.offHandInventory) {
-                if (item.getItem() instanceof ChiselItem)
-                    durability += (item.getMaxDamage() - item.getDamage());
-            }
 
             //Scan for storages
             for (int i = 0; i < player.inventory.mainInventory.size(); i++) {
@@ -83,9 +86,14 @@ public class InventoryUtils {
         /**
          * Starts tracking how much of the bit type to place is stored, these will be used
          * when placement happens.
+         *
+         * Can be set multiple times to switch tracked materials.
          */
         public void trackMaterialUsage(VoxelWrapper wrapper) {
             bitPlaced = wrapper.simplify();
+            bitsAvailable = 0;
+            bitsUsed = 0;
+
             //You have infinite coloured bits
             if(VoxelType.isColoured(wrapper.getId())) {
                 bitsAvailable = Long.MAX_VALUE;
@@ -101,7 +109,7 @@ public class InventoryUtils {
          * Returns whether there is still at least one bit worth of material to use.
          */
         public boolean hasMaterial() {
-            if(player.isCreative()) return true;
+            if(getPlayer().isCreative()) return true;
             return bitsUsed < bitsAvailable;
         }
 
@@ -109,7 +117,7 @@ public class InventoryUtils {
          * Returns whether or not a bit can currently be placed.
          */
         public boolean canPlaceBit() {
-            if(!player.isCreative()) {
+            if(!getPlayer().isCreative()) {
                 if(bitsUsed >= bitsAvailable) return false;
                 bitsUsed++;
             }
@@ -123,6 +131,41 @@ public class InventoryUtils {
             return bitsAvailable;
         }
 
+        /**
+         * Get the player involved.
+         */
+        public PlayerEntity getPlayer() {
+           return player;
+        }
+    }
+
+    /**
+     * A calculated inventory object which tracks the current storage for bits and available durability.
+     * Changes made to the CalculatedInventory happen to the real inventory (when apply() is called), changes to the real inventory do not change the calculated inventory!
+     * aka this is a kind of cache to avoid having to redetermine the available durability for each individual bit modified
+     */
+    public static class CalculatedInventory extends InventorySnapshot {
+        private long durability, usedDurability;
+        private Set<Integer> modifiedBitStorages = new HashSet<>();
+        private Map<Integer, Integer> lastModifiedSlot = new HashMap<>(); //The last modified slot of the bit bag, this slot will be selected if possible.
+        private int nextSelect = -1; //The slot to be selected next.
+        private SelectedItemMode selectedMode = null; //The mode to be selected next.
+        private HashMap<VoxelWrapper, Long> extracted = new HashMap<>();
+        private boolean wastingBits = false, changed = true;
+
+        public CalculatedInventory(ServerPlayerEntity player) {
+            super(player);
+
+            //Calculate durability
+            for (ItemStack item : player.inventory.mainInventory) {
+                if (item.getItem() instanceof ChiselItem)
+                    durability += (item.getMaxDamage() - item.getDamage());
+            }
+            for (ItemStack item : player.inventory.offHandInventory) {
+                if (item.getItem() instanceof ChiselItem)
+                    durability += (item.getMaxDamage() - item.getDamage());
+            }
+        }
 
         /**
          * Gets the total available durability.
@@ -139,7 +182,7 @@ public class InventoryUtils {
          */
         public boolean damageChisel() {
             //We ignore chisel durability completely in creative.
-            if(player.isCreative()) {
+            if(getPlayer().isCreative()) {
                 usedDurability++; //for the statistics
                 return true;
             }
@@ -153,6 +196,7 @@ public class InventoryUtils {
          * Add ammount of material to be given back to the player.
          */
         public void addMaterial(VoxelWrapper w, long amount) {
+            changed = true;
             if(w == null || VoxelType.isColoured(w.getId())) return; //Don't do coloured bits
             extracted.put(w, extracted.getOrDefault(w, 0L) + amount);
         }
@@ -162,40 +206,42 @@ public class InventoryUtils {
          * Desyncs are ignored in the player's favor. (e.g. if the total durability decreased since the calculated inventory was made we don't mind the difference and take as much as available)
          */
         public void apply() {
-            if(!player.isCreative()) //We don't need to take materials for creative players.
+            if(!getPlayer().isCreative()) //We don't need to take materials for creative players.
                 addMaterial(bitPlaced, -bitsUsed);
+
+            final NonNullList<ItemStack> inventory = getPlayer().inventory.mainInventory;
 
             applyDurabilityChanges();
             applyMaterialChanges();
 
             //Update selected slot without updating timestamp, "passive selection"
-            SelectedItemMode m = ItemModeUtil.getGlobalSelectedItemMode(player);
-            long t = ItemModeUtil.getHighestSelectionTimestamp(player);
+            SelectedItemMode m = ItemModeUtil.getGlobalSelectedItemMode(getPlayer());
+            long t = ItemModeUtil.getHighestSelectionTimestamp(getPlayer());
             for(int i : lastModifiedSlot.keySet()) {
-                if(!m.isNone() && ItemModeUtil.getSelectionTime(player.inventory.mainInventory.get(i)) == t) continue; //Don't change it for the currently selected one.
+                if(!m.isNone() && ItemModeUtil.getSelectionTime(inventory.get(i)) == t) continue; //Don't change it for the currently selected one.
                 int slot = lastModifiedSlot.get(i);
                 final BitStorage bs = bitStorages.get(i);
                 if(slot < 0 || slot > bs.getSlots()) continue; //Invalid slot
-                ItemModeUtil.setMode(player, player.inventory.mainInventory.get(i), SelectedItemMode.fromVoxelWrapper(bs.getSlotContent(slot)), false);
+                ItemModeUtil.setMode(getPlayer(), inventory.get(i), SelectedItemMode.fromVoxelWrapper(bs.getSlotContent(slot)), false);
             }
 
             //Select the nextSelect if applicable
             if(nextSelect != -1)
-                ItemModeUtil.setMode(player, player.inventory.mainInventory.get(nextSelect), selectedMode, true);
+                ItemModeUtil.setMode(getPlayer(), inventory.get(nextSelect), selectedMode, true);
 
             //Send updates for all modified bit bags
             for(int i : modifiedBitStorages) {
                 if(i < 0) {
-                    ItemModeUtil.updateStackCapability(player.inventory.offHandInventory.get(-i), bitStorages.get(i), player);
+                    ItemModeUtil.updateStackCapability(inventory.get(-i), bitStorages.get(i), getPlayer());
                     continue;
                 }
-                ItemModeUtil.updateStackCapability(player.inventory.mainInventory.get(i), bitStorages.get(i), player);
+                ItemModeUtil.updateStackCapability(inventory.get(i), bitStorages.get(i), getPlayer());
             }
             modifiedBitStorages.clear();
 
             //Notify of bits wasted
             if(wastingBits)
-                player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.wasting_bits"), true);
+                getPlayer().sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.wasting_bits"), true);
         }
 
         /**
@@ -203,8 +249,8 @@ public class InventoryUtils {
          */
         private void applyMaterialChanges() {
             //Timestamp for the truly selected bag
-            long t = ItemModeUtil.getHighestSelectionTimestamp(player);
-            SelectedItemMode m = ItemModeUtil.getGlobalSelectedItemMode(player);
+            long t = ItemModeUtil.getHighestSelectionTimestamp(getPlayer());
+            SelectedItemMode m = ItemModeUtil.getGlobalSelectedItemMode(getPlayer());
 
             for(VoxelWrapper w : extracted.keySet()) {
                 long added = extracted.get(w);
@@ -214,7 +260,7 @@ public class InventoryUtils {
                 Function<Long, Boolean> canStop = added < 0 ? ((i) -> i >= 0) : ((i) -> i <= 0);
 
                 //First try to do/take from the currently selected bag first
-                int i = ItemModeUtil.getGlobalSelectedItemSlot(player);
+                int i = ItemModeUtil.getGlobalSelectedItemSlot(getPlayer());
                 added = addToStorage(i, w, added, t, m, true);
 
                 //Now try to take from any random other bit storage that contains it
@@ -237,6 +283,7 @@ public class InventoryUtils {
             }
         }
 
+        //Interal method for modifying storage contents for a given storage in a given slot.
         private long addToStorage(int slot, VoxelWrapper w, long added, long t, SelectedItemMode m, boolean requireContains) {
             if(!bitStorages.containsKey(slot)) return added; //If invalid we return instantly
             BitStorage bs = bitStorages.get(slot);
@@ -251,7 +298,7 @@ public class InventoryUtils {
 
             //If this is the currently selected one, keep the selection going by re-selecting this bit type elsewhere.
             //Also make sure this is the type currently being placed!
-            if(bs.get(w) <= 0 && !m.isNone() && w.equals(m.getVoxelWrapper()) && ItemModeUtil.getSelectionTime(player.inventory.mainInventory.get(slot)) == t) {
+            if(bs.get(w) <= 0 && !m.isNone() && w.equals(m.getVoxelWrapper()) && ItemModeUtil.getSelectionTime(getPlayer().inventory.mainInventory.get(slot)) == t) {
                 for(int otherSlot : bitStorages.keySet()) {
                     BitStorage otherBs = bitStorages.get(slot);
                     //Does this one have this bit?
@@ -270,16 +317,16 @@ public class InventoryUtils {
          * Applies durability damage to the chisels in the inventory of the player.
          */
         private void applyDurabilityChanges() {
-            ItemStack selectedItem = player.getHeldItemMainhand();
+            ItemStack selectedItem = getPlayer().getHeldItemMainhand();
             if (usedDurability > 0) {
                 //Update the bits chiseled statistic
-                player.addStat(ChiselsAndBits2.getInstance().getStatistics().BITS_CHISELED, (int) usedDurability);
+                getPlayer().addStat(ChiselsAndBits2.getInstance().getStatistics().BITS_CHISELED, (int) usedDurability);
 
-                if (player.isCreative()) return; //We don't need to do the rest for creative players.
+                if (getPlayer().isCreative()) return; //We don't need to do the rest for creative players.
 
                 boolean holdingChisel = selectedItem.getItem() instanceof ChiselItem;
-                int targetSlot = player.inventory.currentItem;
-                if (!holdingChisel) targetSlot = findNextChisel(player.inventory, -1);
+                int targetSlot = getPlayer().inventory.currentItem;
+                if (!holdingChisel) targetSlot = findNextChisel(-1);
                 if (targetSlot == -1)
                     return; //This shouldn't happen, but it might, anyways we don't care for a little bit of durability theft so we don't need to force take durability.
 
@@ -287,25 +334,26 @@ public class InventoryUtils {
                 IItemMode oldMode = null;
                 //Now we start taking durability from the chisel in our targetSlot and otherwise scan for other chisels to move to our targetSlot.
                 while (usedDurability > 0) {
-                    ItemStack target = player.inventory.getStackInSlot(targetSlot);
+                    final PlayerInventory inventory = getPlayer().inventory;
+                    ItemStack target = inventory.getStackInSlot(targetSlot);
 
                     //Check if the item is valid, otherwise move a chisel in from elsewhere.
                     if (target.isEmpty() || !(target.getItem() instanceof ChiselItem)) {
                         //Find a new chisel to move to the targetSlot
-                        int foundChisel = findNextChisel(player.inventory, targetSlot);
+                        int foundChisel = findNextChisel(targetSlot);
                         if (foundChisel == -1)
                             return; //If we can't find a chisel we ignore the remaining durability debt.
 
-                        ItemStack newChisel = player.inventory.getStackInSlot(foundChisel);
+                        ItemStack newChisel = inventory.getStackInSlot(foundChisel);
                         if (oldMode != null)
-                            ItemModeUtil.setMode(player, newChisel, oldMode, true);
-                        player.inventory.removeStackFromSlot(foundChisel);
-                        player.inventory.setInventorySlotContents(targetSlot, newChisel);
+                            ItemModeUtil.setMode(getPlayer(), newChisel, oldMode, true);
+                        inventory.removeStackFromSlot(foundChisel);
+                        inventory.setInventorySlotContents(targetSlot, newChisel);
                         if (!target.isEmpty())
                             //If the target is somehow a valid item, try to get it back into the inventory, we don't care if this fails. Target should never not be empty.
-                            player.inventory.addItemStackToInventory(target);
+                            inventory.addItemStackToInventory(target);
 
-                        target = player.inventory.getStackInSlot(targetSlot);
+                        target = inventory.getStackInSlot(targetSlot);
                     }
 
                     //Prevent unnecessary mode fetching.
@@ -313,7 +361,7 @@ public class InventoryUtils {
                     //Get the maximum we can take from this chisel.
                     long capacity = Math.min(usedDurability, target.getMaxDamage() - target.getDamage());
                     //Take durability from the current item.
-                    target.damageItem((int) capacity, player, (p) -> p.sendBreakAnimation(Hand.MAIN_HAND));
+                    target.damageItem((int) capacity, getPlayer(), (p) -> p.sendBreakAnimation(Hand.MAIN_HAND));
                     usedDurability -= capacity;
                 }
             }
@@ -324,13 +372,79 @@ public class InventoryUtils {
          * @param exclude A specific slot to be excluded from the search.
          * @return -1 if no chisel can be found.
          */
-        private int findNextChisel(PlayerInventory inventory, int exclude) {
-            for(int i = 0; i < inventory.mainInventory.size(); i++) {
+        public int findNextChisel(int exclude) {
+            for(int i = 0; i < getPlayer().inventory.mainInventory.size(); i++) {
                 if(i == exclude) continue;
-                if(player.inventory.mainInventory.get(i).getItem() instanceof ChiselItem)
+                if(getPlayer().inventory.mainInventory.get(i).getItem() instanceof ChiselItem)
                     return i;
             }
             return -1;
+        }
+
+        /**
+         * Plays the correct sound effect when updating a chiseled block but only if the block was actually modified.
+         */
+        public void playSound(final World world, final BlockPos pos) {
+            if(!changed) return;
+            SoundType st = world.getBlockState(pos).getSoundType();
+            world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, st.getBreakSound(), SoundCategory.BLOCKS, (st.getVolume() + 1.0F) / 16.0F, st.getPitch() * 0.9F);
+        }
+
+        /**
+         * Removes a bit from the voxel blob and does all necessary surrounding logic.
+         * @return true If the while loop can be broken. As soon as one true is returned false will never again be returned.
+         */
+        public boolean removeBit(final VoxelBlob vb, final int x, final int y, final int z) {
+            final int blk = vb.get(x, y, z);
+            if (blk == VoxelBlob.AIR_BIT)
+                return false; //We don't need to remove air bits.
+
+            if (damageChisel()) {
+                vb.clear(x, y, z);
+
+                addMaterial(VoxelWrapper.forAbstract(blk), 1);
+            } else return true; //If damage chisel is false once it will never become true again, so this break saves time.
+
+            return false;
+        }
+
+        /**
+         * Places a bit of a given type in a given spot on the voxel blob, automatically handles using durability/extracting.
+         * @return Can return various status codes with different meaning:
+         *          0 - peaceful return, nothing was changed but there's no problem
+         *          1 - chisel didn't have durability
+         *          2 - didn't have materials to do placement
+         */
+        public int placeBit(final VoxelBlob vb, final int x, final int y, final int z, final BitOperation operation, final int placedBit) {
+            final int blk = vb.get(x, y, z);
+
+            //If this is a place operation we only place in air.
+            if (operation == PLACE && blk != VoxelBlob.AIR_BIT && !VoxelType.isFluid(blk))
+                return 0;
+
+            //Don't waste durability on the same type.
+            if (operation == SWAP && blk == placedBit)
+                return 0;
+
+            if (!hasMaterial()) return 2;
+            if (damageChisel()) {
+                //These two ifs need to be separate so one can fail but the other doesn't have to.
+                //However we check hasMaterial early to ensure that this one will succeed true to avoid damage loss.
+                if(canPlaceBit()) {
+                    vb.set(x, y, z, placedBit);
+
+                    //Track how many bits we've extracted and it's not a coloured bit.
+                    if (operation == SWAP)
+                        addMaterial(VoxelWrapper.forAbstract(blk), 1);
+                } else return 2; //If can place bit is false once it will never become true again, so this break saves time.
+            } else return 1; //If damage chisel is false once it will never become true again, so this break saves time.
+
+            return 0;
+        }
+
+        @Override
+        public ServerPlayerEntity getPlayer() {
+            return (ServerPlayerEntity) super.getPlayer();
         }
     }
 }
