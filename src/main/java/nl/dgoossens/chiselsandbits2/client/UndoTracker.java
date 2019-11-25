@@ -152,7 +152,7 @@ public class UndoTracker {
         try {
             recording = false;
             final CUndoPacket packet = new CUndoPacket(pos, before, after);
-            if(packet.handle(player)) {
+            if(packet.handle(player, false)) {
                 ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
                 return true;
             }

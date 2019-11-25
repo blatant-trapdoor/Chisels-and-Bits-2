@@ -161,9 +161,12 @@
   "general.chiselsandbits2.info.need_bits": "You need more bits in your bit containers to be able to chisel.",
   "general.chiselsandbits2.info.no_selected_type": "You need to select a type of bit to place before you'll be able to chisel.",
   "general.chiselsandbits2.info.wasting_bits": "There's no space available to put the bits currently being chiseled.",
+  "general.chiselsandbits2.info.out_of_range": "You need to get closer to modify this block.",
 
   "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
   "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo...",
+  "general.chiselsandbits2.undo.block_changed": "Target block was modified, can't apply changes",
+  "general.chiselsandbits2.undo.missing_bits": "You don't have the required bits to perform this action.",
 
   "advancements.story.craft_chisel.title": "A World of Bits",
   "advancements.story.craft_chisel.description": "Obtain a chisel",
