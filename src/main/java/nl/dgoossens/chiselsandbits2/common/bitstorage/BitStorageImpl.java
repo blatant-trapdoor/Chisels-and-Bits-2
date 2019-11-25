@@ -128,7 +128,7 @@ public class BitStorageImpl implements BitStorage {
         checkServerside();
 
         int slot = findSlot(w);
-        if(slot == -1) return amount;
+        if(slot < 0 || slot > contents.size()) return 0;
         Pair<VoxelWrapper, Long> pair = contents.get(slot);
         if(pair == null) pair = Pair.of(w, 0L);
 
@@ -152,7 +152,7 @@ public class BitStorageImpl implements BitStorage {
         checkServerside();
 
         int slot = findSlot(w);
-        if(slot == -1) return;
+        if(slot < 0 || slot > contents.size()) return;
         Pair<VoxelWrapper, Long> pair = contents.get(slot);
         if(pair == null) pair = Pair.of(w, 0L);
         pair = Pair.of(pair.getLeft(), amount);
@@ -173,7 +173,7 @@ public class BitStorageImpl implements BitStorage {
     @Override
     public long get(final VoxelWrapper w) {
         int slot = findSlot(w);
-        if(slot == -1) return 0;
+        if(slot < 0 || slot > contents.size()) return 0;
         Pair<VoxelWrapper, Long> p = contents.get(slot);
         long current = 0;
         if(p != null) current = p.getValue();
@@ -187,6 +187,7 @@ public class BitStorageImpl implements BitStorage {
 
     @Override
     public VoxelWrapper getSlotContent(int slot) {
+        if(slot < 0 || slot > contents.size()) return null;
         Pair<VoxelWrapper, Long> p = contents.get(slot);
         if(p != null) return p.getLeft();
         return null;
@@ -195,19 +196,21 @@ public class BitStorageImpl implements BitStorage {
     @Override
     public int getSlot(final VoxelWrapper w) {
         int i = findSlot(w);
-        if(i == -1) return -1;
+        if(i < 0 || i > contents.size()) return 0;
         if(contents.get(i) == null) return -1;
         return i;
     }
 
     @Override
     public void setSlot(final int index, final VoxelWrapper w, final long amount) {
+        if(index < 0 || index > contents.size()) return;
         contents.put(index, Pair.of(w, amount));
         resetCaches();
     }
 
     @Override
     public void clearSlot(final int index) {
+        if(index < 0 || index > contents.size()) return;
         contents.put(index, null);
         resetCaches();
     }

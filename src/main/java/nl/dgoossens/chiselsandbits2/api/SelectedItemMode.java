@@ -29,6 +29,11 @@ public class SelectedItemMode implements IItemMode {
         public String getName() {
             return "none";
         }
+
+        @Override
+        public boolean isNone() {
+            return true; //Overwriting is actually the fastest way to do this.
+        }
     };
     private int value;
     private VoxelType type;
@@ -143,6 +148,13 @@ public class SelectedItemMode implements IItemMode {
         }
     }
 
+    /**
+     * Returns whether this is the none mode.
+     */
+    public boolean isNone() {
+        return false;
+    }
+
     @Override
     public String toString() {
         return getLocalizedName();
@@ -163,10 +175,12 @@ public class SelectedItemMode implements IItemMode {
     }
 
     /**
-     * Returns if this item mode is the same as the {@link #NONE} mode.
+     * Check if a item mode is the none selected item mode.
+     * Also works if this ItemMode is of the ItemMode enum.
      */
-    public static boolean isNone(IItemMode i) {
-        return NONE.equals(i);
+    public static boolean isNone(IItemMode mode) {
+        if(mode instanceof SelectedItemMode) return ((SelectedItemMode) mode).isNone();
+        return false;
     }
 
     /**

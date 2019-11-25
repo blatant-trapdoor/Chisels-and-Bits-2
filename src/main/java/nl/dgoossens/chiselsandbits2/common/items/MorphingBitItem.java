@@ -44,8 +44,8 @@ public class MorphingBitItem extends TypedItem implements ChiselUtil.BitPlaceIte
 
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        SelectedItemMode s = ItemModeUtil.getSelectedMode(Minecraft.getInstance().player);
-        if(SelectedItemMode.isNone(s)) return super.getHighlightTip(item, displayName);
+        SelectedItemMode s = ItemModeUtil.getGlobalSelectedItemMode(Minecraft.getInstance().player);
+        if(s.isNone()) return super.getHighlightTip(item, displayName);
         return super.getHighlightTip(item, displayName) + " - " + s.getLocalizedName();
     }
 }

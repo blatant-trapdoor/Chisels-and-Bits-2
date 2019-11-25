@@ -480,14 +480,14 @@ public class RadialMenu extends Screen {
 
         public MenuRegion(final IItemMode mode, final ItemStack stack, final PlayerEntity player) {
             this.mode = mode;
-            SelectedItemMode s = ItemModeUtil.getSelectedItem(stack);
-            if (s == null) type = ItemModeUtil.getMode(stack).equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
+            SelectedItemMode s = ItemModeUtil.getSelectedItemMode(stack);
+            if (s == null) type = ItemModeUtil.getItemMode(stack).equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
             else {
                 if(!s.equals(mode) || SelectedItemMode.isNone(mode)) {
                     type = RegionType.DEFAULT;
                     return;
                 }
-                int b = ItemModeUtil.getSelectedBit(player);
+                int b = ItemModeUtil.getGlobalSelectedBit(player);
                 if(b != s.getBitId()) {
                     //Highlighted = selected in this bitstorage but won't be used atm to build.
                     type = RegionType.HIGHLIGHTED;
@@ -510,7 +510,7 @@ public class RadialMenu extends Screen {
         List<MenuRegion> modes = new ArrayList<>();
 
         //Setup mode regions
-        for (IItemMode m : ItemModeUtil.getMode(getMinecraft().player.getHeldItemMainhand()).getType().getItemModes(getMinecraft().player.getHeldItemMainhand()))
+        for (IItemMode m : ItemModeUtil.getItemMode(getMinecraft().player.getHeldItemMainhand()).getType().getItemModes(getMinecraft().player.getHeldItemMainhand()))
             modes.add(new MenuRegion(m, getMinecraft().player.getHeldItemMainhand(), getMinecraft().player));
 
         return modes;
@@ -523,7 +523,7 @@ public class RadialMenu extends Screen {
         buttons.add(new MenuButton(MenuAction.UNDO, TEXT_DISTANCE, -20, Direction.EAST));
         buttons.add(new MenuButton(MenuAction.REDO, TEXT_DISTANCE, 4, Direction.EAST));
 
-        ItemModeType tool = ItemModeUtil.getMode(getMinecraft().player.getHeldItemMainhand()).getType();
+        ItemModeType tool = ItemModeUtil.getItemMode(getMinecraft().player.getHeldItemMainhand()).getType();
         if (tool == ItemModeType.PATTERN) {
             buttons.add(new MenuButton(MenuAction.ROLL_X, -TEXT_DISTANCE - 18, -20, Direction.WEST));
             buttons.add(new MenuButton(MenuAction.ROLL_Z, -TEXT_DISTANCE - 18, 4, Direction.WEST));

@@ -233,7 +233,7 @@ public class ClientSide extends ClientSideHelper {
                     //-1 is the off-hand
                     ItemStack item = slot == -1 ? player.inventory.offHandInventory.get(0) : player.inventory.mainInventory.get(slot);
                     if (item.getItem() instanceof IItemMenu && ((IItemMenu) item.getItem()).showIconInHotbar()) {
-                        final IItemMode mode = ItemModeUtil.getMode(item);
+                        final IItemMode mode = ItemModeUtil.getItemMode(item);
                         final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + (slot == -1 ? -9 : 0) + 2) * 2;
                         final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
 

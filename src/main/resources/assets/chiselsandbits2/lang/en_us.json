@@ -69,6 +69,8 @@
 
   "stat.chiselsandbits2.bits_chiseled": "Bits Chiseled",
 
+  "jei.item.chiselsandbits2.chisel": "Use the chisel to sculpt custom blocks, it allows you to modify each pixel individually. Left clicking removes one bit and right clicking places the most recently selected bit. You can select bits using any type of bit storage: a bit bag, a bit beaker or a palette. You can press Left + Alt to open the radial menu to select a mode, you can also scroll through all modes. Every mode affects which bits are removed by a single click in a different way.",
+
   "general.chiselsandbits2.no_keybinding": "No Key Bound",
   "general.chiselsandbits2.empty_slot": "Empty Slot",
   "general.chiselsandbits2.none": "None",
@@ -158,6 +160,7 @@
   "general.chiselsandbits2.info.need_chisel": "You need a chisel in your inventory to be able to chisel.",
   "general.chiselsandbits2.info.need_bits": "You need more bits in your bit containers to be able to chisel.",
   "general.chiselsandbits2.info.no_selected_type": "You need to select a type of bit to place before you'll be able to chisel.",
+  "general.chiselsandbits2.info.wasting_bits": "There's no space available to put the bits currently being chiseled.",
 
   "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
   "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo...",

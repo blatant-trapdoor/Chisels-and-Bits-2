@@ -28,12 +28,12 @@ public abstract class StorageItem extends TypedItem {
 
     @Override
     public boolean showDurabilityBar(ItemStack stack) {
-        return !SelectedItemMode.isNone(ItemModeUtil.getSelectedItem(stack)) && ChiselsAndBits2.getInstance().getConfig().showBitsAvailableAsDurability.get();
+        return !ItemModeUtil.getSelectedItemMode(stack).isNone() && ChiselsAndBits2.getInstance().getConfig().showBitsAvailableAsDurability.get();
     }
 
     @Override
     public double getDurabilityForDisplay(ItemStack stack) {
-        SelectedItemMode s = ItemModeUtil.getSelectedItem(stack);
+        SelectedItemMode s = ItemModeUtil.getSelectedItemMode(stack);
         if(s == null) return 0;
         BitStorage store = stack.getCapability(StorageCapabilityProvider.STORAGE).orElse(null);
         if(store == null) return 0;

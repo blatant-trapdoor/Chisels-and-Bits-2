@@ -2,28 +2,20 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 
 import net.minecraft.block.SoundType;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.LazyOptional;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
-import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
-import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static nl.dgoossens.chiselsandbits2.api.BitOperation.*;
 
@@ -55,6 +47,7 @@ public class ChiselHandler {
 
             //Cancel chiseling early on if possible (but not if creative)
             //This shouldn't ever happen because you can't have a material selected that you don't have.
+            //Well actually this can happen if you drop the bags and instantly click before the routine updating catches up to you. tl;dr this can only happen if the cached value isn't updated on time
             if (inventory.getAvailableMaterial() <= 0 && !player.isCreative()) {
                 player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.need_bits"), true);
                 return;
@@ -97,7 +90,6 @@ public class ChiselHandler {
                             final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
                             final VoxelBlob vb = tec.getBlob();
                             final ChiselIterator i = ChiselUtil.getIterator(pkt, new VoxelRegionSrc(world, pos, 1), pos, pkt.operation);
-                            final Map<Integer, Long> extracted = new HashMap<>();
 
                             //Handle the operation
                             switch (pkt.operation) {
@@ -115,12 +107,16 @@ public class ChiselHandler {
                                             continue;
 
                                         if (inventory.hasMaterial() && inventory.damageChisel()) {
-                                            inventory.extractBit(vb, i.x(), i.y(), i.z());
-                                            changed = true;
+                                            //These two ifs need to be separate so one can fail but the other doesn't have to.
+                                            //However we check hasMaterial early to ensure that this one will succeed true to avoid damage loss.
+                                            if(inventory.canPlaceBit()) {
+                                                vb.set(i.x(), i.y(), i.z(), pkt.placedBit);
+                                                changed = true;
 
-                                            //Track how many bits we've extracted and it's not a coloured bit.
-                                            if (pkt.operation == SWAP && !VoxelType.isColoured(blk))
-                                                extracted.put(blk, extracted.getOrDefault(blk, 0L) + 1);
+                                                //Track how many bits we've extracted and it's not a coloured bit.
+                                                if (pkt.operation == SWAP)
+                                                    inventory.addMaterial(VoxelWrapper.forAbstract(blk), 1);
+                                            } else break; //If can place bit is false once it will never become true again, so this break saves time.
                                         } else break; //If damage chisel is false once it will never become true again, so this break saves time.
                                     }
                                 }
@@ -135,62 +131,11 @@ public class ChiselHandler {
                                             vb.clear(i.x(), i.y(), i.z());
                                             changed = true;
 
-                                            //Track how many bits we've extracted and it's not a coloured bit.
-                                            if (!VoxelType.isColoured(blk))
-                                                extracted.put(blk, extracted.getOrDefault(blk, 0L) + 1);
+                                            inventory.addMaterial(VoxelWrapper.forAbstract(blk), 1);
                                         } else break; //If damage chisel is false once it will never become true again, so this break saves time.
                                     }
                                 }
                                 break;
-                            }
-
-                            //Give the player the bits that were extracted
-                            for (int extr : extracted.keySet()) {
-                                long toGive = extracted.get(extr);
-                                VoxelType vt = VoxelType.getType(extr);
-                                if (vt != VoxelType.BLOCKSTATE && vt != VoxelType.FLUIDSTATE)
-                                    continue;
-
-                                //TODO: normalize this wrapper, i.e. turn any wooden log into default state of wooden log (make a new voxelwrapper from the get() result)
-                                //  e.g. cast to block and then build from block, this way it's always the block default
-                                VoxelWrapper w = VoxelWrapper.forAbstract(extr);
-
-                                //First round: find storages that already want the bits
-                                for (ItemStack item : player.inventory.mainInventory) {
-                                    if (item.getItem() instanceof StorageItem) {
-                                        LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
-                                        if (cap.isPresent()) {
-                                            BitStorage bs = cap.orElse(null);
-                                            if (bs.has(w)) {
-                                                long h = Math.min(toGive, bs.queryRoom(w));
-                                                bs.add(w, h);
-                                                toGive -= h;
-                                                ItemModeUtil.updateStackCapability(item, bs, player);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (toGive <= 0)
-                                    continue;
-
-                                //Second round: put the bits in the first possible storage
-                                for (ItemStack item : player.inventory.mainInventory) {
-                                    if (item.getItem() instanceof StorageItem) {
-                                        LazyOptional<BitStorage> cap = item.getCapability(StorageCapabilityProvider.STORAGE);
-                                        if (cap.isPresent()) {
-                                            BitStorage bs = cap.orElse(null);
-                                            long h = Math.min(toGive, bs.queryRoom(w));
-                                            bs.add(w, h);
-                                            toGive -= h;
-                                            ItemModeUtil.updateStackCapability(item, bs, player);
-                                        }
-                                    }
-
-                                    //If we've deposited everything we're done.
-                                    if (toGive <= 0)
-                                        break;
-                                }
                             }
 
                             //Actually apply the operation.

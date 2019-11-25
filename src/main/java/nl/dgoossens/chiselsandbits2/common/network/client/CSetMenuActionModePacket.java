@@ -6,7 +6,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
@@ -50,6 +49,6 @@ public class CSetMenuActionModePacket {
     public boolean isValid(PlayerEntity player) {
         if(player == null) return false;
         final ItemStack ei = player.getHeldItemMainhand();
-        return (ei.getItem() instanceof TapeMeasureItem || ei.getItem() instanceof ChiselUtil.BitModifyItem) && ItemModeUtil.getMode(ei).getType() == newMode.getAssociatedType();
+        return (ei.getItem() instanceof TapeMeasureItem || ei.getItem() instanceof ChiselUtil.BitModifyItem) && ItemModeUtil.getItemMode(ei).getType() == newMode.getAssociatedType();
     }
 }

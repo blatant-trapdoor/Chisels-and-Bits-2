@@ -22,7 +22,6 @@ import nl.dgoossens.chiselsandbits2.api.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.ItemMode;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
@@ -56,7 +55,7 @@ public class ChiselEvent {
         lastClick = System.currentTimeMillis();
 
         final BitOperation operation = e.isAttack() ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
-        startChiselingBlock((BlockRayTraceResult) rtr, ChiselModeManager.getMode(player.getHeldItemMainhand()), player, operation);
+        startChiselingBlock((BlockRayTraceResult) rtr, ChiselModeManager.getItemMode(player.getHeldItemMainhand()), player, operation);
     }*/
 
     /**
@@ -79,7 +78,7 @@ public class ChiselEvent {
         lastClick = System.currentTimeMillis();
 
         final BitOperation operation = leftClick ? BitOperation.REMOVE : (ItemModeUtil.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
-        startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getMode(player.getHeldItemMainhand()), player, operation);
+        startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(player.getHeldItemMainhand()), player, operation);
     }
 
     /**
@@ -98,7 +97,7 @@ public class ChiselEvent {
         if (!state.isReplaceable(context) && !ChiselUtil.canChiselBlock(state)) return; //You can place on replacable blocks.
         if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
 
-        if(ItemModeUtil.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) {
+        if(ItemModeUtil.getItemMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) {
             ClientSide clientSide = ChiselsAndBits2.getInstance().getClient();
             //If we don't have a selection start yet select the clicked location.
             if(!clientSide.hasSelectionStart(operation)) {
@@ -110,7 +109,7 @@ public class ChiselEvent {
         //Default for remove operations, we only get a placed bit when not removing
         int placedBit = -1;
         if(!operation.equals(BitOperation.REMOVE))
-            placedBit = ItemModeUtil.getSelectedBitMode(player).getPlacementBitId(context);
+            placedBit = ItemModeUtil.getGlobalSelectedItemMode(player).getPlacementBitId(context);
         //We determine the placed bit on the client and include it in the packet so we can reuse the BlockItemUseContext from earlier.
 
         //If we couldn't find a selected type, don't chisel.
@@ -119,7 +118,7 @@ public class ChiselEvent {
             return;
         }
 
-        if(ItemMode.CHISEL_DRAWN_REGION.equals(ItemModeUtil.getMode(player.getHeldItemMainhand()))) {
+        if(ItemMode.CHISEL_DRAWN_REGION.equals(ItemModeUtil.getItemMode(player.getHeldItemMainhand()))) {
             final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, mode, placedBit);
             ChiselsAndBits2.getInstance().getClient().resetSelectionStart();
             ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);

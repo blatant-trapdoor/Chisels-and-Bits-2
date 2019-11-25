@@ -8,6 +8,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
+import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 
 import java.util.function.Supplier;
@@ -51,7 +52,7 @@ public class CSetItemModePacket {
             if (pkt.newMode == null) return;
             ServerPlayerEntity player = ctx.get().getSender();
             if (pkt.isValid(player))
-                ItemModeUtil.setMode(player, player.getHeldItemMainhand(), pkt.newMode, true);
+                ItemModeUtil.setMode(player, player.getHeldItemMainhand(), pkt.newMode, !SelectedItemMode.isNone(pkt.newMode)); //Don't update timestamp if this is empty.
         });
         ctx.get().setPacketHandled(true);
     }
@@ -59,6 +60,6 @@ public class CSetItemModePacket {
     public boolean isValid(PlayerEntity player) {
         if(player == null) return false;
         final ItemStack ei = player.getHeldItemMainhand();
-        return (ei.getItem() instanceof IItemMenu && type == ItemModeUtil.getMode(ei).getType());
+        return (ei.getItem() instanceof IItemMenu && type == ItemModeUtil.getItemMode(ei).getType());
     }
 }

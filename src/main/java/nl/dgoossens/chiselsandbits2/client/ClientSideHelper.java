@@ -32,7 +32,6 @@ import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
@@ -265,7 +264,7 @@ public class ClientSideHelper {
             while(tapeMeasurements.size() >= ChiselsAndBits2.getInstance().getConfig().tapeMeasureLimit.get()) {
                 tapeMeasurements.remove(0); //Remove the oldest one.
             }
-            tapeMeasurements.add(new Measurement(tapeMeasureCache, location, ItemModeUtil.getMenuActionMode(stack), (ItemMode) ItemModeUtil.getMode(stack), player.dimension));
+            tapeMeasurements.add(new Measurement(tapeMeasureCache, location, ItemModeUtil.getMenuActionMode(stack), (ItemMode) ItemModeUtil.getItemMode(stack), player.dimension));
             tapeMeasureCache = null;
         }
     }
@@ -306,8 +305,8 @@ public class ClientSideHelper {
                 //Rendering drawn region bounding box
                 final BitLocation other = tapeMeasure ? ChiselsAndBits2.getInstance().getClient().tapeMeasureCache : ChiselsAndBits2.getInstance().getClient().selectionStart;
                 final BitOperation operation = tapeMeasure ? BitOperation.REMOVE : ChiselsAndBits2.getInstance().getClient().getOperation();
-                if ((tapeMeasure || ItemModeUtil.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
-                    ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, partialTicks, operation, new Color(ItemModeUtil.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ItemModeUtil.getMode(player.getHeldItemMainhand()));
+                if ((tapeMeasure || ItemModeUtil.getItemMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
+                    ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, partialTicks, operation, new Color(ItemModeUtil.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ItemModeUtil.getItemMode(player.getHeldItemMainhand()));
                     return true;
                 }
                 //Tape measure never displays the small cube.
@@ -319,7 +318,7 @@ public class ClientSideHelper {
                         ChiselTypeIterator.create(
                                 VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ,
                                 new VoxelRegionSrc(world, location.blockPos, 1),
-                                ItemModeUtil.getMode(player.getHeldItemMainhand()),
+                                ItemModeUtil.getItemMode(player.getHeldItemMainhand()),
                                 ((BlockRayTraceResult) rayTrace).getFace(),
                                 operation.equals(BitOperation.PLACE)
                         ).getBoundingBox(

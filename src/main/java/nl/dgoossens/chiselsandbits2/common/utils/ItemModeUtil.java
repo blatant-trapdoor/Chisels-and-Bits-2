@@ -10,11 +10,22 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.thread.SidedThreadGroups;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.javafmlmod.FMLModContainer;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLLoader;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
+import nl.dgoossens.chiselsandbits2.client.render.models.CacheType;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
@@ -29,8 +40,16 @@ import static nl.dgoossens.chiselsandbits2.api.ItemMode.*;
 /**
  * Utils for managing which item modes are being used by the player.
  */
-public class ItemModeUtil {
-    private static Map<UUID, SelectedItemMode> selected = new HashMap<>();
+public class ItemModeUtil implements CacheClearable {
+    private static Map<UUID, SelectedItemMode> selected;
+
+    static {
+        CacheType.ROUTINE.register(new ItemModeUtil());
+    }
+    public ItemModeUtil() {
+        if(selected != null) throw new RuntimeException("Can't initialise ItemModeUtil twice!");
+        selected = new HashMap<>();
+    }
 
     /**
      * Set the main item mode of an itemstack.
@@ -44,7 +63,7 @@ public class ItemModeUtil {
         ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
 
         //Update stack on client
-        setMode(player, item, newMode, true);
+        setMode(player, item, newMode, !SelectedItemMode.isNone(newMode)); //Don't update timestamp if this is empty.
 
         //Show item mode change in hotbar
         if(packet.isValid(player))
@@ -122,7 +141,7 @@ public class ItemModeUtil {
      */
     public static void validateSelectedBitType(final PlayerEntity player, final ItemStack item) {
         //Check if selected type is no longer valid
-        SelectedItemMode selected = getSelectedItem(item);
+        SelectedItemMode selected = getSelectedItemMode(item);
         if(selected == null) return;
         BitStorage storage = item.getCapability(StorageCapabilityProvider.STORAGE).orElse(null);
         if(storage == null) return;
@@ -146,7 +165,7 @@ public class ItemModeUtil {
             } while (ItemMode.values()[offset].getType() != currentMode.getType());
             changeItemMode(player, item, ItemMode.values()[offset]);
         } else {
-            IItemMode i = getMode(item);
+            IItemMode i = getItemMode(item);
             if(!(i instanceof SelectedItemMode)) return; //Just in case.
             SelectedItemMode current = ((SelectedItemMode) i);
             item.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(bs -> {
@@ -165,9 +184,9 @@ public class ItemModeUtil {
      * Get the item mode being used by the item currently held by
      * the player.
      */
-    public static IItemMode getMode(final PlayerEntity player) {
+    public static IItemMode getHeldItemMode(final PlayerEntity player) {
         final ItemStack ei = player.getHeldItemMainhand();
-        return getMode(ei);
+        return getItemMode(ei);
     }
 
     /**
@@ -175,7 +194,7 @@ public class ItemModeUtil {
      * Type is required for the returned value when no
      * mode is found!
      */
-    public static IItemMode getMode(final ItemStack stack) {
+    public static IItemMode getItemMode(final ItemStack stack) {
         //Prevent unnecessary resolving or random MALLET_UNKNOWN shenanigans.
         if(!(stack.getItem() instanceof IItemMenu)) return null;
 
@@ -202,11 +221,12 @@ public class ItemModeUtil {
     /**
      * Get the selected item of an item stack, this item stack should be a BitStorage holder.
      */
-    public static SelectedItemMode getSelectedItem(final ItemStack stack) {
-        IItemMode ret = getMode(stack);
+    public static SelectedItemMode getSelectedItemMode(final ItemStack stack) {
+        IItemMode ret = getItemMode(stack);
+        if(ret == null) return SelectedItemMode.NONE;
         if(ret instanceof SelectedItemMode)
             return (SelectedItemMode) ret;
-        return null;
+        return SelectedItemMode.NONE;
     }
 
     /**
@@ -290,24 +310,25 @@ public class ItemModeUtil {
     /**
      * Gets the currently selected bit type as a selected item mode.
      */
-    public static SelectedItemMode getSelectedBitMode(final PlayerEntity player) {
+    public static SelectedItemMode getGlobalSelectedItemMode(final PlayerEntity player) {
         if(!selected.containsKey(player.getUniqueID())) {
             long stamp = 0;
+            SelectedItemMode res = selected.getOrDefault(player.getUniqueID(), SelectedItemMode.NONE);
 
             //Scan all storage containers for the most recently selected one.
             for (ItemStack item : player.inventory.mainInventory) {
                 if (item.getItem() instanceof StorageItem) {
+                    if(SelectedItemMode.isNone(getItemMode(item))) continue; //Ignore empty selections
                     long l = ItemModeUtil.getSelectionTime(item);
                     if (l > stamp) {
                         stamp = l;
-                        SelectedItemMode im = ItemModeUtil.getSelectedItem(item);
+                        SelectedItemMode im = ItemModeUtil.getSelectedItemMode(item);
                         if(im != null && im.getBitId() != VoxelBlob.AIR_BIT)
-                            selected.put(player.getUniqueID(), im);
+                            res = im;
                     }
                 }
             }
-            if(!selected.containsKey(player.getUniqueID()))
-                selected.put(player.getUniqueID(), SelectedItemMode.NONE);
+            selected.put(player.getUniqueID(), res);
         }
         return selected.get(player.getUniqueID());
     }
@@ -315,28 +336,8 @@ public class ItemModeUtil {
     /**
      * Get the currently selected bit type.
      */
-    public static int getSelectedBit(final PlayerEntity player) {
-        return getSelectedBitMode(player).getBitId();
-    }
-
-    /**
-     * Get the selected item mode.
-     */
-    public static SelectedItemMode getSelectedMode(final PlayerEntity player) {
-        long stamp = 0;
-        SelectedItemMode ret = SelectedItemMode.NONE;
-
-        for (ItemStack item : player.inventory.mainInventory) {
-            if (item.getItem() instanceof StorageItem) {
-                long l = getSelectionTime(item);
-                if (l > stamp) {
-                    stamp = l;
-                    ret = getSelectedItem(item);
-                }
-            }
-        }
-        //Default is the empty bag slot.
-        return ret;
+    public static int getGlobalSelectedBit(final PlayerEntity player) {
+        return getGlobalSelectedItemMode(player).getBitId();
     }
 
     /**
@@ -347,10 +348,54 @@ public class ItemModeUtil {
 
         for (ItemStack item : player.inventory.mainInventory) {
             if (item.getItem() instanceof StorageItem) {
+                if(SelectedItemMode.isNone(getItemMode(item))) continue; //Ignore empty selections
+
                 long l = getSelectionTime(item);
                 if (l > stamp) stamp = l;
             }
         }
         return stamp;
+    }
+
+    /**
+     * Gets the currently selected bit storage item slot.
+     */
+    public static int getGlobalSelectedItemSlot(final PlayerEntity player) {
+        long stamp = 0;
+        int res = -1;
+
+        for (int i = 0; i < player.inventory.mainInventory.size(); i++) {
+            ItemStack item = player.inventory.mainInventory.get(i);
+            if (item.getItem() instanceof StorageItem) {
+                if(SelectedItemMode.isNone(getItemMode(item))) continue; //Ignore empty selections
+                long l = ItemModeUtil.getSelectionTime(item);
+                if (l > stamp) {
+                    stamp = l;
+                    res = i;
+                }
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public void clearCache() {
+        //Remove the player from the cache.
+        if(FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+            //Server
+            for(ServerWorld w : ServerLifecycleHooks.getCurrentServer().getWorlds()) {
+                for(ServerPlayerEntity p : w.getPlayers())
+                    selected.remove(p.getUniqueID());
+            }
+        } else {
+            if(Thread.currentThread().getThreadGroup() == SidedThreadGroups.CLIENT) {
+                //Client
+                selected.remove(Minecraft.getInstance().player.getUniqueID());
+            } else {
+                //LAN
+                //TODO This should work right? Try this on LAN worlds.
+                selected.remove(Minecraft.getInstance().player.getUniqueID());
+            }
+        }
     }
 }

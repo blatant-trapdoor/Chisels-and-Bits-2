@@ -37,6 +37,18 @@ public class VoxelWrapper<T> {
     }
 
     /**
+     * Simplifies this voxel wrapper to be the default state.
+     */
+    public VoxelWrapper simplify() {
+        switch(type) {
+            case BLOCKSTATE: return VoxelWrapper.forBlock((Block) get());
+            case FLUIDSTATE: return VoxelWrapper.forFluid((Fluid) get());
+            case COLOURED: return VoxelWrapper.forColor((Color) get());
+            default: return this;
+        }
+    }
+
+    /**
      * Returned the wrapped object, can be either Block, Fluid or Color.
      */
     @Nullable
@@ -58,6 +70,16 @@ public class VoxelWrapper<T> {
             return get().equals(o.get());
         }
         return super.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return get().toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return getId();
     }
 
     /**
