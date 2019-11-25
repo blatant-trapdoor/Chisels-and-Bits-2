@@ -160,5 +160,10 @@
   "general.chiselsandbits2.info.no_selected_type": "You need to select a type of bit to place before you'll be able to chisel.",
 
   "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
-  "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo..."
+  "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo...",
+
+  "advancements.story.craft_chisel.title": "A World of Bits",
+  "advancements.story.craft_chisel.description": "Obtain a chisel",
+  "advancements.story.get_bag.title": "Portable Bit Storage",
+  "advancements.story.get_bag.description": "Craft a bit bag to store bits in"
 }

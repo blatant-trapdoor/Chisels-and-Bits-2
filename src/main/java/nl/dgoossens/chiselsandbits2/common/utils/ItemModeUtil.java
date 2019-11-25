@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.common.impl;
+package nl.dgoossens.chiselsandbits2.common.utils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IngameGui;
@@ -10,33 +10,32 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
+import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
-import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.*;
-import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetMenuActionModePacket;
 import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
-import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.*;
 
 import static nl.dgoossens.chiselsandbits2.api.ItemMode.*;
 
 /**
- * The manager of which mode a tool is currently using.
+ * Utils for managing which item modes are being used by the player.
  */
-public class ChiselModeManager {
+public class ItemModeUtil {
+    private static Map<UUID, SelectedItemMode> selected = new HashMap<>();
+
     /**
      * Set the main item mode of an itemstack.
      */
-    public static void changeItemMode(final ItemStack item, final IItemMode newMode) {
+    public static void changeItemMode(final PlayerEntity player, final ItemStack item, final IItemMode newMode) {
         if(newMode instanceof SelectedItemMode && !(item.getItem() instanceof StorageItem)) {
             throw new RuntimeException("Can't set mode of item stack to selected item mode if item is not a storage item.");
         }
@@ -45,14 +44,14 @@ public class ChiselModeManager {
         ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
 
         //Update stack on client
-        setMode(Minecraft.getInstance().player, item, newMode);
+        setMode(player, item, newMode, true);
 
         //Show item mode change in hotbar
-        if(packet.isValid(Minecraft.getInstance().player))
+        if(packet.isValid(player))
             reshowHighlightedStack();
 
         if(newMode instanceof SelectedItemMode)
-            selected.remove(Minecraft.getInstance().player.getUniqueID());
+            selected.remove(player.getUniqueID());
     }
 
     /**
@@ -60,19 +59,21 @@ public class ChiselModeManager {
      * MenuAction#COLOURS and MenuAction#PLACE/MenuAction#SWAP
      * are accepted.
      */
-    public static void changeMenuActionMode(final MenuAction newAction) {
+    public static void changeMenuActionMode(final PlayerEntity player, final MenuAction newAction) {
         final CSetMenuActionModePacket packet = new CSetMenuActionModePacket(newAction);
         ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
 
         //Show item mode change in hotbar
-        if(packet.isValid(Minecraft.getInstance().player))
+        if(packet.isValid(player))
             reshowHighlightedStack();
     }
 
     /**
      * Reshows the highlighted stack item.
+     * Only works on client-side.
      */
     private static void reshowHighlightedStack() {
+        if(Thread.currentThread().getThreadGroup() != SidedThreadGroups.CLIENT) return; //Make sure this only runs on the client!
         try {
             IngameGui ig = Minecraft.getInstance().ingameGUI;
             //IngameGui#highlightingItemStack
@@ -111,12 +112,15 @@ public class ChiselModeManager {
     /**
      * Updates the stack capability from the server to the client.
      */
-    public static void updateStackCapability(final ItemStack item, final BitStorage cap, final PlayerEntity player) {
-        ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SSynchronizeBitStoragePacket(cap, player.inventory.getSlotFor(item)), (ServerPlayerEntity) player);
+    public static void updateStackCapability(final ItemStack item, final BitStorage cap, final ServerPlayerEntity player) {
         validateSelectedBitType(player, item);
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SSynchronizeBitStoragePacket(cap, player.inventory.getSlotFor(item)), player);
     }
 
-    private static void validateSelectedBitType(final PlayerEntity player, final ItemStack item) {
+    /**
+     * Validate that the bit storage in the given item for the player still has positive amounts of contents in each slot.
+     */
+    public static void validateSelectedBitType(final PlayerEntity player, final ItemStack item) {
         //Check if selected type is no longer valid
         SelectedItemMode selected = getSelectedItem(item);
         if(selected == null) return;
@@ -124,14 +128,14 @@ public class ChiselModeManager {
         if(storage == null) return;
         VoxelWrapper sel = selected.getVoxelWrapper();
         if(storage.get(sel) <= 0)
-            setMode(player, item, SelectedItemMode.NONE);
+            setMode(player, item, SelectedItemMode.NONE, true);
     }
 
     /**
      * Scrolls through the current options and goes to the next one depending
      * on which direction was scrolled in.
      */
-    public static void scrollOption(IItemMode currentMode, ItemStack item, final double dwheel) {
+    public static void scrollOption(PlayerEntity player, IItemMode currentMode, ItemStack item, final double dwheel) {
         if (!ChiselsAndBits2.getInstance().getConfig().enableModeScrolling.get()) return;
         if (currentMode instanceof ItemMode) {
             int offset = ((ItemMode) currentMode).ordinal();
@@ -140,7 +144,7 @@ public class ChiselModeManager {
                 if (offset >= values().length) offset = 0;
                 if (offset < 0) offset = values().length - 1;
             } while (ItemMode.values()[offset].getType() != currentMode.getType());
-            changeItemMode(item, ItemMode.values()[offset]);
+            changeItemMode(player, item, ItemMode.values()[offset]);
         } else {
             IItemMode i = getMode(item);
             if(!(i instanceof SelectedItemMode)) return; //Just in case.
@@ -152,7 +156,7 @@ public class ChiselModeManager {
                 j += (dwheel < 0 ? -1 : 1);
                 if(bs.getOccupiedSlotCount() <= j) j = 0;
                 if(j < 0) j = bs.getOccupiedSlotCount() - 1;
-                changeItemMode(item, SelectedItemMode.fromVoxelWrapper(wrapper));
+                changeItemMode(player, item, SelectedItemMode.fromVoxelWrapper(wrapper));
             });
         }
     }
@@ -187,7 +191,7 @@ public class ChiselModeManager {
         return (stack.getItem() instanceof BitBagItem) ||
                 (stack.getItem() instanceof BitBeakerItem) ||
                 (stack.getItem() instanceof PaletteItem) ? SelectedItemMode.NONE :
-                (stack.getItem() instanceof ChiselHandler.BitModifyItem) ? CHISEL_SINGLE :
+                (stack.getItem() instanceof ChiselUtil.BitModifyItem) ? CHISEL_SINGLE :
                         (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
                                 (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
                                         (stack.getItem() instanceof WrenchItem) ? WRENCH_ROTATE :
@@ -239,12 +243,12 @@ public class ChiselModeManager {
     /**
      * Set the mode of this itemstack to this enum value.
      */
-    public static void setMode(final PlayerEntity player, final ItemStack stack, final IItemMode mode) {
+    public static void setMode(final PlayerEntity player, final ItemStack stack, final IItemMode mode, final boolean updateTimestamp) {
         if (stack != null) {
             stack.setTagInfo("mode", new StringNBT(mode.getName()));
             stack.setTagInfo("isDynamic", new ByteNBT(mode.getType().isDynamic() ? (byte) 1 : (byte) 0));
             stack.setTagInfo("dynamicId", new IntNBT(mode.getDynamicId()));
-            if(mode.getType().isDynamic())
+            if(updateTimestamp && mode.getType().isDynamic())
                 stack.setTagInfo("timestamp", new LongNBT(System.currentTimeMillis()));
         }
 
@@ -254,8 +258,8 @@ public class ChiselModeManager {
     /**
      * Force recalculates this client player's selected bit type.
      */
-    public static void recalculateSelectedBit() {
-        selected.remove(Minecraft.getInstance().player.getUniqueID());
+    public static void recalculateSelectedBit(final PlayerEntity player) {
+        selected.remove(player.getUniqueID());
     }
 
     /**
@@ -283,9 +287,6 @@ public class ChiselModeManager {
         if (stack != null) stack.setTagInfo("menuAction", new StringNBT(action.name()));
     }
 
-    //--- SELECTED BIT ---
-    private static Map<UUID, SelectedItemMode> selected = new HashMap<>();
-
     /**
      * Gets the currently selected bit type as a selected item mode.
      */
@@ -296,10 +297,10 @@ public class ChiselModeManager {
             //Scan all storage containers for the most recently selected one.
             for (ItemStack item : player.inventory.mainInventory) {
                 if (item.getItem() instanceof StorageItem) {
-                    long l = ChiselModeManager.getSelectionTime(item);
+                    long l = ItemModeUtil.getSelectionTime(item);
                     if (l > stamp) {
                         stamp = l;
-                        SelectedItemMode im = ChiselModeManager.getSelectedItem(item);
+                        SelectedItemMode im = ItemModeUtil.getSelectedItem(item);
                         if(im != null && im.getBitId() != VoxelBlob.AIR_BIT)
                             selected.put(player.getUniqueID(), im);
                     }
@@ -316,5 +317,40 @@ public class ChiselModeManager {
      */
     public static int getSelectedBit(final PlayerEntity player) {
         return getSelectedBitMode(player).getBitId();
+    }
+
+    /**
+     * Get the selected item mode.
+     */
+    public static SelectedItemMode getSelectedMode(final PlayerEntity player) {
+        long stamp = 0;
+        SelectedItemMode ret = SelectedItemMode.NONE;
+
+        for (ItemStack item : player.inventory.mainInventory) {
+            if (item.getItem() instanceof StorageItem) {
+                long l = getSelectionTime(item);
+                if (l > stamp) {
+                    stamp = l;
+                    ret = getSelectedItem(item);
+                }
+            }
+        }
+        //Default is the empty bag slot.
+        return ret;
+    }
+
+    /**
+     * Get the timestamp the bit storage has that is currently being used to place bits.
+     */
+    public static long getHighestSelectionTimestamp(final PlayerEntity player) {
+        long stamp = 0;
+
+        for (ItemStack item : player.inventory.mainInventory) {
+            if (item.getItem() instanceof StorageItem) {
+                long l = getSelectionTime(item);
+                if (l > stamp) stamp = l;
+            }
+        }
+        return stamp;
     }
 }

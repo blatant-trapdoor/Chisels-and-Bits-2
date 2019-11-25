@@ -3,19 +3,16 @@ package nl.dgoossens.chiselsandbits2.client.culling;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.StainedGlassBlock;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import nl.dgoossens.chiselsandbits2.api.ICullTest;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Determine Culling using the same checks
@@ -40,8 +37,8 @@ public class MCCullTest extends DummyEnvironmentWorldReader implements ICullTest
                 return false;
             case BLOCKSTATE: {
                 final Pair<BlockState, BlockState> p = Pair.of(
-                        ModUtil.getBlockState(myId),
-                        VoxelType.getType(otherId) != VoxelType.BLOCKSTATE ? Blocks.AIR.getDefaultState() : ModUtil.getBlockState(otherId)
+                        BitUtil.getBlockState(myId),
+                        VoxelType.getType(otherId) != VoxelType.BLOCKSTATE ? Blocks.AIR.getDefaultState() : BitUtil.getBlockState(otherId)
                 );
                 try {
                     resultCache.computeIfAbsent(p, (t) -> {

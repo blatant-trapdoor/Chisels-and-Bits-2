@@ -11,7 +11,7 @@ import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BitStream;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BlobSerilizationCache;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.VoxelSerializer;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
@@ -71,7 +71,7 @@ public final class VoxelBlob implements IVoxelSrc {
      * Creates a voxelblob filled with type.
      */
     public static VoxelBlob full(final BlockState type) {
-        return new VoxelBlob().fill(ModUtil.getStateId(type));
+        return new VoxelBlob().fill(BitUtil.getBlockId(type));
     }
 
     //--- PROTECTED METHODS ---

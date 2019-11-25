@@ -18,7 +18,6 @@ import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
-import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.client.render.ter.TileChunk;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -26,7 +25,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateRef
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelNeighborRenderTracker;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -176,7 +175,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
         c.writeChiselData(comp);
 
         final ItemStack stack = new ItemStack(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK, 1);
-        stack.setTagInfo(ModUtil.NBT_BLOCKENTITYTAG, comp);
+        stack.setTagInfo(ChiselUtil.NBT_BLOCKENTITYTAG, comp);
         return stack;
     }
 
@@ -293,10 +292,10 @@ public class ChiseledBlockTileEntity extends TileEntity {
             VoxelType type = VoxelType.getType(singleType);
             switch(type) {
                 case BLOCKSTATE:
-                    world.setBlockState(pos, ModUtil.getBlockState(singleType), 3);
+                    world.setBlockState(pos, BitUtil.getBlockState(singleType), 3);
                     return;
                 case FLUIDSTATE:
-                    world.setBlockState(pos, ModUtil.getFluidState(singleType).getBlockState(), 3);
+                    world.setBlockState(pos, BitUtil.getFluidState(singleType).getBlockState(), 3);
                     return;
             }
         }

@@ -36,12 +36,11 @@ import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockItemColor
 import nl.dgoossens.chiselsandbits2.client.render.overlay.MorphingBitItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 
-import java.awt.*;
 import java.lang.reflect.Field;
 
 /**
@@ -133,7 +132,7 @@ public class ClientSide extends ClientSideHelper {
         for (ItemMode im : keybindings.modeHotkeys.keySet()) {
             KeyBinding kb = keybindings.modeHotkeys.get(im);
             if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME))
-                ChiselModeManager.changeItemMode(Minecraft.getInstance().player.getHeldItemMainhand(), im);
+                ItemModeUtil.changeItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), im);
         }
         for (MenuAction ma : keybindings.actionHotkeys.keySet()) {
             KeyBinding kb = keybindings.actionHotkeys.get(ma);
@@ -179,7 +178,7 @@ public class ClientSide extends ClientSideHelper {
                     }
 
                     if (radialMenu.hasSwitchTo())
-                        ChiselModeManager.changeItemMode(Minecraft.getInstance().player.getHeldItemMainhand(), radialMenu.getSwitchTo());
+                        ItemModeUtil.changeItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), radialMenu.getSwitchTo());
 
                     if (radialMenu.hasAction())
                         handleMenuAction(radialMenu.getAction());
@@ -234,7 +233,7 @@ public class ClientSide extends ClientSideHelper {
                     //-1 is the off-hand
                     ItemStack item = slot == -1 ? player.inventory.offHandInventory.get(0) : player.inventory.mainInventory.get(slot);
                     if (item.getItem() instanceof IItemMenu && ((IItemMenu) item.getItem()).showIconInHotbar()) {
-                        final IItemMode mode = ChiselModeManager.getMode(item);
+                        final IItemMode mode = ItemModeUtil.getMode(item);
                         final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + (slot == -1 ? -9 : 0) + 2) * 2;
                         final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
 

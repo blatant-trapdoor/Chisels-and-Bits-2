@@ -13,18 +13,17 @@ import net.minecraftforge.common.ForgeMod;
 import nl.dgoossens.chiselsandbits2.client.render.cache.CacheMap;
 import nl.dgoossens.chiselsandbits2.client.render.models.BaseSmartModel;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
-import nl.dgoossens.chiselsandbits2.client.render.models.NullBakedModel;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateInstance;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelNeighborRenderTracker;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 
 import javax.annotation.Nonnull;
-import java.awt.*;
 import java.util.Random;
 
 public class ChiseledBlockSmartModel extends BaseSmartModel implements CacheClearable {
@@ -103,7 +102,7 @@ public class ChiseledBlockSmartModel extends BaseSmartModel implements CacheClea
         if (c == null)
             c = new CompoundNBT();
         else
-            c = c.getCompound(ModUtil.NBT_BLOCKENTITYTAG);
+            c = c.getCompound(ChiselUtil.NBT_BLOCKENTITYTAG);
 
         byte[] vdata = c.getByteArray(NBTBlobConverter.NBT_VERSIONED_VOXEL);
         final int blockP = c.contains(NBTBlobConverter.NBT_PRIMARY_STATE) ? c.getInt(NBTBlobConverter.NBT_PRIMARY_STATE) : VoxelBlob.AIR_BIT;

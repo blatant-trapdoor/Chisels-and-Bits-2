@@ -6,10 +6,9 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.BitStorage;
-import nl.dgoossens.chiselsandbits2.api.ItemModeType;
 import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItemGroups;
 
 public abstract class StorageItem extends TypedItem {
@@ -29,12 +28,12 @@ public abstract class StorageItem extends TypedItem {
 
     @Override
     public boolean showDurabilityBar(ItemStack stack) {
-        return !SelectedItemMode.isNone(ChiselModeManager.getSelectedItem(stack)) && ChiselsAndBits2.getInstance().getConfig().showBitsAvailableAsDurability.get();
+        return !SelectedItemMode.isNone(ItemModeUtil.getSelectedItem(stack)) && ChiselsAndBits2.getInstance().getConfig().showBitsAvailableAsDurability.get();
     }
 
     @Override
     public double getDurabilityForDisplay(ItemStack stack) {
-        SelectedItemMode s = ChiselModeManager.getSelectedItem(stack);
+        SelectedItemMode s = ItemModeUtil.getSelectedItem(stack);
         if(s == null) return 0;
         BitStorage store = stack.getCapability(StorageCapabilityProvider.STORAGE).orElse(null);
         if(store == null) return 0;

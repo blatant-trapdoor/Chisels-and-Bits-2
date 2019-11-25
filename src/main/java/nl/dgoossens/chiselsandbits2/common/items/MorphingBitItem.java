@@ -11,12 +11,14 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
 import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class MorphingBitItem extends TypedItem implements ChiselHandler.BitPlaceItem, ChiselHandler.BitRemoveItem {
+public class MorphingBitItem extends TypedItem implements ChiselUtil.BitPlaceItem, ChiselUtil.BitRemoveItem {
     public MorphingBitItem(Properties builder) {
         super(builder);
     }
@@ -42,7 +44,7 @@ public class MorphingBitItem extends TypedItem implements ChiselHandler.BitPlace
 
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        SelectedItemMode s = ChiselHandler.getSelectedMode();
+        SelectedItemMode s = ItemModeUtil.getSelectedMode(Minecraft.getInstance().player);
         if(SelectedItemMode.isNone(s)) return super.getHighlightTip(item, displayName);
         return super.getHighlightTip(item, displayName) + " - " + s.getLocalizedName();
     }

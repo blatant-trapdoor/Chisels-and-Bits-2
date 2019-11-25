@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IEnviromentBlockReader;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import javax.annotation.Nullable;
 
@@ -22,7 +22,7 @@ public class ChiseledBlockColor extends ChiseledTintColor implements IBlockColor
 
     @Override
     protected int getDefaultColor(int v, int tintValue) {
-        final BlockState tstate = ModUtil.getBlockState(v);
+        final BlockState tstate = BitUtil.getBlockState(v);
         return Minecraft.getInstance().getBlockColors().getColor(tstate, world, pos, tintValue);
     }
 }

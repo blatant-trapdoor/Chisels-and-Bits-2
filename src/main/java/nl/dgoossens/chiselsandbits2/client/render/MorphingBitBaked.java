@@ -14,7 +14,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.render.models.BaseBakedBlockModel;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 
 import javax.annotation.Nonnull;
@@ -41,7 +41,7 @@ public class MorphingBitBaked extends BaseBakedBlockModel {
     public MorphingBitBaked(int bitId) {
         //If this is AIR, use a nice transparent gray bit colour.
         if(bitId == VoxelBlob.AIR_BIT)
-            bitId = ModUtil.getColourId(new Color(86, 86, 86, 175));
+            bitId = BitUtil.getColourId(new Color(86, 86, 86, 175));
 
         final FaceBakery faceBakery = new FaceBakery();
 

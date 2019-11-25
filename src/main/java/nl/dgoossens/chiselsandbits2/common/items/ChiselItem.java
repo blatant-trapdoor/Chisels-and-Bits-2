@@ -16,12 +16,13 @@ import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ChiselItem extends TypedItem implements ChiselHandler.BitPlaceItem, ChiselHandler.BitRemoveItem {
+public class ChiselItem extends TypedItem implements ChiselUtil.BitPlaceItem, ChiselUtil.BitRemoveItem {
     public ChiselItem(Item.Properties builder) {
         super(builder);
     }

@@ -25,11 +25,9 @@ import nl.dgoossens.chiselsandbits2.api.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
-import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -74,14 +72,14 @@ public class ChiselEvent {
         final PlayerEntity player = Minecraft.getInstance().player;
         RayTraceResult rtr = ChiselUtil.rayTrace(player);
         if (rtr == null || rtr.getType() != RayTraceResult.Type.BLOCK) return;
-        if (!((!leftClick && player.getHeldItemMainhand().getItem() instanceof ChiselHandler.BitPlaceItem) || (leftClick && player.getHeldItemMainhand().getItem() instanceof ChiselHandler.BitRemoveItem))) return;
+        if (!((!leftClick && player.getHeldItemMainhand().getItem() instanceof ChiselUtil.BitPlaceItem) || (leftClick && player.getHeldItemMainhand().getItem() instanceof ChiselUtil.BitRemoveItem))) return;
         e.setCanceled(true);
 
         if (System.currentTimeMillis() - lastClick < 150) return;
         lastClick = System.currentTimeMillis();
 
-        final BitOperation operation = leftClick ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
-        startChiselingBlock((BlockRayTraceResult) rtr, ChiselModeManager.getMode(player.getHeldItemMainhand()), player, operation);
+        final BitOperation operation = leftClick ? BitOperation.REMOVE : (ItemModeUtil.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
+        startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getMode(player.getHeldItemMainhand()), player, operation);
     }
 
     /**
@@ -100,7 +98,7 @@ public class ChiselEvent {
         if (!state.isReplaceable(context) && !ChiselUtil.canChiselBlock(state)) return; //You can place on replacable blocks.
         if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
 
-        if(ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) {
+        if(ItemModeUtil.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) {
             ClientSide clientSide = ChiselsAndBits2.getInstance().getClient();
             //If we don't have a selection start yet select the clicked location.
             if(!clientSide.hasSelectionStart(operation)) {
@@ -112,7 +110,7 @@ public class ChiselEvent {
         //Default for remove operations, we only get a placed bit when not removing
         int placedBit = -1;
         if(!operation.equals(BitOperation.REMOVE))
-            placedBit = ChiselModeManager.getSelectedBitMode(player).getPlacementBitId(context);
+            placedBit = ItemModeUtil.getSelectedBitMode(player).getPlacementBitId(context);
         //We determine the placed bit on the client and include it in the packet so we can reuse the BlockItemUseContext from earlier.
 
         //If we couldn't find a selected type, don't chisel.
@@ -121,7 +119,7 @@ public class ChiselEvent {
             return;
         }
 
-        if(ItemMode.CHISEL_DRAWN_REGION.equals(ChiselModeManager.getMode(player.getHeldItemMainhand()))) {
+        if(ItemMode.CHISEL_DRAWN_REGION.equals(ItemModeUtil.getMode(player.getHeldItemMainhand()))) {
             final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, mode, placedBit);
             ChiselsAndBits2.getInstance().getClient().resetSelectionStart();
             ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);

@@ -5,7 +5,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.AxisAlignedBB;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -61,7 +61,7 @@ public final class VoxelBlobStateInstance implements Comparable<VoxelBlobStateIn
         } catch (final Exception e) {
             e.printStackTrace();
             VoxelBlob vb = new VoxelBlob();
-            vb.fill(ModUtil.getStateId(Blocks.STONE.getDefaultState())); //Fill with stone by default.
+            vb.fill(BitUtil.getBlockId(Blocks.STONE.getDefaultState())); //Fill with stone by default.
             return vb;
         }
     }

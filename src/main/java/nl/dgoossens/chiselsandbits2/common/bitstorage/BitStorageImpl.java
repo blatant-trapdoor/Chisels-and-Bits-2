@@ -1,8 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.bitstorage;
 
 import net.minecraft.item.Item;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.BitStorage;
@@ -10,11 +8,9 @@ import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BitStorageImpl implements BitStorage {
     //TODO it remains a mystery how we're gonna determine which voxel type a given bit storage is.
@@ -51,10 +47,8 @@ public class BitStorageImpl implements BitStorage {
         return ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get();
     }
 
-    /**
-     * Finds the first available slot for a given type.
-     */
-    private int findSlot(VoxelWrapper w) {
+    @Override
+    public int findSlot(VoxelWrapper w) {
         for(int i = 0; i < getSlots(); i++) {
             if(contents.get(i) == null) return i;
 

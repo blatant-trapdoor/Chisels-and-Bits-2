@@ -5,7 +5,7 @@ import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 /**
  * General parent for all items that need colouring based on bit type.
@@ -25,10 +25,10 @@ public class ChiseledTintColor {
         int tintValue = tint & TINT_MASK;
 
         if(VoxelType.isColoured(tint))
-            return ModUtil.getColourState(tint).hashCode();
+            return BitUtil.getColourState(tint).hashCode();
 
         if(VoxelType.isFluid(tint)) {
-            final IFluidState fstate = ModUtil.getFluidState(tint);
+            final IFluidState fstate = BitUtil.getFluidState(tint);
             FluidStack f = new FluidStack(fstate.getFluid(), 1);
             return fstate.getFluid().getAttributes().getColor(f);
         }
@@ -40,7 +40,7 @@ public class ChiseledTintColor {
      * Get the default item colour, can be overwritten if need be for a block.
      */
     protected int getDefaultColor(int v, int tintValue) {
-        final ItemStack titem = new ItemStack(ModUtil.getBlockState(v).getBlock().asItem());
+        final ItemStack titem = new ItemStack(BitUtil.getBlockState(v).getBlock().asItem());
         return Minecraft.getInstance().getItemColors().getColor(titem, tintValue);
     }
 }

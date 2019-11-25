@@ -29,7 +29,8 @@ import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockBaked;
 import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheType;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import org.lwjgl.opengl.GL11;
 
 import java.util.LinkedList;
@@ -67,7 +68,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
     private void restartPool() {
         if(pool == null || pool.isTerminated()) {
             int processors = Runtime.getRuntime().availableProcessors();
-            if (ModUtil.isLowMemoryMode()) processors = 1;
+            if (ChiselUtil.isLowMemoryMode()) processors = 1;
             pool = new ThreadPoolExecutor(1, processors, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(64), threadFactory);
             pool.allowCoreThreadTimeOut(false);
         }
@@ -75,7 +76,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
 
     protected static int getMaxTessalators() {
         int dynamicTess = ChiselsAndBits2.getInstance().getConfig().dynamicMaxConcurrentTessalators.get();
-        if (ModUtil.isLowMemoryMode()) dynamicTess = Math.min(2, dynamicTess);
+        if (ChiselUtil.isLowMemoryMode()) dynamicTess = Math.min(2, dynamicTess);
         return dynamicTess;
     }
 

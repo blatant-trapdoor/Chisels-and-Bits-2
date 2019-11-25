@@ -6,7 +6,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 
 import java.util.function.Supplier;
 
@@ -75,7 +75,7 @@ public class CChiselBlockPacket {
         try {
             boolean isDynamic = buffer.readBoolean();
             int dynamicId = buffer.readVarInt();
-            pc.mode = ChiselModeManager.resolveMode(buffer.readString(), isDynamic, dynamicId);
+            pc.mode = ItemModeUtil.resolveMode(buffer.readString(), isDynamic, dynamicId);
         } catch (Exception x) {
             x.printStackTrace();
         }

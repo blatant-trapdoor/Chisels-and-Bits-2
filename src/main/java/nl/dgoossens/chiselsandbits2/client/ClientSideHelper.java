@@ -41,11 +41,11 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
@@ -186,7 +186,7 @@ public class ClientSideHelper {
             case PLACE:
             case SWAP:
                 //Swap to the other one.
-                ChiselModeManager.changeMenuActionMode(action.equals(MenuAction.PLACE) ? MenuAction.SWAP : MenuAction.PLACE);
+                ItemModeUtil.changeMenuActionMode(Minecraft.getInstance().player, action.equals(MenuAction.PLACE) ? MenuAction.SWAP : MenuAction.PLACE);
                 break;
             case BLACK:
             case WHITE:
@@ -205,7 +205,7 @@ public class ClientSideHelper {
             case RED:
             case YELLOW:
                 //Change the colour of the tape measure.
-                ChiselModeManager.changeMenuActionMode(action);
+                ItemModeUtil.changeMenuActionMode(Minecraft.getInstance().player, action);
                 break;
         }
     }
@@ -265,7 +265,7 @@ public class ClientSideHelper {
             while(tapeMeasurements.size() >= ChiselsAndBits2.getInstance().getConfig().tapeMeasureLimit.get()) {
                 tapeMeasurements.remove(0); //Remove the oldest one.
             }
-            tapeMeasurements.add(new Measurement(tapeMeasureCache, location, ChiselModeManager.getMenuActionMode(stack), (ItemMode) ChiselModeManager.getMode(stack), player.dimension));
+            tapeMeasurements.add(new Measurement(tapeMeasureCache, location, ItemModeUtil.getMenuActionMode(stack), (ItemMode) ItemModeUtil.getMode(stack), player.dimension));
             tapeMeasureCache = null;
         }
     }
@@ -289,7 +289,7 @@ public class ClientSideHelper {
             final PlayerEntity player = Minecraft.getInstance().player;
             //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
             boolean tapeMeasure = player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem;
-            if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof ChiselHandler.BitModifyItem) {
+            if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof ChiselUtil.BitModifyItem) {
                 final RayTraceResult rayTrace = ChiselUtil.rayTrace(player);
                 if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK)
                     return false;
@@ -306,8 +306,8 @@ public class ClientSideHelper {
                 //Rendering drawn region bounding box
                 final BitLocation other = tapeMeasure ? ChiselsAndBits2.getInstance().getClient().tapeMeasureCache : ChiselsAndBits2.getInstance().getClient().selectionStart;
                 final BitOperation operation = tapeMeasure ? BitOperation.REMOVE : ChiselsAndBits2.getInstance().getClient().getOperation();
-                if ((tapeMeasure || ChiselModeManager.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
-                    ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, partialTicks, operation, new Color(ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ChiselModeManager.getMode(player.getHeldItemMainhand()));
+                if ((tapeMeasure || ItemModeUtil.getMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
+                    ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, partialTicks, operation, new Color(ItemModeUtil.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ItemModeUtil.getMode(player.getHeldItemMainhand()));
                     return true;
                 }
                 //Tape measure never displays the small cube.
@@ -319,11 +319,11 @@ public class ClientSideHelper {
                         ChiselTypeIterator.create(
                                 VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ,
                                 new VoxelRegionSrc(world, location.blockPos, 1),
-                                ChiselModeManager.getMode(player.getHeldItemMainhand()),
+                                ItemModeUtil.getMode(player.getHeldItemMainhand()),
                                 ((BlockRayTraceResult) rayTrace).getFace(),
                                 operation.equals(BitOperation.PLACE)
                         ).getBoundingBox(
-                                !(data instanceof ChiseledBlockTileEntity) ? (new VoxelBlob().fill(ModUtil.getStateId(world.getBlockState(location.blockPos))))
+                                !(data instanceof ChiseledBlockTileEntity) ? (new VoxelBlob().fill(BitUtil.getBlockId(world.getBlockState(location.blockPos))))
                                         : ((ChiseledBlockTileEntity) data).getBlob(), true
                         ),
                         location.blockPos, player, partialTicks, false, 0, 0, 0, 102, 32);
@@ -497,7 +497,7 @@ public class ClientSideHelper {
             boolean canMerge = false;
             //TODO determine if it can merge
             //If you can't place it we render it in red.
-            boolean isPlaceable = ChiselHandler.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
+            boolean isPlaceable = ChiselUtil.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
 
             if (player.isSneaking()) {
                 final BitLocation bl = new BitLocation((BlockRayTraceResult) mop, true, BitOperation.PLACE);
@@ -507,7 +507,7 @@ public class ClientSideHelper {
                 if(!canMerge && !isPlaceable)
                     offset = offset.offset(((BlockRayTraceResult) mop).getFace());
 
-                isPlaceable = ChiselHandler.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
+                isPlaceable = ChiselUtil.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
                 ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, offset, face, BlockPos.ZERO, partialTicks, isPlaceable);
             }
         }
@@ -526,7 +526,7 @@ public class ClientSideHelper {
             previousPartial = partial;
 
             final NBTBlobConverter c = new NBTBlobConverter();
-            c.readChiselData(item.getChildTag(ModUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
+            c.readChiselData(item.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
             VoxelBlob blob = c.getVoxelBlob();
             modelBounds = blob.getBounds();
 
@@ -547,7 +547,7 @@ public class ClientSideHelper {
         GlStateManager.pushMatrix();
         GlStateManager.translated(pos.getX() - x, pos.getY() - y, pos.getZ() - z);
         if (!partial.equals(BlockPos.ZERO)) {
-            final BlockPos t = ModUtil.getPartialOffset(face, partial, modelBounds);
+            final BlockPos t = ChiselUtil.getPartialOffset(face, partial, modelBounds);
             final double fullScale = 1.0 / VoxelBlob.DIMENSION;
             GlStateManager.translated(t.getX() * fullScale, t.getY() * fullScale, t.getZ() * fullScale);
         }

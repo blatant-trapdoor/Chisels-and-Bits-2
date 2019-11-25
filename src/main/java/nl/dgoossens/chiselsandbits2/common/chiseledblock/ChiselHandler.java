@@ -1,22 +1,11 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.IFluidState;
-import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.LazyOptional;
@@ -25,20 +14,16 @@ import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
-import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
 
-import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import static nl.dgoossens.chiselsandbits2.api.BitOperation.*;
 
@@ -49,8 +34,8 @@ public class ChiselHandler {
     /**
      * Handles an incoming {@link CChiselBlockPacket} packet.
      */
-    public static void handle(final CChiselBlockPacket pkt, final PlayerEntity player) {
-        if (!(player.getHeldItemMainhand().getItem() instanceof BitModifyItem))
+    public static void handle(final CChiselBlockPacket pkt, final ServerPlayerEntity player) {
+        if (!(player.getHeldItemMainhand().getItem() instanceof ChiselUtil.BitModifyItem))
             return; //Extra security, if you're somehow no longer holding a valid item that can chisel we cancel.
 
         final World world = player.world;
@@ -105,13 +90,13 @@ public class ChiselHandler {
                             continue;
 
                         //Replace the block with a chiseled block.
-                        replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.placedBit, pkt.side);
+                        ChiselUtil.replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.placedBit, pkt.side);
 
                         final TileEntity te = world.getTileEntity(pos);
                         if (te instanceof ChiseledBlockTileEntity) {
                             final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
                             final VoxelBlob vb = tec.getBlob();
-                            final ChiselIterator i = getIterator(pkt, new VoxelRegionSrc(world, pos, 1), pos, pkt.operation);
+                            final ChiselIterator i = ChiselUtil.getIterator(pkt, new VoxelRegionSrc(world, pos, 1), pos, pkt.operation);
                             final Map<Integer, Long> extracted = new HashMap<>();
 
                             //Handle the operation
@@ -180,7 +165,7 @@ public class ChiselHandler {
                                                 long h = Math.min(toGive, bs.queryRoom(w));
                                                 bs.add(w, h);
                                                 toGive -= h;
-                                                ChiselModeManager.updateStackCapability(item, bs, player);
+                                                ItemModeUtil.updateStackCapability(item, bs, player);
                                             }
                                         }
                                     }
@@ -198,7 +183,7 @@ public class ChiselHandler {
                                             long h = Math.min(toGive, bs.queryRoom(w));
                                             bs.add(w, h);
                                             toGive -= h;
-                                            ChiselModeManager.updateStackCapability(item, bs, player);
+                                            ItemModeUtil.updateStackCapability(item, bs, player);
                                         }
                                     }
 
@@ -225,83 +210,4 @@ public class ChiselHandler {
             ChiselsAndBits2.getInstance().getClient().getUndoTracker().endGroup(player);
         }
     }
-
-    /**
-     * Get the selected item mode.
-     */
-    public static SelectedItemMode getSelectedMode() {
-        long stamp = 0;
-
-        for (ItemStack item : Minecraft.getInstance().player.inventory.mainInventory) {
-            if (item.getItem() instanceof StorageItem) {
-                long l = ChiselModeManager.getSelectionTime(item);
-                if (l > stamp) {
-                    stamp = l;
-                    return ChiselModeManager.getSelectedItem(item);
-                }
-            }
-        }
-        //Default is the empty bag slot.
-        return SelectedItemMode.NONE;
-    }
-
-    /**
-     * Returns whether a target block is air or can be replaced.
-     */
-    public static boolean isBlockReplaceable(final PlayerEntity player, final World world, final BlockPos pos, final Direction face, final boolean destroy) {
-        boolean isValid = world.isAirBlock(pos);
-
-        //We see it as air if we can replace it.
-        if (!isValid && world.getBlockState(pos).isReplaceable(new BlockItemUseContext(new ItemUseContext(player, Hand.MAIN_HAND, new BlockRayTraceResult(new Vec3d((double) pos.getX() + 0.5D + (double) face.getXOffset() * 0.5D, (double) pos.getY() + 0.5D + (double) face.getYOffset() * 0.5D, (double) pos.getZ() + 0.5D + (double) face.getZOffset() * 0.5D), face, pos, false))))) {
-            if (destroy) world.destroyBlock(pos, true);
-            isValid = true;
-        }
-
-        return isValid;
-    }
-
-    public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final Direction face) {
-        Block target = originalState.getBlock();
-        if(target.equals(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK)) return;
-
-        IFluidState fluid = world.getFluidState(pos);
-        boolean isAir = isBlockReplaceable(player, world, pos, face, true);
-
-        if (ChiselUtil.canChiselBlock(originalState) || isAir) {
-            int blockId = isAir ? fragmentBlockStateID : ModUtil.getStateId(originalState);
-            world.setBlockState(pos, ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), 3);
-            final ChiseledBlockTileEntity te = (ChiseledBlockTileEntity) world.getTileEntity(pos);
-            if (te != null) {
-                if (!isAir) te.fillWith(blockId);
-                else {
-                    //If there was a fluid previously make this a fluid block instead of an air block.
-                    if (fluid.isEmpty()) te.fillWith(VoxelBlob.AIR_BIT);
-                    else te.fillWith(ModUtil.getFluidId(fluid));
-                }
-            }
-        }
-    }
-
-    public static ChiselIterator getIterator(final CChiselBlockPacket pkt, final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {
-        if (pkt.mode == ItemMode.CHISEL_DRAWN_REGION) {
-            final BlockPos from = pkt.from.blockPos;
-            final BlockPos to = pkt.to.blockPos;
-
-            final int bitX = pos.getX() == from.getX() ? pkt.from.bitX : 0;
-            final int bitY = pos.getY() == from.getY() ? pkt.from.bitY : 0;
-            final int bitZ = pos.getZ() == from.getZ() ? pkt.from.bitZ : 0;
-
-            final int scaleX = (pos.getX() == to.getX() ? pkt.to.bitX : 15) - bitX + 1;
-            final int scaleY = (pos.getY() == to.getY() ? pkt.to.bitY : 15) - bitY + 1;
-            final int scaleZ = (pos.getZ() == to.getZ() ? pkt.to.bitZ : 15) - bitZ + 1;
-
-            return new ChiselTypeIterator(VoxelBlob.DIMENSION, bitX, bitY, bitZ, scaleX, scaleY, scaleZ, pkt.side);
-        }
-        return ChiselTypeIterator.create(VoxelBlob.DIMENSION, pkt.from.bitX, pkt.from.bitY, pkt.from.bitZ, vb, pkt.mode, pkt.side, place.equals(PLACE));
-    }
-
-    //Interfaces to use to designate which items can place or remove bits.
-    public static interface BitPlaceItem extends BitModifyItem {}
-    public static interface BitRemoveItem extends BitModifyItem {}
-    public static interface BitModifyItem {}
 }

@@ -3,9 +3,8 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 import net.minecraft.block.Blocks;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import nl.dgoossens.chiselsandbits2.api.IStateRef;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
-import java.awt.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
@@ -60,7 +59,7 @@ public final class VoxelBlobStateReference implements IStateRef {
 
     private static byte[] findDefaultBytes() {
         final VoxelBlob vb = new VoxelBlob();
-        int b = ModUtil.getStateId(Blocks.GOLD_BLOCK.getDefaultState());
+        int b = BitUtil.getBlockId(Blocks.GOLD_BLOCK.getDefaultState());
         for(int y = 1; y <= 12; y++)
             for(int x = 2; x <= 13; x++)
                 for(int z = 2; z <= 13; z++) {

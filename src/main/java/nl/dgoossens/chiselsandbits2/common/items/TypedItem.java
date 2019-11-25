@@ -6,7 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 
 public abstract class TypedItem extends Item implements IItemScrollWheel, IItemMenu {
     public TypedItem(Item.Properties builder) {
@@ -18,8 +18,8 @@ public abstract class TypedItem extends Item implements IItemScrollWheel, IItemM
      */
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        IItemMode im = ChiselModeManager.getMode(item);
-        return displayName + " - " + (im.equals(SelectedItemMode.NONE) ? I18n.format("general." + ChiselsAndBits2.MOD_ID + ".none") : im.getLocalizedName()) + ((getAssociatedType() == ItemModeType.TAPEMEASURE || getAssociatedType() == ItemModeType.CHISEL) ? (" - " + ChiselModeManager.getMenuActionMode(item).getLocalizedName()) : "");
+        IItemMode im = ItemModeUtil.getMode(item);
+        return displayName + " - " + (im.equals(SelectedItemMode.NONE) ? I18n.format("general." + ChiselsAndBits2.MOD_ID + ".none") : im.getLocalizedName()) + ((getAssociatedType() == ItemModeType.TAPEMEASURE || getAssociatedType() == ItemModeType.CHISEL) ? (" - " + ItemModeUtil.getMenuActionMode(item).getLocalizedName()) : "");
     }
 
     /**
@@ -27,8 +27,8 @@ public abstract class TypedItem extends Item implements IItemScrollWheel, IItemM
      */
     @Override
     public boolean scroll(final PlayerEntity player, final ItemStack stack, final double dwheel) {
-        final IItemMode mode = ChiselModeManager.getMode(player);
-        ChiselModeManager.scrollOption(mode, stack, dwheel);
+        final IItemMode mode = ItemModeUtil.getMode(player);
+        ItemModeUtil.scrollOption(player, mode, stack, dwheel);
         return true;
     }
 }

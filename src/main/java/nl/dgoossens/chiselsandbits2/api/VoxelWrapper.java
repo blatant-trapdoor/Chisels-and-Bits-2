@@ -2,8 +2,7 @@ package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.block.Block;
 import net.minecraft.fluid.Fluid;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -19,17 +18,17 @@ public class VoxelWrapper<T> {
 
     private VoxelWrapper(Block b) {
         type = VoxelType.BLOCKSTATE;
-        id = ModUtil.getStateId(b.getDefaultState());
+        id = BitUtil.getBlockId(b.getDefaultState());
     }
 
     private VoxelWrapper(Fluid f) {
         type = VoxelType.FLUIDSTATE;
-        id = ModUtil.getFluidId(f.getDefaultState());
+        id = BitUtil.getFluidId(f.getDefaultState());
     }
 
     private VoxelWrapper(Color c) {
         type = VoxelType.COLOURED;
-        id = ModUtil.getColourId(c);
+        id = BitUtil.getColourId(c);
     }
 
     private VoxelWrapper(int bit) {
@@ -43,9 +42,9 @@ public class VoxelWrapper<T> {
     @Nullable
     public T get() {
         switch(type) {
-            case BLOCKSTATE: return (T) ModUtil.getBlockState(id).getBlock();
-            case FLUIDSTATE: return (T) ModUtil.getFluidState(id).getFluid();
-            case COLOURED: return (T) ModUtil.getColourState(id);
+            case BLOCKSTATE: return (T) BitUtil.getBlockState(id).getBlock();
+            case FLUIDSTATE: return (T) BitUtil.getFluidState(id).getFluid();
+            case COLOURED: return (T) BitUtil.getColourState(id);
             default: return null;
         }
     }

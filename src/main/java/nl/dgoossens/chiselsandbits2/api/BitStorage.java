@@ -18,6 +18,11 @@ public interface BitStorage {
     int getSlots();
 
     /**
+     * Finds the first available slot for a given type.
+     */
+    int findSlot(VoxelWrapper w);
+
+    /**
      * Returns a set of all types of blocks in this storage.
      * Lists them as SelectedBlockItemMode instances.
      */

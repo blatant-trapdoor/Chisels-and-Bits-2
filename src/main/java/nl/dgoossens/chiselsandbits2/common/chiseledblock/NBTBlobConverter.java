@@ -9,7 +9,8 @@ import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 
 public class NBTBlobConverter {
     public static final String NBT_PRIMARY_STATE = "b";
@@ -49,7 +50,7 @@ public class NBTBlobConverter {
     }
 
     public void fillWith(final BlockState state) {
-        voxelBlobRef = new VoxelBlobStateReference(ModUtil.getStateId(state));
+        voxelBlobRef = new VoxelBlobStateReference(BitUtil.getBlockId(state));
         updatePrimaryStateFromBlob();
     }
 
@@ -111,7 +112,7 @@ public class NBTBlobConverter {
     public ItemStack getItemStack() {
         final Block blk = ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK;
         final ItemStack is = new ItemStack(blk);
-        final CompoundNBT compound = is.getOrCreateChildTag(ModUtil.NBT_BLOCKENTITYTAG);
+        final CompoundNBT compound = is.getOrCreateChildTag(ChiselUtil.NBT_BLOCKENTITYTAG);
         writeChiselData(compound);
         if (!compound.isEmpty()) return is;
         return null;

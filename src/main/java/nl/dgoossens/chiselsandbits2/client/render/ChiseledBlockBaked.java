@@ -21,7 +21,7 @@ import nl.dgoossens.chiselsandbits2.client.render.models.BaseBakedBlockModel;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 
 import javax.annotation.Nonnull;
@@ -113,7 +113,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
 
     public ChiseledBlockBaked(final int primaryBlock, final VoxelBlobStateReference data, final ModelRenderState mrs, final VertexFormat format) {
         this.format = format;
-        IBakedModel originalModel = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(ModUtil.getBlockState(primaryBlock));
+        IBakedModel originalModel = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(BitUtil.getBlockState(primaryBlock));
 
         //Do we have data and is there a model for the primary block type.
         if (!MISSING_MODEL.equals(originalModel) && data != null) {

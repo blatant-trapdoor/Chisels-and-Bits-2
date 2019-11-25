@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import java.awt.*;
 
@@ -71,7 +71,7 @@ public class SelectedItemMode implements IItemMode {
      */
     public Block getBlock() {
         if(type != VoxelType.BLOCKSTATE) return Blocks.AIR;
-        return ModUtil.getBlockState(value).getBlock();
+        return BitUtil.getBlockState(value).getBlock();
     }
 
     /**
@@ -79,7 +79,7 @@ public class SelectedItemMode implements IItemMode {
      */
     public Fluid getFluid() {
         if(type != VoxelType.FLUIDSTATE) return Fluids.EMPTY;
-        return ModUtil.getFluidState(value).getFluid();
+        return BitUtil.getFluidState(value).getFluid();
     }
 
     /**
@@ -87,7 +87,7 @@ public class SelectedItemMode implements IItemMode {
      */
     public Color getColour() {
         if(type != VoxelType.COLOURED) return Color.BLACK;
-        return ModUtil.getColourState(value);
+        return BitUtil.getColourState(value);
     }
 
     /**
@@ -137,7 +137,7 @@ public class SelectedItemMode implements IItemMode {
     public int getPlacementBitId(BlockItemUseContext context) {
         switch(type) {
             case BLOCKSTATE:
-                return ModUtil.getStateId(getBlock().getStateForPlacement(context));
+                return BitUtil.getBlockId(getBlock().getStateForPlacement(context));
             default:
                 return value;
         }
@@ -174,7 +174,7 @@ public class SelectedItemMode implements IItemMode {
      */
     public static SelectedItemMode fromName(final String key, final boolean fluid) {
         if (key.equalsIgnoreCase("null")) return NONE;
-        return new SelectedItemMode(fluid ? ModUtil.getFluidId(ForgeRegistries.FLUIDS.getValue(ResourceLocation.create(key, ':')).getDefaultState()) : ModUtil.getStateId(ForgeRegistries.BLOCKS.getValue(ResourceLocation.create(key, ':')).getDefaultState()));
+        return new SelectedItemMode(fluid ? BitUtil.getFluidId(ForgeRegistries.FLUIDS.getValue(ResourceLocation.create(key, ':')).getDefaultState()) : BitUtil.getBlockId(ForgeRegistries.BLOCKS.getValue(ResourceLocation.create(key, ':')).getDefaultState()));
     }
 
     /**

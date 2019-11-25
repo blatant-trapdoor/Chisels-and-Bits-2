@@ -9,10 +9,6 @@ import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.fluid.FlowingFluid;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
@@ -26,11 +22,13 @@ import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelUVAverager
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelVertexRange;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.SimpleGeneratedModel;
 
-import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.*;
 
+/**
+ * Utility used by model rendering.
+ */
 public class ModelUtil implements CacheClearable {
     private final static HashMap<Integer, ResourceLocation> blockToTexture = new HashMap<>();
     private static HashMap<Integer, ModelQuadLayer[]> cache = new HashMap<>();
@@ -106,8 +104,8 @@ public class ModelUtil implements CacheClearable {
     }
 
     private static ModelQuadLayer[] getInnerCachedFace(final int cacheVal, final int stateID, final Random weight, final Direction face) {
-        final BlockState state = ModUtil.getBlockState(stateID);
-        final IFluidState fluid = ModUtil.getFluidState(stateID);
+        final BlockState state = BitUtil.getBlockState(stateID);
+        final IFluidState fluid = BitUtil.getFluidState(stateID);
 
         switch (VoxelType.getType(stateID)) {
             case BLOCKSTATE: {
@@ -277,7 +275,7 @@ public class ModelUtil implements CacheClearable {
         }
 
         TextureAtlasSprite texture = null;
-        final BlockState state = ModUtil.getBlockState(blockRef);
+        final BlockState state = BitUtil.getBlockState(blockRef);
 
         if (model != null) {
             try {
@@ -329,8 +327,8 @@ public class ModelUtil implements CacheClearable {
         TextureAtlasSprite out = breakCache.get(blockStateId);
 
         if (out == null && VoxelType.getType(blockStateId) == VoxelType.BLOCKSTATE) {
-            final BlockState state = ModUtil.getBlockState(blockStateId);
-            final IBakedModel model = ModelUtil.solveModel(state, new Random(), Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(ModUtil.getBlockState(blockStateId)));
+            final BlockState state = BitUtil.getBlockState(blockStateId);
+            final IBakedModel model = ModelUtil.solveModel(state, new Random(), Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(BitUtil.getBlockState(blockStateId)));
 
             if (model != null)
                 out = ModelUtil.findTexture(blockStateId, model, Direction.UP);

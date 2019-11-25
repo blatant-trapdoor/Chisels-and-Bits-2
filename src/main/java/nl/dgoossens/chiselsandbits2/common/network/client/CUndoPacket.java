@@ -2,15 +2,9 @@ package nl.dgoossens.chiselsandbits2.common.network.client;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
-import nl.dgoossens.chiselsandbits2.api.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
 
 import java.util.function.Supplier;
 

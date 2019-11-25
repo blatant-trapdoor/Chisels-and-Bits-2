@@ -5,11 +5,10 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
-import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.impl.ChiselModeManager;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 
 import java.util.function.Supplier;
 
@@ -40,7 +39,7 @@ public class CSetItemModePacket {
         try {
             boolean dynamic = buffer.readBoolean();
             int dynamicId = buffer.readInt();
-            pc.newMode = ChiselModeManager.resolveMode(buffer.readString(), dynamic, dynamicId);
+            pc.newMode = ItemModeUtil.resolveMode(buffer.readString(), dynamic, dynamicId);
         } catch (final Exception x) {
             x.printStackTrace();
         }
@@ -52,7 +51,7 @@ public class CSetItemModePacket {
             if (pkt.newMode == null) return;
             ServerPlayerEntity player = ctx.get().getSender();
             if (pkt.isValid(player))
-                ChiselModeManager.setMode(player, player.getHeldItemMainhand(), pkt.newMode);
+                ItemModeUtil.setMode(player, player.getHeldItemMainhand(), pkt.newMode, true);
         });
         ctx.get().setPacketHandled(true);
     }
@@ -60,6 +59,6 @@ public class CSetItemModePacket {
     public boolean isValid(PlayerEntity player) {
         if(player == null) return false;
         final ItemStack ei = player.getHeldItemMainhand();
-        return (ei.getItem() instanceof IItemMenu && type == ChiselModeManager.getMode(ei).getType());
+        return (ei.getItem() instanceof IItemMenu && type == ItemModeUtil.getMode(ei).getType());
     }
 }
