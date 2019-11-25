@@ -17,7 +17,7 @@ public class ChiseledTintColor {
     /**
      * Get the tint colour to display based on the bit type embedded in the tint.
      */
-    protected int getColor(int tint) {
+    public int getColor(int tint) {
         if(tint == -1) return -1;
 
         //If this block has a colour we hide it in the tint value. See ModelQuadLayer.java
@@ -39,7 +39,7 @@ public class ChiseledTintColor {
     /**
      * Get the default item colour, can be overwritten if need be for a block.
      */
-    protected int getDefaultColor(int v, int tintValue) {
+    public int getDefaultColor(int v, int tintValue) {
         final ItemStack titem = new ItemStack(BitUtil.getBlockState(v).getBlock().asItem());
         return Minecraft.getInstance().getItemColors().getColor(titem, tintValue);
     }

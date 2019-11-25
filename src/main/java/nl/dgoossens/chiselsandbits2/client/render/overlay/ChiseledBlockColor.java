@@ -13,15 +13,21 @@ public class ChiseledBlockColor extends ChiseledTintColor implements IBlockColor
     private IEnviromentBlockReader world;
     private BlockPos pos;
 
-    @Override
-    public int getColor(BlockState state, @Nullable IEnviromentBlockReader world, @Nullable BlockPos pos, int tint) {
+    public ChiseledBlockColor() {}
+    public ChiseledBlockColor(IEnviromentBlockReader world, BlockPos pos) {
         this.world = world;
         this.pos = pos;
+    }
+
+    @Override
+    public int getColor(BlockState state, @Nullable IEnviromentBlockReader world, @Nullable BlockPos pos, int tint) {
+        if(world != null) this.world = world;
+        if(pos != null) this.pos = pos;
         return getColor(tint);
     }
 
     @Override
-    protected int getDefaultColor(int v, int tintValue) {
+    public int getDefaultColor(int v, int tintValue) {
         final BlockState tstate = BitUtil.getBlockState(v);
         return Minecraft.getInstance().getBlockColors().getColor(tstate, world, pos, tintValue);
     }

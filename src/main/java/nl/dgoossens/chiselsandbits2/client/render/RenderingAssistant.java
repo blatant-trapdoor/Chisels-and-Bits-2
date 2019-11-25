@@ -15,6 +15,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledTintColor;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -81,15 +83,6 @@ public class RenderingAssistant {
         }
     }
 
-    public static void renderQuads(final BufferBuilder renderer, final List<BakedQuad> quads, final World worldObj, final BlockPos blockPos, final boolean showSilhouette) {
-        int i = 0;
-        for (final int j = quads.size(); i < j; ++i) {
-            final BakedQuad bakedquad = quads.get(i);
-            int color = showSilhouette ? new Color(45, 45, 45, 45).hashCode() : Minecraft.getInstance().getBlockColors().getColor(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), worldObj, blockPos, bakedquad.getTintIndex());
-            net.minecraftforge.client.model.pipeline.LightUtil.renderQuadColor(renderer, bakedquad, color);
-        }
-    }
-
     // Custom replacement of 1.9.4 -> 1.10's method that changed.
     public static void renderBoundingBox(final AxisAlignedBB boundingBox, final int red, final int green, final int blue, final int alpha) {
         final Tessellator tess = Tessellator.getInstance();
@@ -150,32 +143,42 @@ public class RenderingAssistant {
         tess.draw();
     }
 
-    public static void renderModel(final IBakedModel model, final World worldObj, final BlockPos blockPos, final boolean showSilhoutte) {
+    public static void renderQuads(final BufferBuilder renderer, final List<BakedQuad> quads, final ChiseledTintColor colorProvider, final boolean showSilhouette) {
+        int i = 0;
+        for (final int j = quads.size(); i < j; ++i) {
+            final BakedQuad bakedquad = quads.get(i);
+            Color color = showSilhouette ? new Color(45, 45, 45, 45) : new Color(colorProvider.getColor(bakedquad.getTintIndex()));
+            net.minecraftforge.client.model.pipeline.LightUtil.renderQuadColor(renderer, bakedquad, (color.hashCode() & 0x00ffffff) + ((showSilhouette ? 65 : 195) << 24));
+        }
+    }
+
+    public static void renderModel(final IBakedModel model, final ChiseledTintColor colorProvider, final boolean showSilhoutte) {
         final Tessellator tessellator = Tessellator.getInstance();
         final BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
 
-        for (final Direction face : Direction.values())
-            renderQuads(buffer, model.getQuads(null, face, new Random()), worldObj, blockPos, showSilhoutte);
+        Random r = new Random();
+        for (final Direction face : Direction.values()) {
+            r.setSeed(42);
+            renderQuads(buffer, model.getQuads(null, face, r), colorProvider, showSilhoutte);
+        }
 
-        renderQuads(buffer, model.getQuads(null, null, new Random()), worldObj, blockPos, showSilhoutte);
+        r.setSeed(42);
+        renderQuads(buffer, model.getQuads(null, null, r), colorProvider, showSilhoutte);
         tessellator.draw();
     }
 
     public static void renderGhostModel(final IBakedModel baked, final World worldObj, final BlockPos blockPos, final boolean notPlaceable) {
         GlStateManager.bindTexture(Minecraft.getInstance().getTextureMap().getGlTextureId());
         GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        GlStateManager.alphaFunc(516, 0.1F);
 
         GlStateManager.enableBlend();
         GlStateManager.enableTexture();
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager.colorMask(false, false, false, false);
+        GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
-        renderModel(baked, worldObj, blockPos, notPlaceable);
-        GlStateManager.colorMask(true, true, true, true);
-        GlStateManager.depthFunc(GL11.GL_LEQUAL);
-        renderModel(baked, worldObj, blockPos, notPlaceable);
-
+        ChiseledTintColor colorProvider = new ChiseledBlockColor(worldObj, blockPos); //Pass the location so grass/water is tinted properly
+        renderModel(baked, colorProvider, notPlaceable);
         GlStateManager.disableBlend();
     }
 }

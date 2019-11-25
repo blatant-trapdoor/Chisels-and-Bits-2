@@ -83,7 +83,7 @@ public class ClientSideHelper {
     protected IBakedModel ghostCache = null;
     protected BlockPos previousPosition;
     protected BlockPos previousPartial;
-    protected int displayStatus = 0;
+    protected ItemStack previousItem;
     protected IntegerBox modelBounds;
 
     /**
@@ -100,7 +100,6 @@ public class ClientSideHelper {
         ghostCache = null;
         previousPartial = null;
         previousPosition = null;
-        displayStatus = 0;
         modelBounds = null;
 
         getUndoTracker().clean();
@@ -487,7 +486,7 @@ public class ClientSideHelper {
         final ItemStack currentItem = player.getHeldItemMainhand();
         final Direction face = ((BlockRayTraceResult) mop).getFace();
 
-        if(currentItem.getItem() instanceof BlockItem && ((BlockItem) currentItem.getItem()).getBlock() instanceof ChiseledBlock) {
+        if(!currentItem.isEmpty() && currentItem.getItem() instanceof BlockItem && ((BlockItem) currentItem.getItem()).getBlock() instanceof ChiseledBlock) {
             if (mop.getType() != RayTraceResult.Type.BLOCK) return;
             if (!currentItem.hasTag()) return;
             BlockPos offset = ((BlockRayTraceResult) mop).getPos();
@@ -518,11 +517,12 @@ public class ClientSideHelper {
     protected void showGhost(ItemStack item, BlockPos pos, Direction face, BlockPos partial, float partialTicks, boolean isPlaceable) {
         final PlayerEntity player = Minecraft.getInstance().player;
         IBakedModel model = null;
-        if(ghostCache != null && pos.equals(previousPosition) && partial.equals(previousPartial))
+        if(ghostCache != null && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial))
             model = ghostCache;
         else {
             previousPosition = pos;
             previousPartial = partial;
+            previousItem = item;
 
             final NBTBlobConverter c = new NBTBlobConverter();
             c.readChiselData(item.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
@@ -531,11 +531,6 @@ public class ClientSideHelper {
 
             model = Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(item, player.getEntityWorld(), player);
             ghostCache = model;
-
-            if ( displayStatus != 0 ) {
-                GlStateManager.deleteLists( displayStatus, 1 );
-                displayStatus = 0;
-            }
         }
 
         final ActiveRenderInfo renderInfo = Minecraft.getInstance().gameRenderer.getActiveRenderInfo();
@@ -551,14 +546,7 @@ public class ClientSideHelper {
             GlStateManager.translated(t.getX() * fullScale, t.getY() * fullScale, t.getZ() * fullScale);
         }
 
-        if (displayStatus == 0) {
-            displayStatus = GLAllocation.generateDisplayLists(1);
-            GlStateManager.newList(displayStatus, GL11.GL_COMPILE_AND_EXECUTE);
-            RenderingAssistant.renderGhostModel(model, player.world, pos, !isPlaceable);
-            GlStateManager.endList();
-        } else
-            GlStateManager.callList(displayStatus);
-
+        RenderingAssistant.renderGhostModel(model, player.world, pos, !isPlaceable);
         GlStateManager.popMatrix();
     }
 
