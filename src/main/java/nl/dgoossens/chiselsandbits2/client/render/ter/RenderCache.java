@@ -12,13 +12,22 @@ public class RenderCache {
     private FutureTask<Tessellator> future = null;
     private GfxRenderState vboRenderer = null; //if this is null the RenderCache is new.
     private GfxRenderState oldRenderer = null; //To use if the vboRenderer isn't ready yet.
-    private boolean isNew = true;
+    private boolean isOutdated = true;
 
     /**
      * Returns whether or not this cache needs to be re-rendered.
      */
     public boolean needsRebuilding() {
         return vboRenderer == null;
+    }
+
+    /**
+     * Causes chunk to get rebuilt immediately, should be used when a new
+     * block in the chunk has been changed to a chiseled block.
+     */
+    public void requestImmediateRebuild() {
+        isOutdated = true;
+        rebuild();
     }
 
     /**
@@ -75,11 +84,11 @@ public class RenderCache {
     }
 
     /**
-     * Returns whether or not this is the first time isNew has been called.
+     * Returns whether or not this is the first time isOutdated has been called.
      */
-    public boolean isNew() {
-        if(!isNew) return false;
-        isNew = false;
+    public boolean isOutdated() {
+        if(!isOutdated) return false;
+        isOutdated = false;
         return true;
     }
 

@@ -90,4 +90,10 @@ public class TileChunk extends RenderCache {
     public TileList getTiles() {
         return tiles;
     }
+
+    //Write to string as the chunk offset.
+    @Override
+    public String toString() {
+        return String.valueOf(chunkOffset());
+    }
 }

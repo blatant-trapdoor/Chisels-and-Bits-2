@@ -5,6 +5,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemUseContext;
@@ -27,6 +28,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIte
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
+import nl.dgoossens.chiselsandbits2.common.network.server.SRebuildChunkPacket;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -158,6 +160,9 @@ public class ChiselUtil {
                     if (fluid.isEmpty()) te.fillWith(VoxelBlob.AIR_BIT);
                     else te.fillWith(BitUtil.getFluidId(fluid));
                 }
+
+                if(player instanceof ServerPlayerEntity)
+                    ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SRebuildChunkPacket(pos), (ServerPlayerEntity) player);
             }
         }
     }

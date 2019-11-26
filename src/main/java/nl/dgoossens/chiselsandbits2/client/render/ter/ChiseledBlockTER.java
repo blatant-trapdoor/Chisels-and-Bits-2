@@ -169,6 +169,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         final RenderCache rc = te.getChunk(te.getWorld());
         final BlockPos chunkOffset = te.getChunk(te.getWorld()).chunkOffset();
         boolean hasSubmitted = false;
+        boolean isOutdated = rc.isOutdated();
 
         if (rc.needsRebuilding()) {
             //Rebuild!
@@ -194,9 +195,9 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
 
         //If we've scheduled the rendering this tick but this block is new. Instant render!
         //This avoids blinking blocks because background rendering doesn't get a model ready the first tick.
-        if (rc.hasFuture() && hasSubmitted && rc.isNew()) {
+        if (rc.hasFuture() && hasSubmitted && isOutdated) {
             try {
-                final Tessellator tess = rc.getFuture().get(100, TimeUnit.MILLISECONDS);
+                final Tessellator tess = rc.getFuture().get(50, TimeUnit.MILLISECONDS);
                 rc.resetFuture();
                 pendingTess.decrementAndGet();
 
@@ -209,7 +210,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         }
 
         //Only check this if this isn't new.
-        if(!rc.isNew() && !rc.needsRebuilding()) {
+        if(!isOutdated && !rc.needsRebuilding()) {
             //Let the render tracker check if no neighbours changed somehow.
             te.getRenderTracker().validate(te.getWorld(), te.getPos());
             if(!te.getRenderTracker().isValid())
@@ -294,7 +295,9 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(te);
 
         if (!model.isEmpty()) {
-            final IBakedModel damageModel = new SimpleBakedModel.Builder(estate, model, damageTexture, RAND, RAND.nextLong()).build();
+            final IBakedModel damageModel = new SimpleBakedModel.Builder(estate, model, damageTexture, RAND, RAND.nextLong())
+                    .setTexture(damageTexture) //Just to avoid the RuntimeException, we don't use this.
+                    .build();
             blockRenderer.getBlockModelRenderer().renderModel(te.getWorld(), damageModel, estate, cp, buffer, true, RAND, RAND.nextLong());
         }
 

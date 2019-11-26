@@ -44,7 +44,6 @@ public class BackgroundRenderer implements Callable<Tessellator> {
     public Tessellator call() {
         Tessellator tessellator = null;
         try {
-            long t = System.currentTimeMillis();
             do {
                 do {
                     final CBTessellatorRefHold holder = previousTessellators.poll();
@@ -85,7 +84,6 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                 }
             }
 
-            System.out.println("Took "+(System.currentTimeMillis()-t)+" ms to build chunk.");
             if (Thread.interrupted()) {
                 buffer.finishDrawing();
                 submitTessellator(tessellator);

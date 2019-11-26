@@ -17,6 +17,7 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
+import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.client.render.ter.TileChunk;
@@ -30,6 +31,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 public class ChiseledBlockTileEntity extends TileEntity {
     public static final ModelProperty<VoxelBlobStateReference> VOXEL_DATA = new ModelProperty<>();
@@ -185,7 +187,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
      */
     public TileChunk getChunk(final IBlockReader world) {
         if (chunk == null) {
-            chunk = findRenderChunk(world);
+            chunk = findRenderChunk(getPos(), world, () -> new TileChunk(this));
             chunk.register(this, true); //Register us to be a part of the chunk if this is the first time we're searching.
         }
         return chunk;
@@ -194,10 +196,10 @@ public class ChiseledBlockTileEntity extends TileEntity {
     /**
      * Find the rendering chunk this TE belongs to.
      */
-    private TileChunk findRenderChunk(final IBlockReader access) {
-        int chunkPosX = getPos().getX();
-        int chunkPosY = getPos().getY();
-        int chunkPosZ = getPos().getZ();
+    public static TileChunk findRenderChunk(final BlockPos pos, final IBlockReader access, final Supplier<TileChunk> backup) {
+        int chunkPosX = pos.getX();
+        int chunkPosY = pos.getY();
+        int chunkPosZ = pos.getZ();
 
         final int mask = ~0xf;
         chunkPosX = chunkPosX & mask;
@@ -213,7 +215,8 @@ public class ChiseledBlockTileEntity extends TileEntity {
                 }
             }
         }
-        return new TileChunk(this);
+
+        return backup.get();
     }
 
     @Override
