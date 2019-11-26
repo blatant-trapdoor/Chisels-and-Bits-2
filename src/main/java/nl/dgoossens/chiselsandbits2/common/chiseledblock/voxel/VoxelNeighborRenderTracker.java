@@ -16,24 +16,14 @@ import java.lang.ref.WeakReference;
  * storing references to the states of neighbouring blocks.
  */
 public final class VoxelNeighborRenderTracker {
-    static final int IS_DYNAMIC = 1;
-    static final int IS_LOCKED = 2;
-    static final int IS_STATIC = 4;
     private final ModelRenderState sides = new ModelRenderState();
     private WeakReference<VoxelBlobStateReference> lastCenter;
     private ModelRenderState lrs = null;
-    private byte isDynamic;
-    private int faceCount;
     private boolean invalid;
+    private boolean rendered;
 
     public VoxelNeighborRenderTracker(IBlockReader world, BlockPos pos) {
-        isDynamic = IS_DYNAMIC | IS_LOCKED;
-        faceCount = ChiselsAndBits2.getInstance().getConfig().dynamicModelFaceCount.get();
         update(world, pos);
-    }
-
-    public void unlockDynamic() {
-        isDynamic = (byte) (isDynamic & ~IS_LOCKED);
     }
 
     /**
@@ -59,18 +49,26 @@ public final class VoxelNeighborRenderTracker {
             if(te instanceof ChiseledBlockTileEntity) {
                 if(sides.get(d) == null) {
                     invalidate();
+                    update(world, pos);
                     return;
                 }
             } else {
                 if(sides.get(d) != null) {
                     invalidate();
+                    sides.remove(d);
                     return;
                 }
             }
         }
     }
 
+    //Flag this render tracker as having been rendered at least once, before this point invalidation is ignored to prevent invalidation spam
+    public void setRendered() {
+        rendered = true;
+    }
+
     public void invalidate() {
+        if(!rendered) return;
         invalid = true;
     }
 
@@ -80,14 +78,6 @@ public final class VoxelNeighborRenderTracker {
             return false;
         }
         return true;
-    }
-
-    public void setFaceCount(final int fc) {
-        faceCount = fc;
-    }
-
-    public boolean isDynamic() {
-        return (isDynamic & IS_DYNAMIC) != 0;
     }
 
     public ModelRenderState getRenderState(final VoxelBlobStateReference data) {

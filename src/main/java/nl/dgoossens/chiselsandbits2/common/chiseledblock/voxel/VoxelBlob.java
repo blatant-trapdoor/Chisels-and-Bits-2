@@ -386,7 +386,7 @@ public final class VoxelBlob implements IVoxelSrc {
     //--- INTERNAL LOGIC METHODS ---
 
     /**
-     * Updates the visible faces.
+     * Updates the visible faces. Runs the cull tests to determine which faces should be culled.
      */
     public void updateFaceVisibility(final Direction face, int x, int y, int z, final VisibleFace dest, final VoxelBlob secondBlob, final ICullTest cullVisTest) {
         final int mySpot = get(x, y, z);
@@ -407,112 +407,9 @@ public final class VoxelBlob implements IVoxelSrc {
     }
 
     /**
-     * Special internal method for getting sideflags.
-     */
-    public int getSideFlags(final int minRange, final int maxRange, final int totalRequired) {
-        int output = 0x00;
-
-        for (final Direction face : Direction.values()) {
-            final int edge = face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 15 : 0;
-            int required = totalRequired;
-
-            switch (face.getAxis()) {
-                case X:
-                    for (int z = minRange; z <= maxRange; z++) {
-                        for (int y = minRange; y <= maxRange; y++) {
-                            if (getVoxelType(edge, y, z).isSolid()) required--;
-                        }
-                    }
-                    break;
-                case Y:
-                    for (int z = minRange; z <= maxRange; z++) {
-                        for (int x = minRange; x <= maxRange; x++) {
-                            if (getVoxelType(x, edge, z).isSolid()) required--;
-                        }
-                    }
-                    break;
-                case Z:
-                    for (int y = minRange; y <= maxRange; y++) {
-                        for (int x = minRange; x <= maxRange; x++) {
-                            if (getVoxelType(x, y, edge).isSolid()) required--;
-                        }
-                    }
-                    break;
-            }
-
-            if (required <= 0) output |= 1 << face.ordinal();
-        }
-        return output;
-    }
-
-	/*@OnlyIn(Dist.CLIENT)
-	public List<String> listContents(final List<String> details) {
-		final HashMap<Integer, Integer> states = new HashMap<>();
-		final HashMap<String, Integer> contents = new HashMap<>();
-
-		final BitIterator bi = new BitIterator();
-		while ( bi.hasNext() )
-		{
-			final int state = bi.getNext( this );
-			if ( state == 0 )
-			{
-				continue;
-			}
-
-			Integer count = states.fromName( state );
-
-			if ( count == null )
-			{
-				count = 1;
-			}
-			else
-			{
-				count++;
-			}
-
-			states.put( state, count );
-		}
-
-		for ( final Entry<Integer, Integer> e : states.entrySet() )
-		{
-			final String name = null; //TODO ItemChiseledBit.getBitTypeName( ItemChiseledBit.createStack( e.getKey(), 1, false ) );
-
-			if ( name == null )
-			{
-				continue;
-			}
-
-			Integer count = contents.fromName( name );
-
-			if ( count == null )
-			{
-				count = e.getValue();
-			}
-			else
-			{
-				count += e.getValue();
-			}
-
-			contents.put( name, count );
-		}
-
-		if ( contents.isEmpty() )
-		{
-			details.add("Empty");
-		}
-
-		for ( final Entry<String, Integer> e : contents.entrySet() )
-		{
-			details.add( new StringBuilder().append( e.getValue() ).append( ' ' ).append( e.getKey() ).toString() );
-		}
-
-		return details;
-	}*/
-
-    /**
      * Builds a blob from a byte array.
      */
-    public void blobFromBytes(final byte[] bytes) throws IOException {
+    public void blobFromBytes(final byte[] bytes) {
         try {
             if (bytes.length < 1) {
                 throw new RuntimeException("Unable to load VoxelBlob: length of data was 0");
@@ -523,61 +420,6 @@ public final class VoxelBlob implements IVoxelSrc {
             throw new RuntimeException("Unable to load VoxelBlob", x);
         }
     }
-
-    //--- FILTERING ---
-	/*
-	public boolean filterFluids(
-			final boolean wantsFluids )
-	{
-		boolean hasValues = false;
-
-		for ( int x = 0; x < ARRAY_SIZE; x++ )
-		{
-			final int ref = values[x];
-			if ( ref == 0 )
-			{
-				continue;
-			}
-
-			if ( fluidFilterState.fromName( ref & 0xffff ) != wantsFluids )
-			{
-				values[x] = 0;
-			}
-			else
-			{
-				hasValues = true;
-			}
-		}
-
-		return hasValues;
-	}*/
-    //TODO add a new filter method which returns only one voxel type
-	/*public boolean filter(
-			final BlockRenderLayer layer )
-	{
-		final BitSet layerFilterState = layerFilters.fromName( layer );
-		boolean hasValues = false;
-
-		for(int x = 0; x < ARRAY_SIZE; x++)
-		{
-			final int ref = values[x];
-			if ( ref == 0 )
-			{
-				continue;
-			}
-
-			if ( !layerFilterState.fromName( ref ) )
-			{
-				values[x] = 0;
-			}
-			else
-			{
-				hasValues = true;
-			}
-		}
-
-		return hasValues;
-	}*/
 
     //--- SERIALIZATION ---
 

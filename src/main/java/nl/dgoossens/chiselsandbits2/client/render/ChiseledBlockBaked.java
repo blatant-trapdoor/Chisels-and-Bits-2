@@ -29,10 +29,8 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class ChiseledBlockBaked extends BaseBakedBlockModel {
-    public static final float PIXELS_PER_BLOCK = 16.0f;
     private final static int[][] faceVertMap = new int[6][4];
     private final static float[][][] quadMapping = new float[6][4][6];
-    private final static IBakedModel MISSING_MODEL = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModelManager().getMissingModel();
 
     // Analyze FaceBakery / makeBakedQuad and prepare static data for face gen.
     static {
@@ -97,7 +95,6 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
     }
 
     private VertexFormat format;
-    private TextureAtlasSprite sprite;
 
     // keep memory requirements low by using arrays.
     private BakedQuad[] up;
@@ -108,29 +105,23 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
     private BakedQuad[] west;
     private BakedQuad[] generic;
 
-    private ChiseledBlockBaked() {
-    }
-
-    public ChiseledBlockBaked(final int primaryBlock, final VoxelBlobStateReference data, final ModelRenderState mrs, final VertexFormat format) {
+    public ChiseledBlockBaked(final VoxelBlobStateReference data, final ModelRenderState mrs, final VertexFormat format) {
         this.format = format;
-        IBakedModel originalModel = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(BitUtil.getBlockState(primaryBlock));
+        if(data == null) return;
 
-        //Do we have data and is there a model for the primary block type.
-        if (!MISSING_MODEL.equals(originalModel) && data != null) {
-            final VoxelBlob vb = data.getVoxelBlob();
-            if (vb != null) {
-                final ChiseledModelBuilder builder = new ChiseledModelBuilder();
-                generateFaces(builder, vb, mrs);
+        final VoxelBlob vb = data.getVoxelBlob();
+        if (vb != null) {
+            final ChiseledModelBuilder builder = new ChiseledModelBuilder();
+            generateFaces(builder, vb, mrs);
 
-                // convert from builder to final storage.
-                up = builder.getSide(Direction.UP);
-                down = builder.getSide(Direction.DOWN);
-                east = builder.getSide(Direction.EAST);
-                west = builder.getSide(Direction.WEST);
-                north = builder.getSide(Direction.NORTH);
-                south = builder.getSide(Direction.SOUTH);
-                generic = builder.getSide(null);
-            }
+            // convert from builder to final storage.
+            up = builder.getSide(Direction.UP);
+            down = builder.getSide(Direction.DOWN);
+            east = builder.getSide(Direction.EAST);
+            west = builder.getSide(Direction.WEST);
+            north = builder.getSide(Direction.NORTH);
+            south = builder.getSide(Direction.SOUTH);
+            generic = builder.getSide(null);
         }
     }
 
@@ -182,12 +173,6 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
         result[0] = (toX + leftX * d + upX * d) / 2;
         result[1] = (toY + leftY * d + upY * d) / 2;
         result[2] = (toZ + leftZ * d + upZ * d) / 2;
-    }
-
-    public static ChiseledBlockBaked createFromTexture(TextureAtlasSprite findTexture) {
-        ChiseledBlockBaked out = new ChiseledBlockBaked();
-        out.sprite = findTexture;
-        return out;
     }
 
     public List<BakedQuad> getList(final Direction side) {
@@ -411,15 +396,8 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
 
         if (visFace.visibleFace) {
             final Vec3i off = myFace.getDirectionVec();
-
-            return new FaceRegion(myFace,
-                    x * 2 + 1 + off.getX(),
-                    y * 2 + 1 + off.getY(),
-                    z * 2 + 1 + off.getZ(),
-                    visFace.state,
-                    visFace.isEdge);
+            return new FaceRegion(myFace, x * 2 + 1 + off.getX(), y * 2 + 1 + off.getY(), z * 2 + 1 + off.getZ(), visFace.state, visFace.isEdge);
         }
-
         return null;
     }
 
@@ -518,19 +496,6 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
 
     @Override
     public TextureAtlasSprite getParticleTexture() {
-        return sprite != null ? sprite : ChiselsAndBits2.getInstance().getClient().getMissingIcon();
-    }
-
-    public int faceCount() {
-        int count = getList(null).size();
-        for (final Direction f : Direction.values())
-            count += getList(f).size();
-
-        return count;
-    }
-
-    public ChiseledBlockBaked setSprite(TextureAtlasSprite findTexture) {
-        sprite = findTexture;
-        return this;
+        return null;
     }
 }

@@ -41,9 +41,10 @@ public class BackgroundRenderer implements Callable<Tessellator> {
     }
 
     @Override
-    public Tessellator call() throws Exception {
+    public Tessellator call() {
         Tessellator tessellator = null;
         try {
+            long t = System.currentTimeMillis();
             do {
                 do {
                     final CBTessellatorRefHold holder = previousTessellators.poll();
@@ -79,16 +80,12 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                     final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
                     if (!model.isEmpty()) {
                         blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, RAND, RAND.nextLong(), tx.getModelData());
-
-                        if (Thread.interrupted()) {
-                            buffer.finishDrawing();
-                            submitTessellator(tessellator);
-                            return null;
-                        }
+                        if (Thread.interrupted()) break;
                     }
                 }
             }
 
+            System.out.println("Took "+(System.currentTimeMillis()-t)+" ms to build chunk.");
             if (Thread.interrupted()) {
                 buffer.finishDrawing();
                 submitTessellator(tessellator);

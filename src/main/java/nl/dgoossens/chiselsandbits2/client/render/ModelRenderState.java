@@ -63,7 +63,29 @@ public class ModelRenderState {
             case WEST:
                 west = value;
                 break;
-            default:
+        }
+    }
+    
+    public void remove(final Direction side) {
+        switch (side) {
+            case DOWN:
+                down = null;
+                break;
+            case EAST:
+                east = null;
+                break;
+            case NORTH:
+                north = null;
+                break;
+            case SOUTH:
+                south = null;
+                break;
+            case UP:
+                up = null;
+                break;
+            case WEST:
+                west = null;
+                break;
         }
     }
 }

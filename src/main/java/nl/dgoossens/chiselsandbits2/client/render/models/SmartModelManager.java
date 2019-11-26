@@ -30,13 +30,11 @@ public class SmartModelManager {
         ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
         event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getRegistryName(), ""), smartModel);
         event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getRegistryName(), "inventory"), smartModel);
-        CacheType.DEFAULT.register(smartModel);
 
         //Morphing Bit
         MorphingBitSmartModel morphingModel = new MorphingBitSmartModel();
         event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getItems().MORPHING_BIT.getRegistryName(), ""), morphingModel);
         event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getItems().MORPHING_BIT.getRegistryName(), "inventory"), morphingModel);
-        CacheType.DEFAULT.register(morphingModel);
 
         CacheType.DEFAULT.register(new ModelUtil());
     }

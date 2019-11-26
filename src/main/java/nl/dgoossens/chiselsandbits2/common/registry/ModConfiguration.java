@@ -8,8 +8,7 @@ public class ModConfiguration {
 
     // --- CLIENT VALUES ---
     public ForgeConfigSpec.IntValue maxMillisecondsUploadingPerFrame;
-    public ForgeConfigSpec.IntValue dynamicMaxConcurrentTessalators;
-    public ForgeConfigSpec.IntValue dynamicModelFaceCount;
+    public ForgeConfigSpec.IntValue dynamicMaxConcurrentTesselators;
 
     public ForgeConfigSpec.DoubleValue radialMenuVolume;
     public ForgeConfigSpec.BooleanValue enableToolbarIcons;
@@ -68,13 +67,9 @@ public class ModConfiguration {
                     .comment("How many milliseconds the client can spend uploading models each frame")
                     .defineInRange("maxMillisecondsUploadingPerFrame", 15, 1, 1000);
 
-            dynamicMaxConcurrentTessalators = builder
+            dynamicMaxConcurrentTesselators = builder
                     .comment("How many block models can fromName rendered at the same time. This will automatically be set to 2 if less than 1256 MB in memory is detected.")
-                    .defineInRange("dynamicMaxConcurrentTessalators", 32, 1, 256);
-
-            dynamicModelFaceCount = builder
-                    .comment("The maximum amount of quads a dynamic model can contain")
-                    .defineInRange("dynamicModelFaceCount", 40, 1, 256);
+                    .defineInRange("dynamicMaxConcurrentTesselators", 32, 1, 256);
 
             builder.pop();
 
