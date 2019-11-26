@@ -17,6 +17,7 @@ public enum ItemModeType {
     WRENCH,
     BLUEPRINT,
     MALLET,
+    CHISELED_BLOCK,
 
     //Dynamic Type
     SELECTED,
@@ -31,7 +32,7 @@ public enum ItemModeType {
         if (this == SELECTED)
             return item.getCapability(StorageCapabilityProvider.STORAGE).map(s -> s.listTypesAsItemModes(item.getItem())).orElse(new ArrayList<>());
         if (cache == null)
-            cache = Stream.of(ItemMode.values()).filter(f -> f.name().startsWith(name())).collect(Collectors.toList());
+            cache = Stream.of(ItemMode.values()).filter(f -> f.getType() == this).collect(Collectors.toList());
         return cache;
     }
 

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
@@ -45,7 +44,6 @@ import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
-import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -85,6 +83,7 @@ public class ClientSideHelper {
     protected BlockPos previousPartial;
     protected ItemStack previousItem;
     protected IntegerBox modelBounds;
+    protected boolean previousSilhoutte;
 
     /**
      * Cleans up some data when a player leaves the current save game.
@@ -491,30 +490,46 @@ public class ClientSideHelper {
             if (!currentItem.hasTag()) return;
             BlockPos offset = ((BlockRayTraceResult) mop).getPos();
 
-            //TODO allow for ghost showing merge options
-            boolean canMerge = false;
-            //TODO determine if it can merge
-            //If you can't place it we render it in red.
-            boolean isPlaceable = ChiselUtil.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
-
-            if (player.isSneaking()) {
+            //TODO re-enable offgrid placement mode
+            if (false && player.isSneaking()) {
                 final BitLocation bl = new BitLocation((BlockRayTraceResult) mop, true, BitOperation.PLACE);
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !isPlaceable);
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !isPlaceable(player, world, offset, face));
             } else {
                 //If we can already place where we're looking we don't have to move.
-                if(!canMerge && !isPlaceable)
+                //On grid we don't do this.
+                if(ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_GRID || (!(world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !isPlaceable(player, world, offset, face)))
                     offset = offset.offset(((BlockRayTraceResult) mop).getFace());
 
-                isPlaceable = ChiselUtil.isBlockReplaceable(player, world, offset, face, false) || (canMerge && world.getTileEntity(offset) instanceof ChiseledBlockTileEntity);
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, offset, face, BlockPos.ZERO, partialTicks, isPlaceable);
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, world, offset, face, BlockPos.ZERO, partialTicks, !isPlaceable(player, world, offset, face));
             }
         }
+    }
+
+    private boolean isPlaceable(final PlayerEntity player, final World world, final BlockPos pos, final Direction face) {
+        if(ChiselUtil.isBlockReplaceable(player, world, pos, face, false)) return true;
+        switch((ItemMode) ItemModeUtil.getChiseledBlockMode(player)) {
+            case CHISELED_BLOCK_GRID:
+                return false;
+            default:
+                return world.getTileEntity(pos) instanceof ChiseledBlockTileEntity;
+        }
+    }
+
+    /**
+     * Forces the placement ghost to get re-rendered, called when the chiseled block item mode is changed.
+     */
+    public void resetPlacementGhost() {
+        ghostCache = null;
+        previousPartial = null;
+        previousPosition = null;
+        previousItem = null;
+        previousSilhoutte = false;
     }
 
     /**
      * Shows the ghost of the chiseled block in item at the position offset by the partial in bits.
      */
-    protected void showGhost(ItemStack item, BlockPos pos, Direction face, BlockPos partial, float partialTicks, boolean isPlaceable) {
+    protected void showGhost(ItemStack item, World world, BlockPos pos, Direction face, BlockPos partial, float partialTicks, boolean silhoutte) {
         final PlayerEntity player = Minecraft.getInstance().player;
         IBakedModel model = null;
         if(ghostCache != null && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial))
@@ -523,11 +538,34 @@ public class ClientSideHelper {
             previousPosition = pos;
             previousPartial = partial;
             previousItem = item;
+            previousSilhoutte = silhoutte;
+
+            final TileEntity te = world.getTileEntity(pos);
 
             final NBTBlobConverter c = new NBTBlobConverter();
             c.readChiselData(item.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
             VoxelBlob blob = c.getVoxelBlob();
+            boolean modified = false;
+            if(te instanceof ChiseledBlockTileEntity) {
+                VoxelBlob b = ((ChiseledBlockTileEntity) te).getBlob();
+                switch ((ItemMode) ItemModeUtil.getChiseledBlockMode(player)) {
+                    case CHISELED_BLOCK_MERGE:
+                        blob.intersect(b);
+                        modified = true;
+                        break;
+                    case CHISELED_BLOCK_FIT:
+                        if(!blob.canMerge(b)) {
+                            previousSilhoutte = true; //Set to true if we can't place here after all!
+                        }
+                        break;
+                }
+            }
             modelBounds = blob.getBounds();
+
+            if(modified) {
+                c.setBlob(blob);
+                item = c.getItemStack();
+            }
 
             model = Minecraft.getInstance().getItemRenderer().getItemModelWithOverrides(item, player.getEntityWorld(), player);
             ghostCache = model;
@@ -546,7 +584,7 @@ public class ClientSideHelper {
             GlStateManager.translated(t.getX() * fullScale, t.getY() * fullScale, t.getZ() * fullScale);
         }
 
-        RenderingAssistant.renderGhostModel(model, player.world, pos, !isPlaceable);
+        RenderingAssistant.renderGhostModel(model, player.world, pos, previousSilhoutte, previousSilhoutte || ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_OVERLAP);
         GlStateManager.popMatrix();
     }
 

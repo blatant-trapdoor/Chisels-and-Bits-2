@@ -266,8 +266,6 @@ public class ChiseledBlockTileEntity extends TileEntity {
      * Set the voxel blob to new data.
      */
     public void setBlob(final VoxelBlob vb) {
-        //TODO Replace with normal block if this voxel blob is made up of solely one blockstate/fluidstate.
-
         setVoxelReference(new VoxelBlobStateReference(vb.blobToBytes(VoxelVersions.getDefault())));
         setPrimaryBlock(vb.getMostCommonStateId()); //We only want this to every be a blockstate.
         markDirty();

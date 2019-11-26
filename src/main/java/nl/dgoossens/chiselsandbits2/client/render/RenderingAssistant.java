@@ -168,7 +168,7 @@ public class RenderingAssistant {
         tessellator.draw();
     }
 
-    public static void renderGhostModel(final IBakedModel baked, final World worldObj, final BlockPos blockPos, final boolean notPlaceable) {
+    public static void renderGhostModel(final IBakedModel baked, final World worldObj, final BlockPos blockPos, final boolean notPlaceable, final boolean expand) {
         GlStateManager.bindTexture(Minecraft.getInstance().getTextureMap().getGlTextureId());
         GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
         GlStateManager.alphaFunc(516, 0.1F);
@@ -178,6 +178,11 @@ public class RenderingAssistant {
         GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
         ChiseledTintColor colorProvider = new ChiseledBlockColor(worldObj, blockPos); //Pass the location so grass/water is tinted properly
+        if(expand) {
+            //Expand just a slight bit larger so no z-fighting occurs
+            GlStateManager.scaled(1.01 ,1.01, 1.01);
+            GlStateManager.translated(-0.005, -0.005, -0.005);
+        }
         renderModel(baked, colorProvider, notPlaceable);
         GlStateManager.disableBlend();
     }

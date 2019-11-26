@@ -24,7 +24,7 @@ public class ModItems {
     public Item PATTERN;
     public Item SAW;
     public final Item TAPE_MEASURE = new TapeMeasureItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
-    public Item WRENCH;
+    public Item WRENCH = new WrenchItem(new Item.Properties().maxDamage(1536).group(ModItemGroups.CHISELS_AND_BITS2));
     public Item MALLET;
     public Item BLUEPRINT;
     public final Item MORPHING_BIT = new MorphingBitItem(new Item.Properties().group(ModItemGroups.CHISELS_AND_BITS2));
@@ -79,7 +79,6 @@ public class ModItems {
         if(ChiselsAndBits2.showUnfinishedFeatures()) {
             PATTERN = new PatternItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
             SAW = new SawItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
-            WRENCH = new WrenchItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
             MALLET = new MalletItem(new Item.Properties().maxDamage(238).group(ModItemGroups.CHISELS_AND_BITS2));
             BLUEPRINT = new BlueprintItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
             PATTERN_BOOK = new Item(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));

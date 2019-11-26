@@ -205,6 +205,9 @@ public class CustomItemRenderer {
         int j = MathHelper.hsvToRGB(Math.max(0.0F, (float) (1.0F - health)) / 3.0F, 1.0F, 1.0F);
         this.draw(bufferbuilder, xPosition + 2, yPosition + 13, 13, 2, 0, 0, 0);
         this.draw(bufferbuilder, xPosition + 2, yPosition + 13, i, 1, j >> 16 & 255, j >> 8 & 255, j & 255);
+
+        GlStateManager.enableLighting();
+        GlStateManager.enableTexture();
     }
 
     //Draw with alpha support.

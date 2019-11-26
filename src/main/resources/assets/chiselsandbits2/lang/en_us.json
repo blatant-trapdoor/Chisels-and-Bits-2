@@ -65,7 +65,7 @@
   "item.chiselsandbits2.acacia_palette": "Acacia Palette",
 
   "block.chiselsandbits2.chiseled_block": "Chiseled Block",
-  "item.chiselsandbits2.chiseled_block.help": "Sneak to place off-grid",
+  "item.chiselsandbits2.chiseled_block.help": "Sneak to place off-grid|$ to open mode options",
 
   "stat.chiselsandbits2.bits_chiseled": "Bits Chiseled",
 
@@ -99,6 +99,10 @@
   "general.chiselsandbits2.itemmode.rotateccw": "Rotate Counterclockwise",
   "general.chiselsandbits2.itemmode.nudge_bit": "Nudge Bit",
   "general.chiselsandbits2.itemmode.nudge_block": "Nudge Block",
+  "general.chiselsandbits2.itemmode.fit": "Fit",
+  "general.chiselsandbits2.itemmode.grid": "Grid",
+  "general.chiselsandbits2.itemmode.overlap": "Overlap",
+  "general.chiselsandbits2.itemmode.merge": "Merge",
 
   "general.chiselsandbits2.itemmode.single.hotkey": "Chisel - Single Bit",
   "general.chiselsandbits2.itemmode.snap2.hotkey": "Chisel - Grid Snapped 1/2 Size Cube",
@@ -117,9 +121,6 @@
   "general.chiselsandbits2.itemmode.additive.hotkey": "Pattern - Additive",
   "general.chiselsandbits2.itemmode.placement.hotkey": "Pattern - Placement",
   "general.chiselsandbits2.itemmode.impose.hotkey": "Pattern - Impose",
-  "general.chiselsandbits2.itemmode.bit.hotkey": "Tape Measure - Bit",
-  "general.chiselsandbits2.itemmode.block.hotkey": "Tape Measure - Block",
-  "general.chiselsandbits2.itemmode.distance.hotkey": "Tape Measure - Distance",
   "general.chiselsandbits2.itemmode.rotate.hotkey": "Wrench - Rotate",
   "general.chiselsandbits2.itemmode.rotateccw.hotkey": "Wrench - Rotate Counterclockwise",
   "general.chiselsandbits2.itemmode.nudge_bit.hotkey": "Wrench - Nudge Bit",
@@ -128,7 +129,6 @@
   "general.chiselsandbits2.menuaction.undo": "Undo",
   "general.chiselsandbits2.menuaction.redo": "Redo",
   "general.chiselsandbits2.menuaction.roll_x": "Rotate X Axis",
-  "general.chiselsandbits2.menuaction.roll_y": "Rotate Y Axis",
   "general.chiselsandbits2.menuaction.roll_z": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.place": "Place",
   "general.chiselsandbits2.menuaction.swap": "Swap",

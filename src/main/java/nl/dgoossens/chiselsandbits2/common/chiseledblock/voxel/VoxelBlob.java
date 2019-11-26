@@ -194,6 +194,17 @@ public final class VoxelBlob implements IVoxelSrc {
     }
 
     /**
+     * Returns a variant of this voxel blob with all bits removed where second
+     * has a bit.
+     */
+    public VoxelBlob intersect(final VoxelBlob second) {
+        for (int x = 0; x < values.length; ++x)
+            if (second.values[x] != AIR_BIT) values[x] = AIR_BIT;
+
+        return this;
+    }
+
+    /**
      * Get the position of the center of the shape.
      */
     public BlockPos getCenter() {

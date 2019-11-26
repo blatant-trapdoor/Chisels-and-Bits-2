@@ -39,7 +39,20 @@ public enum ItemMode implements IItemMode {
     BLUEPRINT_UNKNOWN,
 
     MALLET_UNKNOWN,
+
+    CHISELED_BLOCK_GRID, //Can't place chiseled block in spaces that already contain chiseled blocks
+    CHISELED_BLOCK_FIT, //Can only place chiseled blocks if there is no overlap with existing blocks
+    CHISELED_BLOCK_OVERLAP, //Place chiseled blocks and replace existing bits
+    CHISELED_BLOCK_MERGE, //Merge chiseled blocks and don't place bits in spots where bits already exist
     ;
+
+    private ItemModeType type;
+    private String typelessName;
+    ItemMode() {
+        //Hardcore the chiseled block as it starts with CHISEL which can mess up
+        type = name().startsWith("CHISELED_BLOCK") ? ItemModeType.CHISELED_BLOCK : Stream.of(ItemModeType.values()).filter(f -> name().startsWith(f.name())).findAny().orElse(ItemModeType.CHISEL);
+        typelessName = name().substring(getType().name().length() + 1).toLowerCase();
+    }
 
     /**
      * Get the localized key from this Item Mode.
@@ -52,7 +65,7 @@ public enum ItemMode implements IItemMode {
      * Return this enum's name() but without the type in front.
      */
     public String getTypelessName() {
-        return name().substring(getType().name().length() + 1).toLowerCase();
+        return typelessName;
     }
 
     /**
@@ -66,15 +79,14 @@ public enum ItemMode implements IItemMode {
      * Get this item mode's type. (associated with name())
      */
     public ItemModeType getType() {
-        return Stream.of(ItemModeType.values()).filter(f -> name().startsWith(f.name())).findAny().orElse(ItemModeType.CHISEL);
+        return type;
     }
 
     /**
      * Returns whether or not this mode has an icon.
      */
     public boolean hasIcon() {
-        //Unknown's have no icons.
-        return this != BLUEPRINT_UNKNOWN && this != MALLET_UNKNOWN;
+        return this != MALLET_UNKNOWN && this != BLUEPRINT_UNKNOWN;
     }
 
     /**
@@ -87,6 +99,10 @@ public enum ItemMode implements IItemMode {
             case TAPEMEASURE_DISTANCE:
             case BLUEPRINT_UNKNOWN:
             case MALLET_UNKNOWN:
+            case CHISELED_BLOCK_FIT: //Can't hotkey these as they are global so you won't be switching them often, they are more for preference
+            case CHISELED_BLOCK_GRID:
+            case CHISELED_BLOCK_MERGE:
+            case CHISELED_BLOCK_OVERLAP:
                 return false;
             default:
                 return true;

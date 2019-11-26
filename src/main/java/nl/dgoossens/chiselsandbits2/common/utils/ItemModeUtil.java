@@ -23,9 +23,11 @@ import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.client.ClientSideHelper;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheType;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
@@ -42,6 +44,7 @@ import static nl.dgoossens.chiselsandbits2.api.ItemMode.*;
  */
 public class ItemModeUtil implements CacheClearable {
     private static Map<UUID, SelectedItemMode> selected;
+    private static Map<UUID, IItemMode> chiseledBlockMode;
 
     static {
         CacheType.ROUTINE.register(new ItemModeUtil());
@@ -49,6 +52,14 @@ public class ItemModeUtil implements CacheClearable {
     public ItemModeUtil() {
         if(selected != null) throw new RuntimeException("Can't initialise ItemModeUtil twice!");
         selected = new HashMap<>();
+        chiseledBlockMode = new HashMap<>();
+    }
+
+    /**
+     * Get the chiseled block mode a given player is using.
+     */
+    public static IItemMode getChiseledBlockMode(final PlayerEntity player) {
+        return chiseledBlockMode.getOrDefault(player.getUniqueID(), CHISELED_BLOCK_FIT);
     }
 
     /**
@@ -64,6 +75,8 @@ public class ItemModeUtil implements CacheClearable {
 
         //Update stack on client
         setMode(player, item, newMode, !SelectedItemMode.isNone(newMode)); //Don't update timestamp if this is empty.
+        if(newMode.getType() == ItemModeType.CHISELED_BLOCK)
+            ChiselsAndBits2.getInstance().getClient().resetPlacementGhost();
 
         //Show item mode change in hotbar
         if(packet.isValid(player))
@@ -210,6 +223,7 @@ public class ItemModeUtil implements CacheClearable {
         return (stack.getItem() instanceof BitBagItem) ||
                 (stack.getItem() instanceof BitBeakerItem) ||
                 (stack.getItem() instanceof PaletteItem) ? SelectedItemMode.NONE :
+                (stack.getItem() instanceof ChiseledBlockItem) ? CHISELED_BLOCK_FIT :
                 (stack.getItem() instanceof ChiselUtil.BitModifyItem) ? CHISEL_SINGLE :
                         (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
                                 (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
@@ -264,6 +278,10 @@ public class ItemModeUtil implements CacheClearable {
      * Set the mode of this itemstack to this enum value.
      */
     public static void setMode(final PlayerEntity player, final ItemStack stack, final IItemMode mode, final boolean updateTimestamp) {
+        if (mode.getType() == ItemModeType.CHISELED_BLOCK) {
+            chiseledBlockMode.put(player.getUniqueID(), mode);
+            return;
+        }
         if (stack != null) {
             stack.setTagInfo("mode", new StringNBT(mode.getName()));
             stack.setTagInfo("isDynamic", new ByteNBT(mode.getType().isDynamic() ? (byte) 1 : (byte) 0));
@@ -330,7 +348,7 @@ public class ItemModeUtil implements CacheClearable {
             }
             selected.put(player.getUniqueID(), res);
         }
-        return selected.get(player.getUniqueID());
+        return selected.getOrDefault(player.getUniqueID(), SelectedItemMode.NONE);
     }
 
     /**
@@ -392,9 +410,9 @@ public class ItemModeUtil implements CacheClearable {
                 //Client
                 selected.remove(Minecraft.getInstance().player.getUniqueID());
             } else {
-                //LAN
-                //TODO This should work right? Try this on LAN worlds.
-                selected.remove(Minecraft.getInstance().player.getUniqueID());
+                //LAN (also client as somehow the cilent thread doesn't do jack short.
+                if(Minecraft.getInstance().player != null)
+                    selected.remove(Minecraft.getInstance().player.getUniqueID());
             }
         }
     }

@@ -117,13 +117,14 @@ public class RadialMenu extends Screen {
         GlStateManager.translatef(0.0F, 0.0F, 5.0F);
         GlStateManager.color4f(1, 1, 1, 1.0f);
         GlStateManager.enableTexture();
-        GlStateManager.disableBlend();
-        GlStateManager.enableAlphaTest();
         GlStateManager.bindTexture(Minecraft.getInstance().getTextureMap().getGlTextureId());
 
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
         renderIcons(middle_x, middle_y, buffer, true);
         tessellator.draw();
+
+        GlStateManager.enableAlphaTest();
+        GlStateManager.disableBlend();
 
         //Render the overlays, there's no buffer here. This renders the texts and itemstacks.
         renderOverlay(middle_x, middle_y, null);
@@ -524,7 +525,7 @@ public class RadialMenu extends Screen {
         buttons.add(new MenuButton(MenuAction.REDO, TEXT_DISTANCE, 4, Direction.EAST));
 
         ItemModeType tool = ItemModeUtil.getItemMode(getMinecraft().player.getHeldItemMainhand()).getType();
-        if (tool == ItemModeType.PATTERN) {
+        if (tool == ItemModeType.PATTERN || tool == ItemModeType.CHISELED_BLOCK) {
             buttons.add(new MenuButton(MenuAction.ROLL_X, -TEXT_DISTANCE - 18, -20, Direction.WEST));
             buttons.add(new MenuButton(MenuAction.ROLL_Z, -TEXT_DISTANCE - 18, 4, Direction.WEST));
         }
