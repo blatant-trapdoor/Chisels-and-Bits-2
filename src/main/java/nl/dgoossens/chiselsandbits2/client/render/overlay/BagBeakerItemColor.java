@@ -15,7 +15,6 @@ public class BagBeakerItemColor implements IItemColor {
     @Override
     public int getColor(ItemStack stack, int tint) {
         if (tint != layer) return -1;
-        BagBeakerColours colour = ChiselsAndBits2.getInstance().getItems().getBagBeakerColour(stack);
-        return colour != null ? colour.getColour() : -1;
+        return ChiselsAndBits2.getInstance().getItems().getBagBeakerColour(stack);
     }
 }

@@ -16,9 +16,4 @@ public interface ChiselsAndBitsAPI {
      * chiseled block.
      */
     Optional<BitAccess> getBitAccess(final World world, final BlockPos pos);
-
-    /**
-     * Get the default block slot used by all chisels & bit blocks.
-     */
-    //IBlockSlot getChiselsAndBitsSlot(); //TODO when the multipart API drops all C&B blocks should be put in their own slot
 }

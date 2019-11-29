@@ -126,13 +126,6 @@ public class ChiseledBlock extends Block implements BaseBlock {
         return BitUtil.getBlockState(((ChiseledBlockTileEntity) te).getPrimaryBlock());
     }
 
-    /*
-    @Override
-    public IBlockSlot getSlot(BlockState state) {
-        return ChiselsAndBits2.getAPI().getChiselsAndBitsSlot();
-    }
-    */
-
     //-- HANDLE BLOCK DROPS, COPIED FROM BLOCKSHULKERBOX.JAVA ---
     /**
      * Called before the Block is set to air in the world. Called regardless of if the player's tool can actually collect

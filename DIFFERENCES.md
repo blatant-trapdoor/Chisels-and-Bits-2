@@ -20,7 +20,6 @@ The following features were added/changed in Chisels & Bits 2:
 * (originally suggested by weeryan17) A pattern book in which you can easily store your patterns and cycle between them.
 
 And the following features are planned but not implemented in any way yet:
-* Compatibility with the new multipart API in forge which will allow even more mods than ever before to be compatible with chisels & bits, for example being able to put power cables in the same space as C&B bits.
 * Finishing C&B's original 'Project Blueprint': (https://github.com/AlgorithmX2/Chisels-and-Bits/issues/337)
 * Patterns will be merged into a single item and they'll get some new functionality/modes.
 

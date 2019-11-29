@@ -179,6 +179,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
                     final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(16, 16, 16));
                     final FutureTask<Tessellator> newFuture = new FutureTask<>(new BackgroundRenderer(cache, chunkOffset, te.getChunk(te.getWorld()).getTileList()));
                     restartPool(); //Restart pool if need be
+                    System.out.println("Rebuilding... submitting to render thread.");
                     pool.submit(newFuture);
                     hasSubmitted = true;
 
@@ -195,7 +196,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
 
         //If we've scheduled the rendering this tick but this block is new. Instant render!
         //This avoids blinking blocks because background rendering doesn't get a model ready the first tick.
-        if (rc.hasFuture() && hasSubmitted && isOutdated) {
+        /*if (rc.hasFuture() && hasSubmitted && isOutdated) {
             try {
                 final Tessellator tess = rc.getFuture().get(50, TimeUnit.MILLISECONDS);
                 rc.resetFuture();
@@ -207,7 +208,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             } catch(Exception ex) {
                 rc.resetFuture();
             }
-        }
+        }*/
 
         //Only check this if this isn't new.
         if(!isOutdated && !rc.needsRebuilding()) {

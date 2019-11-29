@@ -13,8 +13,4 @@ public class ChiselsAndBitsAPIImpl implements ChiselsAndBitsAPI {
         if (ba.getNativeBlob() == null) return Optional.empty();
         return Optional.of(ba);
     }
-
-    /*public IBlockSlot getChiselsAndBitsSlot() {
-        return new BlockSlot().setRegistryName(ChiselsAndBits2.MOD_ID, "chiselslot");
-    }*/
 }

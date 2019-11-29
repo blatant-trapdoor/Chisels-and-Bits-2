@@ -125,14 +125,29 @@ public class ModItems {
     }
     
     /**
-     * Get the colour of the bit bag, we hijack MenuAction's colour values.
+     * Get the rgb colour of the bit bag.
      */
-    public BagBeakerColours getBagBeakerColour(final ItemStack stack) {
-        for(BagBeakerColours c : BagBeakerColours.values()) {
-            if(stack.getItem().equals(bags.get(c))) return c;
-            if(stack.getItem().equals(beakers.get(c))) return c;
+    public int getBagBeakerColour(final ItemStack stack) {
+        //Optimized the fudge out of this method because ItemColors get called every frame.
+        switch(stack.getItem().getRegistryName().getPath().toUpperCase()) {
+            case "WHITE_BIT_BAG": return 16383998;
+            case "ORANGE_BIT_BAG": return 16351261;
+            case "MAGENTA_BIT_BAG ": return 13061821;
+            case "LIGHT_BLUE_BIT_BAG ": return 3847130;
+            case "YELLOW_BIT_BAG ": return 16701501;
+            case "LIME_BIT_BAG ": return 8439583;
+            case "PINK_BIT_BAG ": return 15961002;
+            case "GRAY_BIT_BAG ": return 4673362;
+            case "LIGHT_GRAY_BIT_BAG ": return 10329495;
+            case "CYAN_BIT_BAG ": return 1481884;
+            case "PURPLE_BIT_BAG ": return 8991416;
+            case "BLUE_BIT_BAG ": return 3949738;
+            case "BROWN_BIT_BAG ": return 8606770;
+            case "GREEN_BIT_BAG ": return 6192150;
+            case "RED_BIT_BAG ": return 11546150;
+            case "BLACK_BIT_BAG ": return 1908001;
         }
-        return null;
+        return -1;
     }
 
     /**
