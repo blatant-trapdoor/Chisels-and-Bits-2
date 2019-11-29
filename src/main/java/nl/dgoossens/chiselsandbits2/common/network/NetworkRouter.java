@@ -12,7 +12,6 @@ import nl.dgoossens.chiselsandbits2.common.network.client.CSetMenuActionModePack
 import nl.dgoossens.chiselsandbits2.common.network.client.CUndoPacket;
 import nl.dgoossens.chiselsandbits2.common.network.server.SAddUndoStep;
 import nl.dgoossens.chiselsandbits2.common.network.server.SGroupMethod;
-import nl.dgoossens.chiselsandbits2.common.network.server.SRebuildChunkPacket;
 import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
 
 public class NetworkRouter {
@@ -36,7 +35,6 @@ public class NetworkRouter {
         HANDLER.registerMessage(disc++, SAddUndoStep.class, SAddUndoStep::encode, SAddUndoStep::decode, SAddUndoStep::handle);
         HANDLER.registerMessage(disc++, SGroupMethod.BeginGroup.class, SGroupMethod.BeginGroup::encode, SGroupMethod.BeginGroup::decode, SGroupMethod.BeginGroup::handle);
         HANDLER.registerMessage(disc++, SGroupMethod.EndGroup.class, SGroupMethod.EndGroup::encode, SGroupMethod.EndGroup::decode, SGroupMethod.EndGroup::handle);
-        HANDLER.registerMessage(disc++, SRebuildChunkPacket.class, SRebuildChunkPacket::encode, SRebuildChunkPacket::decode, SRebuildChunkPacket::handle);
     }
 
     /**

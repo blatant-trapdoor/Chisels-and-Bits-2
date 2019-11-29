@@ -58,19 +58,14 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         threadFactory = (r) -> {
             final Thread t = new Thread(r);
             t.setPriority(Thread.NORM_PRIORITY - 1);
-            t.setName("C&B Dynamic Render Thread");
+            t.setName("C&B2 Render Thread");
             return t;
         };
-        restartPool();
-    }
 
-    private void restartPool() {
-        if(pool == null || pool.isTerminated()) {
-            int processors = Runtime.getRuntime().availableProcessors();
-            if (ChiselUtil.isLowMemoryMode()) processors = 1;
-            pool = new ThreadPoolExecutor(1, processors, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(64), threadFactory);
-            pool.allowCoreThreadTimeOut(false);
-        }
+        int processors = Runtime.getRuntime().availableProcessors();
+        if (ChiselUtil.isLowMemoryMode()) processors = 1;
+        pool = new ThreadPoolExecutor(1, processors, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(64), threadFactory);
+        pool.allowCoreThreadTimeOut(false);
     }
 
     protected static int getMaxTessalators() {
@@ -166,56 +161,29 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             renderBreakingEffects(te, x, y, z, partialTicks, destroyStage);
             return;
         }
-        final RenderCache rc = te.getChunk(te.getWorld());
+        final TileChunk rc = te.getChunk(te.getWorld());
         final BlockPos chunkOffset = te.getChunk(te.getWorld()).chunkOffset();
-        boolean hasSubmitted = false;
-        boolean isOutdated = rc.isOutdated();
+
+        rc.validate();
 
         if (rc.needsRebuilding()) {
             //Rebuild!
             final int dynamicTess = getMaxTessalators();
             if (pendingTess.get() < dynamicTess && !rc.hasFuture()) {
+                System.out.println("Rebuilding "+te.getPos());
                 try {
-                    final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(16, 16, 16));
+                    final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE));
                     final FutureTask<Tessellator> newFuture = new FutureTask<>(new BackgroundRenderer(cache, chunkOffset, te.getChunk(te.getWorld()).getTileList()));
-                    restartPool(); //Restart pool if need be
-                    System.out.println("Rebuilding... submitting to render thread.");
-                    pool.submit(newFuture);
-                    hasSubmitted = true;
 
-                    rc.rebuild();
+                    pool.submit(newFuture);
                     rc.setFuture(newFuture);
+                    System.out.println("Set future for "+te.getPos());
                     pendingTess.incrementAndGet();
                     addFutureTracker(rc);
                 } catch (RejectedExecutionException err) {
                     err.printStackTrace();
-                    // Yar... ??
                 }
             }
-        }
-
-        //If we've scheduled the rendering this tick but this block is new. Instant render!
-        //This avoids blinking blocks because background rendering doesn't get a model ready the first tick.
-        /*if (rc.hasFuture() && hasSubmitted && isOutdated) {
-            try {
-                final Tessellator tess = rc.getFuture().get(50, TimeUnit.MILLISECONDS);
-                rc.resetFuture();
-                pendingTess.decrementAndGet();
-
-                uploadVBO(new UploadTracker(rc, tess));
-            } catch(TimeoutException timeout) {
-                addFutureTracker(rc);
-            } catch(Exception ex) {
-                rc.resetFuture();
-            }
-        }*/
-
-        //Only check this if this isn't new.
-        if(!isOutdated && !rc.needsRebuilding()) {
-            //Let the render tracker check if no neighbours changed somehow.
-            te.getRenderTracker().validate(te.getWorld(), te.getPos());
-            if(!te.getRenderTracker().isValid())
-                te.invalidate();
         }
 
         final GfxRenderState dl = rc.getRenderState();
@@ -234,7 +202,6 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             dl.render();
             unconfigureGLState();
             GL11.glPopMatrix();
-            te.getRenderTracker().setRendered();
         }
     }
 

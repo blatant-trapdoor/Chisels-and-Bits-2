@@ -7,8 +7,8 @@ import nl.dgoossens.chiselsandbits2.api.IStateRef;
  * An object storing references to all neighbouring blocks.
  */
 public class ModelRenderState {
-    // less objects/garbage to clean up, and less memory usage.
     private IStateRef north, south, east, west, up, down;
+    private boolean dirty = false;
 
     public ModelRenderState() {
     }
@@ -21,7 +21,35 @@ public class ModelRenderState {
             west = sides.west;
             up = sides.up;
             down = sides.down;
+            dirty = true;
         }
+    }
+
+    /**
+     * Returns true if dirty, calling this method
+     * resets the dirty flag.
+     */
+    public boolean isDirty() {
+        if(dirty) {
+            dirty = false;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Query the dirty state without modifying it.
+     */
+    public boolean queryDirty() {
+        return dirty;
+    }
+
+    /**
+     * Forcefully invalidates the render state. Should be used
+     * if the model itself changed but not its neighbours.
+     */
+    public void invalidate() {
+        dirty = true;
     }
 
     public IStateRef get(final Direction side) {
@@ -44,6 +72,7 @@ public class ModelRenderState {
     }
 
     public void put(final Direction side, final IStateRef value) {
+        if(get(side) != value) dirty = true;
         switch (side) {
             case DOWN:
                 down = value;
@@ -65,8 +94,27 @@ public class ModelRenderState {
                 break;
         }
     }
-    
+
+    public boolean has(final Direction side) {
+        switch (side) {
+            case DOWN:
+                return down != null;
+            case EAST:
+                return east != null;
+            case NORTH:
+                return north != null;
+            case SOUTH:
+                return south != null;
+            case UP:
+                return up != null;
+            case WEST:
+                return west != null;
+        }
+        return false;
+    }
+
     public void remove(final Direction side) {
+        if(has(side)) dirty = true;
         switch (side) {
             case DOWN:
                 down = null;

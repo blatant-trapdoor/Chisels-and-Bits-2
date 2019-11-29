@@ -12,22 +12,12 @@ public class RenderCache {
     private FutureTask<Tessellator> future = null;
     private GfxRenderState vboRenderer = null; //if this is null the RenderCache is new.
     private GfxRenderState oldRenderer = null; //To use if the vboRenderer isn't ready yet.
-    private boolean isOutdated = true;
 
     /**
      * Returns whether or not this cache needs to be re-rendered.
      */
     public boolean needsRebuilding() {
         return vboRenderer == null;
-    }
-
-    /**
-     * Causes chunk to get rebuilt immediately, should be used when a new
-     * block in the chunk has been changed to a chiseled block.
-     */
-    public void requestImmediateRebuild() {
-        isOutdated = true;
-        rebuild();
     }
 
     /**
@@ -41,7 +31,7 @@ public class RenderCache {
      * Sets the new render state.
      */
     public void setRenderState(GfxRenderState state) {
-        if(needsRebuilding() && state == null) return; //Protect the oldRenderer if it's taking some time to get the new one.
+        if(vboRenderer == null && state == null) return; //Protect the oldRenderer if it's taking some time to get the new one.
         oldRenderer = vboRenderer;
         vboRenderer = state;
     }
@@ -84,20 +74,10 @@ public class RenderCache {
     }
 
     /**
-     * Returns whether or not this is the first time isOutdated has been called.
-     */
-    public boolean isOutdated() {
-        if(!isOutdated) return false;
-        isOutdated = false;
-        return true;
-    }
-
-    /**
      * Rebuild can be called when this tile needs to be re-rendered.
      * This will destroy the current renderer and it's data.
      */
     public void rebuild() {
-        if(needsRebuilding() && future == null) return;
         setRenderState(null);
         if (future != null) future.cancel(true);
         future = null;

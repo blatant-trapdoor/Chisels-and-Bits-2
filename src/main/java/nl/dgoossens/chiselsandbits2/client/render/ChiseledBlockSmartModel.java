@@ -74,9 +74,9 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
             return NULL_MODEL;
         }
         //Invalidate this cache if the render tracker changed
-        if (renderTracker != null && !renderTracker.isValid()) {
+        if (renderTracker != null && !renderTracker.isValid())
             modelCache.invalidate(mrs);
-        }
+
         if (format == getModelFormat())
             return modelCache.get(mrs, () -> new ChiseledBlockBaked(reference, mrs, format));
 

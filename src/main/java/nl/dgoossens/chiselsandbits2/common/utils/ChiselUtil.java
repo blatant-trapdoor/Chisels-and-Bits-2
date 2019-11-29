@@ -22,13 +22,11 @@ import nl.dgoossens.chiselsandbits2.api.ItemMode;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
-import nl.dgoossens.chiselsandbits2.common.network.server.SRebuildChunkPacket;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -160,9 +158,6 @@ public class ChiselUtil {
                     if (fluid.isEmpty()) te.fillWith(VoxelBlob.AIR_BIT);
                     else te.fillWith(BitUtil.getFluidId(fluid));
                 }
-
-                if(player instanceof ServerPlayerEntity)
-                    ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SRebuildChunkPacket(pos), (ServerPlayerEntity) player);
             }
         }
     }
