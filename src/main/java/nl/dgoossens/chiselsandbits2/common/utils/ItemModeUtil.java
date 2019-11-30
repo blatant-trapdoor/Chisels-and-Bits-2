@@ -287,7 +287,8 @@ public class ItemModeUtil implements CacheClearable {
             stack.setTagInfo("isDynamic", new ByteNBT(mode.getType().isDynamic() ? (byte) 1 : (byte) 0));
             stack.setTagInfo("dynamicId", new IntNBT(mode.getDynamicId()));
             if(updateTimestamp && mode.getType().isDynamic())
-                stack.setTagInfo("timestamp", new LongNBT(System.currentTimeMillis()));
+                //Reset timestamp to 0 if this is none.
+                stack.setTagInfo("timestamp", new LongNBT(SelectedItemMode.isNone(mode) ? 0 : System.currentTimeMillis()));
         }
 
         selected.remove(player.getUniqueID());
@@ -330,7 +331,7 @@ public class ItemModeUtil implements CacheClearable {
      */
     public static SelectedItemMode getGlobalSelectedItemMode(final PlayerEntity player) {
         if(!selected.containsKey(player.getUniqueID())) {
-            long stamp = 0;
+            long stamp = -1;
             SelectedItemMode res = selected.getOrDefault(player.getUniqueID(), SelectedItemMode.NONE);
 
             //Scan all storage containers for the most recently selected one.
@@ -362,7 +363,7 @@ public class ItemModeUtil implements CacheClearable {
      * Get the timestamp the bit storage has that is currently being used to place bits.
      */
     public static long getHighestSelectionTimestamp(final PlayerEntity player) {
-        long stamp = 0;
+        long stamp = -1;
 
         for (ItemStack item : player.inventory.mainInventory) {
             if (item.getItem() instanceof StorageItem) {
@@ -379,7 +380,7 @@ public class ItemModeUtil implements CacheClearable {
      * Gets the currently selected bit storage item slot.
      */
     public static int getGlobalSelectedItemSlot(final PlayerEntity player) {
-        long stamp = 0;
+        long stamp = -1; //Start at -1 so even 0 is valid.
         int res = -1;
 
         for (int i = 0; i < player.inventory.mainInventory.size(); i++) {
