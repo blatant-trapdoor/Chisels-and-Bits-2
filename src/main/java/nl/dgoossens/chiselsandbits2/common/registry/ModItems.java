@@ -129,6 +129,7 @@ public class ModItems {
      */
     public int getBagBeakerColour(final ItemStack stack) {
         //Optimized the fudge out of this method because ItemColors get called every frame.
+        System.out.println("Trying stack: "+stack.getItem().getRegistryName().getPath().toUpperCase());
         switch(stack.getItem().getRegistryName().getPath().toUpperCase()) {
             case "WHITE_BIT_BAG": return 16383998;
             case "ORANGE_BIT_BAG": return 16351261;

@@ -13,6 +13,7 @@ import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import org.lwjgl.opengl.GL11;
 
 import java.lang.ref.SoftReference;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
@@ -24,12 +25,12 @@ public class BackgroundRenderer implements Callable<Tessellator> {
 
     private final static BlockRendererDispatcher blockRenderer = Minecraft.getInstance().getBlockRendererDispatcher();
     private final static Queue<CBTessellatorRefHold> previousTessellators = new LinkedBlockingQueue<>();
-    private final List<ChiseledBlockTileEntity> myPrivateList;
+    private final Collection<ChiseledBlockTileEntity> myPrivateList;
 
     private final Region cache;
     private final BlockPos chunkOffset;
 
-    public BackgroundRenderer(final Region cache, final BlockPos chunkOffset, final List<ChiseledBlockTileEntity> myList) {
+    public BackgroundRenderer(final Region cache, final BlockPos chunkOffset, final Collection<ChiseledBlockTileEntity> myList) {
         myPrivateList = myList;
         this.cache = cache;
         this.chunkOffset = chunkOffset;

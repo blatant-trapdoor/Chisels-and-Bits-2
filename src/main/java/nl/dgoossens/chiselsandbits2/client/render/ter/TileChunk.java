@@ -4,6 +4,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,7 +14,7 @@ public class TileChunk extends RenderCache {
     public static final int TILE_CHUNK_SIZE = 8;
     public static final int CHUNK_COORDINATE_MASK = 0xfffffff8;
 
-    private final TileList tiles = new TileList();
+    private final Collection<ChiseledBlockTileEntity> tiles = new HashSet<>();
     private long lastValidation = 0;
 
     /**
@@ -38,24 +40,13 @@ public class TileChunk extends RenderCache {
     public void register(final ChiseledBlockTileEntity which, final boolean countRebuild) {
         if (which == null) throw new NullPointerException();
 
-        tiles.getWriteLock().lock();
-        try {
-            if (!tiles.contains(which) && countRebuild) rebuild();
-            tiles.add(which);
-        } finally {
-            tiles.getWriteLock().unlock();
-        }
+        if (!tiles.contains(which) && countRebuild) rebuild();
+        tiles.add(which);
     }
 
     public void unregister(final ChiseledBlockTileEntity which, final boolean countRebuild) {
-        tiles.getWriteLock().lock();
-
-        try {
-            if (tiles.contains(which) && countRebuild) rebuild();
-            tiles.remove(which);
-        } finally {
-            tiles.getWriteLock().unlock();
-        }
+        if (tiles.contains(which) && countRebuild) rebuild();
+        tiles.remove(which);
     }
 
     /**
@@ -71,23 +62,15 @@ public class TileChunk extends RenderCache {
         //Don't validate more often than every 5ms.
         if(System.currentTimeMillis() - lastValidation > 5) {
             lastValidation = System.currentTimeMillis();
-            tiles.getReadLock().lock();
-            try {
-                boolean invalid = false;
+            boolean invalid = false;
 
-                //Validate the neighbours for all TE's in the chunk
-                final Iterator<ChiseledBlockTileEntity> i = getTiles().iterator();
-                while (i.hasNext()) {
-                    final ChiseledBlockTileEntity te = i.next();
-                    invalid = invalid || te.getRenderTracker().validate(te.getWorld(), te.getPos());
-                }
+            //Validate the neighbours for all TE's in the chunk
+            for (final ChiseledBlockTileEntity te : tiles)
+                invalid = invalid || te.getRenderTracker().validate(te.getWorld(), te.getPos());
 
-                //Make sure to only rebuild once
-                if(invalid)
-                    rebuild();
-            } finally {
-                tiles.getReadLock().unlock();
-            }
+            //Make sure to only rebuild once
+            if(invalid)
+                rebuild();
         }
     }
 
@@ -96,30 +79,16 @@ public class TileChunk extends RenderCache {
      * corner (0, 0, 0) of this chunk.
      */
     public BlockPos chunkOffset() {
-        tiles.getReadLock().lock();
+        if (getTileList().isEmpty()) return BlockPos.ZERO;
 
-        try {
-            if (getTiles().isEmpty()) return BlockPos.ZERO;
-
-            final Iterator<ChiseledBlockTileEntity> i = getTiles().iterator();
-            final BlockPos tilepos = i.hasNext() ? i.next().getPos() : BlockPos.ZERO;
-            return new BlockPos(tilepos.getX() & CHUNK_COORDINATE_MASK, tilepos.getY() & CHUNK_COORDINATE_MASK, tilepos.getZ() & CHUNK_COORDINATE_MASK);
-        } finally {
-            tiles.getReadLock().unlock();
-        }
+        final BlockPos tilepos = getTileList().iterator().next().getPos();
+        return new BlockPos(tilepos.getX() & CHUNK_COORDINATE_MASK, tilepos.getY() & CHUNK_COORDINATE_MASK, tilepos.getZ() & CHUNK_COORDINATE_MASK);
     }
 
     /**
      * Get the list of tile entities in this chunk.
      */
-    public List<ChiseledBlockTileEntity> getTileList() {
-        return tiles.createCopy();
-    }
-
-    /**
-     * Virtually identical to getTileList();
-     */
-    public TileList getTiles() {
+    public Collection<ChiseledBlockTileEntity> getTileList() {
         return tiles;
     }
 }
