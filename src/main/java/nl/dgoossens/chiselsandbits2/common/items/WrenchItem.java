@@ -9,12 +9,12 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTier;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.ItemModeType;
+import nl.dgoossens.chiselsandbits2.api.IItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
@@ -26,7 +26,7 @@ public class WrenchItem extends TypedItem {
     }
 
     @Override
-    public ItemModeType getAssociatedType() {
+    public IItemModeType getAssociatedType() {
         return ItemModeType.WRENCH;
     }
 

@@ -18,8 +18,9 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.ItemModeType;
-import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
+import nl.dgoossens.chiselsandbits2.api.IItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -31,7 +32,7 @@ import java.util.List;
 
 public class BitBeakerItem extends StorageItem {
     @Override
-    public ItemModeType getAssociatedType() {
+    public IItemModeType getAssociatedType() {
         return ItemModeType.SELECTED;
     }
 

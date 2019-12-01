@@ -16,7 +16,7 @@ import nl.dgoossens.chiselsandbits2.api.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;

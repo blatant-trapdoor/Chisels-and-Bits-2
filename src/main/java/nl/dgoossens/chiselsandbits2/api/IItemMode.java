@@ -17,7 +17,7 @@ public interface IItemMode {
     /**
      * Get the type of this item mode.
      */
-    ItemModeType getType();
+    IItemModeType getType();
 
     /**
      * Get the name of this item mode as it can be stored in NBT.

@@ -6,9 +6,8 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.Direction;
 
 /**
- * Builds what a certain face of a block should look like.
+ * Tracks what a given face of a chiseled block should look like.
  */
-//TODO improve documentation of the face builder
 public interface IFaceBuilder {
     /**
      * Sets the face that this face builder is building and the tint of said face.

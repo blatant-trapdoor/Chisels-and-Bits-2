@@ -1,7 +1,7 @@
 package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.client.resources.I18n;
-import net.minecraft.item.DyeColor;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 
 /**
  * An enum representing the various actions that can be activated
@@ -79,7 +79,7 @@ public enum MenuAction {
     /**
      * Get the item mode type associated with this menu option, if any.
      */
-    public ItemModeType getAssociatedType() {
+    public IItemModeType getAssociatedType() {
         switch (this) {
             case ROLL_X:
             case ROLL_Z:

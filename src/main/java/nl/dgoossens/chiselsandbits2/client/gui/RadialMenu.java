@@ -22,6 +22,8 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import org.lwjgl.opengl.GL11;
@@ -524,7 +526,7 @@ public class RadialMenu extends Screen {
         buttons.add(new MenuButton(MenuAction.UNDO, TEXT_DISTANCE, -20, Direction.EAST));
         buttons.add(new MenuButton(MenuAction.REDO, TEXT_DISTANCE, 4, Direction.EAST));
 
-        ItemModeType tool = ItemModeUtil.getItemMode(getMinecraft().player.getHeldItemMainhand()).getType();
+        IItemModeType tool = ItemModeUtil.getItemMode(getMinecraft().player.getHeldItemMainhand()).getType();
         if (tool == ItemModeType.PATTERN || tool == ItemModeType.CHISELED_BLOCK) {
             buttons.add(new MenuButton(MenuAction.ROLL_X, -TEXT_DISTANCE - 18, -20, Direction.WEST));
             buttons.add(new MenuButton(MenuAction.ROLL_Z, -TEXT_DISTANCE - 18, 4, Direction.WEST));

@@ -36,6 +36,8 @@ import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockItemColor
 import nl.dgoossens.chiselsandbits2.client.render.overlay.MorphingBitItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
@@ -113,7 +115,7 @@ public class ClientSide extends ClientSideHelper {
             e.addSprite(menuActionLocations.get(menuAction));
         }
 
-        for (final ItemMode itemMode : ItemMode.values()) {
+        for (final ItemModeEnum itemMode : ChiselsAndBits2.getInstance().getAPI().getItemModes()) {
             if (!itemMode.hasIcon()) continue;
             modeIconLocations.put(itemMode, new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/" + itemMode.getTypelessName().toLowerCase()));
             e.addSprite(modeIconLocations.get(itemMode));

@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.common.impl;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -10,6 +10,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.IItemModeType;
+import nl.dgoossens.chiselsandbits2.api.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
@@ -60,7 +64,7 @@ public class SelectedItemMode implements IItemMode {
     /**
      * Get the item mode type.
      */
-    public ItemModeType getType() {
+    public IItemModeType getType() {
         return ItemModeType.SELECTED;
     }
 

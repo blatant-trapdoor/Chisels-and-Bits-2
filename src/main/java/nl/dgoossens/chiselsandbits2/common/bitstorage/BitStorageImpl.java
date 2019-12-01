@@ -5,7 +5,7 @@ import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.api.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
 import org.apache.commons.lang3.tuple.Pair;

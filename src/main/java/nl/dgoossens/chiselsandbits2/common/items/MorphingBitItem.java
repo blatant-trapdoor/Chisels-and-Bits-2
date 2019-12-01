@@ -2,15 +2,12 @@ package nl.dgoossens.chiselsandbits2.common.items;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
-import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.ItemModeType;
-import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
+import nl.dgoossens.chiselsandbits2.api.IItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
@@ -29,7 +26,7 @@ public class MorphingBitItem extends TypedItem implements ChiselUtil.BitPlaceIte
     }
 
     @Override
-    public ItemModeType getAssociatedType() {
+    public IItemModeType getAssociatedType() {
         return ItemModeType.CHISEL;
     }
 

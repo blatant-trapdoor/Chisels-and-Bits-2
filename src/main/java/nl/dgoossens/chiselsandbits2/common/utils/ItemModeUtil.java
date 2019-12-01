@@ -10,25 +10,20 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.thread.SidedThreadGroups;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.javafmlmod.FMLModContainer;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.*;
-import nl.dgoossens.chiselsandbits2.client.ClientSideHelper;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheType;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
-import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetMenuActionModePacket;
@@ -37,7 +32,7 @@ import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStorage
 import java.lang.reflect.Field;
 import java.util.*;
 
-import static nl.dgoossens.chiselsandbits2.api.ItemMode.*;
+import static nl.dgoossens.chiselsandbits2.common.impl.ItemMode.*;
 
 /**
  * Utils for managing which item modes are being used by the player.
@@ -265,11 +260,13 @@ public class ItemModeUtil implements CacheClearable {
     public static IItemMode resolveMode(final String name, final boolean isDynamic, final int dynamicId) {
         if(isDynamic) {
             //Dynamic Item Mode
+            //TODO Allow external dynamic item modes.
             return name.equals(SelectedItemMode.NONE.getName()) ? SelectedItemMode.NONE : SelectedItemMode.fromVoxelType(dynamicId);
         } else {
-            try {
-                return ItemMode.valueOf(name);
-            } catch (final IllegalArgumentException il) {}
+            for(ItemModeEnum e : ChiselsAndBits2.getInstance().getAPI().getItemModes()) {
+                if(e.name().equals(name))
+                    return e;
+            }
         }
         return CHISEL_SINGLE;
     }

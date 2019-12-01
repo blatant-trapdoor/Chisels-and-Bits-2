@@ -2,7 +2,6 @@ package nl.dgoossens.chiselsandbits2.common.items;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -10,12 +9,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
-import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
-import nl.dgoossens.chiselsandbits2.api.ItemModeType;
-import nl.dgoossens.chiselsandbits2.api.SelectedItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
@@ -35,7 +33,7 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
     }
 
     @Override
-    public ItemModeType getAssociatedType() {
+    public IItemModeType getAssociatedType() {
         return ItemModeType.CHISELED_BLOCK;
     }
 

@@ -5,7 +5,7 @@ public interface IItemMenu {
      * The type of this item, used to automatically determine
      * the contents of the menu.
      */
-    ItemModeType getAssociatedType();
+    IItemModeType getAssociatedType();
 
     /**
      * Should this typed item show the selected type as a preview in the hotbar?
