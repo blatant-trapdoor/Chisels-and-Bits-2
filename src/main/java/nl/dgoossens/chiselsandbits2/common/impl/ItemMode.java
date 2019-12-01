@@ -1,8 +1,8 @@
 package nl.dgoossens.chiselsandbits2.common.impl;
 
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.IItemModeType;
-import nl.dgoossens.chiselsandbits2.api.ItemModeEnum;
+import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
+import nl.dgoossens.chiselsandbits2.api.item.ItemModeEnum;
 
 import static nl.dgoossens.chiselsandbits2.common.impl.ItemModeType.CHISEL;
 
@@ -53,10 +53,10 @@ public enum ItemMode implements ItemModeEnum {
     ItemMode() {
         //Hardcore the chiseled block as it starts with CHISEL which can mess up
         //We can get all types now because this enum doesn't contain those that don't use types already registered.
-        type = name().startsWith("CHISELED_BLOCK") ? ItemModeType.CHISELED_BLOCK : ChiselsAndBits2.getInstance().getAPI().getItemModeTypes().parallelStream().filter(f -> name().startsWith(f.name())).findAny().orElse(getDefaultType());
+        type = name().startsWith("CHISELED_BLOCK") ? ItemModeType.CHISELED_BLOCK : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModeTypes().parallelStream().filter(f -> name().startsWith(f.name())).findAny().orElse(getDefaultType());
         typelessName = name().substring(getType().name().length() + 1).toLowerCase();
 
-        ChiselsAndBits2.getInstance().getAPI().registerItemMode(this);
+        ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().registerMode(this);
     }
 
     //Cache typeless name for improved performance

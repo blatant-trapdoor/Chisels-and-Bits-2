@@ -1,7 +1,6 @@
 package nl.dgoossens.chiselsandbits2.client.render;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -13,15 +12,14 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.common.ForgeMod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.ICullTest;
-import nl.dgoossens.chiselsandbits2.api.IFaceBuilder;
-import nl.dgoossens.chiselsandbits2.api.IStateRef;
+import nl.dgoossens.chiselsandbits2.api.render.ICullTest;
+import nl.dgoossens.chiselsandbits2.api.render.IFaceBuilder;
+import nl.dgoossens.chiselsandbits2.api.render.IStateRef;
 import nl.dgoossens.chiselsandbits2.client.culling.MCCullTest;
 import nl.dgoossens.chiselsandbits2.client.render.models.BaseBakedBlockModel;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
-import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 
 import javax.annotation.Nonnull;

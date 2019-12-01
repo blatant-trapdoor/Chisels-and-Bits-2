@@ -12,13 +12,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.BitStorage;
-import nl.dgoossens.chiselsandbits2.api.IItemMenu;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
-import nl.dgoossens.chiselsandbits2.api.VoxelType;
-import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
@@ -27,8 +27,8 @@ import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import java.util.*;
 import java.util.function.Function;
 
-import static nl.dgoossens.chiselsandbits2.api.BitOperation.PLACE;
-import static nl.dgoossens.chiselsandbits2.api.BitOperation.SWAP;
+import static nl.dgoossens.chiselsandbits2.api.block.BitOperation.PLACE;
+import static nl.dgoossens.chiselsandbits2.api.block.BitOperation.SWAP;
 
 /**
  * Utilities for managing durability usage and bag contents.

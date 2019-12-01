@@ -3,11 +3,11 @@ package nl.dgoossens.chiselsandbits2.common.bitstorage;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.BitStorage;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
-import nl.dgoossens.chiselsandbits2.api.VoxelType;
-import nl.dgoossens.chiselsandbits2.api.VoxelWrapper;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;

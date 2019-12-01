@@ -3,8 +3,8 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.BitAccess;
-import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
+import nl.dgoossens.chiselsandbits2.api.block.BitAccess;
+import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
 
 import java.util.Optional;
 

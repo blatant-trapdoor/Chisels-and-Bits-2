@@ -5,12 +5,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import nl.dgoossens.chiselsandbits2.api.VoxelType;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 
-import javax.annotation.Nonnull;
 import java.awt.*;
 
 /**

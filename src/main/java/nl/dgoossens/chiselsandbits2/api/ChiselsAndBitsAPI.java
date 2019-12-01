@@ -2,9 +2,10 @@ package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import nl.dgoossens.chiselsandbits2.api.block.BitAccess;
+import nl.dgoossens.chiselsandbits2.api.item.ItemPropertyAPI;
 
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * The Chisels & Bits API is a way for any mod (including C&B2 itself)
@@ -25,23 +26,8 @@ public interface ChiselsAndBitsAPI {
     Optional<BitAccess> getBitAccess(final World world, final BlockPos pos);
 
     /**
-     * Registers a new value from an item mode enum. Can be used to add new modes to
-     * item mode types.
+     * Get the registry that manages everything related to C&B items and their properties. Includes things like registering
+     * item modes, item mode types or additional buttons for in the radial menu.
      */
-    void registerItemMode(final ItemModeEnum itemMode);
-
-    /**
-     * Register a new item mode type.
-     */
-    void registerItemModeType(final IItemModeType itemModeType);
-
-    /**
-     * Get a list of all existing item modes.
-     */
-    Set<ItemModeEnum> getItemModes();
-
-    /**
-     * Get a list of all existing item mode types.
-     */
-    Set<IItemModeType> getItemModeTypes();
+    ItemPropertyAPI getItemPropertyRegistry();
 }

@@ -10,17 +10,23 @@ import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTier;
+import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.IItemModeType;
+import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
+import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ChiselItem extends TypedItem implements ChiselUtil.BitPlaceItem, ChiselUtil.BitRemoveItem {
     public ChiselItem(Item.Properties builder) {
@@ -45,6 +51,16 @@ public class ChiselItem extends TypedItem implements ChiselUtil.BitPlaceItem, Ch
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
+    }
+
+    @Override
+    public Set<RadialMenu.MenuButton> getMenuButtons(final ItemStack item) {
+        Set<RadialMenu.MenuButton> ret = new HashSet<>();
+        if (ItemModeUtil.getMenuActionMode(item).equals(MenuAction.PLACE))
+            ret.add(new RadialMenu.MenuButton(MenuAction.PLACE, -RadialMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
+        else
+            ret.add(new RadialMenu.MenuButton(MenuAction.SWAP, -RadialMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
+        return ret;
     }
 
     /**

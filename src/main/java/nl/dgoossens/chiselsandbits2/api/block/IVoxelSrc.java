@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.api.block;
 
 /**
  * Represents a source of voxels, for example

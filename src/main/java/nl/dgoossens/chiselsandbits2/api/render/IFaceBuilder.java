@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.api.render;
 
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;

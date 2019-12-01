@@ -3,8 +3,8 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Direction.Axis;
 import net.minecraft.util.Direction.AxisDirection;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 

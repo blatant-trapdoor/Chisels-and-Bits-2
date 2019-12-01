@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.pipeline.IVertexConsumer;
 import net.minecraftforge.client.model.pipeline.LightUtil;
-import nl.dgoossens.chiselsandbits2.api.IFaceBuilder;
+import nl.dgoossens.chiselsandbits2.api.render.IFaceBuilder;
 import nl.dgoossens.chiselsandbits2.client.render.cache.FormatInfo;
 
 import java.util.concurrent.ConcurrentHashMap;

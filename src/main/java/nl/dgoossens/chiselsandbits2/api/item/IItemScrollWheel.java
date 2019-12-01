@@ -1,10 +1,10 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.api.item;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 
 /**
- * An item with support for having custom functionality when the player scrolls the mouse
+ * An interface to be implemented by an item with support for having custom functionality when the player scrolls the mouse
  * wheel whilst sneaking whilst holding the item.
  */
 public interface IItemScrollWheel {

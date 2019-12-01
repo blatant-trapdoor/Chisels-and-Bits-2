@@ -1,11 +1,12 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.api.item;
 
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.ResourceLocation;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 
 /**
  * A general interface that can be extended by any enum that wants to register new item modes.
- * Register this using {@link ChiselsAndBitsAPI#registerItemMode(ItemModeEnum)}
+ * Register this using {@link ItemPropertyAPI#registerMode(ItemModeEnum)}
  */
 public interface ItemModeEnum extends IItemMode {
     /**
@@ -17,7 +18,7 @@ public interface ItemModeEnum extends IItemMode {
      * Get the localized key from this Item Mode.
      */
     public default String getLocalizedName() {
-        return I18n.format("general.chiselsandbits2.itemmode." + getTypelessName());
+        return I18n.format("general."+ChiselsAndBits2.MOD_ID+".itemmode." + getTypelessName());
     }
 
     /**
@@ -38,7 +39,7 @@ public interface ItemModeEnum extends IItemMode {
      * Get this item mode's type.
      */
     public default IItemModeType getType() {
-        return ChiselsAndBits2.getInstance().getAPI().getItemModeTypes().parallelStream()
+        return ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModeTypes().parallelStream()
                 .filter(f -> name().startsWith(f.name())).findAny().orElse(getDefaultType());
     }
 
@@ -51,6 +52,13 @@ public interface ItemModeEnum extends IItemMode {
      * Returns whether or not this mode has an icon.
      */
     boolean hasIcon();
+
+    /**
+     * Get the resource location for the icon.
+     */
+    public default ResourceLocation getIconResourceLocation() {
+        return new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/" + getTypelessName().toLowerCase());
+    }
 
     /**
      * Returns false when a item mode should not have a hotkey.

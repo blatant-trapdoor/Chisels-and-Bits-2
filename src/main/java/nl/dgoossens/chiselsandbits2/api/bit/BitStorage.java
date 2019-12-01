@@ -1,8 +1,7 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.api.bit;
 
 import net.minecraft.item.Item;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 
 import java.util.List;
 

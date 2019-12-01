@@ -15,7 +15,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidAttributes;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.client.render.models.helpers.ModelUVAverager;

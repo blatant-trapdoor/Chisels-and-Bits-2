@@ -6,7 +6,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
-import nl.dgoossens.chiselsandbits2.api.BitStorage;
+import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

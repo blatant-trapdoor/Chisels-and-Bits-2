@@ -19,10 +19,16 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
+import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
@@ -31,34 +37,34 @@ import org.lwjgl.opengl.GL11;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class RadialMenu extends Screen {
-    private final static float TIME_SCALE = 0.01f;
+    public final static float TIME_SCALE = 0.01f;
 
-    private final static double RING_INNER_EDGE = 20;
-    private final static double RING_OUTER_EDGE = 55;
-    private final static double TEXT_DISTANCE = 65;
-    private final static double HALF_PI = Math.PI * 0.5;
+    public final static double RING_INNER_EDGE = 20;
+    public final static double RING_OUTER_EDGE = 55;
+    public final static double TEXT_DISTANCE = 65;
+    public final static double HALF_PI = Math.PI * 0.5;
 
     private float visibility = 0.0f;
     private Stopwatch lastChange = Stopwatch.createStarted();
     private IItemMode switchTo = null;
-    private MenuAction doAction = null;
+    private IMenuAction doAction = null;
     private List<MenuRegion> modes;
     private List<MenuButton> buttons;
-    private boolean actionUsed = false;
-    private boolean currentlyShown = false;
-    private boolean pressedButton = false;
-    private boolean clicked = false;
+    private boolean actionUsed = false, currentlyShown = false, pressedButton = false, clicked = false;
     private MainWindow window;
     private long buttonLastHighlighted = 0L;
+    private CustomItemRenderer cache;
 
     public RadialMenu() {
         super(new StringTextComponent("Radial Menu"));
         minecraft = Minecraft.getInstance();
-        if(minecraft != null) font = Minecraft.getInstance().fontRenderer;
+        if(minecraft != null)
+            font = Minecraft.getInstance().fontRenderer;
     }
 
     public void updateGameFocus() {
@@ -236,7 +242,7 @@ public class RadialMenu extends Screen {
     }
 
     /**
-     * Renders the icons as retrieved from {@link ClientSide#getMenuActionIconLocation(MenuAction)} or {@link ClientSide#getModeIconLocation(IItemMode)}.
+     * Renders the icons as retrieved from {@link ClientSide#getMenuActionIconLocation(IMenuAction)} or {@link ClientSide#getModeIconLocation(IItemMode)}.
      * Called both before and after textures are enabled for rendering the flat colours.
      */
     private void renderIcons(double middle_x, double middle_y, BufferBuilder buffer, boolean textures) {
@@ -436,71 +442,7 @@ public class RadialMenu extends Screen {
         return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
-    private static class MenuButton {
-        final MenuAction action;
-        TextureAtlasSprite sprite;
-        double x1, x2;
-        double y1, y2;
-        boolean highlighted;
-        int color;
-        String name;
-        Direction textSide;
-
-        public MenuButton(final MenuAction action, final double x, final double y, final Direction textSide) {
-            this(action, x, y, 0xffffffff, textSide);
-            sprite = Minecraft.getInstance().getTextureMap().getSprite(ClientSide.getMenuActionIconLocation(action));
-        }
-
-        public MenuButton(final MenuAction action, final double x, final double y, final int col, final Direction textSide) {
-            this.name = action.getLocalizedName();
-            this.action = action;
-            x1 = x;
-            x2 = x + 18;
-            y1 = y;
-            y2 = y + 18;
-            color = col;
-            this.textSide = textSide;
-        }
-    }
-
-    static enum RegionType {
-        SELECTED, //For the currently selected mode.
-        HIGHLIGHTED, //For selected but not used selected item mode
-        DEFAULT,
-        ;
-
-        public boolean isSelected() {
-            return this == SELECTED || this == HIGHLIGHTED;
-        }
-    }
-
-    static class MenuRegion {
-        public final IItemMode mode;
-        public RegionType type;
-        public double x1, x2;
-        public double y1, y2;
-        public boolean highlighted;
-
-        public MenuRegion(final IItemMode mode, final ItemStack stack, final PlayerEntity player) {
-            this.mode = mode;
-            SelectedItemMode s = ItemModeUtil.getSelectedItemMode(stack);
-            if (s == null) type = ItemModeUtil.getItemMode(stack).equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
-            else {
-                if(!s.equals(mode) || SelectedItemMode.isNone(mode)) {
-                    type = RegionType.DEFAULT;
-                    return;
-                }
-                int b = ItemModeUtil.getGlobalSelectedBit(player);
-                if(b != s.getBitId()) {
-                    //Highlighted = selected in this bitstorage but won't be used atm to build.
-                    type = RegionType.HIGHLIGHTED;
-                } else
-                    //Selected in this storage and going to get used.
-                    type = RegionType.SELECTED;
-            }
-        }
-    }
-
+    //TODO re-enable clicking closing the radial menu
     /*@SubscribeEvent
     public static void onClickWithGuiOpen(InputEvent.MouseInputEvent e) {
         if(e.getButton() == GLFW.GLFW_MOUSE_BUTTON_1 && ChiselsAndBits2.getInstance().getClient().getRadialMenu().isVisible()) {
@@ -522,37 +464,12 @@ public class RadialMenu extends Screen {
     public List<MenuButton> getShownButtons() {
         List<MenuButton> buttons = new ArrayList<>();
 
-        //Setup buttons
         buttons.add(new MenuButton(MenuAction.UNDO, TEXT_DISTANCE, -20, Direction.EAST));
         buttons.add(new MenuButton(MenuAction.REDO, TEXT_DISTANCE, 4, Direction.EAST));
 
-        IItemModeType tool = ItemModeUtil.getItemMode(getMinecraft().player.getHeldItemMainhand()).getType();
-        if (tool == ItemModeType.PATTERN || tool == ItemModeType.CHISELED_BLOCK) {
-            buttons.add(new MenuButton(MenuAction.ROLL_X, -TEXT_DISTANCE - 18, -20, Direction.WEST));
-            buttons.add(new MenuButton(MenuAction.ROLL_Z, -TEXT_DISTANCE - 18, 4, Direction.WEST));
-        }
-
-        if (tool == ItemModeType.CHISEL) {
-            if (ItemModeUtil.getMenuActionMode(getMinecraft().player.getHeldItemMainhand()).equals(MenuAction.PLACE)) buttons.add(new MenuButton(MenuAction.PLACE, -TEXT_DISTANCE - 18, -20, Direction.WEST));
-            else buttons.add(new MenuButton(MenuAction.SWAP, -TEXT_DISTANCE - 18, -20, Direction.WEST));
-        }
-
-        if (tool == ItemModeType.TAPEMEASURE) {
-            final int colorSize = DyeColor.values().length / 4 * 24 - 4;
-            double underring = -RING_OUTER_EDGE - 34;
-            double bntPos = -colorSize;
-            final int bntSize = 24;
-            Direction textSide = Direction.UP;
-            for (final DyeColor color : DyeColor.values()) {
-                final MenuAction action = MenuAction.valueOf(color.name());
-                if (bntPos > colorSize) {
-                    underring = RING_OUTER_EDGE;
-                    bntPos = -colorSize;
-                    textSide = Direction.DOWN;
-                }
-                buttons.add(new MenuButton(action, bntPos, underring, action.getColour(), textSide));
-                bntPos += bntSize;
-            }
+        if(getMinecraft().player.getHeldItemMainhand().getItem() instanceof IItemMenu) {
+            Set<MenuButton> i = ((IItemMenu) getMinecraft().player.getHeldItemMainhand().getItem()).getMenuButtons(getMinecraft().player.getHeldItemMainhand());
+            if(i != null) buttons.addAll(i);
         }
         return buttons;
     }
@@ -566,7 +483,6 @@ public class RadialMenu extends Screen {
         return minecraft == null ? Minecraft.getInstance() : minecraft;
     }
 
-    private CustomItemRenderer cache;
     public CustomItemRenderer getItemRenderer() {
         if(cache == null) cache = new CustomItemRenderer(Minecraft.getInstance().getItemRenderer());
         return cache;
@@ -614,7 +530,7 @@ public class RadialMenu extends Screen {
         return doAction != null;
     }
 
-    public MenuAction getAction() {
+    public IMenuAction getAction() {
         return doAction;
     }
 
@@ -623,8 +539,10 @@ public class RadialMenu extends Screen {
     }
 
     public void setClicked(boolean c) {
-        if (hasAction() || hasSwitchTo()) clicked = c;
-    } //Only see as click if we've highlighted something
+        //Only see as click if we've highlighted something
+        if (hasAction() || hasSwitchTo())
+            clicked = c;
+    }
 
     public boolean isPressingButton() {
         return pressedButton;
@@ -632,5 +550,76 @@ public class RadialMenu extends Screen {
 
     public void setPressingButton(boolean d) {
         pressedButton = d;
+    }
+
+    public static class MenuButton {
+        final MenuAction action;
+        TextureAtlasSprite sprite;
+        double x1, x2;
+        double y1, y2;
+        boolean highlighted;
+        int color;
+        String name;
+        Direction textSide;
+
+        public MenuButton(final MenuAction action, final double x, final double y, final Direction textSide) {
+            this(action, x, y, 0xffffffff, textSide);
+            sprite = Minecraft.getInstance().getTextureMap().getSprite(ClientSide.getMenuActionIconLocation(action));
+        }
+
+        public MenuButton(final MenuAction action, final double x, final double y, final int col, final Direction textSide) {
+            if(action == null) throw new RuntimeException("Menu buttons need an action!");
+
+            this.name = action.getLocalizedName();
+            this.action = action;
+            x1 = x;
+            x2 = x + 18;
+            y1 = y;
+            y2 = y + 18;
+            color = col;
+            this.textSide = textSide;
+        }
+
+        public MenuAction getMenuAction() {
+            return action;
+        }
+    }
+
+    public static enum RegionType {
+        SELECTED, //For the currently selected mode.
+        HIGHLIGHTED, //For selected but not used selected item mode
+        DEFAULT,
+        ;
+
+        public boolean isSelected() {
+            return this == SELECTED || this == HIGHLIGHTED;
+        }
+    }
+
+    public static class MenuRegion {
+        public final IItemMode mode;
+        public RegionType type;
+        public double x1, x2;
+        public double y1, y2;
+        public boolean highlighted;
+
+        public MenuRegion(final IItemMode mode, final ItemStack stack, final PlayerEntity player) {
+            this.mode = mode;
+            SelectedItemMode s = ItemModeUtil.getSelectedItemMode(stack);
+            if (s == null) type = ItemModeUtil.getItemMode(stack).equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
+            else {
+                if(!s.equals(mode) || SelectedItemMode.isNone(mode)) {
+                    type = RegionType.DEFAULT;
+                    return;
+                }
+                int b = ItemModeUtil.getGlobalSelectedBit(player);
+                if(b != s.getBitId()) {
+                    //Highlighted = selected in this bitstorage but won't be used atm to build.
+                    type = RegionType.HIGHLIGHTED;
+                } else
+                    //Selected in this storage and going to get used.
+                    type = RegionType.SELECTED;
+            }
+        }
     }
 }

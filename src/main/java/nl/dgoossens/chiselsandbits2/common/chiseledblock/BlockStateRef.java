@@ -1,6 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 
-import nl.dgoossens.chiselsandbits2.api.IStateRef;
+import nl.dgoossens.chiselsandbits2.api.render.IStateRef;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 
 public class BlockStateRef implements IStateRef {

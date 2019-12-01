@@ -6,7 +6,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 
@@ -36,7 +38,7 @@ public class CSetItemModePacket {
     public static CSetItemModePacket decode(PacketBuffer buffer) {
         CSetItemModePacket pc = new CSetItemModePacket();
         String type = buffer.readString();
-        for(IItemModeType t : ChiselsAndBits2.getInstance().getAPI().getItemModeTypes()) {
+        for(IItemModeType t : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModeTypes()) {
             if(t.name().equals(type)) {
                 pc.type = t;
                 break;

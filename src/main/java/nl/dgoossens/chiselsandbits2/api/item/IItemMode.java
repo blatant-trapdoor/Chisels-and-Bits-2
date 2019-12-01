@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.api.item;
 
 /**
  * A generic item mode which can be

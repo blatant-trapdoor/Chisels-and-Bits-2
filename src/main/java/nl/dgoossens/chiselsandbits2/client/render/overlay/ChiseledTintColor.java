@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
-import nl.dgoossens.chiselsandbits2.api.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 /**

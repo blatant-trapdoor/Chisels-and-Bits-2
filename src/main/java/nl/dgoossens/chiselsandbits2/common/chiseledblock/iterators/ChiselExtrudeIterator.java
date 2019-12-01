@@ -1,8 +1,8 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators;
 
 import net.minecraft.util.Direction;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
 
 import java.util.*;
 

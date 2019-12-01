@@ -1,17 +1,11 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import nl.dgoossens.chiselsandbits2.api.BitOperation;
-import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-
-import javax.annotation.Nullable;
+import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 
 public class BitLocation {
     private static final double ONE_32ND = 0.5 / VoxelBlob.DIMENSION;

@@ -7,18 +7,23 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
-import nl.dgoossens.chiselsandbits2.api.IItemMenu;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.IItemModeType;
-import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
+import nl.dgoossens.chiselsandbits2.api.item.IItemScrollWheel;
+import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, IItemMenu {
     public ChiseledBlockItem(Block block, Item.Properties properties) {
@@ -40,6 +45,14 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
     @Override
     public boolean showIconInHotbar() {
         return false;
+    }
+
+    @Override
+    public Set<RadialMenu.MenuButton> getMenuButtons(final ItemStack item) {
+        Set<RadialMenu.MenuButton> ret = new HashSet<>();
+        ret.add(new RadialMenu.MenuButton(MenuAction.ROLL_X, -RadialMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
+        ret.add(new RadialMenu.MenuButton(MenuAction.ROLL_Z, -RadialMenu.TEXT_DISTANCE - 18, 4, Direction.WEST));
+        return ret;
     }
 
     //--- COPIED FROM TypedItem.class ---

@@ -1,7 +1,7 @@
 package nl.dgoossens.chiselsandbits2.client.render;
 
 import net.minecraft.util.Direction;
-import nl.dgoossens.chiselsandbits2.api.IStateRef;
+import nl.dgoossens.chiselsandbits2.api.render.IStateRef;
 
 /**
  * An object storing references to all neighbouring blocks.

@@ -16,13 +16,19 @@ import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
+import nl.dgoossens.chiselsandbits2.api.item.ItemModeEnum;
+import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheType;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 import nl.dgoossens.chiselsandbits2.common.network.client.CSetItemModePacket;
@@ -86,7 +92,7 @@ public class ItemModeUtil implements CacheClearable {
      * MenuAction#COLOURS and MenuAction#PLACE/MenuAction#SWAP
      * are accepted.
      */
-    public static void changeMenuActionMode(final PlayerEntity player, final MenuAction newAction) {
+    public static void changeMenuActionMode(final PlayerEntity player, final IMenuAction newAction) {
         final CSetMenuActionModePacket packet = new CSetMenuActionModePacket(newAction);
         ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
 
@@ -263,7 +269,7 @@ public class ItemModeUtil implements CacheClearable {
             //TODO Allow external dynamic item modes.
             return name.equals(SelectedItemMode.NONE.getName()) ? SelectedItemMode.NONE : SelectedItemMode.fromVoxelType(dynamicId);
         } else {
-            for(ItemModeEnum e : ChiselsAndBits2.getInstance().getAPI().getItemModes()) {
+            for(ItemModeEnum e : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes()) {
                 if(e.name().equals(name))
                     return e;
             }
@@ -302,14 +308,14 @@ public class ItemModeUtil implements CacheClearable {
      * Fetch the menu action associated to this item,
      * can be a colour or place/replace.
      */
-    public static MenuAction getMenuActionMode(final ItemStack stack) {
-        try {
-            final CompoundNBT nbt = stack.getTag();
-            if (nbt != null && nbt.contains("menuAction"))
-                return MenuAction.valueOf(nbt.getString("menuAction"));
-        } catch (final IllegalArgumentException iae) { //nope!
-        } catch (final Exception e) {
-            e.printStackTrace();
+    public static IMenuAction getMenuActionMode(final ItemStack stack) {
+        final CompoundNBT nbt = stack.getTag();
+        if (nbt != null && nbt.contains("menuAction")) {
+            String s = nbt.getString("menuAction");
+            for(IMenuAction ima : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getMenuActions()) {
+                if(ima.name().equals(s))
+                    return ima;
+            }
         }
 
         return (stack.getItem() instanceof TapeMeasureItem) ? MenuAction.WHITE :
@@ -319,7 +325,7 @@ public class ItemModeUtil implements CacheClearable {
     /**
      * Set the menu action mode of this itemstack to this enum value.
      */
-    public static void setMenuActionMode(final ItemStack stack, final MenuAction action) {
+    public static void setMenuActionMode(final ItemStack stack, final IMenuAction action) {
         if (stack != null) stack.setTagInfo("menuAction", new StringNBT(action.name()));
     }
 

@@ -22,10 +22,11 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.IItemMenu;
-import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.MenuAction;
+import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
+import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
@@ -63,7 +64,7 @@ public class ClientSideHelper {
 
     //Resource Locations for Icons
     protected static final HashMap<IItemMode, ResourceLocation> modeIconLocations = new HashMap<>();
-    protected static final HashMap<MenuAction, ResourceLocation> menuActionLocations = new HashMap<>();
+    protected static final HashMap<IMenuAction, ResourceLocation> menuActionLocations = new HashMap<>();
 
     //Radial Menu
     protected RadialMenu radialMenu = new RadialMenu();
@@ -146,7 +147,7 @@ public class ClientSideHelper {
      * Get the resource location of the icon for the menu action, will return null
      * if the action has no icon.
      */
-    public static ResourceLocation getMenuActionIconLocation(final MenuAction action) {
+    public static ResourceLocation getMenuActionIconLocation(final IMenuAction action) {
         return menuActionLocations.get(action);
     }
 
@@ -160,51 +161,6 @@ public class ClientSideHelper {
                 return true;
         }
         return false;
-    }
-
-    /**
-     * Handles the usage of a menu action. Can be used to trigger the effect of clicking a menu action button.
-     * Will assume the target item is the one held in the player's main hand.
-     */
-    public static void handleMenuAction(final MenuAction action) {
-        switch (action) {
-            case UNDO:
-                ChiselsAndBits2.getInstance().getClient().getUndoTracker().undo();
-                break;
-            case REDO:
-                ChiselsAndBits2.getInstance().getClient().getUndoTracker().redo();
-                break;
-            case ROLL_X:
-                System.out.println("ROLL_X");
-                break;
-            case ROLL_Z:
-                System.out.println("ROLL_Z");
-                break;
-            case PLACE:
-            case SWAP:
-                //Swap to the other one.
-                ItemModeUtil.changeMenuActionMode(Minecraft.getInstance().player, action.equals(MenuAction.PLACE) ? MenuAction.SWAP : MenuAction.PLACE);
-                break;
-            case BLACK:
-            case WHITE:
-            case BLUE:
-            case BROWN:
-            case CYAN:
-            case GRAY:
-            case GREEN:
-            case LIGHT_BLUE:
-            case LIGHT_GRAY:
-            case LIME:
-            case MAGENTA:
-            case ORANGE:
-            case PINK:
-            case PURPLE:
-            case RED:
-            case YELLOW:
-                //Change the colour of the tape measure.
-                ItemModeUtil.changeMenuActionMode(Minecraft.getInstance().player, action);
-                break;
-        }
     }
 
     /**
@@ -262,7 +218,9 @@ public class ClientSideHelper {
             while(tapeMeasurements.size() >= ChiselsAndBits2.getInstance().getConfig().tapeMeasureLimit.get()) {
                 tapeMeasurements.remove(0); //Remove the oldest one.
             }
-            tapeMeasurements.add(new Measurement(tapeMeasureCache, location, ItemModeUtil.getMenuActionMode(stack), (ItemMode) ItemModeUtil.getItemMode(stack), player.dimension));
+            IMenuAction ma = ItemModeUtil.getMenuActionMode(stack);
+            if(!(ma instanceof MenuAction))
+                tapeMeasurements.add(new Measurement(tapeMeasureCache, location, (MenuAction) ma, ItemModeUtil.getItemMode(stack), player.dimension));
             tapeMeasureCache = null;
         }
     }
@@ -304,7 +262,9 @@ public class ClientSideHelper {
                 final BitLocation other = tapeMeasure ? ChiselsAndBits2.getInstance().getClient().tapeMeasureCache : ChiselsAndBits2.getInstance().getClient().selectionStart;
                 final BitOperation operation = tapeMeasure ? BitOperation.REMOVE : ChiselsAndBits2.getInstance().getClient().getOperation();
                 if ((tapeMeasure || ItemModeUtil.getItemMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) && other != null) {
-                    ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, partialTicks, operation, new Color(ItemModeUtil.getMenuActionMode(player.getHeldItemMainhand()).getColour()), (ItemMode) ItemModeUtil.getItemMode(player.getHeldItemMainhand()));
+                    IMenuAction ma = ItemModeUtil.getMenuActionMode(player.getHeldItemMainhand());
+                    if(ma instanceof MenuAction)
+                        ChiselsAndBits2.getInstance().getClient().renderSelectionBox(tapeMeasure, player, location, other, partialTicks, operation, new Color(((MenuAction) ma).getColour()), ItemModeUtil.getItemMode(player.getHeldItemMainhand()));
                     return true;
                 }
                 //Tape measure never displays the small cube.
@@ -333,7 +293,7 @@ public class ClientSideHelper {
     /**
      * Renders the selection boxes as used by the tape measure and drawn region mode.
      */
-    public void renderSelectionBox(boolean tapeMeasure, PlayerEntity player, BitLocation location, BitLocation other, float partialTicks, BitOperation operation, @Nullable Color c, @Nullable ItemMode mode) {
+    public void renderSelectionBox(boolean tapeMeasure, PlayerEntity player, BitLocation location, BitLocation other, float partialTicks, BitOperation operation, @Nullable Color c, @Nullable IItemMode mode) {
         AxisAlignedBB bb = null;
 
         //Don't do these calculations if we don't have to.
@@ -596,9 +556,9 @@ public class ClientSideHelper {
         private BitLocation first, second;
         private DimensionType dimension;
         private MenuAction colour;
-        private ItemMode mode;
+        private IItemMode mode;
 
-        public Measurement(BitLocation first, BitLocation second, MenuAction colour, ItemMode mode, DimensionType dimension) {
+        public Measurement(BitLocation first, BitLocation second, MenuAction colour, IItemMode mode, DimensionType dimension) {
             this.first = first;
             this.second = second;
             this.colour = colour;

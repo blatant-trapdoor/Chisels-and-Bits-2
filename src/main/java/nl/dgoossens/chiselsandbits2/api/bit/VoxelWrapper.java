@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.api.bit;
 
 import net.minecraft.block.Block;
 import net.minecraft.fluid.Fluid;

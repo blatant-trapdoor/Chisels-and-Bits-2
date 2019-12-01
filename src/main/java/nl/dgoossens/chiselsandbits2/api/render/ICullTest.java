@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.api.render;
 
 /**
  * A test designed to establish whether or not a given bit type should be visible

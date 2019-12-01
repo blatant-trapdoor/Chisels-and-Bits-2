@@ -28,7 +28,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.*;
+import nl.dgoossens.chiselsandbits2.api.item.*;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.BagBeakerItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
@@ -37,6 +38,7 @@ import nl.dgoossens.chiselsandbits2.client.render.overlay.MorphingBitItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
@@ -104,20 +106,15 @@ public class ClientSide extends ClientSideHelper {
         //Only register to the texture map.
         if(!e.getMap().getBasePath().equals("textures")) return;
 
-        e.addSprite(new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/swap"));
-        e.addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/place"));
-        e.addSprite( new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/trash"));
-        e.addSprite(new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/sort"));
-
-        for (final MenuAction menuAction : MenuAction.values()) {
+        for (final IMenuAction menuAction : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getMenuActions()) {
             if (!menuAction.hasIcon()) continue;
-            menuActionLocations.put(menuAction, new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/" + menuAction.name().toLowerCase()));
+            menuActionLocations.put(menuAction, menuAction.getIconResourceLocation());
             e.addSprite(menuActionLocations.get(menuAction));
         }
 
-        for (final ItemModeEnum itemMode : ChiselsAndBits2.getInstance().getAPI().getItemModes()) {
+        for (final ItemModeEnum itemMode : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes()) {
             if (!itemMode.hasIcon()) continue;
-            modeIconLocations.put(itemMode, new ResourceLocation(ChiselsAndBits2.MOD_ID, "icons/" + itemMode.getTypelessName().toLowerCase()));
+            modeIconLocations.put(itemMode, itemMode.getIconResourceLocation());
             e.addSprite(modeIconLocations.get(itemMode));
         }
     }
@@ -131,15 +128,15 @@ public class ClientSide extends ClientSideHelper {
         if (Minecraft.getInstance().player == null) return;
 
         final ModKeybindings keybindings = ChiselsAndBits2.getInstance().getKeybindings();
-        for (ItemMode im : keybindings.modeHotkeys.keySet()) {
+        for (ItemModeEnum im : keybindings.modeHotkeys.keySet()) {
             KeyBinding kb = keybindings.modeHotkeys.get(im);
             if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME))
                 ItemModeUtil.changeItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), im);
         }
-        for (MenuAction ma : keybindings.actionHotkeys.keySet()) {
+        for (IMenuAction ma : keybindings.actionHotkeys.keySet()) {
             KeyBinding kb = keybindings.actionHotkeys.get(ma);
             if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME))
-                handleMenuAction(ma);
+                ma.trigger();
         }
 
         if (Minecraft.getInstance().player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem &&
@@ -183,7 +180,7 @@ public class ClientSide extends ClientSideHelper {
                         ItemModeUtil.changeItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), radialMenu.getSwitchTo());
 
                     if (radialMenu.hasAction())
-                        handleMenuAction(radialMenu.getAction());
+                        radialMenu.getAction().trigger();
                 }
 
                 radialMenu.setActionUsed(true);

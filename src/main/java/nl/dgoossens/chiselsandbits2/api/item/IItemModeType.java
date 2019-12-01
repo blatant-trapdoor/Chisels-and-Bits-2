@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api;
+package nl.dgoossens.chiselsandbits2.api.item;
 
 import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 /**
  * Generic interface for a type of item mode.
- * Register this mode type using {@link ChiselsAndBitsAPI#registerItemModeType(IItemModeType)}
+ * Register this mode type using {@link ItemPropertyAPI#registerModeType(IItemModeType)}
  */
 public interface IItemModeType {
     /**
@@ -20,7 +20,7 @@ public interface IItemModeType {
      * Get a list of item modes that are a part of this item mode type.
      */
     public default List<IItemMode> getItemModes(final ItemStack item) {
-        return ChiselsAndBits2.getInstance().getAPI().getItemModes().parallelStream().filter(f -> f.getType() == this).collect(Collectors.toList());
+        return ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes().parallelStream().filter(f -> f.getType() == this).collect(Collectors.toList());
     }
 
     /**
