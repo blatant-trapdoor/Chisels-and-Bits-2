@@ -1,15 +1,13 @@
 package nl.dgoossens.chiselsandbits2.api;
 
-import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import net.minecraft.client.resources.I18n;
 
 import java.util.stream.Stream;
-
-import static nl.dgoossens.chiselsandbits2.api.ItemModeType.CHISEL;
 
 /**
  * The current mode the item is using, shared between patterns and chisels.
  */
-public enum ItemMode implements ItemModeEnum {
+public enum ItemMode implements IItemMode {
     CHISEL_SINGLE,
     CHISEL_LINE,
     CHISEL_PLANE,
@@ -48,40 +46,52 @@ public enum ItemMode implements ItemModeEnum {
     CHISELED_BLOCK_MERGE, //Merge chiseled blocks and don't place bits in spots where bits already exist
     ;
 
-    private IItemModeType type;
+    private ItemModeType type;
     private String typelessName;
     ItemMode() {
         //Hardcore the chiseled block as it starts with CHISEL which can mess up
-        //We can get all types now because this enum doesn't contain those that don't use types already registered.
-        type = name().startsWith("CHISELED_BLOCK") ? ItemModeType.CHISELED_BLOCK : ChiselsAndBits2.getInstance().getAPI().getItemTypes().parallelStream().filter(f -> name().startsWith(f.name())).findAny().orElse(getDefaultType());
+        type = name().startsWith("CHISELED_BLOCK") ? ItemModeType.CHISELED_BLOCK : Stream.of(ItemModeType.values()).filter(f -> name().startsWith(f.name())).findAny().orElse(ItemModeType.CHISEL);
         typelessName = name().substring(getType().name().length() + 1).toLowerCase();
-
-        ChiselsAndBits2.getInstance().getAPI().registerItemMode(this);
     }
 
-    //Cache typeless name for improved performance
-    @Override
+    /**
+     * Get the localized key from this Item Mode.
+     */
+    public String getLocalizedName() {
+        return I18n.format("general.chiselsandbits2.itemmode." + getTypelessName());
+    }
+
+    /**
+     * Return this enum's name() but without the type in front.
+     */
     public String getTypelessName() {
         return typelessName;
     }
 
-    //We also cache the type.
-    @Override
-    public IItemModeType getType() {
+    /**
+     * Get the name of this item mode as it can be stored in NBT.
+     */
+    public String getName() {
+        return name();
+    }
+
+    /**
+     * Get this item mode's type. (associated with name())
+     */
+    public ItemModeType getType() {
         return type;
     }
 
-    @Override
-    public IItemModeType getDefaultType() {
-        return CHISEL;
-    }
-
-    @Override
+    /**
+     * Returns whether or not this mode has an icon.
+     */
     public boolean hasIcon() {
         return this != MALLET_UNKNOWN && this != BLUEPRINT_UNKNOWN;
     }
 
-    @Override
+    /**
+     * Returns false when a item mode should not have a hotkey.
+     */
     public boolean hasHotkey() {
         switch (this) {
             case TAPEMEASURE_BIT: //Nobody will ever use tape measure hotkeys, they just take up space in the controls menu.
