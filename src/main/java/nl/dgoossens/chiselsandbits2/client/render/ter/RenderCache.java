@@ -5,11 +5,11 @@ import net.minecraft.client.renderer.Tessellator;
 import java.util.concurrent.FutureTask;
 
 /**
- * The cache of one chunk worth of rendering.
- * An entire sub chunk (16x16x16) is stored in the Tessellator!
+ * The cache of one region worth of rendering.
+ * A region of 8x8x8 is stored in one render cache.
  */
 public class RenderCache {
-    private FutureTask<Tessellator> future = null;
+    private FutureTask<Tessellator> renderTask = null;
     private GfxRenderState vboRenderer = null; //if this is null the RenderCache is new.
     private GfxRenderState oldRenderer = null; //To use if the vboRenderer isn't ready yet.
 
@@ -17,14 +17,14 @@ public class RenderCache {
      * Returns whether or not this cache needs to be re-rendered.
      */
     public boolean needsRebuilding() {
-        return vboRenderer == null;
+        return vboRenderer == null && !isRendering();
     }
 
     /**
      * Returns the rendering state to render.
      */
     public GfxRenderState getRenderState() {
-        return needsRebuilding() ? oldRenderer : vboRenderer;
+        return vboRenderer == null ? oldRenderer : vboRenderer;
     }
 
     /**
@@ -46,40 +46,50 @@ public class RenderCache {
     }
 
     /**
-     * Returns whether or not the future isn't null.
+     * Returns whether there is currently an active rendering task.
      */
-    public boolean hasFuture() {
-        return future != null;
+    public boolean isRendering() {
+        return renderTask != null;
     }
 
     /**
-     * Gets the future value.
+     * Returns if the active rendering task has been completed.
      */
-    public FutureTask<Tessellator> getFuture() {
-        return future;
+    public boolean hasRenderingCompleted() {
+        return renderTask != null && renderTask.isDone();
     }
 
     /**
-     * Resets the future value.
+     * Gets the active rendering task.
      */
-    public void resetFuture() {
-        future = null;
+    public FutureTask<Tessellator> getRenderingTask() {
+        return renderTask;
     }
 
     /**
-     * Sets the future to a given value.
+     * Marks the rendering as done and resets the rendering task.
      */
-    public void setFuture(FutureTask<Tessellator> f) {
-        future = f;
+    public void finishRendering() {
+        System.out.println("[FINISH] Finished rendering render cache...");
+        renderTask = null;
+    }
+
+    /**
+     * Sets the current rendering task.
+     */
+    public void setRenderingTask(FutureTask<Tessellator> f) {
+        if(f == null) throw new IllegalArgumentException("Can't set new rendering task to null, use RenderCache#finishRendering instead.");
+        renderTask = f;
     }
 
     /**
      * Rebuild can be called when this tile needs to be re-rendered.
-     * This will destroy the current renderer and it's data.
+     * This will cause a currently active rendering task to aborted immediately.
      */
     public void rebuild() {
+        System.out.println("[REBUILD] Asking for rebuild!");
         setRenderState(null);
-        if (future != null) future.cancel(true);
-        future = null;
+        if (renderTask != null) renderTask.cancel(true);
+        renderTask = null;
     }
 }

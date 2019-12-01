@@ -15,6 +15,7 @@ import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.fml.common.thread.SidedThreadGroups;
@@ -62,13 +63,16 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     private void setVoxelReference(VoxelBlobStateReference voxel) {
+        boolean hasVoxelBlob = voxelBlob != null;
         voxelBlob = voxel;
         requestModelDataUpdate();
         cachedShape = null;
         collisionShape = null;
         itemCache = null;
         recalculateShape();
-        getChunk(getWorld()).update(this);
+
+        if(getWorld() != null && getWorld().isRemote)
+            getChunk(getWorld()).update(this, hasVoxelBlob);
     }
 
     public boolean hasRenderTracker() {
@@ -163,10 +167,11 @@ public class ChiseledBlockTileEntity extends TileEntity {
     /**
      * Get the tile chunk this block belongs to.
      */
-    public TileChunk getChunk(final IBlockReader world) {
+    public TileChunk getChunk(final World world) {
         if (chunk == null) {
             chunk = findRenderChunk(getPos(), world, () -> new TileChunk(this));
-            chunk.register(this, true); //Register us to be a part of the chunk if this is the first time we're searching.
+            if(world.isRemote)
+                chunk.register(this, true); //Register us to be a part of the chunk if this is the first time we're searching.
         }
         return chunk;
     }

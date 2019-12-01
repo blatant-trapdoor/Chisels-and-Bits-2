@@ -31,10 +31,6 @@ public class NBTBlobConverter {
         }
     }
 
-    public ChiseledBlockTileEntity getTile() {
-        return tile;
-    }
-
     public VoxelBlobStateReference getVoxelRef(final int version) throws Exception {
         final VoxelBlobStateReference voxelRef = getReference();
         if (format == version)

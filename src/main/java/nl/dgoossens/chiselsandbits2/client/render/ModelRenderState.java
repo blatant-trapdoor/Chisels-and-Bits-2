@@ -38,13 +38,6 @@ public class ModelRenderState {
     }
 
     /**
-     * Query the dirty state without modifying it.
-     */
-    public boolean queryDirty() {
-        return dirty;
-    }
-
-    /**
      * Forcefully invalidates the render state. Should be used
      * if the model itself changed but not its neighbours.
      */

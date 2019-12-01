@@ -57,7 +57,7 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
 
     public static ChiseledBlockBaked getCachedModel(final ChiseledBlockTileEntity te) {
         try {
-            return getCachedModel(te.getVoxelReference(), te.getRenderTracker(), te.getRenderTracker().getRenderState(te.getVoxelReference()), getModelFormat());
+            return getCachedModel(te.getVoxelReference(), te.getRenderTracker(), te.getRenderTracker().getRenderState(), getModelFormat());
         } catch(ExecutionException x) {
             x.printStackTrace();
             return null;
@@ -68,17 +68,26 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
         return !ForgeMod.forgeLightPipelineEnabled ? DefaultVertexFormats.ITEM : ChiselsAndBitsBakedQuad.VERTEX_FORMAT;
     }
 
+    public static boolean validate(final VoxelNeighborRenderTracker renderTracker, final ModelRenderState mrs) {
+        //Invalidate this cache if the render tracker changed
+        if (mrs != null && renderTracker != null && !renderTracker.isValid()) {
+            modelCache.invalidate(mrs);
+            return true;
+        }
+        return false;
+    }
+
     private static ChiseledBlockBaked getCachedModel(final VoxelBlobStateReference reference, final VoxelNeighborRenderTracker renderTracker, final ModelRenderState mrs, final VertexFormat format) throws ExecutionException {
         if (reference == null) {
             if(NULL_MODEL == null) NULL_MODEL = new ChiseledBlockBaked(null, new ModelRenderState(), getModelFormat());
             return NULL_MODEL;
         }
-        //Invalidate this cache if the render tracker changed
-        if (renderTracker != null && !renderTracker.isValid())
-            modelCache.invalidate(mrs);
 
         if (format == getModelFormat())
-            return modelCache.get(mrs, () -> new ChiseledBlockBaked(reference, mrs, format));
+            return modelCache.get(mrs, () -> {
+                System.out.println("[MODEL] Making new model for render tracker with id: "+renderTracker);
+                return new ChiseledBlockBaked(reference, mrs, format);
+            });
 
         return new ChiseledBlockBaked(reference, mrs, format);
     }
@@ -93,7 +102,7 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
             rTracker = new VoxelNeighborRenderTracker(null, null);
 
         try {
-            return getCachedModel(data, rTracker, rTracker.getRenderState(data), getModelFormat());
+            return getCachedModel(data, rTracker, rTracker.getRenderState(), getModelFormat());
         } catch(ExecutionException e) {
             e.printStackTrace();
             return null;

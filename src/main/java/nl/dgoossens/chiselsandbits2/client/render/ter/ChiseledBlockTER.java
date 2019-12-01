@@ -89,16 +89,20 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         getTracker().futureTrackers.add(renderCache);
     }
 
-    private static boolean handleFutureTracker(final RenderCache renderCache) {
-        if (renderCache.hasFuture() && renderCache.getFuture().isDone()) {
+    /**
+     * Finalizes the rendering of a render cache. Only works if the render cache
+     * has finished rendering in the background.
+     */
+    private static boolean finalizeRendering(final RenderCache renderCache) {
+        if (renderCache.hasRenderingCompleted()) {
             try {
-                final Tessellator t = renderCache.getFuture().get();
+                final Tessellator t = renderCache.getRenderingTask().get();
                 getTracker().uploaders.offer(new UploadTracker(renderCache, t));
             } catch (CancellationException cancel) { //We're fine if the future got cancelled.
             } catch (Exception x) {
                 x.printStackTrace();
             } finally {
-                renderCache.resetFuture();
+                renderCache.finishRendering();
             }
             pendingTess.decrementAndGet();
             return true;
@@ -120,7 +124,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
 
     private static void uploadVBOs() {
         final WorldTracker tracker = getTracker();
-        tracker.futureTrackers.removeIf(ChiseledBlockTER::handleFutureTracker);
+        tracker.futureTrackers.removeIf(ChiseledBlockTER::finalizeRendering);
         final Stopwatch w = Stopwatch.createStarted();
         do { //We always upload one, no matter how many ms you want us to do it for.
             final UploadTracker t = tracker.uploaders.poll();
@@ -164,20 +168,20 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         final TileChunk rc = te.getChunk(te.getWorld());
         final BlockPos chunkOffset = te.getChunk(te.getWorld()).chunkOffset();
 
-        rc.validate();
+        rc.validate(rc.needsRebuilding());
 
         if (rc.needsRebuilding()) {
             //Rebuild!
-            final int dynamicTess = getMaxTessalators();
-            if (pendingTess.get() < dynamicTess && !rc.hasFuture()) {
-                System.out.println("Rebuilding "+te.getPos());
+            final int maxTess = getMaxTessalators();
+            if (pendingTess.get() < maxTess) {
                 try {
+                    System.out.println("Rebuilding "+te.getPos()+" because future is "+rc.getRenderingTask());
                     final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE));
                     final FutureTask<Tessellator> newFuture = new FutureTask<>(new BackgroundRenderer(cache, chunkOffset, te.getChunk(te.getWorld()).getTileList()));
+                    rc.setRenderingTask(newFuture);
+                    System.out.println("Set rendering task "+te.getPos()+" so future is now "+rc.getRenderingTask());
 
                     pool.submit(newFuture);
-                    rc.setFuture(newFuture);
-                    System.out.println("Set future for "+te.getPos());
                     pendingTess.incrementAndGet();
                     addFutureTracker(rc);
                 } catch (RejectedExecutionException err) {

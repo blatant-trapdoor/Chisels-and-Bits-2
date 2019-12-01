@@ -45,6 +45,8 @@ public class TileChunk extends RenderCache {
     }
 
     public void unregister(final ChiseledBlockTileEntity which, final boolean countRebuild) {
+        if (which == null) throw new NullPointerException();
+
         if (tiles.contains(which) && countRebuild) rebuild();
         tiles.remove(which);
     }
@@ -52,13 +54,14 @@ public class TileChunk extends RenderCache {
     /**
      * Inform the tile chunk that this tile specifically has been
      * updated and all neighbours need changing.
+     * Only causes rebuild if this is a update.
      */
-    public void update(final ChiseledBlockTileEntity which) {
+    public void update(final ChiseledBlockTileEntity which, final boolean update) {
         which.getRenderTracker().invalidate();
-        rebuild();
+        if(update) rebuild();
     }
 
-    public void validate() {
+    public void validate(boolean alreadyRebuilding) {
         //Don't validate more often than every 5ms.
         if(System.currentTimeMillis() - lastValidation > 5) {
             lastValidation = System.currentTimeMillis();
@@ -69,7 +72,7 @@ public class TileChunk extends RenderCache {
                 invalid = invalid || te.getRenderTracker().validate(te.getWorld(), te.getPos());
 
             //Make sure to only rebuild once
-            if(invalid)
+            if(invalid && !alreadyRebuilding)
                 rebuild();
         }
     }

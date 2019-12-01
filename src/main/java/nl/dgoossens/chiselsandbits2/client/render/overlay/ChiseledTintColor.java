@@ -40,7 +40,6 @@ public class ChiseledTintColor {
      * Get the default item colour, can be overwritten if need be for a block.
      */
     public int getDefaultColor(int v, int tintValue) {
-        final ItemStack titem = new ItemStack(BitUtil.getBlockState(v).getBlock().asItem());
-        return Minecraft.getInstance().getItemColors().getColor(titem, tintValue);
+        return Minecraft.getInstance().getItemColors().getColor(new ItemStack(BitUtil.getBlockState(v).getBlock().asItem()), tintValue);
     }
 }

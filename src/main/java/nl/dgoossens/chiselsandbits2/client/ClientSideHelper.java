@@ -25,7 +25,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.api.MenuAction;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
@@ -584,7 +584,7 @@ public class ClientSideHelper {
             GlStateManager.translated(t.getX() * fullScale, t.getY() * fullScale, t.getZ() * fullScale);
         }
 
-        RenderingAssistant.renderGhostModel(model, player.world, pos, previousSilhoutte, previousSilhoutte || ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_OVERLAP);
+        RenderingAssistant.renderGhostModel(model, player.world, pos, previousSilhoutte, previousSilhoutte || ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_OVERLAP || ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_FIT);
         GlStateManager.popMatrix();
     }
 

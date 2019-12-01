@@ -43,6 +43,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
 
     @Override
     public Tessellator call() {
+        long t = System.currentTimeMillis();
         Tessellator tessellator = null;
         try {
             do {
@@ -75,6 +76,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                 e.printStackTrace();
             }
 
+            System.out.println("[CHUNK] Rendering chunk with "+myPrivateList.size()+" tiles.");
             for (final ChiseledBlockTileEntity tx : myPrivateList) {
                 if (!tx.isRemoved()) {
                     final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
@@ -90,6 +92,8 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                 submitTessellator(tessellator);
                 return null;
             }
+
+            System.out.println("[TESS] Built tesselator in "+(System.currentTimeMillis()-t)+" ms.");
             return tessellator;
         } catch(Exception x) {
             //Catch exceptions and print them here.
