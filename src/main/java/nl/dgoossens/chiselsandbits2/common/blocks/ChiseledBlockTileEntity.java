@@ -15,6 +15,7 @@ import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.fml.common.thread.SidedThreadGroups;
@@ -35,8 +36,8 @@ import java.util.function.Supplier;
 
 public class ChiseledBlockTileEntity extends TileEntity {
     public static final ModelProperty<VoxelBlobStateReference> VOXEL_DATA = new ModelProperty<>();
-    public static final ModelProperty<Integer> PRIMARY_BLOCKSTATE = new ModelProperty<>();
     public static final ModelProperty<VoxelNeighborRenderTracker> NEIGHBOUR_RENDER_TRACKER = new ModelProperty<>();
+
     private TileChunk chunk; //The rendering chunk this block belongs to.
     private VoxelShape cachedShape, collisionShape;
     private int primaryBlock;
@@ -55,7 +56,6 @@ public class ChiseledBlockTileEntity extends TileEntity {
     public void setPrimaryBlock(int d) {
         if (VoxelType.getType(d) == VoxelType.BLOCKSTATE)
             primaryBlock = d;
-        requestModelDataUpdate();
     }
 
     public VoxelBlobStateReference getVoxelReference() {
@@ -63,6 +63,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     private void setVoxelReference(VoxelBlobStateReference voxel) {
+        boolean hasVoxelBlob = voxelBlob != null;
         voxelBlob = voxel;
         requestModelDataUpdate();
         cachedShape = null;
@@ -70,30 +71,12 @@ public class ChiseledBlockTileEntity extends TileEntity {
         itemCache = null;
         recalculateShape();
 
-        //Only update on client
-        if (world != null && world.isRemote) {
-            invalidate();
-
-            //Update/invalidate neighbours to get them re-rendered
-            for(Direction d : Direction.values()) {
-                try {
-                    BlockState neighbour = world.getBlockState(pos.offset(d));
-                    if(neighbour.getBlock() instanceof ChiseledBlock) {
-                        ((ChiseledBlockTileEntity) world.getTileEntity(pos.offset(d))).invalidate();
-                        getRenderTracker().update(world, pos); //Update the render tracker information of the neighbouring blocks.
-                    }
-                } catch(Exception x) {
-                    x.printStackTrace();
-                }
-            }
-        }
+        if(getWorld() != null && getWorld().isRemote)
+            getChunk(getWorld()).update(this, hasVoxelBlob);
     }
 
-    public void invalidate() {
-        if (getChunk(world) != null)
-            chunk.rebuild();
-
-        getRenderTracker().invalidate();
+    public boolean hasRenderTracker() {
+        return renderTracker != null;
     }
 
     public VoxelNeighborRenderTracker getRenderTracker() {
@@ -116,7 +99,6 @@ public class ChiseledBlockTileEntity extends TileEntity {
     public IModelData getModelData() {
         IModelData imd = super.getModelData();
         imd.setData(VOXEL_DATA, getVoxelReference());
-        imd.setData(PRIMARY_BLOCKSTATE, getPrimaryBlock());
         imd.setData(NEIGHBOUR_RENDER_TRACKER, getRenderTracker());
         return imd;
     }
@@ -185,10 +167,11 @@ public class ChiseledBlockTileEntity extends TileEntity {
     /**
      * Get the tile chunk this block belongs to.
      */
-    public TileChunk getChunk(final IBlockReader world) {
+    public TileChunk getChunk(final World world) {
         if (chunk == null) {
             chunk = findRenderChunk(getPos(), world, () -> new TileChunk(this));
-            chunk.register(this, true); //Register us to be a part of the chunk if this is the first time we're searching.
+            if(world.isRemote)
+                chunk.register(this, true); //Register us to be a part of the chunk if this is the first time we're searching.
         }
         return chunk;
     }
@@ -197,18 +180,13 @@ public class ChiseledBlockTileEntity extends TileEntity {
      * Find the rendering chunk this TE belongs to.
      */
     public static TileChunk findRenderChunk(final BlockPos pos, final IBlockReader access, final Supplier<TileChunk> backup) {
-        int chunkPosX = pos.getX();
-        int chunkPosY = pos.getY();
-        int chunkPosZ = pos.getZ();
+        int chunkPosX = pos.getX() & TileChunk.CHUNK_COORDINATE_MASK;
+        int chunkPosY = pos.getY() & TileChunk.CHUNK_COORDINATE_MASK;
+        int chunkPosZ = pos.getZ() & TileChunk.CHUNK_COORDINATE_MASK;
 
-        final int mask = ~0xf;
-        chunkPosX = chunkPosX & mask;
-        chunkPosY = chunkPosY & mask;
-        chunkPosZ = chunkPosZ & mask;
-
-        for (int x = 0; x < 16; ++x) {
-            for (int y = 0; y < 16; ++y) {
-                for (int z = 0; z < 16; ++z) {
+        for (int x = 0; x < TileChunk.TILE_CHUNK_SIZE; ++x) {
+            for (int y = 0; y < TileChunk.TILE_CHUNK_SIZE; ++y) {
+                for (int z = 0; z < TileChunk.TILE_CHUNK_SIZE; ++z) {
                     final TileEntity te = access.getTileEntity(new BlockPos(chunkPosX + x, chunkPosY + y, chunkPosZ + z));
                     if (te instanceof ChiseledBlockTileEntity && ((ChiseledBlockTileEntity) te).chunk != null)
                         return ((ChiseledBlockTileEntity) te).chunk;
@@ -244,13 +222,6 @@ public class ChiseledBlockTileEntity extends TileEntity {
         }
 
         setVoxelReference(voxelRef);
-        setPrimaryBlock(converter.getPrimaryBlockStateID());
-        try {
-            //Trigger re-render on client
-            if (world.isRemote && chunk != null)
-                chunk.rebuild();
-        } catch (Exception x) {
-        }
         return voxelRef == null || !voxelRef.equals(originalRef);
     }
 
@@ -278,6 +249,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
                 world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), 3);
             }
         } catch (Exception x) {
+            x.printStackTrace();
         }
     }
 

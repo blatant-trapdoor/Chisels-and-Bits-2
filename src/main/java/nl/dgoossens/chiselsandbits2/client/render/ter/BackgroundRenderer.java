@@ -13,6 +13,7 @@ import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import org.lwjgl.opengl.GL11;
 
 import java.lang.ref.SoftReference;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
@@ -24,12 +25,12 @@ public class BackgroundRenderer implements Callable<Tessellator> {
 
     private final static BlockRendererDispatcher blockRenderer = Minecraft.getInstance().getBlockRendererDispatcher();
     private final static Queue<CBTessellatorRefHold> previousTessellators = new LinkedBlockingQueue<>();
-    private final List<ChiseledBlockTileEntity> myPrivateList;
+    private final Collection<ChiseledBlockTileEntity> myPrivateList;
 
     private final Region cache;
     private final BlockPos chunkOffset;
 
-    public BackgroundRenderer(final Region cache, final BlockPos chunkOffset, final List<ChiseledBlockTileEntity> myList) {
+    public BackgroundRenderer(final Region cache, final BlockPos chunkOffset, final Collection<ChiseledBlockTileEntity> myList) {
         myPrivateList = myList;
         this.cache = cache;
         this.chunkOffset = chunkOffset;
@@ -42,6 +43,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
 
     @Override
     public Tessellator call() {
+        long t = System.currentTimeMillis();
         Tessellator tessellator = null;
         try {
             do {
@@ -74,6 +76,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                 e.printStackTrace();
             }
 
+            System.out.println("[CHUNK] Rendering chunk with "+myPrivateList.size()+" tiles.");
             for (final ChiseledBlockTileEntity tx : myPrivateList) {
                 if (!tx.isRemoved()) {
                     final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
@@ -89,6 +92,8 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                 submitTessellator(tessellator);
                 return null;
             }
+
+            System.out.println("[TESS] Built tesselator in "+(System.currentTimeMillis()-t)+" ms.");
             return tessellator;
         } catch(Exception x) {
             //Catch exceptions and print them here.

@@ -13,11 +13,9 @@ import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 
 public class NBTBlobConverter {
-    public static final String NBT_PRIMARY_STATE = "b";
     public static final String NBT_VERSIONED_VOXEL = "X";
 
     private ChiseledBlockTileEntity tile;
-    private int primaryBlockState;
     private VoxelBlobStateReference voxelBlobRef;
     private int format = -1;
 
@@ -28,18 +26,9 @@ public class NBTBlobConverter {
         this.tile = tile;
 
         if (tile != null) {
-            primaryBlockState = tile.getPrimaryBlock();
             voxelBlobRef = tile.getVoxelReference();
             format = voxelBlobRef == null ? -1 : voxelBlobRef.getFormat();
         }
-    }
-
-    public int getPrimaryBlockStateID() {
-        return primaryBlockState;
-    }
-
-    public ChiseledBlockTileEntity getTile() {
-        return tile;
     }
 
     public VoxelBlobStateReference getVoxelRef(final int version) throws Exception {
@@ -51,13 +40,11 @@ public class NBTBlobConverter {
 
     public void fillWith(final BlockState state) {
         voxelBlobRef = new VoxelBlobStateReference(BitUtil.getBlockId(state));
-        updatePrimaryStateFromBlob();
     }
 
     public void setBlob(final VoxelBlob vb) {
         voxelBlobRef = new VoxelBlobStateReference(vb);
         format = voxelBlobRef.getFormat();
-        updatePrimaryStateFromBlob();
     }
 
     public final void writeChiselData(final CompoundNBT compound) {
@@ -66,12 +53,11 @@ public class NBTBlobConverter {
         final int newFormat = VoxelVersions.getDefault();
         final byte[] voxelBytes = newFormat == format ? voxelRef.getByteArray() : voxelRef.getVoxelBlob().blobToBytes(newFormat);
 
-        compound.putInt(NBT_PRIMARY_STATE, primaryBlockState);
         compound.putByteArray(NBT_VERSIONED_VOXEL, voxelBytes);
     }
 
     public final boolean readChiselData(final CompoundNBT compound, final int preferredFormat) {
-        if (compound == null || !compound.contains(NBT_PRIMARY_STATE) || !compound.contains(NBT_VERSIONED_VOXEL)) {
+        if (compound == null || !compound.contains(NBT_VERSIONED_VOXEL)) {
             voxelBlobRef = new VoxelBlobStateReference();
             format = voxelBlobRef.getFormat();
 
@@ -80,7 +66,6 @@ public class NBTBlobConverter {
             return false;
         }
 
-        primaryBlockState = compound.getInt(NBT_PRIMARY_STATE);
         byte[] v = compound.getByteArray(NBT_VERSIONED_VOXEL);
         voxelBlobRef = new VoxelBlobStateReference(v);
         format = voxelBlobRef.getFormat();
@@ -103,10 +88,6 @@ public class NBTBlobConverter {
             return tile.updateBlob(this);
         }
         return true;
-    }
-
-    public void updatePrimaryStateFromBlob() {
-        primaryBlockState = getReference().getVoxelBlob().getMostCommonStateId();
     }
 
     public ItemStack getItemStack() {

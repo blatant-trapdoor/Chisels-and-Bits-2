@@ -4,29 +4,31 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
 public class TileChunk extends RenderCache {
-    private final TileList tiles = new TileList();
+    //Every tile chunk is one quarter chunk.
+    public static final int TILE_CHUNK_SIZE = 8;
+    public static final int CHUNK_COORDINATE_MASK = 0xfffffff8;
+
+    private final Collection<ChiseledBlockTileEntity> tiles = new HashSet<>();
+    private long lastValidation = 0;
 
     /**
      * Create the chunk by scanning all tile entities and registering them without triggering
      * rebuild. This saves us from having to do multiple rebuilds when the world loads in.
      */
     public TileChunk(ChiseledBlockTileEntity tileEntity) {
-        int chunkPosX = tileEntity.getPos().getX();
-        int chunkPosY = tileEntity.getPos().getY();
-        int chunkPosZ = tileEntity.getPos().getZ();
+        int chunkPosX = tileEntity.getPos().getX() & CHUNK_COORDINATE_MASK;
+        int chunkPosY = tileEntity.getPos().getY() & CHUNK_COORDINATE_MASK;
+        int chunkPosZ = tileEntity.getPos().getZ() & CHUNK_COORDINATE_MASK;
 
-        final int mask = ~0xf;
-        chunkPosX = chunkPosX & mask;
-        chunkPosY = chunkPosY & mask;
-        chunkPosZ = chunkPosZ & mask;
-
-        for (int x = 0; x < 16; ++x) {
-            for (int y = 0; y < 16; ++y) {
-                for (int z = 0; z < 16; ++z) {
+        for (int x = 0; x < TILE_CHUNK_SIZE; ++x) {
+            for (int y = 0; y < TILE_CHUNK_SIZE; ++y) {
+                for (int z = 0; z < TILE_CHUNK_SIZE; ++z) {
                     final TileEntity te = tileEntity.getWorld().getTileEntity(new BlockPos(chunkPosX + x, chunkPosY + y, chunkPosZ + z));
                     if (te instanceof ChiseledBlockTileEntity)
                         register((ChiseledBlockTileEntity) te, false);
@@ -38,23 +40,40 @@ public class TileChunk extends RenderCache {
     public void register(final ChiseledBlockTileEntity which, final boolean countRebuild) {
         if (which == null) throw new NullPointerException();
 
-        tiles.getWriteLock().lock();
-        try {
-            if (!tiles.contains(which) && countRebuild) rebuild();
-            tiles.add(which);
-        } finally {
-            tiles.getWriteLock().unlock();
-        }
+        if (!tiles.contains(which) && countRebuild) rebuild();
+        tiles.add(which);
     }
 
     public void unregister(final ChiseledBlockTileEntity which, final boolean countRebuild) {
-        tiles.getWriteLock().lock();
+        if (which == null) throw new NullPointerException();
 
-        try {
-            if (tiles.contains(which) && countRebuild) rebuild();
-            tiles.remove(which);
-        } finally {
-            tiles.getWriteLock().unlock();
+        if (tiles.contains(which) && countRebuild) rebuild();
+        tiles.remove(which);
+    }
+
+    /**
+     * Inform the tile chunk that this tile specifically has been
+     * updated and all neighbours need changing.
+     * Only causes rebuild if this is a update.
+     */
+    public void update(final ChiseledBlockTileEntity which, final boolean update) {
+        which.getRenderTracker().invalidate();
+        if(update) rebuild();
+    }
+
+    public void validate(boolean alreadyRebuilding) {
+        //Don't validate more often than every 5ms.
+        if(System.currentTimeMillis() - lastValidation > 5) {
+            lastValidation = System.currentTimeMillis();
+            boolean invalid = false;
+
+            //Validate the neighbours for all TE's in the chunk
+            for (final ChiseledBlockTileEntity te : tiles)
+                invalid = invalid || te.getRenderTracker().validate(te.getWorld(), te.getPos());
+
+            //Make sure to only rebuild once
+            if(invalid && !alreadyRebuilding)
+                rebuild();
         }
     }
 
@@ -63,37 +82,16 @@ public class TileChunk extends RenderCache {
      * corner (0, 0, 0) of this chunk.
      */
     public BlockPos chunkOffset() {
-        tiles.getReadLock().lock();
+        if (getTileList().isEmpty()) return BlockPos.ZERO;
 
-        try {
-            if (getTiles().isEmpty()) return BlockPos.ZERO;
-
-            final int bitMask = ~0xf; //This bitmask drops the last 4 bits, effectively getting the chunkX.
-            final Iterator<ChiseledBlockTileEntity> i = getTiles().iterator();
-            final BlockPos tilepos = i.hasNext() ? i.next().getPos() : BlockPos.ZERO;
-            return new BlockPos(tilepos.getX() & bitMask, tilepos.getY() & bitMask, tilepos.getZ() & bitMask);
-        } finally {
-            tiles.getReadLock().unlock();
-        }
+        final BlockPos tilepos = getTileList().iterator().next().getPos();
+        return new BlockPos(tilepos.getX() & CHUNK_COORDINATE_MASK, tilepos.getY() & CHUNK_COORDINATE_MASK, tilepos.getZ() & CHUNK_COORDINATE_MASK);
     }
 
     /**
      * Get the list of tile entities in this chunk.
      */
-    public List<ChiseledBlockTileEntity> getTileList() {
-        return tiles.createCopy();
-    }
-
-    /**
-     * Virtually identical to getTileList();
-     */
-    public TileList getTiles() {
+    public Collection<ChiseledBlockTileEntity> getTileList() {
         return tiles;
-    }
-
-    //Write to string as the chunk offset.
-    @Override
-    public String toString() {
-        return String.valueOf(chunkOffset());
     }
 }

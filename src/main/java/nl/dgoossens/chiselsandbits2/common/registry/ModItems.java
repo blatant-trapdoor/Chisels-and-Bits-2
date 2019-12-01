@@ -132,20 +132,20 @@ public class ModItems {
         switch(stack.getItem().getRegistryName().getPath().toUpperCase()) {
             case "WHITE_BIT_BAG": return 16383998;
             case "ORANGE_BIT_BAG": return 16351261;
-            case "MAGENTA_BIT_BAG ": return 13061821;
-            case "LIGHT_BLUE_BIT_BAG ": return 3847130;
-            case "YELLOW_BIT_BAG ": return 16701501;
-            case "LIME_BIT_BAG ": return 8439583;
-            case "PINK_BIT_BAG ": return 15961002;
-            case "GRAY_BIT_BAG ": return 4673362;
-            case "LIGHT_GRAY_BIT_BAG ": return 10329495;
-            case "CYAN_BIT_BAG ": return 1481884;
-            case "PURPLE_BIT_BAG ": return 8991416;
-            case "BLUE_BIT_BAG ": return 3949738;
-            case "BROWN_BIT_BAG ": return 8606770;
-            case "GREEN_BIT_BAG ": return 6192150;
-            case "RED_BIT_BAG ": return 11546150;
-            case "BLACK_BIT_BAG ": return 1908001;
+            case "MAGENTA_BIT_BAG": return 13061821;
+            case "LIGHT_BLUE_BIT_BAG": return 3847130;
+            case "YELLOW_BIT_BAG": return 16701501;
+            case "LIME_BIT_BAG": return 8439583;
+            case "PINK_BIT_BAG": return 15961002;
+            case "GRAY_BIT_BAG": return 4673362;
+            case "LIGHT_GRAY_BIT_BAG": return 10329495;
+            case "CYAN_BIT_BAG": return 1481884;
+            case "PURPLE_BIT_BAG": return 8991416;
+            case "BLUE_BIT_BAG": return 3949738;
+            case "BROWN_BIT_BAG": return 8606770;
+            case "GREEN_BIT_BAG": return 6192150;
+            case "RED_BIT_BAG": return 11546150;
+            case "BLACK_BIT_BAG": return 1908001;
         }
         return -1;
     }
