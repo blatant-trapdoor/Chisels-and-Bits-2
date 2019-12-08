@@ -10,7 +10,6 @@ import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BitStream;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BlobSerilizationCache;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.VoxelSerializer;
 import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import javax.annotation.Nullable;
@@ -65,6 +64,10 @@ public final class VoxelBlob implements IVoxelSrc {
     protected VoxelBlob(final VoxelBlob vb) {
         for (int x = 0; x < values.length; ++x)
             values[x] = vb.values[x];
+    }
+
+    protected int[] getValues() {
+        return values;
     }
 
     /**
@@ -406,22 +409,20 @@ public final class VoxelBlob implements IVoxelSrc {
         }
     }
 
+    //--- SERIALIZATION ---
+
     /**
-     * Builds a blob from a byte array.
+     * Reads this voxelblob from a byte array.
      */
-    public void blobFromBytes(final byte[] bytes) {
+    public void readFromBytes(final byte[] bytes) {
         try {
-            if (bytes.length < 1) {
+            if (bytes.length < 1)
                 throw new RuntimeException("Unable to load VoxelBlob: length of data was 0");
-            }
-            final ByteArrayInputStream out = new ByteArrayInputStream(bytes);
-            read(out);
+            read(new ByteArrayInputStream(bytes));
         } catch (Exception x) {
             throw new RuntimeException("Unable to load VoxelBlob", x);
         }
     }
-
-    //--- SERIALIZATION ---
 
     /**
      * Reads this voxelblobs values from the supplied ByteArrayInputStream.
@@ -447,14 +448,7 @@ public final class VoxelBlob implements IVoxelSrc {
         try {
             VoxelSerializer bs = versions.getWorker();
             if (bs == null) throw new RuntimeException("Invalid VoxelVersion: " + version + ", worker was null");
-            bs.inflate(header);
-
-            final int byteOffset = header.readVarInt();
-            final int bytesOfInterest = header.readVarInt();
-
-            final BitStream bits = BitStream.valueOf(byteOffset, ByteBuffer.wrap(bb.array(), header.readerIndex(), bytesOfInterest));
-            for (int x = 0; x < ARRAY_SIZE; x++)
-                values[x] = bs.readVoxelStateID(bits);
+            bs.read(header, this);
         } catch (Exception x) {
             x.printStackTrace();
         }
@@ -463,69 +457,34 @@ public final class VoxelBlob implements IVoxelSrc {
     /**
      * Creates a byte array representing this blob.
      */
-    public byte[] blobToBytes(final int version) {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream(best_buffer_size);
-        write(out, getSerializer(version));
-        final byte[] o = out.toByteArray();
-        if (best_buffer_size < o.length) best_buffer_size = o.length;
-        return o;
-    }
-
-    /**
-     * Get the serializer to use to serialize this
-     * blob with the specified version.
-     */
-    @Nullable
-    private VoxelSerializer getSerializer(final int version) {
+    public byte[] write(final int version) {
+        final ByteArrayOutputStream o = new ByteArrayOutputStream(best_buffer_size);
         VoxelVersions ret = VoxelVersions.getVersion(version);
         if (ret == VoxelVersions.ANY) throw new RuntimeException("Invalid Version: " + version);
         try {
-            VoxelSerializer worker = ret.getWorker();
-            if (worker == null) return null;
-            worker.deflate(this);
-            return worker;
+            VoxelSerializer bs = ret.getWorker();
+            if (bs == null) return null;
+
+            try {
+                final PacketBuffer pb = BlobSerilizationCache.getCachePacketBuffer();
+                pb.writeVarInt(bs.getVersion().getId());
+                bs.write(pb, this, o, best_buffer_size);
+                o.close();
+            } catch (final IOException e) {
+                throw new RuntimeException(e);
+            }
+            final byte[] ot = o.toByteArray();
+            if (best_buffer_size < ot.length) best_buffer_size = ot.length;
+            return ot;
         } catch (Exception x) {
             x.printStackTrace();
         }
-        return null;
+        return o.toByteArray();
     }
 
     /**
-     * Write this blob to a ByteArrayOutputStream.
+     * Object used to cache the state of a face's visibility. Has it been culled, is it on an edge?
      */
-    private void write(final ByteArrayOutputStream o, @Nullable final VoxelSerializer bs) {
-        if (bs == null) return;
-        try {
-            final Deflater def = BlobSerilizationCache.getCacheDeflater();
-            final DeflaterOutputStream w = new DeflaterOutputStream(o, def, best_buffer_size);
-
-            final PacketBuffer pb = BlobSerilizationCache.getCachePacketBuffer();
-            pb.writeVarInt(bs.getVersion().getId());
-            bs.write(pb);
-
-            final BitStream set = BlobSerilizationCache.getCacheBitStream();
-            for (int x = 0; x < ARRAY_SIZE; x++)
-                bs.writeVoxelState(values[x], set);
-
-            final byte[] arrayContents = set.toByteArray();
-            final int bytesToWrite = arrayContents.length;
-            final int byteOffset = set.byteOffset();
-
-            pb.writeVarInt(byteOffset);
-            pb.writeVarInt(bytesToWrite - byteOffset);
-
-            w.write(pb.array(), 0, pb.writerIndex());
-            w.write(arrayContents, byteOffset, bytesToWrite - byteOffset);
-
-            w.finish();
-            w.close();
-            o.close();
-            def.reset();
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static class VisibleFace {
         public boolean isEdge;
         public boolean visibleFace;

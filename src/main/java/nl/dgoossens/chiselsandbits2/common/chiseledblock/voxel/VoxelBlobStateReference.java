@@ -23,7 +23,7 @@ public final class VoxelBlobStateReference implements IStateRef {
     }
 
     public VoxelBlobStateReference(final VoxelBlob blob) {
-        this(blob.blobToBytes(VoxelVersions.getDefault()));
+        this(blob.write(VoxelVersions.getDefault()));
         data.blob = new SoftReference<>(new VoxelBlob(blob));
     }
 
@@ -47,14 +47,14 @@ public final class VoxelBlobStateReference implements IStateRef {
         if (stateId == 0) {
             if (airBlob == null) {
                 final VoxelBlob vb = new VoxelBlob();
-                airBlob = vb.blobToBytes(VoxelVersions.getDefault());
+                airBlob = vb.write(VoxelVersions.getDefault());
             }
             return airBlob;
         }
 
         final VoxelBlob vb = new VoxelBlob();
         vb.fill(stateId);
-        return vb.blobToBytes(VoxelVersions.getDefault());
+        return vb.write(VoxelVersions.getDefault());
     }
 
     private static byte[] findDefaultBytes() {
@@ -65,7 +65,7 @@ public final class VoxelBlobStateReference implements IStateRef {
                 for(int z = 2; z <= 13; z++) {
                     vb.set(x, y, z, b);
                 }
-        return vb.blobToBytes(VoxelVersions.getDefault());
+        return vb.write(VoxelVersions.getDefault());
     }
 
     private static void addReference(final VoxelBlobStateInstance inst) {

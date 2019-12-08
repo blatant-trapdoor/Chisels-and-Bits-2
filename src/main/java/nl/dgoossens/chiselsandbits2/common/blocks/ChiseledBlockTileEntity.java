@@ -237,7 +237,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
      * Set the voxel blob to new data.
      */
     public void setBlob(final VoxelBlob vb) {
-        setVoxelReference(new VoxelBlobStateReference(vb.blobToBytes(VoxelVersions.getDefault())));
+        setVoxelReference(new VoxelBlobStateReference(vb.write(VoxelVersions.getDefault())));
         setPrimaryBlock(vb.getMostCommonStateId()); //We only want this to every be a blockstate.
         markDirty();
         try {

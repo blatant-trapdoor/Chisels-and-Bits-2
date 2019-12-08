@@ -1,13 +1,11 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BlobSerializer;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.VoxelSerializer;
-
-import java.util.stream.Stream;
 
 public enum VoxelVersions {
     ANY(-1),
     COMPACT(1, BlobSerializer.class),
+    //MODERN(2, ModernBlobSerializer.class),
     ;
 
     private int id;
@@ -33,7 +31,10 @@ public enum VoxelVersions {
      * Get the voxel version using the id specified.
      */
     public static VoxelVersions getVersion(int i) {
-        return Stream.of(VoxelVersions.values()).filter(f -> f.id == i).findAny().orElse(ANY);
+        for(VoxelVersions vv : VoxelVersions.values()) {
+            if(vv.id == i) return vv;
+        }
+        return ANY;
     }
 
     /**

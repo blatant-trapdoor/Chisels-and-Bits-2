@@ -2,13 +2,21 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization;
 
 import net.minecraft.network.PacketBuffer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelSerializer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 public class BlobSerializer implements VoxelSerializer {
+    public final static int ARRAY_SIZE = 16 * 16 * 16; //This blob serializer uses this array size specifically.
+
     int lastState = -1;
     int lastIndex = -1;
     private int types;
@@ -20,55 +28,81 @@ public class BlobSerializer implements VoxelSerializer {
     public BlobSerializer() {
     }
 
-    public void deflate(
-            final VoxelBlob toDeflate) {
-        final Set<Integer> entries = toDeflate.listContents();
+    public void read(final PacketBuffer header, final VoxelBlob voxelBlob) {
+        types = header.readVarInt();
+        palette = new int[types];
+        index = null;
+
+        for (int x = 0; x < types; x++) {
+            palette[x] = readStateID(header);
+        }
+
+        bitsPerInt = bitsPerBit();
+        bitsPerIntMinus1 = bitsPerInt - 1;
+
+        final ByteBuffer bb = BlobSerilizationCache.getCacheBuffer();
+        final int[] values = getValues(voxelBlob);
+        final int byteOffset = header.readVarInt();
+        final int bytesOfInterest = header.readVarInt();
+
+        final BitStream bits = BitStream.valueOf(byteOffset, ByteBuffer.wrap(bb.array(), header.readerIndex(), bytesOfInterest));
+        for (int x = 0; x < VoxelBlob.ARRAY_SIZE; x++)
+            values[x] = readVoxelStateID(bits);
+    }
+
+    public void write(final PacketBuffer pb, final VoxelBlob VoxelBLob, final ByteArrayOutputStream o, final int best_buffer_size) throws IOException {
+        final Set<Integer> entries = VoxelBLob.listContents();
 
         index = new HashMap<>(types = entries.size());
         palette = new int[types];
 
         int offset = 0;
-        for (final int o : entries) {
-            final int stateID = o;
+        for (final int o2 : entries) {
+            final int stateID = o2; //Copy the object to make sure it gets unboxed and stuff.
             palette[offset] = stateID;
             index.put(stateID, offset++);
         }
 
         bitsPerInt = bitsPerBit();
         bitsPerIntMinus1 = bitsPerInt - 1;
-    }
 
-    public void inflate(
-            final PacketBuffer toInflate) {
-        types = toInflate.readVarInt();
-        palette = new int[types];
-        index = null;
+        final Deflater def = BlobSerilizationCache.getCacheDeflater();
+        final DeflaterOutputStream w = new DeflaterOutputStream(o, def, best_buffer_size);
+        final int[] values = getValues(VoxelBLob);
 
-        for (int x = 0; x < types; x++) {
-            palette[x] = readStateID(toInflate);
-        }
-
-        bitsPerInt = bitsPerBit();
-        bitsPerIntMinus1 = bitsPerInt - 1;
-    }
-
-    public void write(
-            final PacketBuffer to) {
         // palette size...
-        to.writeVarInt(palette.length);
+        pb.writeVarInt(palette.length);
 
         // write palette
         for (int x = 0; x < palette.length; x++) {
-            writeStateID(to, palette[x]);
+            writeStateID(pb, palette[x]);
         }
+
+        final BitStream set = BlobSerilizationCache.getCacheBitStream();
+        for (int x = 0; x < ARRAY_SIZE; x++)
+            writeVoxelState(values[x], set);
+
+        final byte[] arrayContents = set.toByteArray();
+        final int bytesToWrite = arrayContents.length;
+        final int byteOffset = set.byteOffset();
+
+        pb.writeVarInt(byteOffset);
+        pb.writeVarInt(bytesToWrite - byteOffset);
+
+        w.write(pb.array(), 0, pb.writerIndex());
+        w.write(arrayContents, byteOffset, bytesToWrite - byteOffset);
+
+        w.finish();
+        w.close();
+        def.reset();
     }
 
-    protected int readStateID(
+    private int readStateID(
             final PacketBuffer buffer) {
         return buffer.readVarInt();
     }
 
-    protected void writeStateID(
+    private void writeStateID(
             final PacketBuffer buffer,
             final int key) {
         buffer.writeVarInt(key);
@@ -100,7 +134,7 @@ public class BlobSerializer implements VoxelSerializer {
      * @param bits
      * @return stateID
      */
-    public int readVoxelStateID(
+    private int readVoxelStateID(
             final BitStream bits) {
         int index = 0;
 
@@ -117,7 +151,7 @@ public class BlobSerializer implements VoxelSerializer {
      * @param stateID
      * @param stream
      */
-    public void writeVoxelState(
+    private void writeVoxelState(
             final int stateID,
             final BitStream stream) {
         final int index = getIndex(stateID);

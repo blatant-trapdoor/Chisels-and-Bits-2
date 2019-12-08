@@ -35,7 +35,7 @@ public class NBTBlobConverter {
         final VoxelBlobStateReference voxelRef = getReference();
         if (format == version)
             return new VoxelBlobStateReference(voxelRef.getByteArray());
-        return new VoxelBlobStateReference(voxelRef.getVoxelBlob().blobToBytes(version));
+        return new VoxelBlobStateReference(voxelRef.getVoxelBlob().write(version));
     }
 
     public void fillWith(final BlockState state) {
@@ -51,7 +51,7 @@ public class NBTBlobConverter {
         final VoxelBlobStateReference voxelRef = getReference();
 
         final int newFormat = VoxelVersions.getDefault();
-        final byte[] voxelBytes = newFormat == format ? voxelRef.getByteArray() : voxelRef.getVoxelBlob().blobToBytes(newFormat);
+        final byte[] voxelBytes = newFormat == format ? voxelRef.getByteArray() : voxelRef.getVoxelBlob().write(newFormat);
 
         compound.putByteArray(NBT_VERSIONED_VOXEL, voxelBytes);
     }
@@ -73,7 +73,7 @@ public class NBTBlobConverter {
         boolean formatChanged = false;
         if (preferredFormat != format && preferredFormat != VoxelVersions.ANY.getId()) {
             formatChanged = true;
-            v = voxelBlobRef.getVoxelBlob().blobToBytes(preferredFormat);
+            v = voxelBlobRef.getVoxelBlob().write(preferredFormat);
             voxelBlobRef = new VoxelBlobStateReference(v);
             format = voxelBlobRef.getFormat();
         }
