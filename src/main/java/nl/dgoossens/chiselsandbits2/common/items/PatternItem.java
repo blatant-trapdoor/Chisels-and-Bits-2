@@ -8,6 +8,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
+import nl.dgoossens.chiselsandbits2.api.item.IRotatableItem;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
@@ -18,7 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class PatternItem extends TypedItem {
+public class PatternItem extends TypedItem implements IRotatableItem {
     public PatternItem(Properties builder) {
         super(builder);
     }
@@ -49,5 +50,10 @@ public class PatternItem extends TypedItem {
                 ChiselsAndBits2.getInstance().getKeybindings().copyPattern,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
+    }
+
+    @Override
+    public void rotate(ItemStack item, Direction.Axis axis) {
+
     }
 }

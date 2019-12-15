@@ -23,6 +23,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
@@ -244,7 +245,7 @@ public class ClientSideHelper {
             final PlayerEntity player = Minecraft.getInstance().player;
             //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
             boolean tapeMeasure = player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem;
-            if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof ChiselUtil.BitModifyItem) {
+            if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof IBitModifyItem) {
                 final RayTraceResult rayTrace = ChiselUtil.rayTrace(player);
                 if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK)
                     return false;

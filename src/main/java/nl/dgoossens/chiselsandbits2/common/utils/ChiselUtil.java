@@ -17,6 +17,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
+import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
@@ -99,7 +100,7 @@ public class ChiselUtil {
      * event.
      */
     public static boolean canChiselPosition(final BlockPos pos, final PlayerEntity player, final BlockState state, final Direction face) {
-        if (!(player.getHeldItemMainhand().getItem() instanceof BitModifyItem))
+        if (!(player.getHeldItemMainhand().getItem() instanceof IBitModifyItem))
             return false; //A valid item needs to be in the main hand!
         if (!player.getEntityWorld().getWorldBorder().contains(pos)) return false;
         if (!player.getEntityWorld().isBlockModifiable(player, pos)) return false;
@@ -233,9 +234,4 @@ public class ChiselUtil {
 
         return new BlockPos(t_x, t_y, t_z);
     }
-
-    //Interfaces to use to designate which items can place or remove bits.
-    public static interface BitPlaceItem extends BitModifyItem {}
-    public static interface BitRemoveItem extends BitModifyItem {}
-    public static interface BitModifyItem {}
 }

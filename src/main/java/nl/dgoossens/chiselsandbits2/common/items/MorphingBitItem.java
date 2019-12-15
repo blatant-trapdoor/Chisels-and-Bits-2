@@ -5,6 +5,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
+import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
@@ -15,9 +16,14 @@ import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class MorphingBitItem extends TypedItem implements ChiselUtil.BitPlaceItem, ChiselUtil.BitRemoveItem {
+public class MorphingBitItem extends TypedItem implements IBitModifyItem {
     public MorphingBitItem(Properties builder) {
         super(builder);
+    }
+
+    @Override
+    public boolean canPerformModification(IBitModifyItem.ModificationType type) {
+        return type == IBitModifyItem.ModificationType.BUILD || type == IBitModifyItem.ModificationType.EXTRACT;
     }
 
     @Override

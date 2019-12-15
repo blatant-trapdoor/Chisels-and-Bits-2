@@ -15,6 +15,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
@@ -28,9 +29,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ChiselItem extends TypedItem implements ChiselUtil.BitPlaceItem, ChiselUtil.BitRemoveItem {
+public class ChiselItem extends TypedItem implements IBitModifyItem {
     public ChiselItem(Item.Properties builder) {
         super(builder);
+    }
+
+    @Override
+    public boolean canPerformModification(ModificationType type) {
+        return type == ModificationType.BUILD || type == ModificationType.EXTRACT;
     }
 
     @Override

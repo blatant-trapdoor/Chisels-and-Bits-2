@@ -144,19 +144,19 @@ public final class VoxelBlob implements IVoxelSrc {
      */
     public VoxelBlob spin(final Direction.Axis axis) {
         final VoxelBlob out = new VoxelBlob();
-        //Rotate by -90 Degrees: x' = y y' = - x
+        //Rotate by 90 Degrees: x' = - y y' = x
 
         final BitIterator bi = new BitIterator();
         while (bi.hasNext()) {
             switch (axis) {
                 case X:
-                    out.set(bi.x, DIMENSION_MINUS_ONE - bi.z, bi.y, bi.getNext(this));
+                    out.set(bi.x, bi.z, DIMENSION_MINUS_ONE - bi.y, bi.getNext(this));
                     break;
                 case Y:
-                    out.set(bi.z, bi.y, DIMENSION_MINUS_ONE - bi.x, bi.getNext(this));
+                    out.set(DIMENSION_MINUS_ONE - bi.z, bi.y, bi.x, bi.getNext(this));
                     break;
                 case Z:
-                    out.set(DIMENSION_MINUS_ONE - bi.y, bi.x, bi.z, bi.getNext(this));
+                    out.set(bi.y, DIMENSION_MINUS_ONE - bi.x, bi.z, bi.getNext(this));
                     break;
                 default:
                     throw new NullPointerException();

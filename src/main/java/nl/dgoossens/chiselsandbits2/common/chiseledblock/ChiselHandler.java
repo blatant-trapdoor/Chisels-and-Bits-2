@@ -1,16 +1,20 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
+import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.IRotatableItem;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
+import nl.dgoossens.chiselsandbits2.common.network.client.CRotateItemPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
@@ -18,14 +22,14 @@ import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
 import static nl.dgoossens.chiselsandbits2.api.block.BitOperation.*;
 
 /**
- * Handles chiseling a block.
+ * Handles incoming packets that relate to interacting with voxelblobs.
  */
 public class ChiselHandler {
     /**
      * Handles an incoming {@link CChiselBlockPacket} packet.
      */
     public static void handle(final CChiselBlockPacket pkt, final ServerPlayerEntity player) {
-        if (!(player.getHeldItemMainhand().getItem() instanceof ChiselUtil.BitModifyItem))
+        if (!(player.getHeldItemMainhand().getItem() instanceof IBitModifyItem))
             return; //Extra security, if you're somehow no longer holding a valid item that can chisel we cancel.
 
         final World world = player.world;
@@ -112,6 +116,21 @@ public class ChiselHandler {
         } finally {
             inventory.apply();
             ChiselsAndBits2.getInstance().getClient().getUndoTracker().endGroup(player);
+        }
+    }
+
+    /**
+     * Handles an incoming {@link CRotateItemPacket} packet.
+     */
+    public static void handle(final CRotateItemPacket pkt, final ServerPlayerEntity player) {
+        //Try to rotate both hands if possible
+        ItemStack it = player.getHeldItemMainhand();
+        if(it.getItem() instanceof IRotatableItem)
+            ((IRotatableItem) it.getItem()).rotate(it, pkt.getAxis());
+        else {
+            it = player.getHeldItemOffhand();
+            if(it.getItem() instanceof IRotatableItem)
+                ((IRotatableItem) it.getItem()).rotate(it, pkt.getAxis());
         }
     }
 }

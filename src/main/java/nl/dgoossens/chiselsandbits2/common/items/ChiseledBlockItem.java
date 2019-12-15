@@ -7,16 +7,19 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
-import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
-import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
-import nl.dgoossens.chiselsandbits2.api.item.IItemScrollWheel;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.item.*;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
@@ -25,7 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, IItemMenu {
+public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, IItemMenu, IRotatableItem {
     public ChiseledBlockItem(Block block, Item.Properties properties) {
         super(block, properties);
     }
@@ -35,6 +38,21 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "chiseled_block.help"
         );
+    }
+
+    @Override
+    public void rotate(ItemStack stack, Direction.Axis axis) {
+        final NBTBlobConverter c = new NBTBlobConverter();
+        c.readChiselData(stack.getOrCreateChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
+
+        final VoxelBlob vb = c.getVoxelBlob();
+        vb.spin(axis);
+        c.setBlob(vb);
+
+        final CompoundNBT nbt = new CompoundNBT();
+        c.writeChiselData(nbt);
+
+        stack.setTagInfo(ChiselUtil.NBT_BLOCKENTITYTAG, nbt);
     }
 
     @Override

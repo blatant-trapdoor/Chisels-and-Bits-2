@@ -31,15 +31,11 @@ public class NBTBlobConverter {
         }
     }
 
-    public VoxelBlobStateReference getVoxelRef(final int version) throws Exception {
+    public VoxelBlobStateReference getVoxelRef(final int version) {
         final VoxelBlobStateReference voxelRef = getReference();
         if (format == version)
             return new VoxelBlobStateReference(voxelRef.getByteArray());
         return new VoxelBlobStateReference(voxelRef.getVoxelBlob().write(version));
-    }
-
-    public void fillWith(final BlockState state) {
-        voxelBlobRef = new VoxelBlobStateReference(BitUtil.getBlockId(state));
     }
 
     public void setBlob(final VoxelBlob vb) {

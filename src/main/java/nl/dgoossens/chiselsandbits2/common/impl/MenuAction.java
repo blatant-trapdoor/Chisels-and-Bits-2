@@ -2,10 +2,12 @@ package nl.dgoossens.chiselsandbits2.common.impl;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.Direction;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.network.client.CRotateItemPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 
 public enum MenuAction implements IMenuAction {
@@ -81,10 +83,10 @@ public enum MenuAction implements IMenuAction {
                 ChiselsAndBits2.getInstance().getClient().getUndoTracker().redo();
                 break;
             case ROLL_X:
-                System.out.println("ROLL_X");
+                ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CRotateItemPacket(Direction.Axis.X));
                 break;
             case ROLL_Z:
-                System.out.println("ROLL_Z");
+                ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CRotateItemPacket(Direction.Axis.Z));
                 break;
             case PLACE:
             case SWAP:

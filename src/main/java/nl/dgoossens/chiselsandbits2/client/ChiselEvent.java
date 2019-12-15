@@ -4,6 +4,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -19,6 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
@@ -70,15 +72,24 @@ public class ChiselEvent {
 
         final PlayerEntity player = Minecraft.getInstance().player;
         RayTraceResult rtr = ChiselUtil.rayTrace(player);
-        if (rtr == null || rtr.getType() != RayTraceResult.Type.BLOCK) return;
-        if (!((!leftClick && player.getHeldItemMainhand().getItem() instanceof ChiselUtil.BitPlaceItem) || (leftClick && player.getHeldItemMainhand().getItem() instanceof ChiselUtil.BitRemoveItem))) return;
+        if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
+
+        ItemStack i = player.getHeldItemMainhand();
+        if(i.getItem() instanceof IBitModifyItem) {
+            //Left Click
+            if(leftClick && !((IBitModifyItem) i.getItem()).canPerformModification(IBitModifyItem.ModificationType.EXTRACT))
+                return;
+            //Right Click
+            if(!leftClick && !((IBitModifyItem) i.getItem()).canPerformModification(IBitModifyItem.ModificationType.BUILD))
+                return;
+        } else return;
         e.setCanceled(true);
 
         if (System.currentTimeMillis() - lastClick < 150) return;
         lastClick = System.currentTimeMillis();
 
-        final BitOperation operation = leftClick ? BitOperation.REMOVE : (ItemModeUtil.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
-        startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(player.getHeldItemMainhand()), player, operation);
+        final BitOperation operation = leftClick ? BitOperation.REMOVE : (ItemModeUtil.getMenuActionMode(i).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
+        startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player, operation);
     }
 
     /**

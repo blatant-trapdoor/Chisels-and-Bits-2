@@ -16,10 +16,7 @@ import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
-import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
-import nl.dgoossens.chiselsandbits2.api.item.ItemModeEnum;
+import nl.dgoossens.chiselsandbits2.api.item.*;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
@@ -225,7 +222,7 @@ public class ItemModeUtil implements CacheClearable {
                 (stack.getItem() instanceof BitBeakerItem) ||
                 (stack.getItem() instanceof PaletteItem) ? SelectedItemMode.NONE :
                 (stack.getItem() instanceof ChiseledBlockItem) ? CHISELED_BLOCK_FIT :
-                (stack.getItem() instanceof ChiselUtil.BitModifyItem) ? CHISEL_SINGLE :
+                (stack.getItem() instanceof IBitModifyItem) ? CHISEL_SINGLE :
                         (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
                                 (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
                                         (stack.getItem() instanceof WrenchItem) ? WRENCH_ROTATE :
