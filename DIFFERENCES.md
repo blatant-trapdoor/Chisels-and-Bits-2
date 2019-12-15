@@ -1,13 +1,5 @@
 # Differences from the original mod
 
-Chisels & Bits 2 is actively being developed and currently unfinished. The following features have temporarily been removed, they'll be re-added in the future:
-* Chiseled Blocks giving off light equal to the percentage of glowing blocks used.
-* Configuration options
-* API for other mods including IMC
-* Support for various languages
-* Cross-world model exporting
-* Compatibility with worlds with C&B1
-
 The following features were added/changed in Chisels & Bits 2:
 * No more tiered chisels, there's only one type of chisel now which can break any block that is supported to be chiseled.
 * The saw is now golden instead of diamond and the wrench/mallet are iron now.
@@ -15,9 +7,7 @@ The following features were added/changed in Chisels & Bits 2:
 * New paint palette, this adds the functionality of the old separate Flat Colored Blocks mod, they allow you to freely color any bit to be any color.
 * New bit beaker which will replace the Bit Tank, the beaker can scoop up any fluid and place the fluids in chiseled blocks.
 * Bits are now no longer separate items for each block type, instead there's now a single "Morphing Bit" which can take on the name and texture of any chiselable block. (more information later)
-
-
-* (originally suggested by weeryan17) A pattern book in which you can easily store your patterns and cycle between them.
+* (originally suggested by weeryan17) A pattern binder in which you can easily store your patterns and cycle between them.
 
 And the following features are planned but not implemented in any way yet:
 * Finishing C&B's original 'Project Blueprint': (https://github.com/AlgorithmX2/Chisels-and-Bits/issues/337)
