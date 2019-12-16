@@ -222,12 +222,12 @@ public class ItemModeUtil implements CacheClearable {
                 (stack.getItem() instanceof BitBeakerItem) ||
                 (stack.getItem() instanceof PaletteItem) ? SelectedItemMode.NONE :
                 (stack.getItem() instanceof ChiseledBlockItem) ? CHISELED_BLOCK_FIT :
-                (stack.getItem() instanceof IBitModifyItem) ? CHISEL_SINGLE :
                         (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
                                 (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
                                         (stack.getItem() instanceof WrenchItem) ? WRENCH_ROTATE :
-                                                (stack.getItem() instanceof BlueprintItem) ? BLUEPRINT_UNKNOWN :
-                                                        MALLET_UNKNOWN;
+                                                (stack.getItem() instanceof MalletItem) ? MALLET_UNKNOWN :
+                                                    (stack.getItem() instanceof BlueprintItem) ? BLUEPRINT_UNKNOWN :
+                                                        CHISEL_SINGLE;
     }
 
     /**
