@@ -20,7 +20,9 @@ public interface IItemModeType {
      * Get a list of item modes that are a part of this item mode type.
      */
     public default List<IItemMode> getItemModes(final ItemStack item) {
-        return ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes().parallelStream().filter(f -> f.getType() == this).collect(Collectors.toList());
+        return ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes().stream()
+                .filter(f -> f.getType() == this)
+                .collect(Collectors.toList());
     }
 
     /**

@@ -5,11 +5,10 @@ import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.api.item.ItemModeEnum;
 import nl.dgoossens.chiselsandbits2.api.item.ItemPropertyAPI;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class ItemPropertyAPIImpl implements ItemPropertyAPI {
-    private Set<ItemModeEnum> itemModes = new HashSet<>();
+    private List<ItemModeEnum> itemModes = new ArrayList<>();
     private Set<IItemModeType> itemModeTypes = new HashSet<>();
     private Set<IMenuAction> menuActions = new HashSet<>();
 
@@ -34,7 +33,7 @@ public class ItemPropertyAPIImpl implements ItemPropertyAPI {
     }
 
     @Override
-    public Set<ItemModeEnum> getModes() {
+    public List<ItemModeEnum> getModes() {
         return itemModes;
     }
 

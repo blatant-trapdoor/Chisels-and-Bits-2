@@ -1,6 +1,6 @@
 package nl.dgoossens.chiselsandbits2.api.item;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * Registration is required as it is used to decodes packets on the server-side sent by the client
@@ -26,7 +26,7 @@ public interface ItemPropertyAPI {
     /**
      * Get a list of all existing item modes.
      */
-    Set<ItemModeEnum> getModes();
+    List<ItemModeEnum> getModes();
 
     /**
      * Get a list of all existing item mode types.
