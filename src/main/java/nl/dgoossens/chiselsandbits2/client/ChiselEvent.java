@@ -64,10 +64,7 @@ public class ChiselEvent {
         if (!leftClick && !(e instanceof PlayerInteractEvent.RightClickBlock)) return;
 
         final PlayerEntity player = Minecraft.getInstance().player;
-        RayTraceResult rtr = ChiselUtil.rayTrace(player);
-        if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
-
-        ItemStack i = player.getHeldItemMainhand();
+                ItemStack i = player.getHeldItemMainhand();
         if(i.getItem() instanceof IBitModifyItem) {
             IBitModifyItem it = (IBitModifyItem) i.getItem();
             for(IBitModifyItem.ModificationType modificationType : IBitModifyItem.ModificationType.values()) {
@@ -81,13 +78,16 @@ public class ChiselEvent {
                         case BUILD:
                         case EXTRACT:
                             //Chisel
+                            RayTraceResult rtr = ChiselUtil.rayTrace(player);
+                            if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
+
                             final BitOperation operation = leftClick ? BitOperation.REMOVE : (ItemModeUtil.getMenuActionMode(i).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
                             startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player, operation);
                             break;
                         case ROTATE:
                         case MIRROR:
                             //Wrench
-                            performBlockRotation((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player);
+                            performBlockRotation(ItemModeUtil.getItemMode(i), player);
                             break;
                         case CUSTOM:
                             it.performCustomModification(leftClick, i);
@@ -148,15 +148,19 @@ public class ChiselEvent {
     /**
      * Handle the block being rotated.
      */
-    public static void performBlockRotation(final BlockRayTraceResult rayTrace, final IItemMode mode, final PlayerEntity player) {
+    public static void performBlockRotation(final IItemMode mode, final PlayerEntity player) {
         if (!player.world.isRemote)
             throw new UnsupportedOperationException("Block rotation can only be started on the client-side.");
 
-        final BlockPos pos = rayTrace.getPos();
-        final BlockState state = player.world.getBlockState(pos);
-        final Direction face = rayTrace.getFace();
+        final RayTraceResult rayTrace = Minecraft.getInstance().objectMouseOver;
+        if(!(rayTrace instanceof BlockRayTraceResult) || rayTrace.getType() != RayTraceResult.Type.BLOCK)
+            return;
 
-        if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
+        final BlockPos pos = ((BlockRayTraceResult) rayTrace).getPos();
+        final BlockState state = player.world.getBlockState(pos);
+        final Direction face = ((BlockRayTraceResult) rayTrace).getFace();
+
+        if (!ChiselUtil.canChiselPosition(pos, player, state, face)) return;
         if (mode.equals(ItemMode.WRENCH_MIRROR)) {
             if (!RotationUtil.hasMirrorableState(state)) {
                 player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.not_mirrorable"), true);

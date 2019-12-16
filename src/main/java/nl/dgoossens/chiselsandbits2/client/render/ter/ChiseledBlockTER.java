@@ -105,7 +105,8 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             }
             return true;
         }
-        if (!renderCache.isRendering()) return true; //Remove if not rendering but not completed
+        if (!renderCache.isRendering())
+            return true; //Remove if not rendering but not completed
         return false;
     }
 

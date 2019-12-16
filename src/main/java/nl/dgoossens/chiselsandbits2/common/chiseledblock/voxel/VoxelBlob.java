@@ -4,18 +4,14 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Direction;
-import net.minecraft.util.Mirror;
 import net.minecraft.util.math.BlockPos;
 import nl.dgoossens.chiselsandbits2.api.render.ICullTest;
 import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BitStream;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BlobSerilizationCache;
 import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.RotationUtil;
 
-import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,8 +21,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 public final class VoxelBlob implements IVoxelSrc {
@@ -106,22 +100,17 @@ public final class VoxelBlob implements IVoxelSrc {
     public VoxelBlob mirror(final Direction.Axis axis) {
         VoxelBlob out = new VoxelBlob();
         final BitIterator bi = new BitIterator();
-        Map<Integer, Integer> mappings = new HashMap<>();
         while (bi.hasNext()) {
             if (bi.getNext(this) != AIR_BIT) {
-                int i = mappings.computeIfAbsent(bi.getNext(this), (bit) -> {
-                    if(VoxelType.isBlock(bit)) return RotationUtil.mapBlockState(bit, false, Mirror.LEFT_RIGHT);
-                    return bit;
-                });
                 switch (axis) {
                     case X:
-                        out.set(DIMENSION_MINUS_ONE - bi.x, bi.y, bi.z, i);
+                        out.set(bi.x, bi.y, DIMENSION_MINUS_ONE - bi.z, bi.getNext(this));
                         break;
                     case Y:
-                        out.set(bi.x, DIMENSION_MINUS_ONE - bi.y, bi.z, i);
+                        out.set(bi.x, DIMENSION_MINUS_ONE - bi.y, bi.z, bi.getNext(this));
                         break;
                     case Z:
-                        out.set(bi.x, bi.y, DIMENSION_MINUS_ONE - bi.z, i);
+                        out.set(DIMENSION_MINUS_ONE - bi.x, bi.y, bi.z, bi.getNext(this));
                         break;
                 }
             }
@@ -155,7 +144,7 @@ public final class VoxelBlob implements IVoxelSrc {
         Map<Integer, Integer> mappings = new HashMap<>();
         while (bi.hasNext()) {
             int i = mappings.computeIfAbsent(bi.getNext(this), (bit) -> {
-                if(VoxelType.isBlock(bit)) return RotationUtil.mapBlockState(bit, false, null);
+                if(VoxelType.isBlock(bit)) return RotationUtil.spinBlockState(bit, axis, false);
                 return bit;
             });
             switch (axis) {
@@ -187,7 +176,7 @@ public final class VoxelBlob implements IVoxelSrc {
         Map<Integer, Integer> mappings = new HashMap<>();
         while (bi.hasNext()) {
             int i = mappings.computeIfAbsent(bi.getNext(this), (bit) -> {
-                if(VoxelType.isBlock(bit)) return RotationUtil.mapBlockState(bit, true, null);
+                if(VoxelType.isBlock(bit)) return RotationUtil.spinBlockState(bit, axis, true);
                 return bit;
             });
             switch (axis) {

@@ -169,7 +169,7 @@ public class ChiselHandler {
             }
         } else {
             //Other rotatable block
-            if(pkt.mode.equals(ItemMode.WRENCH_MIRROR)) world.setBlockState(pos, state.mirror(Mirror.LEFT_RIGHT)); //We always use LEFT_RIGHT, deal w/ it.
+            if(pkt.mode.equals(ItemMode.WRENCH_MIRROR)) world.setBlockState(pos, state.mirror(RotationUtil.getMirror(pkt.side.getAxis())));
             else world.setBlockState(pos, state.rotate(world, pos, pkt.mode.equals(ItemMode.WRENCH_ROTATECCW) ? Rotation.COUNTERCLOCKWISE_90 : Rotation.CLOCKWISE_90));
         }
     }
