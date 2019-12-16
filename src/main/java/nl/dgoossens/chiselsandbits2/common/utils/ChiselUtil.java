@@ -8,6 +8,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemUseContext;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.*;
@@ -82,6 +83,9 @@ public class ChiselUtil {
             return;
         }
         if (blk.hasTileEntity(block)) return;
+        //Can't be a rotatable block without being allowed to be fully rotated.
+        if (blk.getDefaultState().has(BlockStateProperties.HORIZONTAL_FACING)) return;
+        if (blk.getDefaultState().has(BlockStateProperties.FACING_EXCEPT_UP)) return;
 
         DummyEnvironmentWorldReader dummyWorld = new DummyEnvironmentWorldReader() {
             @Override

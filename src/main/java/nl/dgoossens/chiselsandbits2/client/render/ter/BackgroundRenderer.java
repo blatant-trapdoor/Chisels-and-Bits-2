@@ -102,7 +102,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
         }
     }
 
-    static class CBTessellatorRefNode {
+    public static class CBTessellatorRefNode {
         private boolean done = false;
 
         public CBTessellatorRefNode() {

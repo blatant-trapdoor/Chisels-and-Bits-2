@@ -6,6 +6,8 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.Mirror;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 
+import static net.minecraft.util.Direction.*;
+
 /**
  * A utility handling rotation of minecraft blockstates. E.g. banners, signs, campfires, furnaces.
  */
@@ -16,7 +18,6 @@ public class RotationUtil {
     public static boolean hasRotatableState(final BlockState state) {
         return state.getBlock() instanceof ChiseledBlock ||
                 state.has(BlockStateProperties.AXIS) ||
-                state.has(BlockStateProperties.HORIZONTAL_AXIS) ||
                 state.has(BlockStateProperties.FACING) ||
                 state.has(BlockStateProperties.FACING_EXCEPT_UP) ||
                 state.has(BlockStateProperties.ROTATION_0_15) ||
@@ -55,13 +56,81 @@ public class RotationUtil {
         if(in.has(BlockStateProperties.AXIS)) {
             final Direction.Axis curr = in.get(BlockStateProperties.AXIS);
             //If axis remains the same, don't go to a different one.
-            if (curr == axis) return BitUtil.getBlockId(in.with(BlockStateProperties.AXIS, curr));
+            if (curr == axis) return inputState;
             //Get the axis that its not already on and that we are not rotating on.
             for(Direction.Axis ax : Direction.Axis.values()) {
                 if(ax != curr && ax != axis)
                     return BitUtil.getBlockId(in.with(BlockStateProperties.AXIS, ax));
             }
+        } else if(in.has(BlockStateProperties.FACING)) {
+            final Direction curr = in.get(BlockStateProperties.FACING);
+            return BitUtil.getBlockId(in.with(BlockStateProperties.FACING, spinFacing(curr, axis, backwards)));
         }
+
+        //The following properties aren't spun as they can't be due to complications: ROTATION_0_15, HORIZONTAL_FACING, FACING_EXCEPT_UP
         return inputState;
+    }
+
+    private static Direction spinFacing(final Direction curr, final Axis axis, final boolean backwards) {
+        return backwards ? rotateAroundCCW(curr, axis) : curr.rotateAround(axis);
+    }
+
+    //Interal method, opposite of Direction#rotateAround
+    private static Direction rotateAroundCCW(final Direction curr, final Direction.Axis axis) {
+        switch(axis) {
+            case X:
+                if (curr != WEST && curr != EAST) {
+                    return rotateXCCW(curr);
+                }
+
+                return curr;
+            case Y:
+                if (curr != UP && curr != DOWN) {
+                    return curr.rotateYCCW();
+                }
+
+                return curr;
+            case Z:
+                if (curr != NORTH && curr != SOUTH) {
+                    return rotateZCCW(curr);
+                }
+
+                return curr;
+            default:
+                throw new IllegalStateException("Unable to get CW facing for axis " + axis);
+        }
+    }
+
+    private static Direction rotateXCCW(final Direction curr) {
+        switch(curr) {
+            case NORTH:
+                return UP;
+            case EAST:
+            case WEST:
+            default:
+                throw new IllegalStateException("Unable to get X-rotated facing of " + curr);
+            case SOUTH:
+                return DOWN;
+            case UP:
+                return SOUTH;
+            case DOWN:
+                return NORTH;
+        }
+    }
+
+    private static Direction rotateZCCW(final Direction curr) {
+        switch(curr) {
+            case EAST:
+                return UP;
+            case SOUTH:
+            default:
+                throw new IllegalStateException("Unable to get Z-rotated facing of " + curr);
+            case WEST:
+                return DOWN;
+            case UP:
+                return WEST;
+            case DOWN:
+                return EAST;
+        }
     }
 }
