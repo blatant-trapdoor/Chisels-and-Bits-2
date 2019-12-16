@@ -43,7 +43,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @OnlyIn(Dist.CLIENT)
 public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity> {
     //--- STATIC PARTS ---
-    public final static AtomicInteger pendingTess = new AtomicInteger(0);
     public final static AtomicInteger activeTess = new AtomicInteger(0);
     private final static Random RAND = new Random();
     private static final WeakHashMap<World, WorldTracker> worldTrackers = new WeakHashMap<>();
@@ -104,9 +103,9 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             } finally {
                 renderCache.finishRendering();
             }
-            pendingTess.decrementAndGet();
             return true;
         }
+        if (!renderCache.isRendering()) return true; //Remove if not rendering but not completed
         return false;
     }
 
@@ -173,7 +172,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         if (rc.needsRebuilding()) {
             //Rebuild!
             final int maxTess = getMaxTessalators();
-            if (pendingTess.get() < maxTess) {
+            if (getTracker().futureTrackers.size() < maxTess) {
                 try {
                     System.out.println("Rebuilding "+te.getPos()+" because future is "+rc.getRenderingTask());
                     final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE));
@@ -182,7 +181,6 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
                     System.out.println("Set rendering task "+te.getPos()+" so future is now "+rc.getRenderingTask());
 
                     pool.submit(newFuture);
-                    pendingTess.incrementAndGet();
                     addFutureTracker(rc);
                 } catch (RejectedExecutionException err) {
                     err.printStackTrace();
