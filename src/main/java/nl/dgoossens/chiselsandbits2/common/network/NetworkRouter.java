@@ -1,7 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.network;
 
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkRegistry;
@@ -11,8 +10,6 @@ import nl.dgoossens.chiselsandbits2.common.network.client.*;
 import nl.dgoossens.chiselsandbits2.common.network.server.SAddUndoStep;
 import nl.dgoossens.chiselsandbits2.common.network.server.SGroupMethod;
 import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
-
-import java.lang.reflect.Method;
 
 public class NetworkRouter {
     private final String PROTOCOL_VERSION = Integer.toString(1);
@@ -33,6 +30,7 @@ public class NetworkRouter {
         HANDLER.registerMessage(disc++, CSetMenuActionModePacket.class, CSetMenuActionModePacket::encode, CSetMenuActionModePacket::decode, CSetMenuActionModePacket::handle);
         HANDLER.registerMessage(disc++, CUndoPacket.class, CUndoPacket::encode, CUndoPacket::decode, CUndoPacket::handle);
         HANDLER.registerMessage(disc++, CRotateItemPacket.class, CRotateItemPacket::encode, CRotateItemPacket::decode, CRotateItemPacket::handle);
+        HANDLER.registerMessage(disc++, CWrenchBlockPacket.class, CWrenchBlockPacket::encode, CWrenchBlockPacket::decode, CWrenchBlockPacket::handle);
 
         //Server
         HANDLER.registerMessage(disc++, SSynchronizeBitStoragePacket.class, SSynchronizeBitStoragePacket::encode, SSynchronizeBitStoragePacket::decode, SSynchronizeBitStoragePacket::handle);

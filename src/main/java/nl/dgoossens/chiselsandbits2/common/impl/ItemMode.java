@@ -35,6 +35,7 @@ public enum ItemMode implements ItemModeEnum {
 
     WRENCH_ROTATE,
     WRENCH_ROTATECCW,
+    WRENCH_MIRROR,
     WRENCH_NUDGE_BIT,
     WRENCH_NUDGE_BLOCK,
 

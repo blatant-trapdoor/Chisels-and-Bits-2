@@ -245,7 +245,12 @@ public class ClientSideHelper {
             final PlayerEntity player = Minecraft.getInstance().player;
             //As this is rendering code and it gets called many times per tick, I try to minimise local variables.
             boolean tapeMeasure = player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem;
-            if (tapeMeasure || player.getHeldItemMainhand().getItem() instanceof IBitModifyItem) {
+            boolean renderHighlight = tapeMeasure;
+            if(!renderHighlight && player.getHeldItemMainhand().getItem() instanceof IBitModifyItem) {
+                IBitModifyItem i = (IBitModifyItem) player.getHeldItemMainhand().getItem();
+                renderHighlight = i.canPerformModification(IBitModifyItem.ModificationType.BUILD) || i.canPerformModification(IBitModifyItem.ModificationType.EXTRACT);
+            }
+            if (renderHighlight) {
                 final RayTraceResult rayTrace = ChiselUtil.rayTrace(player);
                 if (rayTrace == null || rayTrace.getType() != RayTraceResult.Type.BLOCK)
                     return false;

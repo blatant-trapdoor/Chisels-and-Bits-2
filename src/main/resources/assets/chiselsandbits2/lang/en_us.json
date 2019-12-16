@@ -97,6 +97,7 @@
   "general.chiselsandbits2.itemmode.distance": "Distance",
   "general.chiselsandbits2.itemmode.rotate": "Rotate",
   "general.chiselsandbits2.itemmode.rotateccw": "Rotate Counterclockwise",
+  "general.chiselsandbits2.itemmode.mirror": "Mirror",
   "general.chiselsandbits2.itemmode.nudge_bit": "Nudge Bit",
   "general.chiselsandbits2.itemmode.nudge_block": "Nudge Block",
   "general.chiselsandbits2.itemmode.fit": "Fit",
@@ -123,6 +124,7 @@
   "general.chiselsandbits2.itemmode.impose.hotkey": "Pattern - Impose",
   "general.chiselsandbits2.itemmode.rotate.hotkey": "Wrench - Rotate",
   "general.chiselsandbits2.itemmode.rotateccw.hotkey": "Wrench - Rotate Counterclockwise",
+  "general.chiselsandbits2.itemmode.mirror.hotkey": "Wrench - Mirror",
   "general.chiselsandbits2.itemmode.nudge_bit.hotkey": "Wrench - Nudge Bit",
   "general.chiselsandbits2.itemmode.nudge_block.hotkey": "Wrench - Nudge Block",
 
@@ -152,7 +154,6 @@
   "general.chiselsandbits2.menuaction.undo.hotkey": "Undo",
   "general.chiselsandbits2.menuaction.redo.hotkey": "Redo",
   "general.chiselsandbits2.menuaction.roll_x.hotkey": "Rotate X Axis",
-  "general.chiselsandbits2.menuaction.roll_y.hotkey": "Rotate Y Axis",
   "general.chiselsandbits2.menuaction.roll_z.hotkey": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.place.hotkey": "Placement Mode",
   "general.chiselsandbits2.menuaction.swap.hotkey": "Swap Mode",
@@ -162,6 +163,8 @@
   "general.chiselsandbits2.info.no_selected_type": "You need to select a type of bit to place before you'll be able to chisel.",
   "general.chiselsandbits2.info.wasting_bits": "There's no space available to put the bits currently being chiseled.",
   "general.chiselsandbits2.info.out_of_range": "You need to get closer to modify this block.",
+  "general.chiselsandbits2.info.not_rotatable": "That block can not be rotated.",
+  "general.chiselsandbits2.info.not_mirrorable": "That block can not be mirrored.",
 
   "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
   "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo...",

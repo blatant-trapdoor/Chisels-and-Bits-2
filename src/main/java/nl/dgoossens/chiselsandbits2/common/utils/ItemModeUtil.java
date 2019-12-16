@@ -231,6 +231,21 @@ public class ItemModeUtil implements CacheClearable {
     }
 
     /**
+     * Checks if the item mode of the provided stack is contained in the list of valid modes.
+     */
+    public static boolean isItemMode(final ItemStack stack, final ItemMode... modes) {
+        //Prevent unnecessary resolving or random MALLET_UNKNOWN shenanigans.
+        if(!(stack.getItem() instanceof IItemMenu)) return false;
+
+        final IItemMode res = getItemMode(stack);
+        if(res == null) return false;
+        for(final ItemMode i : modes) {
+            if(i.equals(res)) return true;
+        }
+        return false;
+    }
+
+    /**
      * Get the selected item of an item stack, this item stack should be a BitStorage holder.
      */
     public static SelectedItemMode getSelectedItemMode(final ItemStack stack) {
@@ -315,7 +330,7 @@ public class ItemModeUtil implements CacheClearable {
             }
         }
 
-        return (stack.getItem() instanceof TapeMeasureItem) ? MenuAction.WHITE :
+        return (stack.getItem() instanceof TapeMeasureItem) ? MenuAction.BLACK :
                 MenuAction.PLACE;
     }
 

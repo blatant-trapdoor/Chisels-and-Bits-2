@@ -22,13 +22,16 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.network.client.CWrenchBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.RotationUtil;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -45,26 +48,16 @@ public class ChiselEvent {
             //If we're middle clicking and the keybind for selectbittype wasn't changed we cancel it and do our own implementation.
             if(ChiselsAndBits2.getKeybindings().selectBitType.getKey().equals(ChiselsAndBits2.getKeybindings().selectBitType.getDefault()))
                 e.setCancelled(true);
+            //Do pick bit
             return;
         }
-        RayTraceResult rtr = Minecraft.getInstance().objectMouseOver;
-        if(rtr == null || rtr.getType() != RayTraceResult.Type.BLOCK) return;
-        final PlayerEntity player = ChiselsAndBits2.getClient().getPlayer();
-        if(!(player.getHeldItemMainhand().getItem() instanceof ChiselItem)) return;
-        e.setCanceled(true);
 
-        if(System.currentTimeMillis()-lastClick < 150) return;
-        lastClick = System.currentTimeMillis();
-
-        final BitOperation operation = e.isAttack() ? BitOperation.REMOVE : (ChiselModeManager.getMenuActionMode(player.getHeldItemMainhand()).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
-        startChiselingBlock((BlockRayTraceResult) rtr, ChiselModeManager.getItemMode(player.getHeldItemMainhand()), player, operation);
     }*/
 
     /**
      * Will be removed when the proper ClickInputEvent gets added so we don't have to deal with
      * stupid minecraft bugs and de-syncs.
      */
-    @Deprecated
     @SubscribeEvent
     public static void temporaryClick(PlayerInteractEvent e) {
         boolean leftClick = e instanceof PlayerInteractEvent.LeftClickBlock;
@@ -76,20 +69,33 @@ public class ChiselEvent {
 
         ItemStack i = player.getHeldItemMainhand();
         if(i.getItem() instanceof IBitModifyItem) {
-            //Left Click
-            if(leftClick && !((IBitModifyItem) i.getItem()).canPerformModification(IBitModifyItem.ModificationType.EXTRACT))
-                return;
-            //Right Click
-            if(!leftClick && !((IBitModifyItem) i.getItem()).canPerformModification(IBitModifyItem.ModificationType.BUILD))
-                return;
-        } else return;
-        e.setCanceled(true);
+            IBitModifyItem it = (IBitModifyItem) i.getItem();
+            for(IBitModifyItem.ModificationType modificationType : IBitModifyItem.ModificationType.values()) {
+                if(it.canPerformModification(modificationType) && it.validateUsedButton(modificationType, leftClick, i)) {
+                    e.setCanceled(true);
 
-        if (System.currentTimeMillis() - lastClick < 150) return;
-        lastClick = System.currentTimeMillis();
+                    if (System.currentTimeMillis() - lastClick < 150) return;
+                    lastClick = System.currentTimeMillis();
 
-        final BitOperation operation = leftClick ? BitOperation.REMOVE : (ItemModeUtil.getMenuActionMode(i).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
-        startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player, operation);
+                    switch(modificationType) {
+                        case BUILD:
+                        case EXTRACT:
+                            //Chisel
+                            final BitOperation operation = leftClick ? BitOperation.REMOVE : (ItemModeUtil.getMenuActionMode(i).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
+                            startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player, operation);
+                            break;
+                        case ROTATE:
+                        case MIRROR:
+                            //Wrench
+                            performBlockRotation((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player);
+                            break;
+                        case CUSTOM:
+                            it.performCustomModification(leftClick, i);
+                            break;
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -137,5 +143,33 @@ public class ChiselEvent {
             final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode, placedBit);
             ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
         }
+    }
+
+    /**
+     * Handle the block being rotated.
+     */
+    public static void performBlockRotation(final BlockRayTraceResult rayTrace, final IItemMode mode, final PlayerEntity player) {
+        if (!player.world.isRemote)
+            throw new UnsupportedOperationException("Block rotation can only be started on the client-side.");
+
+        final BlockPos pos = rayTrace.getPos();
+        final BlockState state = player.world.getBlockState(pos);
+        final Direction face = rayTrace.getFace();
+
+        if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
+        if (mode.equals(ItemMode.WRENCH_MIRROR)) {
+            if (!RotationUtil.hasMirrorableState(state)) {
+                player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.not_mirrorable"), true);
+                return;
+            }
+        } else if(mode.equals(ItemMode.WRENCH_ROTATE) || mode.equals(ItemMode.WRENCH_ROTATECCW)) {
+            if (!RotationUtil.hasRotatableState(state)) {
+                player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.not_rotatable"), true);
+                return;
+            }
+        }
+
+        final CWrenchBlockPacket pc = new CWrenchBlockPacket(pos, face, mode);
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
     }
 }

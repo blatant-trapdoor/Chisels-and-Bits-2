@@ -37,7 +37,7 @@ public enum ItemModeType implements IItemModeType {
         if (this == SELECTED)
             return item.getCapability(StorageCapabilityProvider.STORAGE).map(s -> s.listTypesAsItemModes(item.getItem())).orElse(new ArrayList<>());
         if (cache == null)
-            cache = ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes().parallelStream().filter(f -> f.getType() == this).collect(Collectors.toList());
+            cache = ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes().stream().filter(f -> f.getType() == this).collect(Collectors.toList());
         return cache;
     }
 

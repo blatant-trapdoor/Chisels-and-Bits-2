@@ -4,24 +4,24 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Direction;
+import net.minecraft.util.Mirror;
 import net.minecraft.util.math.BlockPos;
 import nl.dgoossens.chiselsandbits2.api.render.ICullTest;
 import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BitStream;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BlobSerilizationCache;
 import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.RotationUtil;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
@@ -106,17 +106,22 @@ public final class VoxelBlob implements IVoxelSrc {
     public VoxelBlob mirror(final Direction.Axis axis) {
         VoxelBlob out = new VoxelBlob();
         final BitIterator bi = new BitIterator();
+        Map<Integer, Integer> mappings = new HashMap<>();
         while (bi.hasNext()) {
             if (bi.getNext(this) != AIR_BIT) {
+                int i = mappings.computeIfAbsent(bi.getNext(this), (bit) -> {
+                    if(VoxelType.isBlock(bit)) return RotationUtil.mapBlockState(bit, false, Mirror.LEFT_RIGHT);
+                    return bit;
+                });
                 switch (axis) {
                     case X:
-                        out.set(DIMENSION_MINUS_ONE - bi.x, bi.y, bi.z, bi.getNext(this));
+                        out.set(DIMENSION_MINUS_ONE - bi.x, bi.y, bi.z, i);
                         break;
                     case Y:
-                        out.set(bi.x, DIMENSION_MINUS_ONE - bi.y, bi.z, bi.getNext(this));
+                        out.set(bi.x, DIMENSION_MINUS_ONE - bi.y, bi.z, i);
                         break;
                     case Z:
-                        out.set(bi.x, bi.y, DIMENSION_MINUS_ONE - bi.z, bi.getNext(this));
+                        out.set(bi.x, bi.y, DIMENSION_MINUS_ONE - bi.z, i);
                         break;
                 }
             }
@@ -147,16 +152,53 @@ public final class VoxelBlob implements IVoxelSrc {
         //Rotate by 90 Degrees: x' = - y y' = x
 
         final BitIterator bi = new BitIterator();
+        Map<Integer, Integer> mappings = new HashMap<>();
         while (bi.hasNext()) {
+            int i = mappings.computeIfAbsent(bi.getNext(this), (bit) -> {
+                if(VoxelType.isBlock(bit)) return RotationUtil.mapBlockState(bit, false, null);
+                return bit;
+            });
             switch (axis) {
                 case X:
-                    out.set(bi.x, bi.z, DIMENSION_MINUS_ONE - bi.y, bi.getNext(this));
+                    out.set(bi.x, bi.z, DIMENSION_MINUS_ONE - bi.y, i);
                     break;
                 case Y:
-                    out.set(DIMENSION_MINUS_ONE - bi.z, bi.y, bi.x, bi.getNext(this));
+                    out.set(DIMENSION_MINUS_ONE - bi.z, bi.y, bi.x, i);
                     break;
                 case Z:
-                    out.set(bi.y, DIMENSION_MINUS_ONE - bi.x, bi.z, bi.getNext(this));
+                    out.set(bi.y, DIMENSION_MINUS_ONE - bi.x, bi.z, i);
+                    break;
+                default:
+                    throw new NullPointerException();
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Spin the voxel blob along the axis by 90
+     * counterclockwise.
+     */
+    public VoxelBlob spinCCW(final Direction.Axis axis) {
+        final VoxelBlob out = new VoxelBlob();
+        //Rotate by -90 Degrees: x' = y y' = - x
+
+        final BitIterator bi = new BitIterator();
+        Map<Integer, Integer> mappings = new HashMap<>();
+        while (bi.hasNext()) {
+            int i = mappings.computeIfAbsent(bi.getNext(this), (bit) -> {
+                if(VoxelType.isBlock(bit)) return RotationUtil.mapBlockState(bit, true, null);
+                return bit;
+            });
+            switch (axis) {
+                case X:
+                    out.set(bi.x, DIMENSION_MINUS_ONE - bi.z, bi.y, i);
+                    break;
+                case Y:
+                    out.set(bi.z, bi.y, DIMENSION_MINUS_ONE - bi.x, i);
+                    break;
+                case Z:
+                    out.set(DIMENSION_MINUS_ONE - bi.y, bi.x, bi.z, i);
                     break;
                 default:
                     throw new NullPointerException();

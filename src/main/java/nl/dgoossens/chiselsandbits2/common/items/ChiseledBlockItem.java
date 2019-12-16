@@ -46,8 +46,7 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
         c.readChiselData(stack.getOrCreateChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
 
         final VoxelBlob vb = c.getVoxelBlob();
-        vb.spin(axis);
-        c.setBlob(vb);
+        c.setBlob(vb.spin(axis));
 
         final CompoundNBT nbt = new CompoundNBT();
         c.writeChiselData(nbt);

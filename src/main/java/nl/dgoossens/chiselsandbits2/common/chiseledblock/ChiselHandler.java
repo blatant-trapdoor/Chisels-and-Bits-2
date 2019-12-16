@@ -1,8 +1,11 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
@@ -10,14 +13,18 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IRotatableItem;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.network.client.CWrenchBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CRotateItemPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
+import nl.dgoossens.chiselsandbits2.common.utils.RotationUtil;
 
 import static nl.dgoossens.chiselsandbits2.api.block.BitOperation.*;
 
@@ -131,6 +138,39 @@ public class ChiselHandler {
             it = player.getHeldItemOffhand();
             if(it.getItem() instanceof IRotatableItem)
                 ((IRotatableItem) it.getItem()).rotate(it, pkt.getAxis());
+        }
+    }
+
+    /**
+     * Handles an incoming {@link CWrenchBlockPacket} packet.
+     */
+    public static void handle(final CWrenchBlockPacket pkt, final ServerPlayerEntity player) {
+        if (!(player.getHeldItemMainhand().getItem() instanceof IBitModifyItem))
+            return; //Extra security, if you're somehow no longer holding a valid item that can chisel we cancel.
+
+        final World world = player.world;
+        final BlockPos pos = pkt.pos;
+        final BlockState state = world.getBlockState(pos);
+
+        //Security check if state is still valid
+        if(pkt.mode.equals(ItemMode.WRENCH_MIRROR) ? !RotationUtil.hasMirrorableState(state) : !RotationUtil.hasRotatableState(state))
+            return;
+
+        //Custom chiseled block
+        if(state.getBlock() instanceof ChiseledBlock) {
+            final TileEntity te = world.getTileEntity(pos);
+            if(te instanceof ChiseledBlockTileEntity) {
+                final ChiseledBlockTileEntity cte = (ChiseledBlockTileEntity) te;
+                VoxelBlob voxel = cte.getBlob();
+                if(pkt.mode.equals(ItemMode.WRENCH_MIRROR)) voxel = voxel.mirror(pkt.side.getAxis());
+                else if(pkt.mode.equals(ItemMode.WRENCH_ROTATE)) voxel = voxel.spin(pkt.side.getAxis());
+                else if(pkt.mode.equals(ItemMode.WRENCH_ROTATECCW)) voxel = voxel.spinCCW(pkt.side.getAxis());
+                cte.setBlob(voxel);
+            }
+        } else {
+            //Other rotatable block
+            if(pkt.mode.equals(ItemMode.WRENCH_MIRROR)) world.setBlockState(pos, state.mirror(Mirror.LEFT_RIGHT)); //We always use LEFT_RIGHT, deal w/ it.
+            else world.setBlockState(pos, state.rotate(world, pos, pkt.mode.equals(ItemMode.WRENCH_ROTATECCW) ? Rotation.COUNTERCLOCKWISE_90 : Rotation.CLOCKWISE_90));
         }
     }
 }

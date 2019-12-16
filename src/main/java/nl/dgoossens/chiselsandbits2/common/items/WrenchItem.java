@@ -21,9 +21,14 @@ import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class WrenchItem extends TypedItem {
+public class WrenchItem extends TypedItem implements IBitModifyItem {
     public WrenchItem(Properties builder) {
         super(builder);
+    }
+
+    @Override
+    public boolean canPerformModification(ModificationType type) {
+        return type == ModificationType.ROTATE || type == ModificationType.MIRROR;
     }
 
     @Override
