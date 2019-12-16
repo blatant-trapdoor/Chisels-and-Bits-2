@@ -11,7 +11,6 @@ import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
  * General parent for all items that need colouring based on bit type.
  */
 public class ChiseledTintColor {
-    public static final int TINT_MASK = 0xff;
     public static final int TINT_BITS = 8;
 
     /**
@@ -22,7 +21,6 @@ public class ChiseledTintColor {
 
         //If this block has a colour we hide it in the tint value. See ModelQuadLayer.java
         int v = tint >> TINT_BITS;
-        int tintValue = tint & TINT_MASK;
 
         if(VoxelType.isColoured(tint))
             return BitUtil.getColourState(tint).hashCode();
@@ -33,7 +31,7 @@ public class ChiseledTintColor {
             return fstate.getFluid().getAttributes().getColor(f);
         }
 
-        return getDefaultColor(v, tintValue);
+        return getDefaultColor(v, tint);
     }
 
     /**
