@@ -59,7 +59,7 @@ public final class VoxelBlobStateReference implements IStateRef {
 
     private static byte[] findDefaultBytes() {
         final VoxelBlob vb = new VoxelBlob();
-        int b = BitUtil.getBlockId(Blocks.GOLD_BLOCK.getDefaultState());
+        int b = BitUtil.getBlockId(Blocks.YELLOW_WOOL.getDefaultState());
         for(int y = 1; y <= 12; y++)
             for(int x = 2; x <= 13; x++)
                 for(int z = 2; z <= 13; z++) {
