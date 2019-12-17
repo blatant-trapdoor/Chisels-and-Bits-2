@@ -15,6 +15,7 @@ import nl.dgoossens.chiselsandbits2.common.items.*;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -77,27 +78,28 @@ public class ModItems {
     }
     
     /**
-     * Get the rgb colour of the bit bag.
+     * Get the rgb colour of a IColourable.
      */
     public int getColourableColour(final ItemStack stack) {
         //Optimized the fudge out of this method because ItemColors get called every frame.
-        switch(stack.getItem().getRegistryName().getPath().toUpperCase()) {
-            case "WHITE_BIT_BAG": return 16383998;
-            case "ORANGE_BIT_BAG": return 16351261;
-            case "MAGENTA_BIT_BAG": return 13061821;
-            case "LIGHT_BLUE_BIT_BAG": return 3847130;
-            case "YELLOW_BIT_BAG": return 16701501;
-            case "LIME_BIT_BAG": return 8439583;
-            case "PINK_BIT_BAG": return 15961002;
-            case "GRAY_BIT_BAG": return 4673362;
-            case "LIGHT_GRAY_BIT_BAG": return 10329495;
-            case "CYAN_BIT_BAG": return 1481884;
-            case "PURPLE_BIT_BAG": return 8991416;
-            case "BLUE_BIT_BAG": return 3949738;
-            case "BROWN_BIT_BAG": return 8606770;
-            case "GREEN_BIT_BAG": return 6192150;
-            case "RED_BIT_BAG": return 11546150;
-            case "BLACK_BIT_BAG": return 1908001;
+        //Light gray and light blue can't be distinguished by the first 6 chars so we do one of them seperate
+        if(stack.getItem().getRegistryName().getPath().toUpperCase().startsWith("LIGHT_GRAY")) return 10329495;
+        switch(stack.getItem().getRegistryName().getPath().substring(0, 3).toUpperCase()) { //Only first three characters! (enough to distinguish colours)
+            case "WHI": return 16383998;
+            case "ORA": return 16351261;
+            case "MAG": return 13061821;
+            case "LIG": return 3847130;
+            case "YEL": return 16701501;
+            case "LIM": return 8439583;
+            case "PIN": return 15961002;
+            case "GRA": return 4673362;
+            case "CYA": return 1481884;
+            case "PUR": return 8991416;
+            case "BLU": return 3949738;
+            case "BRO": return 8606770;
+            case "GRE": return 6192150;
+            case "RED": return 11546150;
+            case "BLA": return 1908001;
         }
         return -1;
     }
@@ -121,6 +123,18 @@ public class ModItems {
             }
         } catch(Exception x) {}
         return null;
+    }
+
+    /**
+     * Runs a consumer for every item that is coloured.
+     */
+    public void runForAllColourableItems(Consumer<Item> consumer) {
+        for(Map.Entry<Class<? extends IColourable>, Map<DyedItemColour, IColourable>> r : ChiselsAndBits2.getInstance().getItems().colourables.entrySet()) {
+            for(Map.Entry<DyedItemColour, IColourable> en : r.getValue().entrySet()) {
+                Item i = (Item) en.getValue();
+                consumer.accept(i);
+            }
+        }
     }
 
     /**

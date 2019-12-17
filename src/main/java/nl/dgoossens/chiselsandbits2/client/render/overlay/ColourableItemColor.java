@@ -4,9 +4,9 @@ import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 
-public class BagBeakerItemColor implements IItemColor {
+public class ColourableItemColor implements IItemColor {
     private int layer;
-    public BagBeakerItemColor(int layer) {
+    public ColourableItemColor(int layer) {
         this.layer = layer;
     }
 

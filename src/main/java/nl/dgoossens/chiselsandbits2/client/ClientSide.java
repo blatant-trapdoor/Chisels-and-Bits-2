@@ -31,14 +31,12 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.*;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.BagBeakerItemColor;
+import nl.dgoossens.chiselsandbits2.client.render.overlay.ColourableItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.MorphingBitItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
@@ -72,18 +70,10 @@ public class ClientSide extends ClientSideHelper {
         Minecraft.getInstance().getItemColors().register(new MorphingBitItemColor(),
                 ChiselsAndBits2.getInstance().getItems().MORPHING_BIT);
 
+        //Register all coloured items as having an item color
         final ModItems i = ChiselsAndBits2.getInstance().getItems();
-        Minecraft.getInstance().getItemColors().register(new BagBeakerItemColor(1),
-                i.WHITE_BIT_BAG, i.BLACK_BIT_BAG, i.BLUE_BIT_BAG, i.BROWN_BIT_BAG, i.CYAN_BIT_BAG, i.GRAY_BIT_BAG,
-                i.GREEN_BIT_BAG, i.LIGHT_BLUE_BIT_BAG, i.LIGHT_GRAY_BIT_BAG, i.LIME_BIT_BAG, i.MAGENTA_BIT_BAG,
-                i.ORANGE_BIT_BAG, i.PINK_BIT_BAG, i.PURPLE_BIT_BAG, i.RED_BIT_BAG, i.YELLOW_BIT_BAG);
-
-        //TODO re-implement bit beakers and re-add the item colours to the same register method
-        if (ChiselsAndBits2.showUnfinishedFeatures())
-            Minecraft.getInstance().getItemColors().register(new BagBeakerItemColor(1),
-                    i.WHITE_TINTED_BIT_BEAKER, i.BLACK_TINTED_BIT_BEAKER, i.BLUE_TINTED_BIT_BEAKER, i.BROWN_TINTED_BIT_BEAKER, i.CYAN_TINTED_BIT_BEAKER, i.GRAY_TINTED_BIT_BEAKER,
-                    i.GREEN_TINTED_BIT_BEAKER, i.LIGHT_BLUE_TINTED_BIT_BEAKER, i.LIGHT_GRAY_TINTED_BIT_BEAKER, i.LIME_TINTED_BIT_BEAKER, i.MAGENTA_TINTED_BIT_BEAKER,
-                    i.ORANGE_TINTED_BIT_BEAKER, i.PINK_TINTED_BIT_BEAKER, i.PURPLE_TINTED_BIT_BEAKER, i.RED_TINTED_BIT_BEAKER, i.YELLOW_TINTED_BIT_BEAKER);
+        final ColourableItemColor cic = new ColourableItemColor(1);
+        i.runForAllColourableItems((a) -> Minecraft.getInstance().getItemColors().register(cic, a));
 
         //We've got both normal and mod event bus events.
         MinecraftForge.EVENT_BUS.register(getClass());
