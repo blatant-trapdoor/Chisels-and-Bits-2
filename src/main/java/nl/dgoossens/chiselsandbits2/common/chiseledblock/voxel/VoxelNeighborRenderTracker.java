@@ -17,11 +17,7 @@ import java.lang.ref.WeakReference;
 public final class VoxelNeighborRenderTracker {
     private final ModelRenderState sides = new ModelRenderState();
 
-    private static int lastId = 0;
-    private int id;
-
     public VoxelNeighborRenderTracker(World world, BlockPos pos) {
-        id = lastId++;
         update(world, pos);
     }
 
@@ -39,7 +35,6 @@ public final class VoxelNeighborRenderTracker {
 
             final TileEntity te = world.getTileEntity(pos.offset(d));
             if (te instanceof ChiseledBlockTileEntity) {
-                System.out.println(id+" | We found a neighbour ["+pos+"] on side "+d);
                 ((ChiseledBlockTileEntity) te).getChunk(world); //Make sure to get the chunk so it gets registered.
                 sides.put(d, ((ChiseledBlockTileEntity) te).getVoxelReference());
 
@@ -47,7 +42,6 @@ public final class VoxelNeighborRenderTracker {
                 if (((ChiseledBlockTileEntity) te).hasRenderTracker()) {
                     VoxelNeighborRenderTracker rTracker = ((ChiseledBlockTileEntity) te).getRenderTracker();
                     if (rTracker.sides.has(d.getOpposite())) continue; //If they have us, it's good
-                    System.out.println(id+" | We're helping our neighbour ["+pos+"] by setting side "+d.getOpposite()+" to us");
                     rTracker.sides.put(d.getOpposite(), cme.getVoxelReference());
                 }
             }
@@ -65,22 +59,13 @@ public final class VoxelNeighborRenderTracker {
                 final TileEntity te = world.getTileEntity(pos.offset(d));
                 if (te instanceof ChiseledBlockTileEntity) {
                     if(sides.get(d) != ((ChiseledBlockTileEntity) te).getVoxelReference()) {
-                        System.out.println(id+" | Found te adjacent to "+pos+" on side "+d+", old: "+sides.get(d));
                         sides.put(d, ((ChiseledBlockTileEntity) te).getVoxelReference());
-                        for(Direction d2 : Direction.values()) {
-                            if(sides.has(d2)) System.out.println(id+" | [RECAP] We have something on side "+d2+", namely: "+sides.get(d2));
-                        }
                         continue;
                     }
                     sides.put(d, ((ChiseledBlockTileEntity) te).getVoxelReference());
                 } else {
                     if(sides.has(d)) {
-                        System.out.println(id+" | Removing adjacent block on "+pos+" in direction "+d+" from tracked neighbours, was: "+sides.get(d)+" because there's "+world.getBlockState(pos.offset(d)).getBlock()+" over there");
                         sides.remove(d);
-                        for(Direction d2 : Direction.values()) {
-                            if(sides.has(d2))
-                                System.out.println(id+" | [RECAP] We have something on side "+d2+", namely: "+sides.get(d2));
-                        }
                         continue;
                     }
                     sides.remove(d);

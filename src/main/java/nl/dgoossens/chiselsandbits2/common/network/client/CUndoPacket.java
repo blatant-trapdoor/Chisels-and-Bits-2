@@ -41,7 +41,6 @@ public class CUndoPacket {
         this.groupId = groupId;
     }
 
-
     public void handle(final ServerPlayerEntity player) {
         if(!isValid(groupId))
             return; //If this group is invalid, don't even try.
@@ -51,6 +50,7 @@ public class CUndoPacket {
             invaliate();
             return;
         }
+
         try {
             final World world = player.getEntityWorld();
             final Optional<BitAccess> baOpt = ChiselsAndBits2.getInstance().getAPI().getBitAccess(world, pos);
@@ -64,6 +64,7 @@ public class CUndoPacket {
 
                 final BitAccess ba = baOpt.get();
                 final VoxelBlob vb = ba.getNativeBlob();
+                System.out.println("Editing voxelblob: "+vb);
                 InventoryUtils.CalculatedInventory inventory = InventoryUtils.buildInventory(player);
 
                 final BitIterator i = new BitIterator();
@@ -98,6 +99,7 @@ public class CUndoPacket {
 
                 //Actually apply the operation.
                 TileEntity te = world.getTileEntity(pos);
+                System.out.println("Editing at pos = "+pos+" where we found "+te);
                 if(te instanceof ChiseledBlockTileEntity)
                     ((ChiseledBlockTileEntity) te).completeEditOperation(player, vb);
 
@@ -162,8 +164,7 @@ public class CUndoPacket {
      * This method is only going to get called on the client side.
      */
     public static int nextGroupId() {
-        latestGroupId++;
-        return latestGroupId;
+        return latestGroupId + 1;
     }
 
     /**
@@ -185,6 +186,7 @@ public class CUndoPacket {
      * Invalidates the current group, it has failed.
      */
     public static void invaliate() {
+        System.out.println("THEY FAILED LOL");
         didFail = true;
     }
 }

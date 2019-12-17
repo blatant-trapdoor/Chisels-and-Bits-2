@@ -84,10 +84,7 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
         }
 
         if (format == getModelFormat())
-            return modelCache.get(mrs, () -> {
-                System.out.println("[MODEL] Making new model for render tracker with id: "+renderTracker);
-                return new ChiseledBlockBaked(reference, mrs, format);
-            });
+            return modelCache.get(mrs, () -> new ChiseledBlockBaked(reference, mrs, format));
 
         return new ChiseledBlockBaked(reference, mrs, format);
     }
