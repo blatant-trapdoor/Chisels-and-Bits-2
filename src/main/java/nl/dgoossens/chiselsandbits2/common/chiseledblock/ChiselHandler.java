@@ -13,6 +13,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IRotatableItem;
+import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
@@ -168,7 +169,16 @@ public class ChiselHandler {
                 cte.setBlob(voxel);
             }
         } else {
-            //Other rotatable block
+            //Other rotatable blocks
+            DummyEnvironmentWorldReader dummyWorld = new DummyEnvironmentWorldReader() {
+                @Override
+                public BlockState getBlockState(BlockPos pos) {
+                    if (pos.equals(BlockPos.ZERO)) return state;
+                    return super.getBlockState(pos);
+                }
+            };
+            if (state.getBlockHardness(dummyWorld, BlockPos.ZERO) < 0) return; //Can't move unbreakable blocks. (they have -1 hardness)
+
             if(pkt.mode.equals(ItemMode.WRENCH_MIRROR)) world.setBlockState(pos, state.mirror(RotationUtil.getMirror(pkt.side.getAxis())));
             else world.setBlockState(pos, state.rotate(world, pos, pkt.mode.equals(ItemMode.WRENCH_ROTATECCW) ? Rotation.COUNTERCLOCKWISE_90 : Rotation.CLOCKWISE_90));
         }
