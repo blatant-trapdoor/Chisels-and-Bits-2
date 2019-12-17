@@ -65,7 +65,7 @@ public class ChiselEvent {
         if (!leftClick && !(e instanceof PlayerInteractEvent.RightClickBlock)) return;
 
         final PlayerEntity player = Minecraft.getInstance().player;
-                ItemStack i = player.getHeldItemMainhand();
+        ItemStack i = player.getHeldItemMainhand();
         if(i.getItem() instanceof IBitModifyItem) {
             IBitModifyItem it = (IBitModifyItem) i.getItem();
             for(IBitModifyItem.ModificationType modificationType : IBitModifyItem.ModificationType.values()) {
