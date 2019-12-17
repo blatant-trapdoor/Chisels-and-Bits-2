@@ -163,7 +163,7 @@ public class ModItems {
         for(Map.Entry<Class<? extends IColourable>, Map<DyedItemColour, IColourable>> r : ChiselsAndBits2.getInstance().getItems().colourables.entrySet()) {
             for(Map.Entry<DyedItemColour, IColourable> en : r.getValue().entrySet()) {
                 Item i = (Item) en.getValue();
-                e.getRegistry().register(i.setRegistryName(ChiselsAndBits2.MOD_ID, en.getKey().name()+ChiselsAndBits2.getInstance().getItems().colourableRegistryNames.get(r.getKey()).toLowerCase()));
+                e.getRegistry().register(i.setRegistryName(ChiselsAndBits2.MOD_ID, en.getKey().name().toLowerCase()+ChiselsAndBits2.getInstance().getItems().colourableRegistryNames.get(r.getKey()).toLowerCase()));
             }
         }
     }
