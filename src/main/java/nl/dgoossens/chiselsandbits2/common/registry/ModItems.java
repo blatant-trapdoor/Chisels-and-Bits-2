@@ -8,17 +8,19 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.item.DyedItemColour;
+import nl.dgoossens.chiselsandbits2.api.item.IColourable;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ModItems {
     //Cached data to make colour lookups faster.
-    private Map<BagBeakerColours, BitBagItem> bags = new HashMap<>();
-    private Map<BagBeakerColours, BitBeakerItem> beakers = new HashMap<>();
+    private Map<Class<? extends IColourable>, Map<DyedItemColour, IColourable>> colourables = new HashMap<>();
 
     public final Item CHISEL = new ChiselItem(new Item.Properties().maxDamage(-1).group(ModItemGroups.CHISELS_AND_BITS2));
     public Item PATTERN;
@@ -29,43 +31,8 @@ public class ModItems {
     public Item BLUEPRINT;
     public final Item MORPHING_BIT = new MorphingBitItem(new Item.Properties().group(ModItemGroups.CHISELS_AND_BITS2));
     public Item PATTERN_BOOK;
-
-    //all of the coloured bit bags
     public final Item BIT_BAG = new BitBagItem();
-    public final Item WHITE_BIT_BAG = new BitBagItem();
-    public final Item ORANGE_BIT_BAG = new BitBagItem();
-    public final Item MAGENTA_BIT_BAG = new BitBagItem();
-    public final Item LIGHT_BLUE_BIT_BAG = new BitBagItem();
-    public final Item YELLOW_BIT_BAG = new BitBagItem();
-    public final Item LIME_BIT_BAG = new BitBagItem();
-    public final Item PINK_BIT_BAG = new BitBagItem();
-    public final Item GRAY_BIT_BAG = new BitBagItem();
-    public final Item LIGHT_GRAY_BIT_BAG = new BitBagItem();
-    public final Item CYAN_BIT_BAG = new BitBagItem();
-    public final Item PURPLE_BIT_BAG = new BitBagItem();
-    public final Item BLUE_BIT_BAG = new BitBagItem();
-    public final Item BROWN_BIT_BAG = new BitBagItem();
-    public final Item GREEN_BIT_BAG = new BitBagItem();
-    public final Item RED_BIT_BAG = new BitBagItem();
-    public final Item BLACK_BIT_BAG = new BitBagItem();
-
     public Item BIT_BEAKER;
-    public Item WHITE_TINTED_BIT_BEAKER;
-    public Item ORANGE_TINTED_BIT_BEAKER;
-    public Item MAGENTA_TINTED_BIT_BEAKER;
-    public Item LIGHT_BLUE_TINTED_BIT_BEAKER;
-    public Item YELLOW_TINTED_BIT_BEAKER;
-    public Item LIME_TINTED_BIT_BEAKER;
-    public Item PINK_TINTED_BIT_BEAKER;
-    public Item GRAY_TINTED_BIT_BEAKER;
-    public Item LIGHT_GRAY_TINTED_BIT_BEAKER;
-    public Item CYAN_TINTED_BIT_BEAKER;
-    public Item PURPLE_TINTED_BIT_BEAKER;
-    public Item BLUE_TINTED_BIT_BEAKER;
-    public Item BROWN_TINTED_BIT_BEAKER;
-    public Item GREEN_TINTED_BIT_BEAKER;
-    public Item RED_TINTED_BIT_BEAKER;
-    public Item BLACK_TINTED_BIT_BEAKER;
     
     public Item OAK_PALETTE;
     public Item SPRUCE_PALETTE;
@@ -89,45 +56,28 @@ public class ModItems {
             ACACIA_PALETTE = new PaletteItem();
             DARK_OAK_PALETTE = new PaletteItem();
             BIT_BEAKER = new BitBeakerItem();
-            WHITE_TINTED_BIT_BEAKER = new BitBeakerItem();
-            ORANGE_TINTED_BIT_BEAKER = new BitBeakerItem();
-            MAGENTA_TINTED_BIT_BEAKER = new BitBeakerItem();
-            LIGHT_BLUE_TINTED_BIT_BEAKER = new BitBeakerItem();
-            YELLOW_TINTED_BIT_BEAKER = new BitBeakerItem();
-            LIME_TINTED_BIT_BEAKER = new BitBeakerItem();
-            PINK_TINTED_BIT_BEAKER = new BitBeakerItem();
-            GRAY_TINTED_BIT_BEAKER = new BitBeakerItem();
-            LIGHT_GRAY_TINTED_BIT_BEAKER = new BitBeakerItem();
-            CYAN_TINTED_BIT_BEAKER = new BitBeakerItem();
-            PURPLE_TINTED_BIT_BEAKER = new BitBeakerItem();
-            BLUE_TINTED_BIT_BEAKER = new BitBeakerItem();
-            BROWN_TINTED_BIT_BEAKER = new BitBeakerItem();
-            GREEN_TINTED_BIT_BEAKER = new BitBeakerItem();
-            RED_TINTED_BIT_BEAKER = new BitBeakerItem();
-            BLACK_TINTED_BIT_BEAKER = new BitBeakerItem();
+            buildColourable(BitBeakerItem.class, BitBeakerItem::new);
         }
 
-        //Build the caches
-        for (Field f : getClass().getFields()) {
-            if(f.getName().endsWith("_BIT_BAG")) {
-                String val = f.getName().substring(0, f.getName().length() - "_BIT_BAG".length());
-                try {
-                    bags.put(BagBeakerColours.valueOf(val), (BitBagItem) f.get(this));
-                } catch(Exception x) {}
-            }
-            if(f.getName().endsWith("_TINTED_BIT_BEAKER")) {
-                String val = f.getName().substring(0, f.getName().length() - "_TINTED_BIT_BEAKER".length());
-                try {
-                   beakers.put(BagBeakerColours.valueOf(val), (BitBeakerItem) f.get(this));
-                } catch(Exception x) {}
-            }
-        }
+        //Build the colourables
+        buildColourable(BitBagItem.class, BitBagItem::new);
+    }
+
+    /**
+     * Builds a set of colourable items from a class that implements IColourable.
+     * Automatically adds recipe.
+     */
+    public <T extends IColourable> void buildColourable(Class<T> klass, Supplier<T> constructor) {
+        Map<DyedItemColour, IColourable> map = new HashMap<>();
+        for(DyedItemColour c : DyedItemColour.values())
+            map.put(c, constructor.get());
+        colourables.put(klass, map);
     }
     
     /**
      * Get the rgb colour of the bit bag.
      */
-    public int getBagBeakerColour(final ItemStack stack) {
+    public int getColourableColour(final ItemStack stack) {
         //Optimized the fudge out of this method because ItemColors get called every frame.
         switch(stack.getItem().getRegistryName().getPath().toUpperCase()) {
             case "WHITE_BIT_BAG": return 16383998;
@@ -153,15 +103,8 @@ public class ModItems {
     /**
      * Internal method used by recipe generators.
      */
-    public BitBagItem getBitBag(final BagBeakerColours colour) {
-        return bags.get(colour);
-    }
-
-    /**
-     * Internal method used by recipe generators.
-     */
-    public BitBeakerItem getBitBeaker(final BagBeakerColours colour) {
-        return beakers.get(colour);
+    public <T extends Item> T getColouredItem(final Class<T> klass, final DyedItemColour colour) {
+        return (T) colourables.getOrDefault(klass, new HashMap<>()).get(colour);
     }
 
     /**

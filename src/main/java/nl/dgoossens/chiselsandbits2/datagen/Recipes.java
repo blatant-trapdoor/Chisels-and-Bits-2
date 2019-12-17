@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.registries.ForgeRegistries;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.common.registry.BagBeakerColours;
+import nl.dgoossens.chiselsandbits2.api.item.DyedItemColour;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 
 import java.util.Arrays;
@@ -47,29 +47,6 @@ public class Recipes extends RecipeProvider {
                     .setGroup("palettes")
                     .addCriterion("has_a_chisel", InventoryChangeTrigger.Instance.forItems(i.CHISEL))
                     .addCriterion("slab", InventoryChangeTrigger.Instance.forItems(slab))
-                    .build(consumer);
-        }
-
-        //Bit Bag & Beaker Recipes
-        for(BagBeakerColours colour : BagBeakerColours.values()) {
-            //Get the minecraft dye item corresponding to the colour
-            Item dye = ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", colour.name().toLowerCase()+"_dye"));
-            ModItems i = ChiselsAndBits2.getInstance().getItems();
-
-            //Bit Bag Recipe
-            ShapelessRecipeBuilder.shapelessRecipe(i.getBitBag(colour))
-                    .addIngredient(i.BIT_BAG)
-                    .addIngredient(dye)
-                    .setGroup("dyed_bit_bags")
-                    .addCriterion("bit_bag", InventoryChangeTrigger.Instance.forItems(i.BIT_BAG))
-                    .build(consumer);
-
-            //Bit Beaker Recipe
-            ShapelessRecipeBuilder.shapelessRecipe(i.getBitBeaker(colour))
-                    .addIngredient(i.BIT_BEAKER)
-                    .addIngredient(dye)
-                    .setGroup("tinted_bit_beakers")
-                    .addCriterion("bit_beaker", InventoryChangeTrigger.Instance.forItems(i.BIT_BEAKER))
                     .build(consumer);
         }
     }

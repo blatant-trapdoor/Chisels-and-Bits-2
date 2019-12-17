@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.item.IColourable;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
@@ -12,7 +13,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class BitBagItem extends StorageItem {
+public class BitBagItem extends StorageItem implements IColourable {
     @Override
     public IItemModeType getAssociatedType() {
         return ItemModeType.SELECTED;
