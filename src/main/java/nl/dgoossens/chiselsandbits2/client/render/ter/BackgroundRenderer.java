@@ -62,7 +62,11 @@ public class BackgroundRenderer implements Callable<Tessellator> {
                     synchronized (CBTessellator.class) {
                         if (ChiseledBlockTER.activeTess.get() < ChiseledBlockTER.getMaxTessalators()) {
                             tessellator = new CBTessellator(2109952);
-                        } else Thread.sleep(10);
+                        } else {
+                            try {
+                                Thread.sleep(10);
+                            } catch(InterruptedException x) {} //Allow interuption
+                        }
                     }
                 }
             }

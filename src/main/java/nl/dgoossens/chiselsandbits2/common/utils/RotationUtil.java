@@ -71,11 +71,38 @@ public class RotationUtil {
         return inputState;
     }
 
-    private static Direction spinFacing(final Direction curr, final Axis axis, final boolean backwards) {
+    /**
+     * Get the new block state that the original gets mapped to when mirorred.
+     */
+    public static int mirrorBlockState(final int inputState, final Direction.Axis axis) {
+        final BlockState in = BitUtil.getBlockState(inputState);
+        if(!hasMirrorableState(in)) return inputState;
+        if(in.has(BlockStateProperties.FACING)) {
+            final Direction curr = in.get(BlockStateProperties.FACING);
+            switch(curr.getAxis()) {
+                case X:
+                    if(axis != Axis.Z) return inputState; //Only change this isn't in other XZ direction
+                    break;
+                case Y:
+                    if(axis != Axis.Y) return inputState; //Only change this if already in Y
+                    break;
+                case Z:
+                    if(axis != Axis.X) return inputState; //Only change this isn't in other XZ direction
+                    break;
+            }
+            return BitUtil.getBlockId(in.with(BlockStateProperties.FACING, curr.getOpposite()));
+        }
+
+        //The following properties aren't spun as they can't be due to complications: ROTATION_0_15, HORIZONTAL_FACING, FACING_EXCEPT_UP
+        return inputState;
+    }
+
+    private static Direction spinFacing(final Direction curr, final Axis axis, boolean backwards) {
+        if(axis == Axis.X) backwards = !backwards; //Somehow clockwise and counterclockwise are swapped for X. Don't have a clue why.
         return backwards ? rotateAroundCCW(curr, axis) : curr.rotateAround(axis);
     }
 
-    //Interal method, opposite of Direction#rotateAround
+    //Internal method, opposite of Direction#rotateAround
     private static Direction rotateAroundCCW(final Direction curr, final Direction.Axis axis) {
         switch(axis) {
             case X:

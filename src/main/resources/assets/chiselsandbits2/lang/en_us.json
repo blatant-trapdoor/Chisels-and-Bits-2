@@ -71,7 +71,7 @@
   "jei.item.chiselsandbits2.bit_bag": "Bit Bags are used to store bits and to select which kind of bit should be placed. Pressing Left + Alt opens the quick menu where you can easily select which bit you want to place.",
   "jei.item.chiselsandbits2.tape_measure": "The tape measure allows you to plan out future builds by the bit or by the block. Right click the first position and then right click a second position to make a selection between those two points. Left + Alt opens a menu where you can select some options like the colour of the measurement or whether you want to measure by the bit, block or in a line.",
   "jei.item.chiselsandbits2.morphing_bit": "A morphing bit can be used to easily view the currently selected bit type. Placing it in the off hand is encouraged. Additionally, the morphing bit mimics the behaviour of the chisel but you need a chisel in your inventory too.",
-  "jei.item.chiselsandbits2.wrench": "The wrench is a tool with which you can rotate, mirror or move chiseled blocks. The face of the block you click on is taken into account when rotating, mirroring or nudging blocks.",
+  "jei.item.chiselsandbits2.wrench": "The wrench is a tool with which you can rotate or mirror chiseled blocks. The face of the block you click on is taken into account when rotating or mirroring.",
 
   "general.chiselsandbits2.no_keybinding": "No Key Bound",
   "general.chiselsandbits2.empty_slot": "Empty Slot",

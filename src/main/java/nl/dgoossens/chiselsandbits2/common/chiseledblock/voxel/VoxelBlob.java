@@ -100,17 +100,22 @@ public final class VoxelBlob implements IVoxelSrc {
     public VoxelBlob mirror(final Direction.Axis axis) {
         VoxelBlob out = new VoxelBlob();
         final BitIterator bi = new BitIterator();
+        Map<Integer, Integer> mappings = new HashMap<>();
         while (bi.hasNext()) {
+            int i = mappings.computeIfAbsent(bi.getNext(this), (bit) -> {
+                if(VoxelType.isBlock(bit)) return RotationUtil.mirrorBlockState(bit, axis);
+                return bit;
+            });
             if (bi.getNext(this) != AIR_BIT) {
                 switch (axis) {
                     case X:
-                        out.set(bi.x, bi.y, DIMENSION_MINUS_ONE - bi.z, bi.getNext(this));
+                        out.set(bi.x, bi.y, DIMENSION_MINUS_ONE - bi.z, i);
                         break;
                     case Y:
-                        out.set(bi.x, DIMENSION_MINUS_ONE - bi.y, bi.z, bi.getNext(this));
+                        out.set(bi.x, DIMENSION_MINUS_ONE - bi.y, bi.z, i);
                         break;
                     case Z:
-                        out.set(DIMENSION_MINUS_ONE - bi.x, bi.y, bi.z, bi.getNext(this));
+                        out.set(DIMENSION_MINUS_ONE - bi.x, bi.y, bi.z, i);
                         break;
                 }
             }
@@ -148,8 +153,8 @@ public final class VoxelBlob implements IVoxelSrc {
                 return bit;
             });
             switch (axis) {
-                case X:
-                    out.set(bi.x, bi.z, DIMENSION_MINUS_ONE - bi.y, i);
+                case X: //These lines are swapped between clockwise and counterclockwise for X. As clockwise and counterclockwise were swapped somehow.
+                    out.set(bi.x, DIMENSION_MINUS_ONE - bi.z, bi.y, i);
                     break;
                 case Y:
                     out.set(DIMENSION_MINUS_ONE - bi.z, bi.y, bi.x, i);
@@ -181,7 +186,7 @@ public final class VoxelBlob implements IVoxelSrc {
             });
             switch (axis) {
                 case X:
-                    out.set(bi.x, DIMENSION_MINUS_ONE - bi.z, bi.y, i);
+                    out.set(bi.x, bi.z, DIMENSION_MINUS_ONE - bi.y, i);
                     break;
                 case Y:
                     out.set(bi.z, bi.y, DIMENSION_MINUS_ONE - bi.x, i);
