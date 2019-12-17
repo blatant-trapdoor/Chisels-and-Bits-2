@@ -11,8 +11,6 @@
   "item.chiselsandbits2.tape_measure.help": "$ on two points to measure spaces|$ to clear previous measurements|$ to display modes",
   "item.chiselsandbits2.wrench": "Wrench",
   "item.chiselsandbits2.wrench.help": "$ to use|$ to display menu",
-  "item.chiselsandbits2.mallet": "Mallet",
-  "item.chiselsandbits2.mallet.help": "$ to write/construct blue prints|$ to display menu",
   "item.chiselsandbits2.blueprint": "Blueprint",
   "item.chiselsandbits2.blueprint.help": "$ to use|$ to display menu",
   "item.chiselsandbits2.morphing_bit": "Morphing Bit",
