@@ -345,8 +345,6 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
         ArrayList<FaceRegion> regions = null;
         final ICullTest test = new MCCullTest();
         final IStateRef nextToState = mrs != null ? mrs.get(myFace) : null;
-        if(nextToState != null)
-            System.out.println("Building model, we have found out we have the following on our side "+myFace+": " +nextToState);
         VoxelBlob nextTo = nextToState == null ? null : nextToState.getVoxelBlob();
 
         //Z: z, y, x

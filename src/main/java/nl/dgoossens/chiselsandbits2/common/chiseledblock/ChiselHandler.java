@@ -116,7 +116,7 @@ public class ChiselHandler {
                             }
 
                             //Actually apply the operation.
-                            tec.completeEditOperation(player, vb);
+                            tec.completeEditOperation(player, vb, true);
 
                             //Play sound if necessary
                             inventory.playSound(world, pos);

@@ -64,7 +64,6 @@ public class CUndoPacket {
 
                 final BitAccess ba = baOpt.get();
                 final VoxelBlob vb = ba.getNativeBlob();
-                System.out.println("Editing voxelblob: "+vb);
                 InventoryUtils.CalculatedInventory inventory = InventoryUtils.buildInventory(player);
 
                 final BitIterator i = new BitIterator();
@@ -73,13 +72,13 @@ public class CUndoPacket {
                     final int inAft = i.getNext(baft);
 
                     //If we need to set it to air and it currently isn't air
-                    if(inBef != 0 && inAft == 0)
-                        if(inventory.removeBit(vb, i.x, i.y, i.z)) {
-                            player.sendStatusMessage(new TranslationTextComponent("general."+ ChiselsAndBits2.MOD_ID+".undo.missing_durability"), true);
+                    if(inBef != VoxelBlob.AIR_BIT && inAft == VoxelBlob.AIR_BIT) {
+                        if (inventory.removeBit(vb, i.x, i.y, i.z)) {
+                            player.sendStatusMessage(new TranslationTextComponent("general." + ChiselsAndBits2.MOD_ID + ".undo.missing_durability"), true);
                             invaliate();
                             return; //This will only be false if we have no more chisel in which case we can call it quits.
                         }
-                    else {
+                    } else if(inBef != inAft) {
                         switch(inventory.placeBit(vb, i.x, i.y, i.z, BitOperation.SWAP, inAft)) {
                             case 2:
                                 //If we don't have materials we quit.
@@ -94,19 +93,14 @@ public class CUndoPacket {
                     }
                 }
 
-                //Make this a undo group of its own
-                ChiselsAndBits2.getInstance().getClient().getUndoTracker().beginGroup(player);
-
                 //Actually apply the operation.
                 TileEntity te = world.getTileEntity(pos);
-                System.out.println("Editing at pos = "+pos+" where we found "+te);
                 if(te instanceof ChiseledBlockTileEntity)
-                    ((ChiseledBlockTileEntity) te).completeEditOperation(player, vb);
+                    ((ChiseledBlockTileEntity) te).completeEditOperation(player, vb, false);
 
                 inventory.playSound(world, pos);
                 inventory.apply();
 
-                ChiselsAndBits2.getInstance().getClient().getUndoTracker().endGroup(player);
             }
         } catch(Exception x) {
             x.printStackTrace();

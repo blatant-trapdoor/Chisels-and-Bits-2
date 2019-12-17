@@ -434,7 +434,7 @@ public class InventoryUtils {
                     vb.set(x, y, z, placedBit);
 
                     //Track how many bits we've extracted and it's not a coloured bit.
-                    if (operation == SWAP)
+                    if (operation == SWAP && blk != VoxelBlob.AIR_BIT)
                         addMaterial(VoxelWrapper.forAbstract(blk), 1);
                 } else return 2; //If can place bit is false once it will never become true again, so this break saves time.
             } else return 1; //If damage chisel is false once it will never become true again, so this break saves time.
