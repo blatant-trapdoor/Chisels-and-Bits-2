@@ -42,8 +42,6 @@ import static nl.dgoossens.chiselsandbits2.api.block.BitOperation.PLACE;
  * general utility methods.
  */
 public class ChiselUtil {
-    private static Map<Block, Boolean> supportedBlocks = new ConcurrentHashMap<>();
-    private static Set<Block> testedBlocks = new HashSet<>();
     public static boolean ACTIVELY_TRACING = false;
     public static final String NBT_BLOCKENTITYTAG = "BlockEntityTag";
     private static long memory = -1; //The amount of memory allocated to Minecraft.
@@ -56,47 +54,6 @@ public class ChiselUtil {
         if (memory == -1)
             memory = Runtime.getRuntime().maxMemory() / (1024 * 1024); // mb
         return memory < 1256;
-    }
-
-    /**
-     * Checks whether or not a given block can be chiseled.
-     */
-    public static boolean canChiselBlock(final BlockState block) {
-        if (!supportedBlocks.containsKey(block.getBlock())) testBlock(block);
-        return supportedBlocks.getOrDefault(block.getBlock(), false);
-    }
-
-    /**
-     * Tests if a block can be turned into a ChiseledBlock, this works by
-     * looking at the VoxelShape and testing if it's made of 1/16th's of the
-     * block.
-     */
-    private static void testBlock(final BlockState block) {
-        //We determine if a block can be chiseled by whether or not the shape of it can be turned into a VoxelBlob.
-        final Block blk = block.getBlock();
-        //Don't test twice!
-        if(testedBlocks.contains(blk)) return;
-        testedBlocks.add(blk);
-
-        if (blk instanceof ChiseledBlock) {
-            supportedBlocks.put(blk, true);
-            return;
-        }
-        if (blk.hasTileEntity(block)) return;
-        //Can't be a rotatable block without being allowed to be fully rotated.
-        if (blk.getDefaultState().has(BlockStateProperties.HORIZONTAL_FACING)) return;
-        if (blk.getDefaultState().has(BlockStateProperties.FACING_EXCEPT_UP)) return;
-
-        DummyEnvironmentWorldReader dummyWorld = new DummyEnvironmentWorldReader() {
-            @Override
-            public BlockState getBlockState(BlockPos pos) {
-                if (pos.equals(BlockPos.ZERO)) return block;
-                return super.getBlockState(pos);
-            }
-        };
-        if (block.getBlockHardness(dummyWorld, BlockPos.ZERO) < 0) return; //Can't break unbreakable blocks. (they have -1 hardness)
-        if (!block.getCollisionShape(dummyWorld, BlockPos.ZERO).equals(VoxelShapes.fullCube())) return; //You can only chisel blocks without a special shape.
-        supportedBlocks.put(blk, true);
     }
 
     /**
@@ -146,13 +103,14 @@ public class ChiselUtil {
      */
     public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final Direction face) {
         Block target = originalState.getBlock();
-        if(target.equals(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK)) return;
+        BlockState placementState = ChiselsAndBits2.getInstance().getAPI().getRestrictions().getPlacementState(originalState);
+        if(target.equals(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK) || placementState == null) return;
 
         IFluidState fluid = world.getFluidState(pos);
         boolean isAir = isBlockReplaceable(player, world, pos, face, true);
 
-        if (ChiselUtil.canChiselBlock(originalState) || isAir) {
-            int blockId = isAir ? fragmentBlockStateID : BitUtil.getBlockId(originalState);
+        if (ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(originalState) || isAir) {
+            int blockId = isAir ? fragmentBlockStateID : BitUtil.getBlockId(placementState);
             world.setBlockState(pos, ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), 3);
             final ChiseledBlockTileEntity te = (ChiseledBlockTileEntity) world.getTileEntity(pos);
             if (te != null) {

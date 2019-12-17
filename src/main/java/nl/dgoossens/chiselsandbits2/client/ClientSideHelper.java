@@ -260,7 +260,7 @@ public class ClientSideHelper {
                 final TileEntity data = world.getTileEntity(location.blockPos);
 
                 //We only show this box if this block is chiselable and this block at this position is chiselable.
-                if (!tapeMeasure && !ChiselUtil.canChiselBlock(world.getBlockState(location.blockPos))) return false;
+                if (!tapeMeasure && !ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(world.getBlockState(location.blockPos))) return false;
                 //The highlight not showing up when you can't chisel in a specific block isn't worth all of the code that needs to be checked for it.
                 //if(!ChiselUtil.canChiselPosition(location.getBlockPos(), player, state, ((BlockRayTraceResult) mop).getFace())) return;
 

@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.common.impl;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import nl.dgoossens.chiselsandbits2.api.bit.RestrictionAPI;
 import nl.dgoossens.chiselsandbits2.api.block.BitAccess;
 import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
@@ -14,6 +15,7 @@ import java.util.Set;
 
 public class ChiselsAndBitsAPIImpl implements ChiselsAndBitsAPI {
     private ItemPropertyAPI itemPropertyAPI = new ItemPropertyAPIImpl();
+    private RestrictionAPI restrictionAPI = new RestrictionAPIImpl();
 
     @Override
     public Optional<BitAccess> getBitAccess(World world, BlockPos pos) {
@@ -25,5 +27,10 @@ public class ChiselsAndBitsAPIImpl implements ChiselsAndBitsAPI {
     @Override
     public ItemPropertyAPI getItemPropertyRegistry() {
         return itemPropertyAPI;
+    }
+
+    @Override
+    public RestrictionAPI getRestrictions() {
+        return restrictionAPI;
     }
 }

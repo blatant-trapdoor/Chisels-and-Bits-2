@@ -1,5 +1,7 @@
 package nl.dgoossens.chiselsandbits2;
 
+import net.minecraft.block.Blocks;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -76,6 +78,9 @@ public class ChiselsAndBits2 {
         FMLJavaModLoadingContext.get().getModEventBus().register(SMART_MODEL_MANAGER);
         NETWORK_ROUTER.init();
         CapabilityManager.INSTANCE.register(BitStorage.class, new StorageCapability(), BitStorageImpl::new);
+
+        //Setup vanilla restrictions
+        getAPI().getRestrictions().restrictBlockStateProperty(BlockStateProperties.SNOWY, false, true); //Make all snowy grass not snowy automatically
     }
 
     public ChiselsAndBitsAPI getAPI() {
