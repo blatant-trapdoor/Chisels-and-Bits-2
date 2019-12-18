@@ -128,12 +128,6 @@ public class ClientSide extends ClientSideHelper {
             if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME))
                 ma.trigger();
         }
-
-        if (Minecraft.getInstance().player.getHeldItemMainhand().getItem() instanceof TapeMeasureItem &&
-                keybindings.clearTapeMeasure.isPressed() &&
-                keybindings.clearTapeMeasure.getKeyModifier().isActive(KeyConflictContext.IN_GAME)) {
-            ChiselsAndBits2.getInstance().getClient().tapeMeasurements.clear();
-        }
     }
 
     /**

@@ -30,7 +30,7 @@ sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = co
 
 ext {
     mc_version = '1.14.4'
-    jei_version = '6.0.0.11'
+    jei_version = '6.0.0.26'
 }
 
 minecraft {
@@ -108,7 +108,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.14.4-28.1.0'
+    minecraft 'net.minecraftforge:forge:1.14.4-28.1.105'
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api")
     runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
 }

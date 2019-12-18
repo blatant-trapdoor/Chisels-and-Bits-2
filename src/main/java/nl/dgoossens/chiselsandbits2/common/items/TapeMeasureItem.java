@@ -42,7 +42,7 @@ public class TapeMeasureItem extends TypedItem {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "tape_measure.help",
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
-                ChiselsAndBits2.getInstance().getKeybindings().clearTapeMeasure,
+                Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
     }

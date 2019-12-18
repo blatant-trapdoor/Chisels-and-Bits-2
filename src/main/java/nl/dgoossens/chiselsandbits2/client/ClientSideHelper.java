@@ -204,6 +204,12 @@ public class ClientSideHelper {
      * Automatically handles whether or not a selection has already started and caching the measurement.
      */
     public void useTapeMeasure(BlockRayTraceResult rayTrace) {
+        //Clear measurements if there are measurements
+        if(Minecraft.getInstance().player.isSneaking() && !ChiselsAndBits2.getInstance().getClient().tapeMeasurements.isEmpty()) {
+            ChiselsAndBits2.getInstance().getClient().tapeMeasurements.clear();
+            return;
+        }
+
         final BitLocation location = new BitLocation(rayTrace, true, BitOperation.REMOVE);
         if(tapeMeasureCache == null) {
             //First Selection

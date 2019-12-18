@@ -26,16 +26,11 @@ public class ModKeybindings {
         }
     };
 
-    private static final String CATEGORY = "Chisels & Bits 2 - General";
-    private static final String HOTKEYS = "Chisels & Bits 2 - Hotkeys";
+    private static final String CATEGORY = "Chisels & Bits 2";
 
     private static final InputMappings.Input NONE = InputMappings.INPUT_INVALID;
 
-    public KeyBinding
-            selectBitType = new KeyBinding("Select Bit Type", CONFLICT, InputMappings.Type.MOUSE.getOrMakeInput(2), CATEGORY), //Middle Mouseclick
-            modeMenu = new KeyBinding("Radial Menu", CONFLICT, KeyModifier.NONE, getKey(342), CATEGORY), //Left Alt
-            copyPattern = new KeyBinding("Copy Pattern", CONFLICT, KeyModifier.SHIFT, InputMappings.Type.MOUSE.getOrMakeInput(1), CATEGORY), //Shift Rightclick
-            clearTapeMeasure = new KeyBinding("Clear Measurements", CONFLICT, KeyModifier.SHIFT, InputMappings.Type.MOUSE.getOrMakeInput(0), CATEGORY); //Shift Leftclick
+    public KeyBinding modeMenu = new KeyBinding("Radial Menu", CONFLICT, KeyModifier.NONE, getKey(342), CATEGORY); //Left Alt
 
     public Map<MenuAction, KeyBinding> actionHotkeys = new HashMap<>();
     public Map<ItemMode, KeyBinding> modeHotkeys = new HashMap<>();
@@ -58,14 +53,14 @@ public class ModKeybindings {
                     def = getKey(89);
                     mod = KeyModifier.CONTROL;
                 }
-                KeyBinding kb = new KeyBinding("general.chiselsandbits2.menuaction." + ma.name().toLowerCase() + ".hotkey", CONFLICT, mod, def, HOTKEYS);
+                KeyBinding kb = new KeyBinding("general.chiselsandbits2.menuaction." + ma.name().toLowerCase() + ".hotkey", CONFLICT, mod, def, CATEGORY);
                 actionHotkeys.put(ma, kb);
                 ClientRegistry.registerKeyBinding(kb);
             }
 
         for (ItemMode im : ItemMode.values())
             if (im.hasHotkey()) {
-                KeyBinding kb = new KeyBinding("general.chiselsandbits2.itemmode." + im.getTypelessName().toLowerCase() + ".hotkey", CONFLICT, NONE, HOTKEYS);
+                KeyBinding kb = new KeyBinding("general.chiselsandbits2.itemmode." + im.getTypelessName().toLowerCase() + ".hotkey", CONFLICT, NONE, CATEGORY);
                 modeHotkeys.put(im, kb);
                 ClientRegistry.registerKeyBinding(kb);
             }

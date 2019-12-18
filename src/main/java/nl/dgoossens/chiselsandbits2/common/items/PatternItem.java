@@ -47,7 +47,7 @@ public class PatternItem extends TypedItem implements IRotatableItem {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "pattern.help",
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
-                ChiselsAndBits2.getInstance().getKeybindings().copyPattern,
+                Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
     }

@@ -11,7 +11,7 @@ displayURL="https://github.com/Aeltumn/Chisels-And-Bits2/"
 logoFile="chiselsandbits2.png"
 credits="Original mod created by AlgorithmX2"
 authors="Aeltumn, AlgorithmX2"
-description="The successor to the original Chisels and Bits mod for minecraft 1.12. A mod about sculpting, decorating and aesthetics."
+description="The successor to the original Chisels and Bits mod. A mod about sculpting, decorating and aesthetics."
 [[dependencies.chiselsandbits2]]
     modId="forge"
     mandatory=true
