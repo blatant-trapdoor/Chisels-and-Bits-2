@@ -1,9 +1,11 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BlobSerializer;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.LegacyBlobSerializer;
 
 public enum VoxelVersions {
     ANY(-1),
+    LEGACY(-42, LegacyBlobSerializer.class), //For compatibility with C&B-WorldFixer
     COMPACT(1, BlobSerializer.class),
     //MODERN(2, ModernBlobSerializer.class),
     ;

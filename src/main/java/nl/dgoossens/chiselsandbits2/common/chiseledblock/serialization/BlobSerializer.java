@@ -97,12 +97,12 @@ public class BlobSerializer implements VoxelSerializer {
         def.reset();
     }
 
-    private int readStateID(
+    protected int readStateID(
             final PacketBuffer buffer) {
         return buffer.readVarInt();
     }
 
-    private void writeStateID(
+    protected void writeStateID(
             final PacketBuffer buffer,
             final int key) {
         buffer.writeVarInt(key);
