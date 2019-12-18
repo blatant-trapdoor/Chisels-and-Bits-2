@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "chiselsandbits2:light_gray_bit_bag"
+    ]
+  },
+  "criteria": {
+    "bit_bag": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "chiselsandbits2:bit_bag"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "chiselsandbits2:light_gray_bit_bag"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "bit_bag",
+      "has_the_recipe"
+    ]
+  ]
+}

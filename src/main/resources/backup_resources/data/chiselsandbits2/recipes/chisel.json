@@ -1,0 +1,17 @@
+{
+  "result": {
+    "item": "chiselsandbits2:chisel"
+  },
+  "pattern": [
+    "TS"
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "S": {
+      "tag": "forge:rods/wooden"
+    },
+    "T": {
+      "tag": "forge:ingots/gold"
+    }
+  }
+}
