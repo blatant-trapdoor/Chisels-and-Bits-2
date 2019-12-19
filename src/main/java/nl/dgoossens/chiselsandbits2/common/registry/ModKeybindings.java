@@ -53,6 +53,7 @@ public class ModKeybindings {
                     def = getKey(89);
                     mod = KeyModifier.CONTROL;
                 }
+                if(ma.equals(MenuAction.PLACE)) continue; //No keybind for place because its shared with swap.
                 KeyBinding kb = new KeyBinding("general.chiselsandbits2.menuaction." + ma.name().toLowerCase() + ".hotkey", CONFLICT, mod, def, CATEGORY);
                 actionHotkeys.put(ma, kb);
                 ClientRegistry.registerKeyBinding(kb);

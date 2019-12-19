@@ -37,6 +37,7 @@ import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockItemColor
 import nl.dgoossens.chiselsandbits2.client.render.overlay.MorphingBitItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
+import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
@@ -125,8 +126,16 @@ public class ClientSide extends ClientSideHelper {
         }
         for (IMenuAction ma : keybindings.actionHotkeys.keySet()) {
             KeyBinding kb = keybindings.actionHotkeys.get(ma);
-            if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME))
+            if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME)) {
+                if(ma.equals(MenuAction.PLACE) || ma.equals(MenuAction.SWAP)) {
+                    if (ItemModeUtil.getMenuActionMode(Minecraft.getInstance().player.getHeldItemMainhand()).equals(MenuAction.PLACE))
+                        MenuAction.PLACE.trigger();
+                    else
+                        MenuAction.SWAP.trigger();
+                    continue;
+                }
                 ma.trigger();
+            }
         }
     }
 
