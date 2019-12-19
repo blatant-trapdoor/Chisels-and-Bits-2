@@ -160,7 +160,7 @@ public abstract class RadialMenu extends Screen {
             else setPressingButton(getKeyBinding().isKeyDown());
 
             //Update Visibility
-            if(System.currentTimeMillis()-lastSelection > 200 && isPressingButton()) {
+            if(System.currentTimeMillis()-lastSelection > 200 && isPressingButton() && shouldShow(player)) {
                 raiseVisibility();
                 effectHappened = false; //Make sure effect can happen again
             } else {
