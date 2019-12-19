@@ -103,7 +103,6 @@ public class ItemModeUtil implements CacheClearable {
      * Only works on client-side.
      */
     private static void reshowHighlightedStack() {
-        if(Thread.currentThread().getThreadGroup() != SidedThreadGroups.CLIENT) return; //Make sure this only runs on the client!
         try {
             IngameGui ig = Minecraft.getInstance().ingameGUI;
             //IngameGui#highlightingItemStack
