@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.common.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.SoundType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,6 +12,7 @@ import net.minecraft.item.ItemUseContext;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.World;
@@ -54,6 +56,19 @@ public class ChiselUtil {
         if (memory == -1)
             memory = Runtime.getRuntime().maxMemory() / (1024 * 1024); // mb
         return memory < 1256;
+    }
+
+    /**
+     * Plays the sound to be played when a chiseled block is modified.
+     */
+    public static void playModificationSound(final World world, final BlockPos pos) {
+        BlockState state = world.getBlockState(pos);
+        if(world.getTileEntity(pos) instanceof ChiseledBlockTileEntity) {
+            int a = ((ChiseledBlockTileEntity) world.getTileEntity(pos)).getPrimaryBlock();
+            if(a != VoxelBlob.AIR_BIT) state = BitUtil.getBlockState(a);
+        }
+        SoundType st = state.getSoundType();
+        world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, st.getBreakSound(), SoundCategory.BLOCKS, (st.getVolume() + 1.0F) / 16.0F, st.getPitch() * 0.9F);
     }
 
     /**

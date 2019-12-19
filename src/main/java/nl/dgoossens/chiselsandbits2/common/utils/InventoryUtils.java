@@ -383,11 +383,11 @@ public class InventoryUtils {
 
         /**
          * Plays the correct sound effect when updating a chiseled block but only if the block was actually modified.
+         * Also spawns breaking particles.
          */
-        public void playSound(final World world, final BlockPos pos) {
+        public void playRemovalEffects(final World world, final BlockPos pos) {
             if(!changed) return;
-            SoundType st = world.getBlockState(pos).getSoundType();
-            world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, st.getBreakSound(), SoundCategory.BLOCKS, (st.getVolume() + 1.0F) / 16.0F, st.getPitch() * 0.9F);
+            ChiselUtil.playModificationSound(world, pos);
         }
 
         /**

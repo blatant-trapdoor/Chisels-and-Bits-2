@@ -3,11 +3,9 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.stats.StatisticsManager;
 import net.minecraft.stats.Stats;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -119,7 +117,7 @@ public class ChiselHandler {
                             tec.completeEditOperation(player, vb, true);
 
                             //Play sound if necessary
-                            inventory.playSound(world, pos);
+                            inventory.playRemovalEffects(world, pos);
                         }
                     }
                 }
