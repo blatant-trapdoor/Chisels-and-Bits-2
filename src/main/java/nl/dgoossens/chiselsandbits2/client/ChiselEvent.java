@@ -43,24 +43,12 @@ public class ChiselEvent {
      */
     private static long lastClick = System.currentTimeMillis();
 
-    /*@SubscribeEvent
-    public static void onClick(InputEvent.ClickInputEvent e) {
-        if(e.isPickBlock()) {
-            //If we're middle clicking and the keybind for selectbittype wasn't changed we cancel it and do our own implementation.
-            if(ChiselsAndBits2.getKeybindings().selectBitType.getKey().equals(ChiselsAndBits2.getKeybindings().selectBitType.getDefault()))
-                e.setCancelled(true);
-            //Do pick bit
-            return;
-        }
-
-    }*/
-
     /**
      * Will be removed when the proper ClickInputEvent gets added so we don't have to deal with
      * stupid minecraft bugs and de-syncs.
      */
     @SubscribeEvent
-    public static void temporaryClick(PlayerInteractEvent e) {
+    public static void onPlayerInteract(PlayerInteractEvent e) {
         boolean leftClick = e instanceof PlayerInteractEvent.LeftClickBlock;
         if (!leftClick && !(e instanceof PlayerInteractEvent.RightClickBlock)) return;
 
@@ -89,6 +77,10 @@ public class ChiselEvent {
                         case MIRROR:
                             //Wrench
                             performBlockRotation(ItemModeUtil.getItemMode(i), player);
+                            break;
+                        case PLACE:
+                            //Chiseled Block
+                            performPlaceBlock(ItemModeUtil.getItemMode(i), player);
                             break;
                         case CUSTOM:
                             it.performCustomModification(leftClick, i);
@@ -144,6 +136,14 @@ public class ChiselEvent {
             final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode, placedBit);
             ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
         }
+    }
+
+    /**
+     * Handles placing a chiseled block.
+     */
+    public static void performPlaceBlock(final IItemMode mode, final PlayerEntity player) {
+        if (!player.world.isRemote)
+            throw new UnsupportedOperationException("Block placement can only be started on the client-side.");
     }
 
     /**

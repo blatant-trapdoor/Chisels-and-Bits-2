@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, IItemMenu, IRotatableItem {
+public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, IItemMenu, IRotatableItem, IBitModifyItem {
     public ChiseledBlockItem(Block block, Item.Properties properties) {
         super(block, properties);
     }
@@ -37,6 +37,11 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "chiseled_block.help"
         );
+    }
+
+    @Override
+    public boolean canPerformModification(ModificationType type) {
+        return type == ModificationType.PLACE;
     }
 
     @Override

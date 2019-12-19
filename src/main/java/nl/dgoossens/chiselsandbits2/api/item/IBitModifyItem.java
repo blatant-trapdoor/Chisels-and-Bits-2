@@ -36,6 +36,7 @@ public interface IBitModifyItem {
         BUILD, //Place bits
         ROTATE, //Rotate blocks
         MIRROR, //Mirror block
+        PLACE, //Placing chiseled blocks (off-grid)
 
         CUSTOM, //Unknown type of action, use an interface extending IBitModifyItem and specify it
         ;
@@ -44,7 +45,9 @@ public interface IBitModifyItem {
         private boolean validateUsedButton(boolean leftClick, ItemStack item) {
             switch(this) {
                 case EXTRACT: return leftClick; //Left Click
-                case BUILD: return !leftClick; //Right Click
+                case PLACE:
+                case BUILD:
+                    return !leftClick; //Right Click
                 case ROTATE: return ItemModeUtil.isItemMode(item, ItemMode.WRENCH_ROTATE, ItemMode.WRENCH_ROTATECCW) && !leftClick; //Right Click
                 case MIRROR: return ItemModeUtil.isItemMode(item, ItemMode.WRENCH_MIRROR) && !leftClick; //Right Click
             }
