@@ -201,11 +201,10 @@ public class ClientSide extends ClientSideHelper {
      */
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
-    public static void drawHighlights(final DrawBlockHighlightEvent e) {
-        if(Minecraft.getInstance().objectMouseOver.getType() == RayTraceResult.Type.BLOCK)
-            //Cancel if the draw blocks highlight method successfully rendered a highlight.
-            if(ChiselsAndBits2.getInstance().getClient().drawBlockHighlight(e.getPartialTicks()))
-                e.setCanceled(true);
+    public static void drawHighlights(final DrawBlockHighlightEvent.HighlightBlock e) {
+        //Cancel if the draw blocks highlight method successfully rendered a highlight.
+        if(ChiselsAndBits2.getInstance().getClient().drawBlockHighlight(e.getPartialTicks()))
+            e.setCanceled(true);
     }
 
     /**
