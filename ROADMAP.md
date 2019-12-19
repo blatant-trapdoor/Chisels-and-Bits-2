@@ -61,7 +61,6 @@ All features to be added to the betas are not separated into in which beta they 
 
 ##### Blueprints
 - The blueprint, a new item that allows you to store large areas up to 16x16x16 in contrast to the pattern that can only store single blocks.
-- Blueprints can be selected using a system similar to the Create mod's schematic selection. (I think their system is really neat and user friendly, they borrowed the radial menu, so I'll borrow their schematic selection system, with credit of course)
 
 ##### Workshop
 - The workshop with which you can upload blueprints or even chiseled armor sets depending on if/when Extra Bit Manipulation is updated.

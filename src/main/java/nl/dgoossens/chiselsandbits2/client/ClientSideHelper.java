@@ -26,9 +26,10 @@ import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.radial.RadialMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
-import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
+import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
@@ -67,9 +68,6 @@ public class ClientSideHelper {
     protected static final HashMap<IItemMode, ResourceLocation> modeIconLocations = new HashMap<>();
     protected static final HashMap<IMenuAction, ResourceLocation> menuActionLocations = new HashMap<>();
 
-    //Radial Menu
-    protected RadialMenu radialMenu = new RadialMenu();
-
     //Undo
     protected UndoTracker undoTracker = new UndoTracker();
 
@@ -104,6 +102,7 @@ public class ClientSideHelper {
         modelBounds = null;
 
         getUndoTracker().clean();
+        RadialMenu.RADIAL_MENU.cleanup();
     }
 
     /**
@@ -128,13 +127,6 @@ public class ClientSideHelper {
      * Get the main undo tracker which tracks previous bit operations.
      */
     public UndoTracker getUndoTracker() { return undoTracker; }
-
-    /**
-     * The radial menu, as displayed whilst Left+Alt is held down.
-     */
-    public RadialMenu getRadialMenu() {
-        return radialMenu;
-    }
 
     /**
      * Get the resource location of the icon for the mode, will return null

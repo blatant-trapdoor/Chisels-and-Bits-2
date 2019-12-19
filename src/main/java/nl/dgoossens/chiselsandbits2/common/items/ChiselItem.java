@@ -17,10 +17,9 @@ import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
-import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
+import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
@@ -60,12 +59,12 @@ public class ChiselItem extends TypedItem implements IBitModifyItem {
     }
 
     @Override
-    public Set<RadialMenu.MenuButton> getMenuButtons(final ItemStack item) {
-        Set<RadialMenu.MenuButton> ret = new HashSet<>();
+    public Set<ItemModeMenu.MenuButton> getMenuButtons(final ItemStack item) {
+        Set<ItemModeMenu.MenuButton> ret = new HashSet<>();
         if (ItemModeUtil.getMenuActionMode(item).equals(MenuAction.PLACE))
-            ret.add(new RadialMenu.MenuButton(MenuAction.PLACE, -RadialMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
+            ret.add(new ItemModeMenu.MenuButton(MenuAction.PLACE, -ItemModeMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
         else
-            ret.add(new RadialMenu.MenuButton(MenuAction.SWAP, -RadialMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
+            ret.add(new ItemModeMenu.MenuButton(MenuAction.SWAP, -ItemModeMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
         return ret;
     }
 

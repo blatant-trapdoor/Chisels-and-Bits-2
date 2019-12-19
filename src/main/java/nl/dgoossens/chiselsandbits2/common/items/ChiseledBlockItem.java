@@ -11,9 +11,8 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
-import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.*;
-import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
+import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
@@ -65,10 +64,10 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
     }
 
     @Override
-    public Set<RadialMenu.MenuButton> getMenuButtons(final ItemStack item) {
-        Set<RadialMenu.MenuButton> ret = new HashSet<>();
-        ret.add(new RadialMenu.MenuButton(MenuAction.ROLL_X, -RadialMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
-        ret.add(new RadialMenu.MenuButton(MenuAction.ROLL_Z, -RadialMenu.TEXT_DISTANCE - 18, 4, Direction.WEST));
+    public Set<ItemModeMenu.MenuButton> getMenuButtons(final ItemStack item) {
+        Set<ItemModeMenu.MenuButton> ret = new HashSet<>();
+        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_X, -ItemModeMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
+        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_Z, -ItemModeMenu.TEXT_DISTANCE - 18, 4, Direction.WEST));
         return ret;
     }
 

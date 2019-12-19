@@ -1,7 +1,7 @@
 package nl.dgoossens.chiselsandbits2.api.item;
 
 import net.minecraft.item.ItemStack;
-import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
+import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 
 import java.util.Set;
 
@@ -26,7 +26,7 @@ public interface IItemMenu {
      *
      * Returns null by default.
      */
-    public default Set<RadialMenu.MenuButton> getMenuButtons(final ItemStack item) {
+    public default Set<ItemModeMenu.MenuButton> getMenuButtons(final ItemStack item) {
         return null;
     }
 }

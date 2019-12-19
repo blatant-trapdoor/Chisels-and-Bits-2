@@ -9,7 +9,7 @@ import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.IRotatableItem;
-import nl.dgoossens.chiselsandbits2.client.gui.RadialMenu;
+import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
@@ -35,10 +35,10 @@ public class PatternItem extends TypedItem implements IRotatableItem {
     }
 
     @Override
-    public Set<RadialMenu.MenuButton> getMenuButtons(final ItemStack item) {
-        Set<RadialMenu.MenuButton> ret = new HashSet<>();
-        ret.add(new RadialMenu.MenuButton(MenuAction.ROLL_X, -RadialMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
-        ret.add(new RadialMenu.MenuButton(MenuAction.ROLL_Z, -RadialMenu.TEXT_DISTANCE - 18, 4, Direction.WEST));
+    public Set<ItemModeMenu.MenuButton> getMenuButtons(final ItemStack item) {
+        Set<ItemModeMenu.MenuButton> ret = new HashSet<>();
+        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_X, -ItemModeMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
+        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_Z, -ItemModeMenu.TEXT_DISTANCE - 18, 4, Direction.WEST));
         return ret;
     }
 
