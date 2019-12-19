@@ -421,13 +421,12 @@ public class ItemModeUtil implements CacheClearable {
                     selected.remove(p.getUniqueID());
             }
         } else {
-            if(Thread.currentThread().getThreadGroup() == SidedThreadGroups.CLIENT) {
-                //Client
+            //LAN/Client
+            if(Minecraft.getInstance().player != null) {
                 selected.remove(Minecraft.getInstance().player.getUniqueID());
-            } else {
-                //LAN (also client as somehow the cilent thread doesn't do jack short.
-                if(Minecraft.getInstance().player != null)
-                    selected.remove(Minecraft.getInstance().player.getUniqueID());
+                //We'll settle for everyone in the same dimension. Doubt anyone will ever notice this.
+                for(PlayerEntity p : Minecraft.getInstance().player.getEntityWorld().getPlayers())
+                    selected.remove(p.getUniqueID());
             }
         }
     }
