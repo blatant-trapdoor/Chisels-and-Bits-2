@@ -36,7 +36,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ItemModeMenu extends RadialMenu {
@@ -50,7 +49,7 @@ public class ItemModeMenu extends RadialMenu {
     private List<MenuRegion> modes;
     private List<MenuButton> buttons;
     private long buttonLastHighlighted = 0L;
-    private CustomItemRenderer cache;
+    private DurabilityBarRenderer cache;
 
     public ItemModeMenu() {
         super(new StringTextComponent("Radial Menu"));
@@ -121,7 +120,7 @@ public class ItemModeMenu extends RadialMenu {
         buttons = getShownButtons();
 
         //Set the invisibility for all rendered bars.
-        getItemRenderer().setAlpha(getVisibility() * 0.65f);
+        getDurabilityBarRenderer().setAlpha(getVisibility() * 0.65f);
 
         renderBackgrounds(mouseX, mouseY, middle_x, middle_y, buffer);
         //Render flat coloured parts of icons and overlays.
@@ -426,7 +425,7 @@ public class ItemModeMenu extends RadialMenu {
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
-                getItemRenderer().renderDurabilityBar(ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - store.get(s.getVoxelWrapper()),
+                getDurabilityBarRenderer().renderDurabilityBar(ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - store.get(s.getVoxelWrapper()),
                         ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get(), (int) Math.round(middle_x + x - 9), (int) Math.round(middle_y + y - 7));
             }
         }
@@ -455,8 +454,8 @@ public class ItemModeMenu extends RadialMenu {
         return buttons;
     }
 
-    public CustomItemRenderer getItemRenderer() {
-        if(cache == null) cache = new CustomItemRenderer(Minecraft.getInstance().getItemRenderer());
+    public DurabilityBarRenderer getDurabilityBarRenderer() {
+        if(cache == null) cache = new DurabilityBarRenderer();
         return cache;
     }
 
