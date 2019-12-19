@@ -175,11 +175,9 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
             final int maxTess = getMaxTessalators();
             if (getTracker().futureTrackers.size() < maxTess) {
                 try {
-                    System.out.println("Rebuilding "+te.getPos()+" because future is "+rc.getRenderingTask());
                     final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE));
                     final FutureTask<Tessellator> newFuture = new FutureTask<>(new BackgroundRenderer(cache, chunkOffset, te.getChunk(te.getWorld()).getTileList()));
                     rc.setRenderingTask(newFuture);
-                    System.out.println("Set rendering task "+te.getPos()+" so future is now "+rc.getRenderingTask());
 
                     pool.submit(newFuture);
                     addFutureTracker(rc);

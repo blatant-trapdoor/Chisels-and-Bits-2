@@ -29,7 +29,6 @@ import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.radial.RadialMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
-import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
@@ -445,7 +444,6 @@ public class ClientSideHelper {
         final PlayerEntity player = Minecraft.getInstance().player;
         final RayTraceResult mop = Minecraft.getInstance().objectMouseOver;
         if(!(mop instanceof BlockRayTraceResult)) return;
-        final World world = player.world;
         final ItemStack currentItem = player.getHeldItemMainhand();
         final Direction face = ((BlockRayTraceResult) mop).getFace();
 
@@ -454,28 +452,20 @@ public class ClientSideHelper {
             if (!currentItem.hasTag()) return;
             BlockPos offset = ((BlockRayTraceResult) mop).getPos();
 
-            //TODO re-enable offgrid placement mode
-            if (false && player.isSneaking()) {
+            final NBTBlobConverter nbt = new NBTBlobConverter();
+            nbt.readChiselData(currentItem.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
+
+            if (player.isSneaking()) {
                 final BitLocation bl = new BitLocation((BlockRayTraceResult) mop, true, BitOperation.PLACE);
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !isPlaceable(player, world, offset, face));
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl));
             } else {
                 //If we can already place where we're looking we don't have to move.
                 //On grid we don't do this.
-                if(ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_GRID || (!(world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !isPlaceable(player, world, offset, face)))
+                if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
                     offset = offset.offset(((BlockRayTraceResult) mop).getFace());
 
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, world, offset, face, BlockPos.ZERO, partialTicks, !isPlaceable(player, world, offset, face));
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, offset, face, BlockPos.ZERO, partialTicks, !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt));
             }
-        }
-    }
-
-    private boolean isPlaceable(final PlayerEntity player, final World world, final BlockPos pos, final Direction face) {
-        if(ChiselUtil.isBlockReplaceable(player, world, pos, face, false)) return true;
-        switch((ItemMode) ItemModeUtil.getChiseledBlockMode(player)) {
-            case CHISELED_BLOCK_GRID:
-                return false;
-            default:
-                return world.getTileEntity(pos) instanceof ChiseledBlockTileEntity;
         }
     }
 
@@ -493,7 +483,7 @@ public class ClientSideHelper {
     /**
      * Shows the ghost of the chiseled block in item at the position offset by the partial in bits.
      */
-    protected void showGhost(ItemStack item, World world, BlockPos pos, Direction face, BlockPos partial, float partialTicks, boolean silhoutte) {
+    protected void showGhost(ItemStack item, NBTBlobConverter c, World world, BlockPos pos, Direction face, BlockPos partial, float partialTicks, boolean silhoutte) {
         final PlayerEntity player = Minecraft.getInstance().player;
         IBakedModel model = null;
         if(ghostCache != null && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial))
@@ -506,22 +496,13 @@ public class ClientSideHelper {
 
             final TileEntity te = world.getTileEntity(pos);
 
-            final NBTBlobConverter c = new NBTBlobConverter();
-            c.readChiselData(item.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
-            VoxelBlob blob = c.getVoxelBlob();
             boolean modified = false;
+            VoxelBlob blob = c.getVoxelBlob();
             if(te instanceof ChiseledBlockTileEntity) {
                 VoxelBlob b = ((ChiseledBlockTileEntity) te).getBlob();
-                switch ((ItemMode) ItemModeUtil.getChiseledBlockMode(player)) {
-                    case CHISELED_BLOCK_MERGE:
-                        blob.intersect(b);
-                        modified = true;
-                        break;
-                    case CHISELED_BLOCK_FIT:
-                        if(!blob.canMerge(b)) {
-                            previousSilhoutte = true; //Set to true if we can't place here after all!
-                        }
-                        break;
+                if(ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_MERGE)) {
+                    blob.intersect(b);
+                    modified = true;
                 }
             }
             modelBounds = blob.getBounds();

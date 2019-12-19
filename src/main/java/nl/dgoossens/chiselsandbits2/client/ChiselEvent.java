@@ -24,6 +24,9 @@ import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
@@ -66,6 +69,7 @@ public class ChiselEvent {
                     switch(modificationType) {
                         case BUILD:
                         case EXTRACT:
+                        {
                             //Chisel
                             RayTraceResult rtr = ChiselUtil.rayTrace(player);
                             if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
@@ -73,18 +77,28 @@ public class ChiselEvent {
                             final BitOperation operation = leftClick ? BitOperation.REMOVE : (ItemModeUtil.getMenuActionMode(i).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
                             startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player, operation);
                             break;
+                        }
                         case ROTATE:
                         case MIRROR:
+                        {
                             //Wrench
                             performBlockRotation(ItemModeUtil.getItemMode(i), player);
                             break;
+                        }
                         case PLACE:
+                        {
                             //Chiseled Block
-                            performPlaceBlock(ItemModeUtil.getItemMode(i), player);
+                            RayTraceResult rtr = ChiselUtil.rayTrace(player);
+                            if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
+
+                            performPlaceBlock(i, (BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player);
                             break;
+                        }
                         case CUSTOM:
+                        {
                             it.performCustomModification(leftClick, i);
                             break;
+                        }
                     }
                 }
             }
@@ -141,9 +155,29 @@ public class ChiselEvent {
     /**
      * Handles placing a chiseled block.
      */
-    public static void performPlaceBlock(final IItemMode mode, final PlayerEntity player) {
+    public static void performPlaceBlock(final ItemStack item, final BlockRayTraceResult rayTrace, final IItemMode mode, final PlayerEntity player) {
         if (!player.world.isRemote)
             throw new UnsupportedOperationException("Block placement can only be started on the client-side.");
+
+        //Test if we can currently place
+        final BitLocation bl = new BitLocation(rayTrace, true, BitOperation.PLACE);
+        final Direction face = rayTrace.getFace();
+        BlockPos pos = bl.getBlockPos(); //We get the location from the bitlocation because that takes placement offset into account. (placement can go into neighbouring block)
+
+        final NBTBlobConverter nbt = new NBTBlobConverter();
+        nbt.readChiselData(item.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
+
+        if (player.isSneaking() && !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl))
+            return;
+        else {
+            if((!ChiselUtil.isBlockReplaceable(player, player.world, pos, face, false) && ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(pos) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, pos, face, nbt)))
+                pos = pos.offset(rayTrace.getFace());
+
+            if(!BlockPlacementLogic.isNormallyPlaceable(player, player.world, pos, face, nbt)) return;
+        }
+
+        //Send placement packet
+        System.out.println("Placing block");
     }
 
     /**
