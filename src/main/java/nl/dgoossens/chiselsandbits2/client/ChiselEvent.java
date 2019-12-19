@@ -162,18 +162,19 @@ public class ChiselEvent {
         //Test if we can currently place
         final BitLocation bl = new BitLocation(rayTrace, true, BitOperation.PLACE);
         final Direction face = rayTrace.getFace();
-        BlockPos pos = bl.getBlockPos(); //We get the location from the bitlocation because that takes placement offset into account. (placement can go into neighbouring block)
+        BlockPos offset = rayTrace.getPos();
 
         final NBTBlobConverter nbt = new NBTBlobConverter();
         nbt.readChiselData(item.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
 
-        if (player.isSneaking() && !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl))
-            return;
-        else {
-            if((!ChiselUtil.isBlockReplaceable(player, player.world, pos, face, false) && ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(pos) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, pos, face, nbt)))
-                pos = pos.offset(rayTrace.getFace());
+        if (player.isSneaking()) {
+            if (!BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl)) return;
+        } else {
+            if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
+                offset = offset.offset(face);
 
-            if(!BlockPlacementLogic.isNormallyPlaceable(player, player.world, pos, face, nbt)) return;
+            if(!BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt))
+                return;
         }
 
         //Send placement packet

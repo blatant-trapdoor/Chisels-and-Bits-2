@@ -16,12 +16,15 @@ public class BlockPlacementLogic {
      * Returns whether or not a block is placeable.
      */
     public static boolean isNormallyPlaceable(final PlayerEntity player, final World world, final BlockPos pos, final Direction face, final NBTBlobConverter nbt) {
-        if(ChiselUtil.isBlockReplaceable(player, world, pos, face, false)) return true;
+        if(ChiselUtil.isBlockReplaceable(player, world, pos, face, false))
+            return true;
+
         if(ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_FIT)) {
             if(world.getTileEntity(pos) instanceof ChiseledBlockTileEntity) {
                 ChiseledBlockTileEntity cbte = (ChiseledBlockTileEntity) world.getTileEntity(pos);
                 if(cbte != null && !nbt.getVoxelBlob().canMerge(cbte.getBlob()))
                     return false; //Can't place if we can't merge this
+                return true;
             }
         }
         switch((ItemMode) ItemModeUtil.getChiseledBlockMode(player)) {
