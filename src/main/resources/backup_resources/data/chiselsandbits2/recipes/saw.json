@@ -1,0 +1,18 @@
+{
+  "result": {
+    "item": "chiselsandbits2:saw"
+  },
+  "pattern": [
+    "SSS",
+    "SGG"
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "S": {
+      "tag": "forge:rods/wooden"
+    }
+  }
+}

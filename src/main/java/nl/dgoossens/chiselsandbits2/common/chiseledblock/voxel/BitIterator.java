@@ -2,125 +2,99 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
 import net.minecraft.util.math.BlockPos;
 
-public class BitIterator
-{
+public class BitIterator {
+    private static final int zInc = 1 << 8;
+    private static final int yInc = 1 << 4;
 
-	private static final int zInc = 1 << 8;
-	private static final int yInc = 1 << 4;
+    private final int xMin;
+    private final int yMin;
+    private final int yMinOffset;
 
-	private final int xMin;
-	private final int yMin;
-	private final int yMinOffset;
+    private final int xMax;
+    private final int yMax;
+    private final int zMax;
 
-	private final int xMax;
-	private final int yMax;
-	private final int zMax;
+    public int x = -1;
+    public int y;
+    public int z;
+    protected int bit;
+    private int zOffset = 0;
+    private int yOffset = 0;
+    private int combined = 0;
 
-	private int zOffset = 0;
-	private int yOffset = 0;
-	private int combined = 0;
+    public BitIterator() {
+        yMinOffset = 0;
+        xMin = 0;
+        yMin = 0;
+        xMax = VoxelBlob.DIMENSION;
+        yMax = yInc * VoxelBlob.DIMENSION;
+        zMax = zInc * VoxelBlob.DIMENSION;
+    }
 
-	protected int bit;
+    public BitIterator(final BlockPos a, final BlockPos b) {
+        xMin = x = clampToRange(Math.min(a.getX(), b.getX()));
+        yMin = y = clampToRange(Math.min(a.getY(), b.getY()));
+        z = clampToRange(Math.min(a.getZ(), b.getZ()));
+        x -= 1;
 
-	// read-only outputs.
-	public int x = -1;
-	public int y;
-	public int z;
+        yOffset = yMinOffset = yInc * y;
+        zOffset = zInc * z;
 
-	public BitIterator()
-	{
-		yMinOffset = 0;
-		xMin = 0;
-		yMin = 0;
-		xMax = VoxelBlob.dim;
-		yMax = yInc * VoxelBlob.dim;
-		zMax = zInc * VoxelBlob.dim;
-	}
+        xMax = clampToRange(Math.max(a.getX(), b.getX())) + 1;
+        yMax = yInc * (clampToRange(Math.max(a.getY(), b.getY())) + 1);
+        zMax = zInc * (clampToRange(Math.max(a.getZ(), b.getZ())) + 1);
 
-	public BitIterator(
-			final BlockPos a,
-			final BlockPos b )
-	{
-		xMin = x = clampToRange( Math.min( a.getX(), b.getX() ) );
-		yMin = y = clampToRange( Math.min( a.getY(), b.getY() ) );
-		z = clampToRange( Math.min( a.getZ(), b.getZ() ) );
-		x -= 1;
+        combined = zOffset | yOffset;
+    }
 
-		yOffset = yMinOffset = yInc * y;
-		zOffset = zInc * z;
+    public int clampToRange(final int a) {
+        return Math.max(0, Math.min(15, a));
+    }
 
-		xMax = clampToRange( Math.max( a.getX(), b.getX() ) ) + 1;
-		yMax = yInc * ( clampToRange( Math.max( a.getY(), b.getY() ) ) + 1 );
-		zMax = zInc * ( clampToRange( Math.max( a.getZ(), b.getZ() ) ) + 1 );
+    protected void yPlus() {
+        x = xMin;
 
-		combined = zOffset | yOffset;
-	}
+        ++y;
+        yOffset += yInc;
+    }
 
-	public int clampToRange(
-			final int a )
-	{
-		return Math.max( 0, Math.min( 15, a ) );
-	}
+    protected void zPlus() {
+        y = yMin;
+        yOffset = yMinOffset;
 
-	protected void yPlus()
-	{
-		x = xMin;
+        ++z;
+        zOffset += zInc;
+    }
 
-		++y;
-		yOffset += yInc;
-	}
+    public boolean hasNext() {
+        ++x;
 
-	protected void zPlus()
-	{
-		y = yMin;
-		yOffset = yMinOffset;
+        if (x >= xMax) {
+            yPlus();
 
-		++z;
-		zOffset += zInc;
-	}
+            if (yOffset >= yMax) {
+                zPlus();
 
-	public boolean hasNext()
-	{
-		++x;
+                if (zOffset >= zMax) {
+                    done();
+                    return false;
+                }
+            }
 
-		if ( x >= xMax )
-		{
-			yPlus();
+            combined = zOffset | yOffset;
+        }
 
-			if ( yOffset >= yMax )
-			{
-				zPlus();
+        bit = combined | x;
+        return true;
+    }
 
-				if ( zOffset >= zMax )
-				{
-					done();
-					return false;
-				}
-			}
+    protected void done() {}
 
-			combined = zOffset | yOffset;
-		}
+    public int getNext(final VoxelBlob blob) {
+        return blob.getBit(bit);
+    }
 
-		bit = combined | x;
-		return true;
-	}
-
-	protected void done()
-	{
-
-	}
-
-	public int getNext(
-			final VoxelBlob blob )
-	{
-		return blob.getBit( bit );
-	}
-
-	public void setNext(
-			final VoxelBlob blob,
-			final int value )
-	{
-		blob.putBit( bit, value );
-	}
-
+    public void setNext(final VoxelBlob blob, final int value) {
+        blob.putBit(bit, value);
+    }
 }

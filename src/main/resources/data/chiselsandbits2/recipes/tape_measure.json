@@ -1,0 +1,22 @@
+{
+  "result": {
+    "item": "chiselsandbits2:tape_measure"
+  },
+  "pattern": [
+    "  S",
+    "ISY",
+    "II "
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "Y": {
+      "tag": "forge:dyes/yellow"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  }
+}

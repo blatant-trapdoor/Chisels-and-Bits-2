@@ -1,0 +1,19 @@
+{
+  "result": {
+    "item": "chiselsandbits2:bit_bag"
+  },
+  "pattern": [
+    "WWW",
+    "WGW",
+    "WWW"
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "W": {
+      "tag": "minecraft:wool"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    }
+  }
+}

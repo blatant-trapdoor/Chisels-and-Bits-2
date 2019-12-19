@@ -1,0 +1,19 @@
+{
+  "result": {
+    "item": "chiselsandbits2:bit_beaker"
+  },
+  "pattern": [
+    " P ",
+    "PGP",
+    " P "
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "P": {
+      "tag": "forge:glass_panes"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    }
+  }
+}

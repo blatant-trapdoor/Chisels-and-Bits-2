@@ -1,39 +1,66 @@
 package nl.dgoossens.chiselsandbits2.client.culling;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.StainedGlassBlock;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import nl.dgoossens.chiselsandbits2.api.ICullTest;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.api.render.ICullTest;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Determine Culling using Block's Native Check.
+ * Determine Culling using the same checks
+ * vanilla uses, with some overwrites for better
+ * performance.
  */
-public class MCCullTest implements ICullTest {
-	@Override
-	public boolean isVisible(final int mySpot, final int secondSpot ) {
-		//If this is air
-		if (mySpot == 0 || mySpot == secondSpot) return false;
+public class MCCullTest extends DummyEnvironmentWorldReader implements ICullTest {
+    //We cache results because minecraft's calculation is pretty heavy.
+    private Map<Pair<BlockState, BlockState>, Boolean> resultCache = new HashMap<>();
+    private BlockState a, b;
 
-		BlockState a = ModUtil.getStateById(mySpot);
-		BlockState b = ModUtil.getStateById(secondSpot);
+    @Override
+    public boolean isVisible(final int myId, final int otherId) {
+        //If this is air
+        if (myId == VoxelBlob.AIR_BIT || myId == otherId) return false;
 
-		//If we're stained glass but the one behind us too we don't need to show it. (hardcoded because it looks horrible otherwise)
-		if (a.getBlock() instanceof StainedGlassBlock && a.getBlock() == b.getBlock() ) return false;
+        switch (VoxelType.getType(otherId)) {
+            case FLUIDSTATE:
+            case AIR:
+                return true;
+            case COLOURED:
+                return false;
+            case BLOCKSTATE: {
+                final Pair<BlockState, BlockState> p = Pair.of(
+                        BitUtil.getBlockState(myId),
+                        VoxelType.getType(otherId) != VoxelType.BLOCKSTATE ? Blocks.AIR.getDefaultState() : BitUtil.getBlockState(otherId)
+                );
+                try {
+                    resultCache.computeIfAbsent(p, (t) -> {
+                        try {
+                            a = t.getLeft();
+                            b = t.getRight();
+                            boolean d = Block.shouldSideBeRendered(a, this, BlockPos.ZERO, Direction.NORTH);
+                            return d;
+                        } catch (Exception x) {}
+                        return null;
+                    });
+                    return resultCache.get(p);
+                } catch(Exception x) {}
+            }
+        }
+        //Backup logic in case any errors occur
+        return new SolidCullTest().isVisible(myId, otherId);
+    }
 
-		try {
-			DummyEnvironmentWorldReader dummyWorld = new DummyEnvironmentWorldReader() {
-				@Override
-				public BlockState getBlockState(BlockPos pos) {
-					if(pos.equals(BlockPos.ZERO)) return a;
-					return super.getBlockState(pos);
-				}
-			};
-			return a.doesSideBlockRendering(dummyWorld, BlockPos.ZERO, Direction.NORTH);
-		} catch (Exception t) {
-			// revert to older logic in the event of some sort of issue.
-			return new SolidCullTest().isVisible(mySpot, secondSpot);
-		}
-	}
+    @Override
+    public BlockState getBlockState(BlockPos pos) {
+        if (pos.equals(BlockPos.ZERO)) return a;
+        return b;
+    }
 }

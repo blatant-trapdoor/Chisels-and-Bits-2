@@ -1,284 +1,245 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators;
 
 import net.minecraft.util.Direction;
-import nl.dgoossens.chiselsandbits2.api.IVoxelSrc;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
+import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
-public class ChiselExtrudeIterator extends BaseChiselIterator implements ChiselIterator
-{
-	public static class ChiselExtrudeMaterialIterator extends ChiselExtrudeIterator
-	{
+public class ChiselExtrudeIterator extends BaseChiselIterator implements ChiselIterator {
+    final int INDEX_X = 0;
 
-		int material = 0;
+    ;
+    final int INDEX_Y = 8;
+    final int INDEX_Z = 16;
+    // future state.
+    Iterator<Integer> list;
+    // present state.
+    Direction side;
+    int value;
 
-		public ChiselExtrudeMaterialIterator(
-				final int dim,
-				final int sx,
-				final int sy,
-				final int sz,
-				final IVoxelSrc source,
-				final ItemMode mode,
-				final Direction side,
-				final boolean place )
-		{
-			super( dim, sx, sy, sz, source, mode, side, place );
-		}
+    public ChiselExtrudeIterator(
+            final int dim,
+            final int sx,
+            final int sy,
+            final int sz,
+            final IVoxelSrc source,
+            final IItemMode mode,
+            final Direction side,
+            final boolean place) {
+        this.side = side;
 
-		@Override
-		protected void readyMatching(
-				final IVoxelSrc source,
-				final int x,
-				final int y,
-				final int z )
-		{
-			material = source.getSafe( x, y, z );
-		}
+        final Set<Integer> possiblepositions = new HashSet<Integer>();
+        final List<Integer> selectedpositions = new ArrayList<Integer>();
 
-		@Override
-		protected boolean isMatch(
-				final IVoxelSrc source,
-				final int x,
-				final int y,
-				final int z )
-		{
-			return source.getSafe( x, y, z ) == material;
-		}
+        final int tx = side.getXOffset(), ty = side.getYOffset(), tz = side.getZOffset();
+        int placeoffset = 0;
 
-	};
+        int x = sx, y = sy, z = sz;
 
-	final int INDEX_X = 0;
-	final int INDEX_Y = 8;
-	final int INDEX_Z = 16;
+        if (place) {
+            x -= tx;
+            y -= ty;
+            z -= tz;
+            placeoffset = side.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : -1;
+        }
 
-	// future state.
-	Iterator<Integer> list;
+        readyMatching(source, x, y, z);
 
-	// present state.
-	Direction side;
-	int value;
+        for (int b = 0; b < dim; ++b) {
+            for (int a = 0; a < dim; ++a) {
+                switch (side) {
+                    case DOWN:
+                    case UP:
+                        if (isMatch(source, a, y, b) && source.getSafe(a + tx, y + ty, b + tz) == 0) {
+                            possiblepositions.add(createPos(a, y + placeoffset, b));
+                        }
+                        break;
+                    case EAST:
+                    case WEST:
+                        if (isMatch(source, x, a, b) && source.getSafe(x + tx, a + ty, b + tz) == 0) {
+                            possiblepositions.add(createPos(x + placeoffset, a, b));
+                        }
+                        break;
+                    case NORTH:
+                    case SOUTH:
+                        if (isMatch(source, a, b, z) && source.getSafe(a + tx, b + ty, z + tz) == 0) {
+                            possiblepositions.add(createPos(a, b, z + placeoffset));
+                        }
+                        break;
+                    default:
+                        throw new NullPointerException();
+                }
+            }
+        }
 
-	private int setValue(
-			final int pos,
-			final int idx )
-	{
-		return ( (byte) pos & 0xff ) << idx;
-	}
+        floodFill(sx, sy, sz, possiblepositions, selectedpositions);
+        Collections.sort(selectedpositions, new Comparator<Integer>() {
 
-	private int getValue(
-			final int value,
-			final int idx )
-	{
-		return (byte) ( value >>> idx & 0xff );
-	}
+            @Override
+            public int compare(
+                    final Integer a,
+                    final Integer b) {
+                final int aX = getValue(a, INDEX_X);
+                final int bX = getValue(b, INDEX_X);
+                if (aX != bX) {
+                    return aX - bX;
+                }
 
-	private int createPos(
-			final int x,
-			final int y,
-			final int z )
-	{
-		return setValue( x, INDEX_X ) | setValue( y, INDEX_Y ) | setValue( z, INDEX_Z );
-	}
+                final int aY = getValue(a, INDEX_Y);
+                final int bY = getValue(b, INDEX_Y);
+                if (aY != bY) {
+                    return aY - bY;
+                }
 
-	public ChiselExtrudeIterator(
-			final int dim,
-			final int sx,
-			final int sy,
-			final int sz,
-			final IVoxelSrc source,
-			final ItemMode mode,
-			final Direction side,
-			final boolean place )
-	{
-		this.side = side;
+                final int aZ = getValue(a, INDEX_Z);
+                final int bZ = getValue(b, INDEX_Z);
+                return aZ - bZ;
+            }
 
-		final Set<Integer> possiblepositions = new HashSet<Integer>();
-		final List<Integer> selectedpositions = new ArrayList<Integer>();
+        });
 
-		final int tx = side.getXOffset(), ty = side.getYOffset(), tz = side.getZOffset();
-		int placeoffset = 0;
+        // we are done, drop the list and keep an iterator.
+        list = selectedpositions.iterator();
+    }
 
-		int x = sx, y = sy, z = sz;
+    private int setValue(
+            final int pos,
+            final int idx) {
+        return ((byte) pos & 0xff) << idx;
+    }
 
-		if ( place )
-		{
-			x -= tx;
-			y -= ty;
-			z -= tz;
-			placeoffset = side.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : -1;
-		}
+    private int getValue(
+            final int value,
+            final int idx) {
+        return (byte) (value >>> idx & 0xff);
+    }
 
-		readyMatching( source, x, y, z );
+    private int createPos(
+            final int x,
+            final int y,
+            final int z) {
+        return setValue(x, INDEX_X) | setValue(y, INDEX_Y) | setValue(z, INDEX_Z);
+    }
 
-		for ( int b = 0; b < dim; ++b )
-		{
-			for ( int a = 0; a < dim; ++a )
-			{
-				switch ( side )
-				{
-					case DOWN:
-					case UP:
-						if ( isMatch( source, a, y, b ) && source.getSafe( a + tx, y + ty, b + tz ) == 0 )
-						{
-							possiblepositions.add( createPos( a, y + placeoffset, b ) );
-						}
-						break;
-					case EAST:
-					case WEST:
-						if ( isMatch( source, x, a, b ) && source.getSafe( x + tx, a + ty, b + tz ) == 0 )
-						{
-							possiblepositions.add( createPos( x + placeoffset, a, b ) );
-						}
-						break;
-					case NORTH:
-					case SOUTH:
-						if ( isMatch( source, a, b, z ) && source.getSafe( a + tx, b + ty, z + tz ) == 0 )
-						{
-							possiblepositions.add( createPos( a, b, z + placeoffset ) );
-						}
-						break;
-					default:
-						throw new NullPointerException();
-				}
-			}
-		}
+    protected void readyMatching(
+            final IVoxelSrc source,
+            final int x,
+            final int y,
+            final int z) {
 
-		floodFill( sx, sy, sz, possiblepositions, selectedpositions );
-		Collections.sort( selectedpositions, new Comparator<Integer>() {
+    }
 
-			@Override
-			public int compare(
-					final Integer a,
-					final Integer b )
-			{
-				final int aX = getValue( a, INDEX_X );
-				final int bX = getValue( b, INDEX_X );
-				if ( aX != bX )
-				{
-					return aX - bX;
-				}
+    protected boolean isMatch(
+            final IVoxelSrc source,
+            final int x,
+            final int y,
+            final int z) {
+        return source.getSafe(x, y, z) != 0;
+    }
 
-				final int aY = getValue( a, INDEX_Y );
-				final int bY = getValue( b, INDEX_Y );
-				if ( aY != bY )
-				{
-					return aY - bY;
-				}
+    private void floodFill(
+            final int sx,
+            final int sy,
+            final int sz,
+            final Set<Integer> possiblepositions,
+            final List<Integer> selectedpositions) {
+        final Queue<Integer> q = new LinkedList<Integer>();
+        q.add(createPos(sx, sy, sz));
 
-				final int aZ = getValue( a, INDEX_Z );
-				final int bZ = getValue( b, INDEX_Z );
-				return aZ - bZ;
-			}
+        while (!q.isEmpty()) {
+            final int pos = q.poll();
+            selectedpositions.add(pos);
 
-		} );
+            final int x = getValue(pos, INDEX_X);
+            final int y = getValue(pos, INDEX_Y);
+            final int z = getValue(pos, INDEX_Z);
 
-		// we are done, drop the list and keep an iterator.
-		list = selectedpositions.iterator();
-	}
+            possiblepositions.remove(pos);
 
-	protected void readyMatching(
-			final IVoxelSrc source,
-			final int x,
-			final int y,
-			final int z )
-	{
+            addIfExists(q, possiblepositions, createPos(x - 1, y, z));
+            addIfExists(q, possiblepositions, createPos(x + 1, y, z));
+            addIfExists(q, possiblepositions, createPos(x, y - 1, z));
+            addIfExists(q, possiblepositions, createPos(x, y + 1, z));
+            addIfExists(q, possiblepositions, createPos(x, y, z - 1));
+            addIfExists(q, possiblepositions, createPos(x, y, z + 1));
+        }
+    }
 
-	}
+    private void addIfExists(
+            final Queue<Integer> q,
+            final Set<Integer> possiblepositions,
+            final int pos) {
+        if (possiblepositions.contains(pos)) {
+            possiblepositions.remove(pos);
+            q.add(pos);
+        }
+    }
 
-	protected boolean isMatch(
-			final IVoxelSrc source,
-			final int x,
-			final int y,
-			final int z )
-	{
-		return source.getSafe( x, y, z ) != 0;
-	}
+    @Override
+    public boolean hasNext() {
+        if (list.hasNext()) {
+            value = list.next();
+            return true;
+        }
 
-	private void floodFill(
-			final int sx,
-			final int sy,
-			final int sz,
-			final Set<Integer> possiblepositions,
-			final List<Integer> selectedpositions )
-	{
-		final Queue<Integer> q = new LinkedList<Integer>();
-		q.add( createPos( sx, sy, sz ) );
+        return false;
+    }
 
-		while ( !q.isEmpty() )
-		{
-			final int pos = q.poll();
-			selectedpositions.add( pos );
+    @Override
+    public Direction side() {
+        return side;
+    }
 
-			final int x = getValue( pos, INDEX_X );
-			final int y = getValue( pos, INDEX_Y );
-			final int z = getValue( pos, INDEX_Z );
+    @Override
+    public int x() {
+        return getValue(value, INDEX_X);
+    }
 
-			possiblepositions.remove( pos );
+    @Override
+    public int y() {
+        return getValue(value, INDEX_Y);
+    }
 
-			addIfExists( q, possiblepositions, createPos( x - 1, y, z ) );
-			addIfExists( q, possiblepositions, createPos( x + 1, y, z ) );
-			addIfExists( q, possiblepositions, createPos( x, y - 1, z ) );
-			addIfExists( q, possiblepositions, createPos( x, y + 1, z ) );
-			addIfExists( q, possiblepositions, createPos( x, y, z - 1 ) );
-			addIfExists( q, possiblepositions, createPos( x, y, z + 1 ) );
-		}
-	}
+    @Override
+    public int z() {
+        return getValue(value, INDEX_Z);
+    }
 
-	private void addIfExists(
-			final Queue<Integer> q,
-			final Set<Integer> possiblepositions,
-			final int pos )
-	{
-		if ( possiblepositions.contains( pos ) )
-		{
-			possiblepositions.remove( pos );
-			q.add( pos );
-		}
-	}
+    public static class ChiselExtrudeMaterialIterator extends ChiselExtrudeIterator {
 
-	@Override
-	public boolean hasNext()
-	{
-		if ( list.hasNext() )
-		{
-			value = list.next();
-			return true;
-		}
+        int material = 0;
 
-		return false;
-	}
+        public ChiselExtrudeMaterialIterator(
+                final int dim,
+                final int sx,
+                final int sy,
+                final int sz,
+                final IVoxelSrc source,
+                final IItemMode mode,
+                final Direction side,
+                final boolean place) {
+            super(dim, sx, sy, sz, source, mode, side, place);
+        }
 
-	@Override
-	public Direction side()
-	{
-		return side;
-	}
+        @Override
+        protected void readyMatching(
+                final IVoxelSrc source,
+                final int x,
+                final int y,
+                final int z) {
+            material = source.getSafe(x, y, z);
+        }
 
-	@Override
-	public int x()
-	{
-		return getValue( value, INDEX_X );
-	}
+        @Override
+        protected boolean isMatch(
+                final IVoxelSrc source,
+                final int x,
+                final int y,
+                final int z) {
+            return source.getSafe(x, y, z) == material;
+        }
 
-	@Override
-	public int y()
-	{
-		return getValue( value, INDEX_Y );
-	}
-
-	@Override
-	public int z()
-	{
-		return getValue( value, INDEX_Z );
-	}
+    }
 
 }

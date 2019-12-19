@@ -1,168 +1,132 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
-import javax.annotation.Nonnull;
-
+import net.minecraft.entity.Entity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import nl.dgoossens.chiselsandbits2.api.IBitLocation;
-import nl.dgoossens.chiselsandbits2.api.modes.BitOperation;
+import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 
-public class BitLocation implements IBitLocation
-{
-	private static final double One32nd = 0.5 / VoxelBlob.dim;
+public class BitLocation {
+    private static final double ONE_32ND = 0.5 / VoxelBlob.DIMENSION;
 
-	@Nonnull
-	public final BlockPos blockPos;
-	public final int bitX, bitY, bitZ;
+    public BlockPos blockPos;
+    public int bitX, bitY, bitZ;
 
-	@Override
-	public BlockPos getBlockPos()
-	{
-		return blockPos;
-	}
+    public BitLocation(BlockRayTraceResult mop, final boolean absHit, final BitOperation type) {
+        final BlockPos absOffset = absHit ? mop.getPos() : BlockPos.ZERO;
 
-	@Override
-	public int getBitX()
-	{
-		return bitX;
-	}
+        if (type != BitOperation.PLACE) {
+            blockPos = mop.getPos();
 
-	@Override
-	public int getBitY()
-	{
-		return bitY;
-	}
+            final Vec3d crds = mop.getHitVec().subtract(absOffset.getX(), absOffset.getY(), absOffset.getZ())
+                    .subtract(new Vec3d(mop.getFace().getXOffset(), mop.getFace().getYOffset(), mop.getFace().getZOffset()).scale(ONE_32ND));
 
-	@Override
-	public int getBitZ()
-	{
-		return bitZ;
-	}
+            bitX = snapToValid((int) Math.floor(crds.getX() * VoxelBlob.DIMENSION));
+            bitY = snapToValid((int) Math.floor(crds.getY() * VoxelBlob.DIMENSION));
+            bitZ = snapToValid((int) Math.floor(crds.getZ() * VoxelBlob.DIMENSION));
+        } else {
+            final Vec3d crds = mop.getHitVec().subtract(absOffset.getX(), absOffset.getY(), absOffset.getZ())
+                    .add(new Vec3d(mop.getFace().getXOffset(), mop.getFace().getYOffset(), mop.getFace().getZOffset()).scale(ONE_32ND));
 
-	public int snapToValid(
-			final int x )
-	{
-		// rounding can sometimes create -1 or 16, just snap int to the nearest
-		// valid position and move on.
-		return Math.min( Math.max( 0, x ), 15 );
-	}
+            final int bitXi = (int) Math.floor(crds.getX() * VoxelBlob.DIMENSION);
+            final int bitYi = (int) Math.floor(crds.getY() * VoxelBlob.DIMENSION);
+            final int bitZi = (int) Math.floor(crds.getZ() * VoxelBlob.DIMENSION);
 
-	public BitLocation(
-			final BlockRayTraceResult mop,
-			final boolean absHit,
-			final BitOperation type )
-	{
-		final BlockPos absOffset = absHit ? mop.getPos() : BlockPos.ZERO;
-		final Vec3d crds = mop.getHitVec().subtract(absOffset.getX(), absOffset.getY(), absOffset.getZ())
-				.subtract(new Vec3d(mop.getFace().getXOffset(), mop.getFace().getYOffset(), mop.getFace().getZOffset()).scale(One32nd));
-		if ( type==BitOperation.PLACE )
-		{
-			blockPos = mop.getPos();
+            if (bitXi < 0 || bitYi < 0 || bitZi < 0 || bitXi >= VoxelBlob.DIMENSION || bitYi >= VoxelBlob.DIMENSION || bitZi >= VoxelBlob.DIMENSION) {
+                blockPos = mop.getPos().offset(mop.getFace());
+                bitX = snapToValid(bitXi - mop.getFace().getXOffset() * VoxelBlob.DIMENSION);
+                bitY = snapToValid(bitYi - mop.getFace().getYOffset() * VoxelBlob.DIMENSION);
+                bitZ = snapToValid(bitZi - mop.getFace().getZOffset() * VoxelBlob.DIMENSION);
+            } else {
+                blockPos = mop.getPos();
+                bitX = snapToValid(bitXi);
+                bitY = snapToValid(bitYi);
+                bitZ = snapToValid(bitZi);
+            }
+        }
+    }
 
-			bitX = snapToValid( (int) Math.floor( crds.getX() * VoxelBlob.dim ) );
-			bitY = snapToValid( (int) Math.floor( crds.getY() * VoxelBlob.dim ) );
-			bitZ = snapToValid( (int) Math.floor( crds.getZ() * VoxelBlob.dim ) );
-		}
-		else
-		{
-			final int bitXi = (int) Math.floor( crds.getX() * VoxelBlob.dim );
-			final int bitYi = (int) Math.floor( crds.getY() * VoxelBlob.dim );
-			final int bitZi = (int) Math.floor( crds.getZ() * VoxelBlob.dim );
+    public BitLocation(final BlockPos pos, final int x, final int y, final int z) {
+        blockPos = pos;
+        bitX = x;
+        bitY = y;
+        bitZ = z;
+    }
 
-			if ( bitXi < 0 || bitYi < 0 || bitZi < 0 || bitXi >= VoxelBlob.dim || bitYi >= VoxelBlob.dim || bitZi >= VoxelBlob.dim )
-			{
-				blockPos = mop.getPos().offset( mop.getFace() );
-				bitX = snapToValid( bitXi - mop.getFace().getXOffset() * VoxelBlob.dim );
-				bitY = snapToValid( bitYi - mop.getFace().getYOffset() * VoxelBlob.dim );
-				bitZ = snapToValid( bitZi - mop.getFace().getZOffset() * VoxelBlob.dim );
-			}
-			else
-			{
-				blockPos = mop.getPos();
-				bitX = snapToValid( bitXi );
-				bitY = snapToValid( bitYi );
-				bitZ = snapToValid( bitZi );
-			}
-		}
-	}
+    /**
+     * Get the bit location an entity is standing on top of.
+     */
+    public BitLocation(final Entity e) {
+        blockPos = e.getPosition();
+        double tx = e.posX - blockPos.getX();
+        double ty = e.posY - blockPos.getY();
+        double tz = e.posZ - blockPos.getZ();
+        bitX = snapToValid((int) Math.round(tx*16));
+        bitY = snapToValid((int) Math.round(ty*16)) - 1;
+        bitZ = snapToValid((int) Math.round(tz*16));
 
-	public BitLocation(
-			final BlockPos pos,
-			final int x,
-			final int y,
-			final int z )
-	{
-		blockPos = pos;
-		bitX = x;
-		bitY = y;
-		bitZ = z;
-	}
+        if(bitY < 0) {
+            blockPos = blockPos.offset(Direction.DOWN);
+            bitY = 15;
+        }
+    }
 
-	public static BitLocation min(
-			final BitLocation from,
-			final BitLocation to )
-	{
-		final int bitX = Min( from.blockPos.getX(), to.blockPos.getX(), from.bitX, to.bitX );
-		final int bitY = Min( from.blockPos.getY(), to.blockPos.getY(), from.bitY, to.bitY );
-		final int bitZ = Min( from.blockPos.getZ(), to.blockPos.getZ(), from.bitZ, to.bitZ );
+    public static BitLocation min(final BitLocation from, final BitLocation to) {
+        final int bitX = min(from.blockPos.getX(), to.blockPos.getX(), from.bitX, to.bitX);
+        final int bitY = min(from.blockPos.getY(), to.blockPos.getY(), from.bitY, to.bitY);
+        final int bitZ = min(from.blockPos.getZ(), to.blockPos.getZ(), from.bitZ, to.bitZ);
 
-		return new BitLocation( new BlockPos(
-				Math.min( from.blockPos.getX(), to.blockPos.getX() ),
-				Math.min( from.blockPos.getY(), to.blockPos.getY() ),
-				Math.min( from.blockPos.getZ(), to.blockPos.getZ() ) ),
-				bitX, bitY, bitZ );
-	}
+        return new BitLocation(new BlockPos(
+                Math.min(from.blockPos.getX(), to.blockPos.getX()),
+                Math.min(from.blockPos.getY(), to.blockPos.getY()),
+                Math.min(from.blockPos.getZ(), to.blockPos.getZ())),
+                bitX, bitY, bitZ);
+    }
 
-	public static BitLocation max(
-			final BitLocation from,
-			final BitLocation to )
-	{
-		final int bitX = Max( from.blockPos.getX(), to.blockPos.getX(), from.bitX, to.bitX );
-		final int bitY = Max( from.blockPos.getY(), to.blockPos.getY(), from.bitY, to.bitY );
-		final int bitZ = Max( from.blockPos.getZ(), to.blockPos.getZ(), from.bitZ, to.bitZ );
+    public static BitLocation max(final BitLocation from, final BitLocation to) {
+        final int bitX = max(from.blockPos.getX(), to.blockPos.getX(), from.bitX, to.bitX);
+        final int bitY = max(from.blockPos.getY(), to.blockPos.getY(), from.bitY, to.bitY);
+        final int bitZ = max(from.blockPos.getZ(), to.blockPos.getZ(), from.bitZ, to.bitZ);
 
-		return new BitLocation( new BlockPos(
-				Math.max( from.blockPos.getX(), to.blockPos.getX() ),
-				Math.max( from.blockPos.getY(), to.blockPos.getY() ),
-				Math.max( from.blockPos.getZ(), to.blockPos.getZ() ) ),
-				bitX, bitY, bitZ );
-	}
+        return new BitLocation(new BlockPos(
+                Math.max(from.blockPos.getX(), to.blockPos.getX()),
+                Math.max(from.blockPos.getY(), to.blockPos.getY()),
+                Math.max(from.blockPos.getZ(), to.blockPos.getZ())),
+                bitX, bitY, bitZ);
+    }
 
-	private static int Min(
-			final int x,
-			final int x2,
-			final int bitX2,
-			final int bitX3 )
-	{
-		if ( x < x2 )
-		{
-			return bitX2;
-		}
-		if ( x2 == x )
-		{
-			return Math.min( bitX2, bitX3 );
-		}
+    private static int min(final int x, final int x2, final int bitX2, final int bitX3) {
+        if (x < x2) return bitX2;
+        if (x2 == x) return Math.min(bitX2, bitX3);
+        return bitX3;
+    }
 
-		return bitX3;
-	}
+    private static int max(final int x, final int x2, final int bitX2, final int bitX3) {
+        if (x > x2) return bitX2;
+        if (x2 == x) return Math.max(bitX2, bitX3);
+        return bitX3;
+    }
 
-	private static int Max(
-			final int x,
-			final int x2,
-			final int bitX2,
-			final int bitX3 )
-	{
-		if ( x > x2 )
-		{
-			return bitX2;
-		}
-		if ( x2 == x )
-		{
-			return Math.max( bitX2, bitX3 );
-		}
+    public BlockPos getBlockPos() {
+        return blockPos;
+    }
 
-		return bitX3;
-	}
+    public int getBitX() {
+        return bitX;
+    }
 
+    public int getBitY() {
+        return bitY;
+    }
+
+    public int getBitZ() {
+        return bitZ;
+    }
+
+    public int snapToValid(final int x) {
+        // rounding can sometimes create -1 or 16, just snap int to the nearest
+        // valid position and move on.
+        return Math.min(Math.max(0, x), 15);
+    }
 }

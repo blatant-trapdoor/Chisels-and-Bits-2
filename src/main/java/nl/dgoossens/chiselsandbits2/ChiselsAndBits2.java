@@ -1,95 +1,131 @@
 package nl.dgoossens.chiselsandbits2;
 
+import net.minecraft.block.Blocks;
+import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLModIdMappingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
+import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
-import nl.dgoossens.chiselsandbits2.client.render.ICacheClearable;
 import nl.dgoossens.chiselsandbits2.client.render.models.SmartModelManager;
-import nl.dgoossens.chiselsandbits2.common.registry.ModBlocks;
-import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
-import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
-import nl.dgoossens.chiselsandbits2.network.NetworkRouter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.List;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapability;
+import nl.dgoossens.chiselsandbits2.common.impl.ChiselsAndBitsAPIImpl;
+import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
+import nl.dgoossens.chiselsandbits2.common.registry.*;
 
 @Mod(ChiselsAndBits2.MOD_ID)
 public class ChiselsAndBits2 {
-    private static final Logger LOGGER = LogManager.getLogger();
     public static final String MOD_ID = "chiselsandbits2";
 
     private static ChiselsAndBits2 instance;
 
-    private final ModItems ITEMS = new ModItems();
-    private final ModBlocks BLOCKS = new ModBlocks();
-    private final ClientSide CLIENT = new ClientSide();
+    private final ModItems ITEMS;
+    private final ModBlocks BLOCKS;
+    private final ModConfiguration CONFIGURATION;
+    private final NetworkRouter NETWORK_ROUTER;
+    private final ChiselsAndBitsAPI API;
     private final SmartModelManager SMART_MODEL_MANAGER;
-    private final NetworkRouter NETWORK_ROUTER = new NetworkRouter();
+    private final ModStatistics STATISTICS;
+    private final ModRecipes RECIPES;
+    private ClientSide CLIENT;
+    private ModKeybindings KEYBINDINGS;
 
     public ChiselsAndBits2() {
         instance = this;
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        MinecraftForge.EVENT_BUS.register(this);
+        API = new ChiselsAndBitsAPIImpl();
+        CONFIGURATION = new ModConfiguration();
+        NETWORK_ROUTER = new NetworkRouter();
+        ITEMS = new ModItems();
+        BLOCKS = new ModBlocks();
         SMART_MODEL_MANAGER = new SmartModelManager();
+        STATISTICS = new ModStatistics();
+        RECIPES = new ModRecipes();
+
+        //Only register the client and keybindings classes when on the CLIENT distribution.
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            CLIENT = new ClientSide();
+            KEYBINDINGS = new ModKeybindings();
+        });
+
+        //Register to mod bus
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, CONFIGURATION.SERVER);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CONFIGURATION.CLIENT);
     }
 
-    public static ChiselsAndBits2 getInstance() { return instance; }
-    public static ModItems getItems() { return getInstance().ITEMS; }
-    public static ModBlocks getBlocks() { return getInstance().BLOCKS; }
-    public static ClientSide getClient() { return getInstance().CLIENT; }
-    /**
-     * Method to get one-self registered into the bus. Used internally.
-     * Deprecated to discourage usage!
-     */
-    @Deprecated
-    public static void registerWithBus(Object tar) {
-        MinecraftForge.EVENT_BUS.register(tar);
+    public static ChiselsAndBits2 getInstance() {
+        return instance;
     }
 
     // Ran after all registry events have finished.
     private void setup(final FMLCommonSetupEvent event) {
-        if(FMLEnvironment.dist.isClient()) {
-            CLIENT.setup(event);
-
-            //Register client-only event busses
-            MinecraftForge.EVENT_BUS.register(CLIENT);
-        }
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> CLIENT::setup);
 
         //Register event busses
-        MinecraftForge.EVENT_BUS.register(SMART_MODEL_MANAGER);
+        MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(NETWORK_ROUTER);
+
+        FMLJavaModLoadingContext.get().getModEventBus().register(SMART_MODEL_MANAGER);
+        NETWORK_ROUTER.init();
+        CapabilityManager.INSTANCE.register(BitStorage.class, new StorageCapability(), BitStorageImpl::new);
+
+        //Setup vanilla restrictions
+        getAPI().getRestrictions().restrictBlockStateProperty(BlockStateProperties.SNOWY, false, true); //Make all snowy grass not snowy automatically
     }
 
-    boolean idsHaveBeenMapped = false;
-    List<ICacheClearable> cacheClearables = new ArrayList<ICacheClearable>();
-
-    @SubscribeEvent
-    public void idsMapped(final FMLModIdMappingEvent event) {
-        idsHaveBeenMapped = true;
-        //BlockBitInfo.recalculateFluidBlocks();
-        clearCache();
-        new ModelUtil().clearCache();
+    public ChiselsAndBitsAPI getAPI() {
+        return API;
     }
 
-    public void clearCache() {
-        if (idsHaveBeenMapped) {
-            for(final ICacheClearable clearable : cacheClearables)
-                clearable.clearCache();
-
-            //TODO addClearable(UndoTracker.getInstance());
-            //TODO VoxelBlob.clearCache();
-        }
+    public ModItems getItems() {
+        return ITEMS;
     }
 
-    public void addClearable(final ICacheClearable cache) {
-        if (!cacheClearables.contains(cache) )
-            cacheClearables.add(cache);
+    public ModBlocks getBlocks() {
+        return BLOCKS;
+    }
+
+    public ClientSide getClient() {
+        return CLIENT;
+    }
+
+    public NetworkRouter getNetworkRouter() {
+        return NETWORK_ROUTER;
+    }
+
+    public ModConfiguration getConfig() {
+        return CONFIGURATION;
+    }
+
+    public ModKeybindings getKeybindings() {
+        return KEYBINDINGS;
+    }
+
+    public SmartModelManager getModelManager() {
+        return SMART_MODEL_MANAGER;
+    }
+
+    public ModStatistics getStatistics() {
+        return STATISTICS;
+    }
+
+    public ModRecipes getRecipes() {
+        return RECIPES;
+    }
+
+    /**
+     * Temporary way to determine whether or not unfinished features should be shown.
+     */
+    @Deprecated
+    public static boolean showUnfinishedFeatures() {
+        return !getInstance().getConfig().disableUnfinishedFeatures.get();
     }
 }

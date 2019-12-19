@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "chiselsandbits2:oak_palette"
+    ]
+  },
+  "criteria": {
+    "has_a_chisel": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "chiselsandbits2:chisel"
+          }
+        ]
+      }
+    },
+    "slab": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:oak_slab"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "chiselsandbits2:oak_palette"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_a_chisel",
+      "slab",
+      "has_the_recipe"
+    ]
+  ]
+}

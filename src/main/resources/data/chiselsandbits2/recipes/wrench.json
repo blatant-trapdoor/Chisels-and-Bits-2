@@ -1,0 +1,22 @@
+{
+  "result": {
+    "item": "chiselsandbits2:wrench"
+  },
+  "pattern": [
+    " I ",
+    " PI",
+    "S  "
+  ],
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "S": {
+      "tag": "forge:rods/wooden"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    }
+  }
+}

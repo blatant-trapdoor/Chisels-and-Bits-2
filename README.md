@@ -1,30 +1,17 @@
 # Chisels & Bits 2
+A successor to AlgorithmX2's original Chisels & Bits for Minecraft 1.8 - 1.12. A Minecraft mod about chiseling, sculpting and designing custom blocks made of various materials, liquids or colours.
 
-This mod is a successor to Chisels & Bits by AlgorithmX2. After AlgorithmX2 decided to retire from minecraft modding in july of 2019 work on this successor was started to fill the blocky bit-shaped gap it left behind for future versions of minecraft.
+Download
+--------------
+You can download beta or release builds of Chisels & Bits 2 on Curseforge:
+_link not yet available_
 
-<br/>
-<br/>
+Alternatively, alpha/snapshot builds are available through [GitHub releases](https://github.com/Aeltumn/Chisels-and-Bits-2/releases).
 
-#### Differences from the original mod (these are the planned differences, they are not all finished yet)
-* No more tiered chisels, there's only one type of chisel now which can break any block that is supported to be chiseled.
-* Patterns are now merged into one pattern item that can be toggled between positive or negative. There are also some new modes, shape mode to only copy the shape and not the materials and exchanger pattern where you can swap the material of a chiseled block.
-* Bit Bags are much larger, each slot can store 16 blocks worth of bits. (65536 bits)
-* New paint palette and paint buckets, this adds the functionality of the old Flat Colored Blocks mod, they allow you to freely color any bit to be any color.
-* Paintbrush item which allows you to easily replace the top layer of a wall block into a colored bit giving you a painted wall.
-* Bits as an item no longer exist, you can select the block you want to use by right clicking with a chisel or in the bit bag.
-* Internally the chiseled block is different, instead of there being different blocks for each material (rock, cloth, etc.) the chiseled block will mimic most of the functionality of the dominant block.
-* Compatibility with the new multipart API in forge which will allow even more mods than ever before to be compatible with chisels & bits, for example being able to put power cables in the same space as C&B bits.
+Differences from the original mod
+--------------
+Chisels & Bits 2 is a successor to [the original mod from AlgorithmX2](https://github.com/AlgorithmX2/Chisels-and-Bits) and some changes were made. [You can read up on those changes here.](DIFFERENCES.md)
 
-<br/>
-<br/>
-
-##### Temporary Differences
-The mod has also been rewritten from scratch, (although with major parts being copied over from the original mod) so there may be minor changes to various parts of the mod. More importantly, because of the rewrite not all features have been ported yet, but they will be ported eventually. These features include:
-* Bit Saw
-* Colored Bit Bags
-* Wrench
-* Mirrored Chisel Designs
-* Liquid Bits (will be re-added after the forge liquid API is done)
-* Most of the customisability, API and configuration options.
-* The various languages that the original mod supported
-* The commands and debug features
+Contributing
+--------------
+If you'd like to contribute something to Chisels & Bits, you're free to do so. However, not all changes will be accepted. If you're unsure if your suggestion fits the mod, [open an issue](https://github.com/Aeltumn/Chisels-and-Bits-2/issues) to discuss it first!

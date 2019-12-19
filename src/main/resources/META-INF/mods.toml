@@ -1,23 +1,21 @@
 modLoader="javafml"
 loaderVersion="[28,)"
-issueTrackerURL="https://github.com/daniel-goossens/Chisels-and-Bits/issues"
+issueTrackerURL="https://github.com/Aeltumn/Chisels-and-Bits2/issues"
 
 [[mods]]
 modId="chiselsandbits2"
 version="${file.jarVersion}"
 displayName="Chisels & Bits 2"
 # updateJSONURL=""
-# displayURL=""
+displayURL="https://github.com/Aeltumn/Chisels-And-Bits2/"
 logoFile="chiselsandbits2.png"
 credits="Original mod created by AlgorithmX2"
 authors="Aeltumn, AlgorithmX2"
-description='''
-The spiritual successor to the original Chisels and Bits mod for minecraft 1.12. A mod about sculpting, decorating and aesthetics.
-'''
+description="The successor to the original Chisels and Bits mod. A mod about sculpting, decorating and aesthetics."
 [[dependencies.chiselsandbits2]]
     modId="forge"
     mandatory=true
-    versionRange="[28,)"
+    versionRange="[28.1.0,)"
     # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
     ordering="NONE"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
@@ -33,6 +31,6 @@ The spiritual successor to the original Chisels and Bits mod for minecraft 1.12.
 [[dependencies.chiselsandbits2]]
     modId="jei"
     mandatory=false
-    versionRange="[6.0.0.10,)"
+    versionRange="[6.0.0.11,)"
     ordering="BEFORE"
     side="BOTH"

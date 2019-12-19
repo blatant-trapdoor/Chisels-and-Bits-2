@@ -1,205 +1,178 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
+import net.minecraft.util.math.AxisAlignedBB;
+
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.minecraft.util.math.AxisAlignedBB;
+public class BoxCollection implements Collection<AxisAlignedBB> {
 
-public class BoxCollection implements Collection<AxisAlignedBB>
-{
+    private final AxisAlignedBB[][] arrays;
 
-	private final AxisAlignedBB[][] arrays;
+    public BoxCollection(
+            final AxisAlignedBB[] a) {
+        arrays = new AxisAlignedBB[1][];
+        arrays[0] = a;
+    }
 
-	static class BoxIterator implements Iterator<AxisAlignedBB>
-	{
+    ;
 
-		private int arrayOffset = 0, idx = -1;
-		private final AxisAlignedBB[][] arrays;
+    public BoxCollection(
+            final AxisAlignedBB[] a,
+            final AxisAlignedBB[] b) {
+        arrays = new AxisAlignedBB[2][];
+        arrays[0] = a;
+        arrays[1] = b;
+    }
 
-		public BoxIterator(
-				final AxisAlignedBB[][] a )
-		{
-			arrays = a;
-			findNextItem();
-		}
+    public BoxCollection(
+            final AxisAlignedBB[] a,
+            final AxisAlignedBB[] b,
+            final AxisAlignedBB[] c) {
+        arrays = new AxisAlignedBB[3][];
+        arrays[0] = a;
+        arrays[1] = b;
+        arrays[2] = c;
+    }
 
-		private void findNextItem()
-		{
-			++idx;
+    @Override
+    public boolean add(
+            final AxisAlignedBB e) {
+        throw new UnsupportedOperationException();
+    }
 
-			if ( arrays[arrayOffset] == null || idx >= arrays[arrayOffset].length )
-			{
-				idx = -1;
-				++arrayOffset;
+    @Override
+    public boolean addAll(
+            final Collection<? extends AxisAlignedBB> c) {
+        throw new UnsupportedOperationException();
+    }
 
-				if ( hasNext() )
-				{
-					findNextItem();
-				}
-			}
-		}
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException();
+    }
 
-		@Override
-		public boolean hasNext()
-		{
-			return arrays.length > arrayOffset;
-		}
+    @Override
+    public boolean contains(
+            final Object o) {
+        throw new UnsupportedOperationException();
+    }
 
-		@Override
-		public AxisAlignedBB next()
-		{
-			final AxisAlignedBB box = arrays[arrayOffset][idx];
+    @Override
+    public boolean containsAll(
+            final Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
 
-			findNextItem();
+    @Override
+    public boolean isEmpty() {
+        throw new UnsupportedOperationException();
+    }
 
-			return box;
-		}
+    @Override
+    public Iterator<AxisAlignedBB> iterator() {
+        return new BoxIterator(arrays);
+    }
 
-		@Override
-		public void remove()
-		{
-			throw new RuntimeException( "Not Implemented." );
-		}
+    @Override
+    public boolean remove(
+            final Object o) {
+        throw new UnsupportedOperationException();
+    }
 
-	};
+    @Override
+    public boolean removeAll(
+            final Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
 
-	public BoxCollection(
-			final AxisAlignedBB[] a )
-	{
-		arrays = new AxisAlignedBB[1][];
-		arrays[0] = a;
-	}
+    @Override
+    public boolean retainAll(
+            final Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
 
-	public BoxCollection(
-			final AxisAlignedBB[] a,
-			final AxisAlignedBB[] b )
-	{
-		arrays = new AxisAlignedBB[2][];
-		arrays[0] = a;
-		arrays[1] = b;
-	}
+    @Override
+    public int size() {
+        int size = 0;
 
-	public BoxCollection(
-			final AxisAlignedBB[] a,
-			final AxisAlignedBB[] b,
-			final AxisAlignedBB[] c )
-	{
-		arrays = new AxisAlignedBB[3][];
-		arrays[0] = a;
-		arrays[1] = b;
-		arrays[2] = c;
-	}
+        for (final AxisAlignedBB[] bb : arrays) {
+            if (bb != null) {
+                size += bb.length;
+            }
+        }
 
-	@Override
-	public boolean add(
-			final AxisAlignedBB e )
-	{
-		throw new UnsupportedOperationException();
-	}
+        return size;
+    }
 
-	@Override
-	public boolean addAll(
-			final Collection<? extends AxisAlignedBB> c )
-	{
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public Object[] toArray() {
+        int s = size();
+        final AxisAlignedBB[] storage = new AxisAlignedBB[s];
 
-	@Override
-	public void clear()
-	{
-		throw new UnsupportedOperationException();
-	}
+        s = 0;
+        for (final AxisAlignedBB bb : this) {
+            storage[s++] = bb;
+        }
 
-	@Override
-	public boolean contains(
-			final Object o )
-	{
-		throw new UnsupportedOperationException();
-	}
+        return storage;
+    }
 
-	@Override
-	public boolean containsAll(
-			final Collection<?> c )
-	{
-		throw new UnsupportedOperationException();
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T[] toArray(
+            final T[] a) {
+        int s = 0;
+        for (final AxisAlignedBB bb : this) {
+            a[s++] = (T) bb;
+        }
 
-	@Override
-	public boolean isEmpty()
-	{
-		throw new UnsupportedOperationException();
-	}
+        return a;
+    }
 
-	@Override
-	public Iterator<AxisAlignedBB> iterator()
-	{
-		return new BoxIterator( arrays );
-	}
+    static class BoxIterator implements Iterator<AxisAlignedBB> {
 
-	@Override
-	public boolean remove(
-			final Object o )
-	{
-		throw new UnsupportedOperationException();
-	}
+        private final AxisAlignedBB[][] arrays;
+        private int arrayOffset = 0, idx = -1;
 
-	@Override
-	public boolean removeAll(
-			final Collection<?> c )
-	{
-		throw new UnsupportedOperationException();
-	}
+        public BoxIterator(
+                final AxisAlignedBB[][] a) {
+            arrays = a;
+            findNextItem();
+        }
 
-	@Override
-	public boolean retainAll(
-			final Collection<?> c )
-	{
-		throw new UnsupportedOperationException();
-	}
+        private void findNextItem() {
+            ++idx;
 
-	@Override
-	public int size()
-	{
-		int size = 0;
+            if (arrays[arrayOffset] == null || idx >= arrays[arrayOffset].length) {
+                idx = -1;
+                ++arrayOffset;
 
-		for ( final AxisAlignedBB[] bb : arrays )
-		{
-			if ( bb != null )
-			{
-				size += bb.length;
-			}
-		}
+                if (hasNext()) {
+                    findNextItem();
+                }
+            }
+        }
 
-		return size;
-	}
+        @Override
+        public boolean hasNext() {
+            return arrays.length > arrayOffset;
+        }
 
-	@Override
-	public Object[] toArray()
-	{
-		int s = size();
-		final AxisAlignedBB[] storage = new AxisAlignedBB[s];
+        @Override
+        public AxisAlignedBB next() {
+            final AxisAlignedBB box = arrays[arrayOffset][idx];
 
-		s = 0;
-		for ( final AxisAlignedBB bb : this )
-		{
-			storage[s++] = bb;
-		}
+            findNextItem();
 
-		return storage;
-	}
+            return box;
+        }
 
-	@SuppressWarnings( "unchecked" )
-	@Override
-	public <T> T[] toArray(
-			final T[] a )
-	{
-		int s = 0;
-		for ( final AxisAlignedBB bb : this )
-		{
-			a[s++] = (T) bb;
-		}
+        @Override
+        public void remove() {
+            throw new RuntimeException("Not Implemented.");
+        }
 
-		return a;
-	}
+    }
 
 }

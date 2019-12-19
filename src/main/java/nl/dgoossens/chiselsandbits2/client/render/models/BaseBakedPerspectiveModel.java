@@ -2,7 +2,6 @@ package nl.dgoossens.chiselsandbits2.client.render.models;
 
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
-import net.minecraft.util.Direction;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.common.model.TRSRTransformation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -47,7 +46,7 @@ public abstract class BaseBakedPerspectiveModel implements IBakedModel, IForgeBa
     @Override
     public Pair<? extends IBakedModel, Matrix4f> handlePerspective(
             final ItemCameraTransforms.TransformType cameraTransformType) {
-        switch(cameraTransformType) {
+        switch (cameraTransformType) {
             case FIRST_PERSON_LEFT_HAND:
                 return new ImmutablePair<IBakedModel, Matrix4f>(this, firstPerson_lefthand);
             case FIRST_PERSON_RIGHT_HAND:

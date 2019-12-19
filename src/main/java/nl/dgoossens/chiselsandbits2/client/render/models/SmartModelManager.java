@@ -6,84 +6,41 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLModIdMappingEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
-import nl.dgoossens.chiselsandbits2.client.render.ICacheClearable;
+import nl.dgoossens.chiselsandbits2.client.render.MorphingBitSmartModel;
 import nl.dgoossens.chiselsandbits2.client.render.ter.GfxRenderState;
+import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class SmartModelManager {
-    private final HashMap<ResourceLocation, IBakedModel> models = new HashMap<>();
-    private final List<ModelResourceLocation> res = new ArrayList<>();
-    private final List<ICacheClearable> clearable = new ArrayList<>();
-
-    public SmartModelManager() {
-        ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
-        add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "chiseled_block"), smartModel);
-        ChiselsAndBits2.getInstance().addClearable(smartModel);
-
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/block_chiseled"), smartModel);
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/block_bit"), new BitItemSmartModel());
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/positiveprint_written_preview"), new PrintSmartModel("positiveprint", ChiselsAndBits.getItems().itemPositiveprint));
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/negativeprint_written_preview"), new PrintSmartModel("negativeprint", ChiselsAndBits.getItems().itemNegativeprint));
-        //add(new ResourceLocation(ChiselsAndBits2.MOD_ID, "models/item/mirrorprint_written_preview"), new PrintSmartModel("mirrorprint", ChiselsAndBits.getItems().itemMirrorprint));
-    }
-
-    private void add(
-            final ResourceLocation modelLocation,
-            final IBakedModel modelGen) {
-        if(modelLocation==null) return;
-        final ResourceLocation second = new ResourceLocation(modelLocation.getNamespace(), modelLocation.getPath().substring(1 + modelLocation.getPath().lastIndexOf('/')));
-
-        if(modelGen instanceof ICacheClearable) {
-            clearable.add((ICacheClearable) modelGen);
-        }
-
-        res.add(new ModelResourceLocation(modelLocation, "normal"));
-        res.add(new ModelResourceLocation(second, "normal"));
-
-        res.add(new ModelResourceLocation(modelLocation, "inventory"));
-        res.add(new ModelResourceLocation(second, "inventory"));
-
-        //res.add(new ModelResourceLocation(modelLocation, "multipart"));
-        //res.add(new ModelResourceLocation(second, "multipart"));
-
-        models.put(modelLocation, modelGen);
-        models.put(second, modelGen);
-
-        models.put(new ModelResourceLocation(modelLocation, "normal"), modelGen);
-        models.put(new ModelResourceLocation(second, "normal"), modelGen);
-
-        models.put(new ModelResourceLocation(modelLocation, "inventory"), modelGen);
-        models.put(new ModelResourceLocation(second, "inventory"), modelGen);
-
-        //models.put(new ModelResourceLocation(modelLocation, "multipart"), modelGen);
-        //models.put(new ModelResourceLocation(second, "multipart"), modelGen);
-    }
-
     @SubscribeEvent
     public void textureStitchEvent(final TextureStitchEvent.Post e) {
         GfxRenderState.gfxRefresh++;
-        ChiselsAndBits2.getInstance().clearCache();
+        CacheType.DEFAULT.call();
     }
 
     @SubscribeEvent
     public void onModelBakeEvent(final ModelBakeEvent event) {
-        for(final ICacheClearable c : clearable)
-            c.clearCache();
+        CacheType.MODEL.call();
 
-        for(final ModelResourceLocation rl : res)
-            event.getModelRegistry().put(rl, getModel(rl));
+        //Chiseled Block
+        ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
+        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getRegistryName(), ""), smartModel);
+        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getRegistryName(), "inventory"), smartModel);
+
+        //Morphing Bit
+        MorphingBitSmartModel morphingModel = new MorphingBitSmartModel();
+        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getItems().MORPHING_BIT.getRegistryName(), ""), morphingModel);
+        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getItems().MORPHING_BIT.getRegistryName(), "inventory"), morphingModel);
+
+        CacheType.DEFAULT.register(new ModelUtil());
     }
 
-    private IBakedModel getModel(final ResourceLocation modelLocation) {
-        try {
-            return models.get(modelLocation);
-        } catch(final Exception e) {
-            throw new RuntimeException("The Model: " + modelLocation.toString() + " was not available was requested.");
-        }
+    @SubscribeEvent
+    public void idsMapped(final FMLModIdMappingEvent event) {
+        CacheType.DEFAULT.call();
     }
 }

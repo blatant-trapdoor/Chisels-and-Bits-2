@@ -19,7 +19,7 @@ public class DummyEnvironmentWorldReader implements IEnviromentBlockReader {
     }
 
     public int getLightFor(LightType type, BlockPos pos) {
-        return type==LightType.SKY ? 15 : 0;
+        return type == LightType.SKY ? 15 : 0;
     }
 
     @Nullable
