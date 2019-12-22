@@ -11,6 +11,7 @@ Alternatively, alpha/snapshot builds are available through [GitHub releases](htt
 Differences from the original mod
 --------------
 Chisels & Bits 2 is a successor to [the original mod from AlgorithmX2](https://github.com/AlgorithmX2/Chisels-and-Bits) and some changes were made. [You can read up on those changes here.](DIFFERENCES.md)
+You can also take a look at [the roadmap](ROADMAP.md) where you can read up on what features are going to be worked on next.
 
 Contributing
 --------------
