@@ -31,6 +31,7 @@ public class NetworkRouter {
         HANDLER.registerMessage(disc++, CUndoPacket.class, CUndoPacket::encode, CUndoPacket::decode, CUndoPacket::handle);
         HANDLER.registerMessage(disc++, CRotateItemPacket.class, CRotateItemPacket::encode, CRotateItemPacket::decode, CRotateItemPacket::handle);
         HANDLER.registerMessage(disc++, CWrenchBlockPacket.class, CWrenchBlockPacket::encode, CWrenchBlockPacket::decode, CWrenchBlockPacket::handle);
+        HANDLER.registerMessage(disc++, CPlaceBlockPacket.class, CPlaceBlockPacket::encode, CPlaceBlockPacket::decode, CPlaceBlockPacket::handle);
 
         //Server
         HANDLER.registerMessage(disc++, SSynchronizeBitStoragePacket.class, SSynchronizeBitStoragePacket::encode, SSynchronizeBitStoragePacket::decode, SSynchronizeBitStoragePacket::handle);

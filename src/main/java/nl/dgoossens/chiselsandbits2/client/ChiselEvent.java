@@ -12,6 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -31,6 +32,7 @@ import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.network.client.CPlaceBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CWrenchBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
@@ -167,18 +169,26 @@ public class ChiselEvent {
         final NBTBlobConverter nbt = new NBTBlobConverter();
         nbt.readChiselData(item.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
 
-        if (player.isSneaking()) {
-            if (!BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl)) return;
+        boolean canPlace = true;
+        if (player.isSneaking() && !ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_GRID)) {
+            //TODO remove this status message when off-grid is finished
+            player.sendStatusMessage(new StringTextComponent("Off-grid placement is temporarily disabled, it will be re-enabled in a future alpha!"), true);
+            if (!BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl)) canPlace = false;
         } else {
             if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
                 offset = offset.offset(face);
 
             if(!BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt))
-                return;
+                canPlace = false;
+        }
+        if(!canPlace) {
+            player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.not_placeable"), true);
+            return;
         }
 
         //Send placement packet
-        System.out.println("Placing block");
+        final CPlaceBlockPacket pc = new CPlaceBlockPacket(bl, face, mode, player.isSneaking());
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
     }
 
     /**

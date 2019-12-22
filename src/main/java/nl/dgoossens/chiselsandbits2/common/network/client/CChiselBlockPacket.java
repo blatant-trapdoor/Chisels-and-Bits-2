@@ -42,11 +42,11 @@ public class CChiselBlockPacket {
         this.placedBit = placedBit;
     }
 
-    private static BitLocation readBitLoc(final PacketBuffer buffer) {
+    public static BitLocation readBitLoc(final PacketBuffer buffer) {
         return new BitLocation(buffer.readBlockPos(), buffer.readByte(), buffer.readByte(), buffer.readByte());
     }
 
-    private static void writeBitLoc(final BitLocation from2, final PacketBuffer buffer) {
+    public static void writeBitLoc(final BitLocation from2, final PacketBuffer buffer) {
         buffer.writeBlockPos(from2.blockPos);
         buffer.writeByte(from2.bitX);
         buffer.writeByte(from2.bitY);

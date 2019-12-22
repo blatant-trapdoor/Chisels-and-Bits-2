@@ -455,7 +455,7 @@ public class ClientSideHelper {
             final NBTBlobConverter nbt = new NBTBlobConverter();
             nbt.readChiselData(currentItem.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
 
-            if (player.isSneaking()) {
+            if (player.isSneaking() && !ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_GRID)) {
                 final BitLocation bl = new BitLocation((BlockRayTraceResult) mop, true, BitOperation.PLACE);
                 ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl));
             } else {

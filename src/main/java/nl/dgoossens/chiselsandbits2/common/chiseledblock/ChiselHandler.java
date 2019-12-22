@@ -21,6 +21,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterato
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.network.client.CPlaceBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CWrenchBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CRotateItemPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
@@ -40,6 +41,9 @@ public class ChiselHandler {
     public static void handle(final CChiselBlockPacket pkt, final ServerPlayerEntity player) {
         if (!(player.getHeldItemMainhand().getItem() instanceof IBitModifyItem))
             return; //Extra security, if you're somehow no longer holding a valid item that can chisel we cancel.
+        IBitModifyItem ibm = (IBitModifyItem) player.getHeldItemMainhand().getItem();
+        if(!ibm.canPerformModification(IBitModifyItem.ModificationType.BUILD) && !ibm.canPerformModification(IBitModifyItem.ModificationType.EXTRACT))
+            return; //Make sure this item can do the operations
 
         final World world = player.world;
         final InventoryUtils.CalculatedInventory inventory = InventoryUtils.buildInventory(player);
@@ -146,11 +150,29 @@ public class ChiselHandler {
     }
 
     /**
+     * Handles an incoming {@link CPlaceBlockPacket} packet.
+     */
+    public static void handle(final CPlaceBlockPacket pkt, final ServerPlayerEntity player) {
+        if (!(player.getHeldItemMainhand().getItem() instanceof IBitModifyItem))
+            return; //Extra security, if you're somehow no longer holding a valid item that can chisel we cancel.
+        IBitModifyItem ibm = (IBitModifyItem) player.getHeldItemMainhand().getItem();
+        if (!ibm.canPerformModification(IBitModifyItem.ModificationType.PLACE))
+            return; //Make sure this item can do the operations
+
+        if(pkt.offgrid) return; //TODO add off-grid placement
+        System.out.println("PLACING");
+
+    }
+
+    /**
      * Handles an incoming {@link CWrenchBlockPacket} packet.
      */
     public static void handle(final CWrenchBlockPacket pkt, final ServerPlayerEntity player) {
         if (!(player.getHeldItemMainhand().getItem() instanceof IBitModifyItem))
             return; //Extra security, if you're somehow no longer holding a valid item that can chisel we cancel.
+        IBitModifyItem ibm = (IBitModifyItem) player.getHeldItemMainhand().getItem();
+        if(!ibm.canPerformModification(IBitModifyItem.ModificationType.ROTATE) && !ibm.canPerformModification(IBitModifyItem.ModificationType.MIRROR))
+            return; //Make sure this item can do the operations
 
         final World world = player.world;
         final BlockPos pos = pkt.pos;

@@ -166,6 +166,7 @@
   "general.chiselsandbits2.info.out_of_range": "You need to get closer to modify this block.",
   "general.chiselsandbits2.info.not_rotatable": "That block can not be rotated.",
   "general.chiselsandbits2.info.not_mirrorable": "That block can not be mirrored.",
+  "general.chiselsandbits2.info.not_placeable": "You can't place that there.",
 
   "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
   "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo...",
