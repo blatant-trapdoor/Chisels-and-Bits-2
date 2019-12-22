@@ -12,8 +12,9 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
-import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
-import nl.dgoossens.chiselsandbits2.api.item.IRotatableItem;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IRotatableItem;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IVoxelStorer;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
@@ -94,12 +95,12 @@ public class ChiselHandler {
                             continue;
 
                         //Replace the block with a chiseled block.
-                        ChiselUtil.replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.placedBit, pkt.side);
+                        ChiselUtil.replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.side);
 
                         final TileEntity te = world.getTileEntity(pos);
                         if (te instanceof ChiseledBlockTileEntity) {
                             final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
-                            final VoxelBlob vb = tec.getBlob();
+                            final VoxelBlob vb = tec.getVoxelBlob();
                             final ChiselIterator i = ChiselUtil.getIterator(pkt, new VoxelRegionSrc(world, pos, 1), pos, pkt.operation);
 
                             //Handle the operation
@@ -120,8 +121,8 @@ public class ChiselHandler {
                             //Actually apply the operation.
                             tec.completeEditOperation(player, vb, true);
 
-                            //Play sound if necessary
-                            inventory.playRemovalEffects(world, pos);
+                            //Play effects if applicable
+                            inventory.playEffects(world, pos);
                         }
                     }
                 }
@@ -160,8 +161,39 @@ public class ChiselHandler {
             return; //Make sure this item can do the operations
 
         if(pkt.offgrid) return; //TODO add off-grid placement
-        System.out.println("PLACING");
 
+        final World world = player.world;
+        final BlockPos pos = pkt.pos;
+
+        if(pkt.mode instanceof ItemMode) {
+            ItemStack item = player.getHeldItemMainhand();
+            if(!(item.getItem() instanceof IVoxelStorer)) return;
+            IVoxelStorer it = (IVoxelStorer) item.getItem();
+            ChiselUtil.replaceWithChiseled(player, player.world, pos, world.getBlockState(pos), pkt.side);
+
+            final TileEntity te = world.getTileEntity(pos);
+            if (te instanceof ChiseledBlockTileEntity) {
+                final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
+                switch((ItemMode) pkt.mode) {
+                    case CHISELED_BLOCK_GRID:
+                        tec.setBlob(it.getVoxelBlob(item));
+                        break;
+                    case CHISELED_BLOCK_FIT:
+                    case CHISELED_BLOCK_MERGE:
+                    case CHISELED_BLOCK_OVERLAP:
+                        final VoxelBlob vb = tec.getVoxelBlob();
+                        if(pkt.mode.equals(ItemMode.CHISELED_BLOCK_OVERLAP))
+                            vb.overlap(it.getVoxelBlob(item));
+                        else
+                            vb.merge(it.getVoxelBlob(item));
+                        tec.completeEditOperation(player, vb, false);
+                        break;
+                }
+                if(!player.isCreative())
+                    item.setCount(item.getCount() - 1);
+                ChiselUtil.playModificationSound(world, pos, true);
+            }
+        }
     }
 
     /**
@@ -187,7 +219,7 @@ public class ChiselHandler {
             final TileEntity te = world.getTileEntity(pos);
             if(te instanceof ChiseledBlockTileEntity) {
                 final ChiseledBlockTileEntity cte = (ChiseledBlockTileEntity) te;
-                VoxelBlob voxel = cte.getBlob();
+                VoxelBlob voxel = cte.getVoxelBlob();
                 if(pkt.mode.equals(ItemMode.WRENCH_MIRROR)) voxel = voxel.mirror(pkt.side.getAxis());
                 else if(pkt.mode.equals(ItemMode.WRENCH_ROTATE)) voxel = voxel.spin(pkt.side.getAxis());
                 else if(pkt.mode.equals(ItemMode.WRENCH_ROTATECCW)) voxel = voxel.spinCCW(pkt.side.getAxis());
@@ -211,5 +243,6 @@ public class ChiselHandler {
         //Reduce wrench durability
         player.getHeldItemMainhand().damageItem(1, player, (p) -> p.sendBreakAnimation(Hand.MAIN_HAND));
         player.getStats().increment(player, Stats.ITEM_USED.get(ChiselsAndBits2.getInstance().getItems().WRENCH), 1);
+        ChiselUtil.playModificationSound(world, pos, true);
     }
 }

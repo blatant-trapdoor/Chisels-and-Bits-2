@@ -152,6 +152,7 @@ public class InventoryUtils {
         private SelectedItemMode selectedMode = null; //The mode to be selected next.
         private HashMap<VoxelWrapper, Long> extracted = new HashMap<>();
         private boolean wastingBits = false, changed = true;
+        private long delta = 0; //Tracker to see if we removed things or added
 
         public CalculatedInventory(ServerPlayerEntity player) {
             super(player);
@@ -383,11 +384,11 @@ public class InventoryUtils {
 
         /**
          * Plays the correct sound effect when updating a chiseled block but only if the block was actually modified.
-         * Also spawns breaking particles.
          */
-        public void playRemovalEffects(final World world, final BlockPos pos) {
+        public void playEffects(final World world, final BlockPos pos) {
             if(!changed) return;
-            ChiselUtil.playModificationSound(world, pos);
+            ChiselUtil.playModificationSound(world, pos, delta >= 0);
+
         }
 
         /**
@@ -401,6 +402,7 @@ public class InventoryUtils {
 
             if (damageChisel()) {
                 vb.clear(x, y, z);
+                delta--;
 
                 addMaterial(VoxelWrapper.forAbstract(blk), 1);
             } else return true; //If damage chisel is false once it will never become true again, so this break saves time.
@@ -432,6 +434,7 @@ public class InventoryUtils {
                 //However we check hasMaterial early to ensure that this one will succeed true to avoid damage loss.
                 if(canPlaceBit()) {
                     vb.set(x, y, z, placedBit);
+                    delta++;
 
                     //Track how many bits we've extracted and it's not a coloured bit.
                     if (operation == SWAP && blk != VoxelBlob.AIR_BIT)

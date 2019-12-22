@@ -70,7 +70,7 @@ public class RenderCache {
      * Marks the rendering as done and resets the rendering task.
      */
     public void finishRendering() {
-        System.out.println("[FINISH] Finished rendering render cache...");
+        //TODO System.out.println("[FINISH] Finished rendering render cache...");
         renderTask = null;
     }
 
@@ -87,7 +87,7 @@ public class RenderCache {
      * This will cause a currently active rendering task to aborted immediately.
      */
     public void rebuild() {
-        System.out.println("[REBUILD] Asking for rebuild!");
+        //TODO System.out.println("[REBUILD] Asking for rebuild!");
         setRenderState(null);
         if (renderTask != null) renderTask.cancel(true);
         renderTask = null;

@@ -17,19 +17,23 @@ import java.util.function.Supplier;
  */
 public class CPlaceBlockPacket {
     public BitLocation location;
+    public BlockPos pos;
     public Direction side;
     public IItemMode mode;
     public boolean offgrid;
 
     private CPlaceBlockPacket() {}
 
-    public CPlaceBlockPacket(final BitLocation location, final Direction side, final IItemMode mode, final boolean offgrid) {
+    public CPlaceBlockPacket(final BlockPos pos, final BitLocation location, final Direction side, final IItemMode mode, final boolean offgrid) {
+        this.pos = pos;
         this.location = location;
         this.side = side;
         this.mode = mode;
+        this.offgrid = offgrid;
     }
 
     public static void encode(CPlaceBlockPacket msg, PacketBuffer buf) {
+        buf.writeBlockPos(msg.pos);
         buf.writeBoolean(msg.offgrid);
         CChiselBlockPacket.writeBitLoc(msg.location, buf);
         buf.writeVarInt(msg.side.ordinal());
@@ -40,6 +44,7 @@ public class CPlaceBlockPacket {
 
     public static CPlaceBlockPacket decode(PacketBuffer buffer) {
         CPlaceBlockPacket pc = new CPlaceBlockPacket();
+        pc.pos = buffer.readBlockPos();
         pc.offgrid = buffer.readBoolean();
         pc.location = CChiselBlockPacket.readBitLoc(buffer);
         pc.side = Direction.values()[buffer.readVarInt()];

@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api.item;
+package nl.dgoossens.chiselsandbits2.api.item.interfaces;
 
 import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;

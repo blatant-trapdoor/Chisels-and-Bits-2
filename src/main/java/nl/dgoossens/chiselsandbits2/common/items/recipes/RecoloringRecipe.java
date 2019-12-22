@@ -8,7 +8,7 @@ import net.minecraft.item.crafting.SpecialRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.item.IColourable;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IColourable;
 import nl.dgoossens.chiselsandbits2.api.item.DyedItemColour;
 
 public class RecoloringRecipe extends SpecialRecipe {

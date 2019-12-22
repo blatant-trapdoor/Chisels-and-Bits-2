@@ -18,6 +18,7 @@ import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IVoxelStorer;
 import nl.dgoossens.chiselsandbits2.client.render.ter.TileChunk;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -146,7 +147,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
      * Builds an item stack for a chiseled block.
      */
     public ItemStack buildItemStack() {
-        VoxelBlob blob = getBlob();
+        VoxelBlob blob = getVoxelBlob();
         if(blob.filled() == 0)
             return ItemStack.EMPTY;
 
@@ -222,10 +223,9 @@ public class ChiseledBlockTileEntity extends TileEntity {
         return voxelRef == null || !voxelRef.equals(originalRef);
     }
 
-    public VoxelBlob getBlob() {
+    public VoxelBlob getVoxelBlob() {
         VoxelBlob vb = new VoxelBlob();
         final VoxelBlobStateReference vbs = getVoxelReference();
-
         if (vbs != null) vb = vbs.getVoxelBlob();
         else //If we can't make it proper we should return one made of air.
             vb.fill(VoxelBlob.AIR_BIT);

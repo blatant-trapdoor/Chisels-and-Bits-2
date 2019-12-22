@@ -20,11 +20,9 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
-import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
@@ -90,10 +88,17 @@ public class ChiselEvent {
                         case PLACE:
                         {
                             //Chiseled Block
-                            RayTraceResult rtr = ChiselUtil.rayTrace(player);
-                            if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
+                            RayTraceResult rtr = null;
+                            IItemMode mode = ItemModeUtil.getChiseledBlockMode(player);
+                            if(mode.equals(ItemMode.CHISELED_BLOCK_GRID))
+                                //Object mouse over ignores the chiseled block's custom hitbox
+                                rtr = Minecraft.getInstance().objectMouseOver;
+                            else {
+                                rtr = ChiselUtil.rayTrace(player);
+                                if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
+                            }
 
-                            performPlaceBlock(i, (BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player);
+                            performPlaceBlock(i, (BlockRayTraceResult) rtr, mode, player);
                             break;
                         }
                         case CUSTOM:
@@ -173,7 +178,8 @@ public class ChiselEvent {
         if (player.isSneaking() && !ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_GRID)) {
             //TODO remove this status message when off-grid is finished
             player.sendStatusMessage(new StringTextComponent("Off-grid placement is temporarily disabled, it will be re-enabled in a future alpha!"), true);
-            if (!BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl)) canPlace = false;
+            return;
+            //if (!BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl)) canPlace = false;
         } else {
             if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
                 offset = offset.offset(face);
@@ -187,7 +193,7 @@ public class ChiselEvent {
         }
 
         //Send placement packet
-        final CPlaceBlockPacket pc = new CPlaceBlockPacket(bl, face, mode, player.isSneaking());
+        final CPlaceBlockPacket pc = new CPlaceBlockPacket(offset, bl, face, mode, player.isSneaking());
         ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
     }
 

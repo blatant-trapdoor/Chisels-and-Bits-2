@@ -8,7 +8,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
-import nl.dgoossens.chiselsandbits2.api.item.IRotatableItem;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IRotatableItem;
 import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;

@@ -8,7 +8,6 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitAccess;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import javax.annotation.Nullable;
@@ -24,7 +23,7 @@ public class BitAccessImpl implements BitAccess {
 
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof ChiseledBlockTileEntity)
-            blob = ((ChiseledBlockTileEntity) te).getBlob();
+            blob = ((ChiseledBlockTileEntity) te).getVoxelBlob();
         else {
             final BlockState state = world.getBlockState(pos);
             if (!ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(state)) return;

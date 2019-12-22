@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
-import nl.dgoossens.chiselsandbits2.api.item.IItemScrollWheel;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IItemScrollWheel;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;

@@ -11,7 +11,12 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.*;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IItemScrollWheel;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IRotatableItem;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IVoxelStorer;
 import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -27,7 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, IItemMenu, IRotatableItem, IBitModifyItem {
+public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, IItemMenu, IRotatableItem, IBitModifyItem, IVoxelStorer {
     public ChiseledBlockItem(Block block, Item.Properties properties) {
         super(block, properties);
     }
@@ -35,13 +40,21 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
-        ItemTooltipWriter.addItemInformation(tooltip, "chiseled_block.help"
+        ItemTooltipWriter.addItemInformation(tooltip, "chiseled_block.help",
+                ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
     }
 
     @Override
     public boolean canPerformModification(ModificationType type) {
         return type == ModificationType.PLACE;
+    }
+
+    @Override
+    public VoxelBlob getVoxelBlob(ItemStack stack) {
+        final NBTBlobConverter c = new NBTBlobConverter();
+        c.readChiselData(stack.getOrCreateChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
+        return c.getVoxelBlob();
     }
 
     @Override

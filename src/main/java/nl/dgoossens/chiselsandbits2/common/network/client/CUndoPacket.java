@@ -98,7 +98,7 @@ public class CUndoPacket {
                 if(te instanceof ChiseledBlockTileEntity)
                     ((ChiseledBlockTileEntity) te).completeEditOperation(player, vb, false);
 
-                inventory.playRemovalEffects(world, pos);
+                inventory.playEffects(world, pos);
                 inventory.apply();
 
             }

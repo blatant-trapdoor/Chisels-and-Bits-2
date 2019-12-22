@@ -22,7 +22,7 @@ public class BlockPlacementLogic {
         if(ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_FIT)) {
             if(world.getTileEntity(pos) instanceof ChiseledBlockTileEntity) {
                 ChiseledBlockTileEntity cbte = (ChiseledBlockTileEntity) world.getTileEntity(pos);
-                if(cbte != null && !nbt.getVoxelBlob().canMerge(cbte.getBlob()))
+                if(cbte != null && !nbt.getVoxelBlob().canMerge(cbte.getVoxelBlob()))
                     return false; //Can't place if we can't merge this
                 return true;
             }

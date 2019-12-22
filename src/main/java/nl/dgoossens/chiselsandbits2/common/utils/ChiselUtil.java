@@ -9,21 +9,17 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemUseContext;
-import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.*;
-import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ForgeEventFactory;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
-import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
-import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
@@ -32,10 +28,6 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 
 import javax.annotation.Nonnull;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static nl.dgoossens.chiselsandbits2.api.block.BitOperation.PLACE;
 
@@ -61,14 +53,14 @@ public class ChiselUtil {
     /**
      * Plays the sound to be played when a chiseled block is modified.
      */
-    public static void playModificationSound(final World world, final BlockPos pos) {
+    public static void playModificationSound(final World world, final BlockPos pos, final boolean placement) {
         BlockState state = world.getBlockState(pos);
         if(world.getTileEntity(pos) instanceof ChiseledBlockTileEntity) {
             int a = ((ChiseledBlockTileEntity) world.getTileEntity(pos)).getPrimaryBlock();
             if(a != VoxelBlob.AIR_BIT) state = BitUtil.getBlockState(a);
         }
         SoundType st = state.getSoundType();
-        world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, st.getBreakSound(), SoundCategory.BLOCKS, (st.getVolume() + 1.0F) / 16.0F, st.getPitch() * 0.9F);
+        world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, placement ? st.getPlaceSound() : st.getBreakSound(), SoundCategory.BLOCKS, st.getVolume(), st.getPitch() * 0.9F);
     }
 
     /**
@@ -116,7 +108,7 @@ public class ChiselUtil {
     /**
      * Replaces a block at a position with a new chiseled block tile entity.
      */
-    public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final int fragmentBlockStateID, final Direction face) {
+    public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final Direction face) {
         Block target = originalState.getBlock();
         BlockState placementState = ChiselsAndBits2.getInstance().getAPI().getRestrictions().getPlacementState(originalState);
         if(target.equals(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK) || placementState == null) return;
@@ -125,7 +117,7 @@ public class ChiselUtil {
         boolean isAir = isBlockReplaceable(player, world, pos, face, true);
 
         if (ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(originalState) || isAir) {
-            int blockId = isAir ? fragmentBlockStateID : BitUtil.getBlockId(placementState);
+            int blockId = BitUtil.getBlockId(placementState);
             world.setBlockState(pos, ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), 3);
             final ChiseledBlockTileEntity te = (ChiseledBlockTileEntity) world.getTileEntity(pos);
             if (te != null) {

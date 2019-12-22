@@ -88,7 +88,20 @@ public final class VoxelBlob implements IVoxelSrc {
      */
     public VoxelBlob merge(final VoxelBlob second) {
         for (int x = 0; x < values.length; ++x)
-            if (values[x] == 0) values[x] = second.values[x];
+            //If we have a spot here, place the bit from the second one here.
+            if (values[x] == VoxelBlob.AIR_BIT) values[x] = second.values[x];
+        return this;
+    }
+
+    /**
+     * Merges the second voxelblob into this one.
+     * Returns this.
+     */
+    public VoxelBlob overlap(final VoxelBlob second) {
+        for (int x = 0; x < values.length; ++x)
+            //If we have something to put here from second, place it.
+            //Bits are destroyed in this process!
+            if (second.values[x] != VoxelBlob.AIR_BIT) values[x] = second.values[x];
         return this;
     }
 

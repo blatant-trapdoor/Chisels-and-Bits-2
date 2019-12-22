@@ -23,7 +23,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.item.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.interfaces.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.radial.RadialMenu;
@@ -284,7 +284,7 @@ public class ClientSideHelper {
                                 operation.equals(BitOperation.PLACE)
                         ).getBoundingBox(
                                 !(data instanceof ChiseledBlockTileEntity) ? (new VoxelBlob().fill(BitUtil.getBlockId(world.getBlockState(location.blockPos))))
-                                        : ((ChiseledBlockTileEntity) data).getBlob(), true
+                                        : ((ChiseledBlockTileEntity) data).getVoxelBlob(), true
                         ),
                         location.blockPos, player, partialTicks, false, 0, 0, 0, 102, 32);
                 return true;
@@ -499,7 +499,7 @@ public class ClientSideHelper {
             boolean modified = false;
             VoxelBlob blob = c.getVoxelBlob();
             if(te instanceof ChiseledBlockTileEntity) {
-                VoxelBlob b = ((ChiseledBlockTileEntity) te).getBlob();
+                VoxelBlob b = ((ChiseledBlockTileEntity) te).getVoxelBlob();
                 if(ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_MERGE)) {
                     blob.intersect(b);
                     modified = true;
