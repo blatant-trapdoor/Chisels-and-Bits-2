@@ -25,10 +25,14 @@ import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.network.client.CPlaceBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CWrenchBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CRotateItemPacket;
+import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
 import nl.dgoossens.chiselsandbits2.common.utils.RotationUtil;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static nl.dgoossens.chiselsandbits2.api.block.BitOperation.*;
 
@@ -89,7 +93,6 @@ public class ChiselHandler {
                 for (int yOff = Math.min(from.getY(), to.getY()); yOff <= maxY; ++yOff) {
                     for (int zOff = Math.min(from.getZ(), to.getZ()); zOff <= maxZ; ++zOff) {
                         final BlockPos pos = new BlockPos(xOff, yOff, zOff);
-                        inventory.determineEffectState(world, pos);
                         //If we can't chisel here, don't chisel.
                         //This method is specifically a server only method, the client already does checking if we can chisel somewhere through ChiselUtil#canChiselPosition.
                         if (world.getServer().isBlockProtected(world, pos, player))
@@ -108,6 +111,7 @@ public class ChiselHandler {
                             switch (pkt.operation) {
                                 case SWAP:
                                 case PLACE: {
+                                    inventory.setEffectState(BitUtil.getBlockState(pkt.placedBit)); //TODO add support for fluids/coloured bits
                                     while (i.hasNext())
                                         if(inventory.placeBit(vb, i.x(), i.y(), i.z(), pkt.operation, pkt.placedBit) != 0) break;
                                 }
@@ -115,6 +119,7 @@ public class ChiselHandler {
                                 case REMOVE: {
                                     while (i.hasNext())
                                         if(inventory.removeBit(vb, i.x(), i.y(), i.z())) break;
+                                    inventory.setEffectState(inventory.getMostCommonState());
                                 }
                                 break;
                             }

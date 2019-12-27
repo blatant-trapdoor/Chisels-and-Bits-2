@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.utils;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -200,7 +201,7 @@ public class InventoryUtils {
          */
         public void addMaterial(VoxelWrapper w, long amount) {
             changed = true;
-            if(w == null || VoxelType.isColoured(w.getId())) return; //Don't do coloured bits
+            if(w == null) return; //Don't do coloured bits
             extracted.put(w, extracted.getOrDefault(w, 0L) + amount);
         }
 
@@ -256,6 +257,8 @@ public class InventoryUtils {
             SelectedItemMode m = ItemModeUtil.getGlobalSelectedItemMode(getPlayer());
 
             for(VoxelWrapper w : extracted.keySet()) {
+                if(VoxelType.isColoured(w.getId())) continue; //Ignore giving coloured bits
+
                 long added = extracted.get(w);
                 if(added == 0) continue; //We don't need do nothing here.
 
@@ -390,6 +393,21 @@ public class InventoryUtils {
          */
         public void determineEffectState(final World world, final BlockPos pos) {
             effectState = ChiselUtil.getChiseledTileMainState(world, pos);
+        }
+
+        /**
+         * Set the effect state to be used to a specific state.
+         */
+        public void setEffectState(final BlockState state) {
+            effectState = state;
+        }
+
+        /**
+         * Get the most common extracted block state.
+         */
+        public BlockState getMostCommonState() {
+            return extracted.entrySet().parallelStream().max(Comparator.comparing(Map.Entry::getValue))
+                    .map(f -> f.getKey().get()).filter(f -> f instanceof Block).map(f -> ((Block) f).getDefaultState()).orElse(null);
         }
 
         /**
