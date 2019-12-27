@@ -16,7 +16,6 @@ public class ModConfiguration {
     public ForgeConfigSpec.BooleanValue enablePlacementGhost;
 
     public ForgeConfigSpec.BooleanValue enableVivecraftCompatibility;
-    public ForgeConfigSpec.BooleanValue disableUnfinishedFeatures;
 
     // --- SERVER VALUES ---
     public ForgeConfigSpec.DoubleValue maxDrawnRegionSize;
@@ -79,15 +78,6 @@ public class ModConfiguration {
             enableVivecraftCompatibility = builder
                     .comment("Turn on compatibility with Vivecraft, this turns the radial menu into an actual GUI instead of an overlay that can only be closed by clicking an option.")
                     .define("enableVivecraftCompatibility", false);
-
-            builder.pop();
-
-            builder.comment("Debug Settings");
-            builder.push("debug");
-
-            disableUnfinishedFeatures = builder
-                    .comment("If false will enable all unfinished items and features. This setting is temporary and will be removed after the alpha releases of C&B2 have ended.")
-                    .define("disableUnfinishedFeatures", true);
 
             builder.pop();
 

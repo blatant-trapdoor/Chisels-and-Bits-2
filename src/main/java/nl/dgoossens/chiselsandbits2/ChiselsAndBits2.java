@@ -120,6 +120,6 @@ public class ChiselsAndBits2 {
      */
     @Deprecated
     public static boolean showUnfinishedFeatures() {
-        return !getInstance().getConfig().disableUnfinishedFeatures.get();
+        return false;
     }
 }
