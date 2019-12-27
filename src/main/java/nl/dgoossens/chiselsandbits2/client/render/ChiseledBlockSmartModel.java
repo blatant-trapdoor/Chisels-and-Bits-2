@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.client.render;
 
+import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -13,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.data.IModelData;
+import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.common.ForgeMod;
 import nl.dgoossens.chiselsandbits2.client.render.models.BaseSmartModel;
 import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
@@ -51,13 +53,13 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
                     byte[] vdata = c.getByteArray(NBTBlobConverter.NBT_VERSIONED_VOXEL);
                     VoxelBlobStateReference state = c.contains(NBTBlobConverter.NBT_VERSIONED_VOXEL) ? new VoxelBlobStateReference(vdata) : new VoxelBlobStateReference();
 
-                    return getCachedModel(state, null, null, DefaultVertexFormats.ITEM);
+                    return getCachedModel(state, null, DefaultVertexFormats.ITEM);
                 }
             });
 
     public static ChiseledBlockBaked getCachedModel(final ChiseledBlockTileEntity te) {
         try {
-            return getCachedModel(te.getVoxelReference(), te.getRenderTracker(), te.getRenderTracker().getRenderState(), getModelFormat());
+            return getCachedModel(te.getVoxelReference(), te.getRenderTracker().getRenderState(), getModelFormat());
         } catch(ExecutionException x) {
             x.printStackTrace();
             return null;
@@ -65,7 +67,7 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
     }
 
     private static VertexFormat getModelFormat() {
-        return !ForgeMod.forgeLightPipelineEnabled ? DefaultVertexFormats.ITEM : ChiselsAndBitsBakedQuad.VERTEX_FORMAT;
+        return !ForgeConfig.CLIENT.forgeLightPipelineEnabled.get() ? DefaultVertexFormats.ITEM : ChiselsAndBitsBakedQuad.VERTEX_FORMAT;
     }
 
     public static boolean validate(final VoxelNeighborRenderTracker renderTracker, final ModelRenderState mrs) {
@@ -77,13 +79,13 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
         return false;
     }
 
-    private static ChiseledBlockBaked getCachedModel(final VoxelBlobStateReference reference, final VoxelNeighborRenderTracker renderTracker, final ModelRenderState mrs, final VertexFormat format) throws ExecutionException {
+    private static ChiseledBlockBaked getCachedModel(final VoxelBlobStateReference reference, final ModelRenderState mrs, final VertexFormat format) throws ExecutionException {
         if (reference == null) {
             if(NULL_MODEL == null) NULL_MODEL = new ChiseledBlockBaked(null, new ModelRenderState(), getModelFormat());
             return NULL_MODEL;
         }
 
-        if (format == getModelFormat())
+        if (format == getModelFormat() && mrs != null)
             return modelCache.get(mrs, () -> new ChiseledBlockBaked(reference, mrs, format));
 
         return new ChiseledBlockBaked(reference, mrs, format);
@@ -99,7 +101,7 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
             rTracker = new VoxelNeighborRenderTracker(null, null);
 
         try {
-            return getCachedModel(data, rTracker, rTracker.getRenderState(), getModelFormat());
+            return getCachedModel(data, rTracker.getRenderState(), getModelFormat());
         } catch(ExecutionException e) {
             e.printStackTrace();
             return null;
