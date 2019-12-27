@@ -70,9 +70,10 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
         return !ForgeConfig.CLIENT.forgeLightPipelineEnabled.get() ? DefaultVertexFormats.ITEM : ChiselsAndBitsBakedQuad.VERTEX_FORMAT;
     }
 
-    public static boolean validate(final VoxelNeighborRenderTracker renderTracker, final ModelRenderState mrs) {
+    public static boolean isInvalid(final ModelRenderState mrs) {
         //Invalidate this cache if the render tracker changed
-        if (mrs != null && renderTracker != null && !renderTracker.isValid()) {
+        if (mrs != null && mrs.isDirty()) {
+            System.out.println("Invalidating model!");
             modelCache.invalidate(mrs);
             return true;
         }

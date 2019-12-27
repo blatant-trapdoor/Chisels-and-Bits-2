@@ -6,8 +6,6 @@ import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 
 public class TileChunk extends RenderCache {
     //Every tile chunk is one quarter chunk.
@@ -61,18 +59,13 @@ public class TileChunk extends RenderCache {
         if(update) rebuild();
     }
 
-    public void validate(boolean alreadyRebuilding) {
+    public void validate(final ChiseledBlockTileEntity te, boolean alreadyRebuilding) {
         //Don't validate more often than every 5ms.
-        if(System.currentTimeMillis() - lastValidation > 5) {
+        if((System.currentTimeMillis() - lastValidation) >= 5) {
             lastValidation = System.currentTimeMillis();
-            boolean invalid = false;
-
-            //Validate the neighbours for all TE's in the chunk
-            for (final ChiseledBlockTileEntity te : tiles)
-                invalid = invalid || te.getRenderTracker().validate(te.getWorld(), te.getPos());
 
             //Make sure to only rebuild once
-            if(invalid && !alreadyRebuilding)
+            if(!alreadyRebuilding && te.getRenderTracker().isInvalid(te.getWorld(), te.getPos()))
                 rebuild();
         }
     }

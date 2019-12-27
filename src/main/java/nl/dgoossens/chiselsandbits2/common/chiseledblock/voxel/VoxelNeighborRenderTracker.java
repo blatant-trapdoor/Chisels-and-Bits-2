@@ -8,8 +8,6 @@ import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.client.render.ModelRenderState;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
-import java.lang.ref.WeakReference;
-
 /**
  * An object which wraps the ModelRenderState which handles
  * storing references to the states of neighbouring blocks.
@@ -49,7 +47,7 @@ public final class VoxelNeighborRenderTracker {
     }
 
     //Checks all neighbours and sees if any have changed to no longer be a chiseled block.
-    public boolean validate(final World world, final BlockPos pos) {
+    public boolean isInvalid(final World world, final BlockPos pos) {
         final TileEntity me = world.getTileEntity(pos);
         if (me instanceof ChiseledBlockTileEntity) {
             if(this != ((ChiseledBlockTileEntity) me).getRenderTracker())
@@ -57,32 +55,20 @@ public final class VoxelNeighborRenderTracker {
 
             for (Direction d : Direction.values()) {
                 final TileEntity te = world.getTileEntity(pos.offset(d));
-                if (te instanceof ChiseledBlockTileEntity) {
-                    if(sides.get(d) != ((ChiseledBlockTileEntity) te).getVoxelReference()) {
-                        sides.put(d, ((ChiseledBlockTileEntity) te).getVoxelReference());
-                        continue;
-                    }
+                if (te instanceof ChiseledBlockTileEntity)
                     sides.put(d, ((ChiseledBlockTileEntity) te).getVoxelReference());
-                } else {
-                    if(sides.has(d)) {
-                        sides.remove(d);
-                        continue;
-                    }
+                else
                     sides.remove(d);
-                }
             }
 
             //Validate the model cache right here to avoid this validation returning true time after time.
-            return ChiseledBlockSmartModel.validate(this, sides);
+            //This also instantly invalidates the model and removes it from the cache if need be.
+            return ChiseledBlockSmartModel.isInvalid(sides);
         } else throw new RuntimeException("Validate was called on block that was not even a Chiseled Block");
     }
 
     public void invalidate() {
         sides.invalidate();
-    }
-
-    public boolean isValid() {
-        return !sides.isDirty();
     }
 
     public ModelRenderState getRenderState() {
