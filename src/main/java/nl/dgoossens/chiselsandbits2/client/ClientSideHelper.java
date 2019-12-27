@@ -219,7 +219,7 @@ public class ClientSideHelper {
                 tapeMeasurements.remove(0); //Remove the oldest one.
             }
             IMenuAction ma = ItemModeUtil.getMenuActionMode(stack);
-            if(!(ma instanceof MenuAction))
+            if(ma instanceof MenuAction)
                 tapeMeasurements.add(new Measurement(tapeMeasureCache, location, (MenuAction) ma, ItemModeUtil.getItemMode(stack), player.dimension));
             tapeMeasureCache = null;
         }
