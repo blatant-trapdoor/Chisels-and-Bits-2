@@ -1,7 +1,5 @@
 package nl.dgoossens.chiselsandbits2.common.utils;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.IngameGui;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -12,7 +10,6 @@ import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.StringNBT;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -54,6 +51,14 @@ public class ItemModeUtil implements CacheClearable {
     }
 
     /**
+     *  Get the chiseled block mode the main client player is using.
+     *  Client-side only!
+     */
+    public static IItemMode getChiseledBlockMode() {
+        return getChiseledBlockMode(ChiselsAndBits2.getInstance().getClient().getPlayer());
+    }
+
+    /**
      * Get the chiseled block mode a given player is using.
      */
     public static IItemMode getChiseledBlockMode(final PlayerEntity player) {
@@ -78,7 +83,7 @@ public class ItemModeUtil implements CacheClearable {
 
         //Show item mode change in hotbar
         if(packet.isValid(player))
-            reshowHighlightedStack();
+            ClientUtil.reshowHighlightedStack();
 
         if(newMode instanceof SelectedItemMode)
             selected.remove(player.getUniqueID());
@@ -95,47 +100,7 @@ public class ItemModeUtil implements CacheClearable {
 
         //Show item mode change in hotbar
         if(packet.isValid(player))
-            reshowHighlightedStack();
-    }
-
-    /**
-     * Reshows the highlighted stack item.
-     * Only works on client-side.
-     */
-    private static void reshowHighlightedStack() {
-        try {
-            IngameGui ig = Minecraft.getInstance().ingameGUI;
-            //IngameGui#highlightingItemStack
-            Field f = null;
-            for(Field fe : IngameGui.class.getDeclaredFields()) {
-                //We abuse the fact that IngameGui only has one ItemStack and that's the one we need.
-                if(ItemStack.class.isAssignableFrom(fe.getType())) {
-                    f = fe;
-                    break;
-                }
-            }
-            if(f == null) throw new RuntimeException("Unable to lookup textures.");
-            f.setAccessible(true);
-            f.set(ig, Minecraft.getInstance().player.getHeldItemMainhand());
-
-            //IngameGui#remainingHighlightTicks
-            Field f2 = null;
-            int i = 0;
-            for(Field fe : IngameGui.class.getDeclaredFields()) {
-                //We want the third int type field which is remainingHighlightTicks.
-                if(Integer.TYPE.isAssignableFrom(fe.getType())) {
-                    i++;
-                    if(i==3) {
-                        f2 = fe;
-                        break;
-                    }
-                }
-            }
-            f2.setAccessible(true);
-            f2.set(ig, 40);
-        } catch(Exception x) {
-            x.printStackTrace();
-        }
+            ClientUtil.reshowHighlightedStack();
     }
 
     /**
@@ -143,7 +108,7 @@ public class ItemModeUtil implements CacheClearable {
      */
     public static void updateStackCapability(final ItemStack item, final BitStorage cap, final ServerPlayerEntity player) {
         validateSelectedBitType(player, item);
-        ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SSynchronizeBitStoragePacket(cap, player.inventory.getSlotFor(item)), player);
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SSynchronizeBitStoragePacket(cap, UselessUtil.getSlotFor(player.inventory, item)), player);
     }
 
     /**
@@ -329,7 +294,7 @@ public class ItemModeUtil implements CacheClearable {
             }
         }
 
-        return (stack.getItem() instanceof TapeMeasureItem) ? MenuAction.BLACK :
+        return (stack.getItem() instanceof TapeMeasureItem) ? MenuAction.WHITE :
                 MenuAction.PLACE;
     }
 
@@ -338,6 +303,14 @@ public class ItemModeUtil implements CacheClearable {
      */
     public static void setMenuActionMode(final ItemStack stack, final IMenuAction action) {
         if (stack != null) stack.setTagInfo("menuAction", new StringNBT(action.name()));
+    }
+
+    /**
+     * Gets the currently selected bit type as a selected item mode for the main
+     * player. Client-side only!
+     */
+    public static SelectedItemMode getGlobalSelectedItemMode() {
+        return getGlobalSelectedItemMode(ChiselsAndBits2.getInstance().getClient().getPlayer());
     }
 
     /**
@@ -422,10 +395,11 @@ public class ItemModeUtil implements CacheClearable {
             }
         } else {
             //LAN/Client
-            if(Minecraft.getInstance().player != null) {
-                selected.remove(Minecraft.getInstance().player.getUniqueID());
+            PlayerEntity player = ChiselsAndBits2.getInstance().getClient().getPlayer();
+            if(player != null) {
+                selected.remove(player.getUniqueID());
                 //We'll settle for everyone in the same dimension. Doubt anyone will ever notice this.
-                for(PlayerEntity p : Minecraft.getInstance().player.getEntityWorld().getPlayers())
+                for(PlayerEntity p : player.getEntityWorld().getPlayers())
                     selected.remove(p.getUniqueID());
             }
         }

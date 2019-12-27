@@ -81,7 +81,7 @@ public class ChiselHandler {
         final int maxY = Math.max(from.getY(), to.getY());
         final int maxZ = Math.max(from.getZ(), to.getZ());
 
-        ChiselsAndBits2.getInstance().getClient().getUndoTracker().beginGroup(player);
+        ChiselsAndBits2.getInstance().getUndoTracker().beginGroup(player);
 
         try {
             //Uses to be added to the statistic
@@ -131,7 +131,7 @@ public class ChiselHandler {
             inventory.apply();
             //Increment item usage statistic
             player.getStats().increment(player, Stats.ITEM_USED.get(player.getHeldItemMainhand().getItem()), 1);
-            ChiselsAndBits2.getInstance().getClient().getUndoTracker().endGroup(player);
+            ChiselsAndBits2.getInstance().getUndoTracker().endGroup(player);
         }
     }
 

@@ -77,10 +77,10 @@ public enum MenuAction implements IMenuAction {
     public void trigger() {
         switch (this) {
             case UNDO:
-                ChiselsAndBits2.getInstance().getClient().getUndoTracker().undo();
+                ChiselsAndBits2.getInstance().getUndoTracker().undo();
                 break;
             case REDO:
-                ChiselsAndBits2.getInstance().getClient().getUndoTracker().redo();
+                ChiselsAndBits2.getInstance().getUndoTracker().redo();
                 break;
             case ROLL_X:
                 ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CRotateItemPacket(Direction.Axis.X));

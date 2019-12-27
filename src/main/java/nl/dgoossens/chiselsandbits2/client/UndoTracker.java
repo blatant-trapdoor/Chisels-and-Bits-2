@@ -1,6 +1,5 @@
 package nl.dgoossens.chiselsandbits2.client;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -78,11 +77,12 @@ public class UndoTracker {
      * Triggers one undo operation.
      */
     public void undo() {
+        PlayerEntity player = ChiselsAndBits2.getInstance().getClient().getPlayer();
         if(level > -1) {
             final UndoStep step = undoLevels.get(level);
-            if(step.isCorrect(Minecraft.getInstance().player) && replayChanges(step, true)) level--;
+            if(step.isCorrect(player) && replayChanges(step, true)) level--;
         } else {
-            Minecraft.getInstance().player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".undo.nothing_to_undo"), true);
+            player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".undo.nothing_to_undo"), true);
         }
     }
 
@@ -90,11 +90,12 @@ public class UndoTracker {
      * Triggers one redo operation.
      */
     public void redo() {
+        PlayerEntity player = ChiselsAndBits2.getInstance().getClient().getPlayer();
         if(level + 1 < undoLevels.size()) {
             final UndoStep step = undoLevels.get(level + 1);
-            if(step.isCorrect(Minecraft.getInstance().player) && replayChanges(step, false)) level++;
+            if(step.isCorrect(player) && replayChanges(step, false)) level++;
         } else {
-            Minecraft.getInstance().player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".undo.nothing_to_redo"), true);
+            player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".undo.nothing_to_redo"), true);
         }
     }
 

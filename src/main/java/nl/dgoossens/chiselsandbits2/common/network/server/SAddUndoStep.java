@@ -1,6 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.network.server;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -51,9 +51,10 @@ public class SAddUndoStep {
     }
 
     public static void handle(final SAddUndoStep pkt, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() ->
-            ChiselsAndBits2.getInstance().getClient().getUndoTracker().add(Minecraft.getInstance().player, Minecraft.getInstance().player.getEntityWorld(), pkt.pos, pkt.before, pkt.after)
-        );
+        ctx.get().enqueueWork(() -> {
+            PlayerEntity player = ChiselsAndBits2.getInstance().getClient().getPlayer();
+            ChiselsAndBits2.getInstance().getUndoTracker().add(player, player.getEntityWorld(), pkt.pos, pkt.before, pkt.after);
+        });
         ctx.get().setPacketHandled(true);
     }
 }

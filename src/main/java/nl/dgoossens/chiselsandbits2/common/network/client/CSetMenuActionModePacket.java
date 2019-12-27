@@ -35,7 +35,7 @@ public class CSetMenuActionModePacket {
 
     public static CSetMenuActionModePacket decode(PacketBuffer buffer) {
         CSetMenuActionModePacket pc = new CSetMenuActionModePacket();
-        String s = buffer.readString();
+        String s = buffer.readString(256);
         for(IMenuAction ima : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getMenuActions()) {
             if(ima.name().equals(s)) {
                 pc.newMode = ima;

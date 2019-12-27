@@ -37,7 +37,7 @@ public class CSetItemModePacket {
 
     public static CSetItemModePacket decode(PacketBuffer buffer) {
         CSetItemModePacket pc = new CSetItemModePacket();
-        String type = buffer.readString();
+        String type = buffer.readString(256);
         for(IItemModeType t : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModeTypes()) {
             if(t.name().equals(type)) {
                 pc.type = t;
@@ -47,7 +47,7 @@ public class CSetItemModePacket {
         try {
             boolean dynamic = buffer.readBoolean();
             int dynamicId = buffer.readInt();
-            pc.newMode = ItemModeUtil.resolveMode(buffer.readString(), dynamic, dynamicId);
+            pc.newMode = ItemModeUtil.resolveMode(buffer.readString(256), dynamic, dynamicId);
         } catch (final Exception x) {
             x.printStackTrace();
         }

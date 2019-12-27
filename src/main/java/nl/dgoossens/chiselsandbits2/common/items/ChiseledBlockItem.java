@@ -95,7 +95,7 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
      */
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        IItemMode im = ItemModeUtil.getChiseledBlockMode(Minecraft.getInstance().player);
+        IItemMode im = ItemModeUtil.getChiseledBlockMode();
         return displayName + " - " + im.getLocalizedName();
     }
 

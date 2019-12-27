@@ -276,7 +276,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
             setBlob(vb);
             final VoxelBlobStateReference after = getVoxelReference();
 
-            ChiselsAndBits2.getInstance().getClient().getUndoTracker().add(player, getWorld(), getPos(), before, after);
+            ChiselsAndBits2.getInstance().getUndoTracker().add(player, getWorld(), getPos(), before, after);
         } else setBlob(vb);
     }
 

@@ -39,8 +39,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
-@OnlyIn(Dist.CLIENT)
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity> {
     //--- STATIC PARTS ---
     public final static AtomicInteger activeTess = new AtomicInteger(0);

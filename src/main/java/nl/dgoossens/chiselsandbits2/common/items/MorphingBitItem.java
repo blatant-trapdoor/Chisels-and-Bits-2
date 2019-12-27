@@ -46,7 +46,7 @@ public class MorphingBitItem extends TypedItem implements IBitModifyItem {
 
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        SelectedItemMode s = ItemModeUtil.getGlobalSelectedItemMode(Minecraft.getInstance().player);
+        SelectedItemMode s = ItemModeUtil.getGlobalSelectedItemMode();
         if(s.isNone()) return super.getHighlightTip(item, displayName);
         return super.getHighlightTip(item, displayName) + " - " + s.getLocalizedName();
     }

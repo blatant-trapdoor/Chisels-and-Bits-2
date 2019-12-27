@@ -1,6 +1,7 @@
 package nl.dgoossens.chiselsandbits2.common.network.server;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -23,7 +24,7 @@ public class SGroupMethod {
 
         public static void handle(final BeginGroup pkt, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() ->
-                    ChiselsAndBits2.getInstance().getClient().getUndoTracker().beginGroup(Minecraft.getInstance().player)
+                    ChiselsAndBits2.getInstance().getUndoTracker().beginGroup(ChiselsAndBits2.getInstance().getClient().getPlayer())
             );
             ctx.get().setPacketHandled(true);
         }
@@ -40,7 +41,7 @@ public class SGroupMethod {
 
         public static void handle(final EndGroup pkt, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() ->
-                ChiselsAndBits2.getInstance().getClient().getUndoTracker().endGroup(Minecraft.getInstance().player)
+                ChiselsAndBits2.getInstance().getUndoTracker().endGroup(ChiselsAndBits2.getInstance().getClient().getPlayer())
             );
             ctx.get().setPacketHandled(true);
         }

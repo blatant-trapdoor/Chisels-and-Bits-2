@@ -1,9 +1,7 @@
 package nl.dgoossens.chiselsandbits2;
 
-import net.minecraft.block.Blocks;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -14,7 +12,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
-import nl.dgoossens.chiselsandbits2.client.render.models.SmartModelManager;
+import nl.dgoossens.chiselsandbits2.client.UndoTracker;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapability;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselsAndBitsAPIImpl;
@@ -32,9 +30,9 @@ public class ChiselsAndBits2 {
     private final ModConfiguration CONFIGURATION;
     private final NetworkRouter NETWORK_ROUTER;
     private final ChiselsAndBitsAPI API;
-    private final SmartModelManager SMART_MODEL_MANAGER;
     private final ModStatistics STATISTICS;
     private final ModRecipes RECIPES;
+    private final UndoTracker UNDO;
     private ClientSide CLIENT;
     private ModKeybindings KEYBINDINGS;
 
@@ -45,9 +43,9 @@ public class ChiselsAndBits2 {
         NETWORK_ROUTER = new NetworkRouter();
         ITEMS = new ModItems();
         BLOCKS = new ModBlocks();
-        SMART_MODEL_MANAGER = new SmartModelManager();
         STATISTICS = new ModStatistics();
         RECIPES = new ModRecipes();
+        UNDO = new UndoTracker();
 
         //Only register the client and keybindings classes when on the CLIENT distribution.
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
@@ -69,13 +67,9 @@ public class ChiselsAndBits2 {
     private void setup(final FMLCommonSetupEvent event) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> CLIENT::setup);
 
-        //Register event busses
-        MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(NETWORK_ROUTER);
-
-        FMLJavaModLoadingContext.get().getModEventBus().register(SMART_MODEL_MANAGER);
-        NETWORK_ROUTER.init();
+        //Register things
         CapabilityManager.INSTANCE.register(BitStorage.class, new StorageCapability(), BitStorageImpl::new);
+        NETWORK_ROUTER.init();
 
         //Setup vanilla restrictions
         getAPI().getRestrictions().restrictBlockStateProperty(BlockStateProperties.SNOWY, false, true); //Make all snowy grass not snowy automatically
@@ -109,16 +103,16 @@ public class ChiselsAndBits2 {
         return KEYBINDINGS;
     }
 
-    public SmartModelManager getModelManager() {
-        return SMART_MODEL_MANAGER;
-    }
-
     public ModStatistics getStatistics() {
         return STATISTICS;
     }
 
     public ModRecipes getRecipes() {
         return RECIPES;
+    }
+
+    public UndoTracker getUndoTracker() {
+        return UNDO;
     }
 
     /**

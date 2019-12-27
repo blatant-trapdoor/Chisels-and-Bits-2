@@ -19,6 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -67,9 +68,6 @@ public class ClientSideHelper {
     protected static final HashMap<IItemMode, ResourceLocation> modeIconLocations = new HashMap<>();
     protected static final HashMap<IMenuAction, ResourceLocation> menuActionLocations = new HashMap<>();
 
-    //Undo
-    protected UndoTracker undoTracker = new UndoTracker();
-
     //Tape Measure
     protected List<Measurement> tapeMeasurements = new ArrayList<>();
     protected BitLocation tapeMeasureCache;
@@ -100,7 +98,7 @@ public class ClientSideHelper {
         previousPosition = null;
         modelBounds = null;
 
-        getUndoTracker().clean();
+        ChiselsAndBits2.getInstance().getUndoTracker().clean();
         RadialMenu.RADIAL_MENU.cleanup();
     }
 
@@ -123,9 +121,12 @@ public class ClientSideHelper {
     }
 
     /**
-     * Get the main undo tracker which tracks previous bit operations.
+     * Server friendly get player method to get the client
+     * main player.
      */
-    public UndoTracker getUndoTracker() { return undoTracker; }
+    public PlayerEntity getPlayer() {
+        return Minecraft.getInstance().player;
+    }
 
     /**
      * Get the resource location of the icon for the mode, will return null
@@ -198,6 +199,7 @@ public class ClientSideHelper {
         //Clear measurements if there are measurements
         if(Minecraft.getInstance().player.isSneaking() && !ChiselsAndBits2.getInstance().getClient().tapeMeasurements.isEmpty()) {
             ChiselsAndBits2.getInstance().getClient().tapeMeasurements.clear();
+            Minecraft.getInstance().player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.cleared_measurements"), true);
             return;
         }
 

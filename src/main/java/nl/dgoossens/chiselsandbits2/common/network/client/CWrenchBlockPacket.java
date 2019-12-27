@@ -42,7 +42,7 @@ public class CWrenchBlockPacket {
         try {
             boolean isDynamic = buffer.readBoolean();
             int dynamicId = buffer.readVarInt();
-            pc.mode = ItemModeUtil.resolveMode(buffer.readString(), isDynamic, dynamicId);
+            pc.mode = ItemModeUtil.resolveMode(buffer.readString(256), isDynamic, dynamicId);
         } catch (Exception x) {
             x.printStackTrace();
         }

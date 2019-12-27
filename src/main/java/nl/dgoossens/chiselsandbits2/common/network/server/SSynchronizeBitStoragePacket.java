@@ -1,12 +1,12 @@
 package nl.dgoossens.chiselsandbits2.common.network.server;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
@@ -48,7 +48,7 @@ public class SSynchronizeBitStoragePacket {
         ctx.get().enqueueWork(() -> {
             PlayerEntity target;
             if(ctx.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT)
-                target = Minecraft.getInstance().player;
+                target = ChiselsAndBits2.getInstance().getClient().getPlayer();
             else
                 target = ctx.get().getSender();
 

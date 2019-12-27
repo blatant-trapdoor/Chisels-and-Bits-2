@@ -22,7 +22,7 @@ repositories {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
 
-version = 'alpha4'
+version = 'alpha5'
 group = 'nl.dgoossens.chiselsandbits2'
 archivesBaseName = 'chiselsandbits2'
 
@@ -81,9 +81,10 @@ minecraft {
         }
 
         server {
-            workingDirectory project.file('run')
+            workingDirectory project.file('run_server')
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'info'
+            args 'nogui'
 
             mods {
                 chiselsandbits2 {
