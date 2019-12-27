@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.utils;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -153,6 +154,7 @@ public class InventoryUtils {
         private HashMap<VoxelWrapper, Long> extracted = new HashMap<>();
         private boolean wastingBits = false, changed = true;
         private long delta = 0; //Tracker to see if we removed things or added
+        private BlockState effectState;
 
         public CalculatedInventory(ServerPlayerEntity player) {
             super(player);
@@ -383,12 +385,22 @@ public class InventoryUtils {
         }
 
         /**
+         * Set the state to play the effect of at this point. Can be used to get the state of the block before
+         * the operation is applied. (as breaking the final bit leaves nothing resulting in a stone sound)
+         */
+        public void determineEffectState(final World world, final BlockPos pos) {
+            effectState = ChiselUtil.getChiseledTileMainState(world, pos);
+        }
+
+        /**
          * Plays the correct sound effect when updating a chiseled block but only if the block was actually modified.
          */
         public void playEffects(final World world, final BlockPos pos) {
             if(!changed) return;
-            ChiselUtil.playModificationSound(world, pos, delta >= 0);
-
+            if(effectState != null)
+                ChiselUtil.playModificationSound(world, pos, delta >= 0, effectState);
+            else
+                ChiselUtil.playModificationSound(world, pos, delta >= 0);
         }
 
         /**

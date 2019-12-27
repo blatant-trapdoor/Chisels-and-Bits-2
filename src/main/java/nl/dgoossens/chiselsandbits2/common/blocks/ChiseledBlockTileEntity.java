@@ -42,6 +42,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     private VoxelBlobStateReference voxelBlob;
     private VoxelNeighborRenderTracker renderTracker;
     private ItemStack itemCache;
+    private long iteration = -Long.MAX_VALUE + 1; //Make sure it's going to take a long time until we reach -Long.MAX_VALUE.
 
     public ChiseledBlockTileEntity() {
         super(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK_TILE);
@@ -49,6 +50,14 @@ public class ChiseledBlockTileEntity extends TileEntity {
 
     public int getPrimaryBlock() {
         return primaryBlock;
+    }
+
+    /**
+     * Value that if not equal can be used to conclude that the tile entity
+     * changed.
+     */
+    public long getIteration() {
+        return iteration;
     }
 
     public void setPrimaryBlock(int d) {
@@ -237,6 +246,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
      * Set the voxel blob to new data.
      */
     public void setBlob(final VoxelBlob vb) {
+        iteration++;
         setVoxelReference(new VoxelBlobStateReference(vb.write(VoxelVersions.getDefault())));
         setPrimaryBlock(vb.getMostCommonStateId()); //We only want this to every be a blockstate.
         markDirty();
@@ -251,6 +261,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     public void completeEditOperation(final PlayerEntity player, final VoxelBlob vb, final boolean updateUndoTracker) {
+        iteration++;
         //Empty voxelblob = we need to destroy this block.
         if(vb.filled() <= 0) {
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
@@ -304,6 +315,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     @Override
     public CompoundNBT write(final CompoundNBT compound) {
         super.write(compound);
+        iteration++;
         NBTBlobConverter converter = new NBTBlobConverter(this);
         converter.writeChiselData(compound);
         return compound;
@@ -312,6 +324,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     @Override
     public void read(final CompoundNBT compound) {
         super.read(compound);
+        iteration++;
         final NBTBlobConverter converter = new NBTBlobConverter(this);
         converter.readChiselData(compound, VoxelVersions.getDefault());
     }

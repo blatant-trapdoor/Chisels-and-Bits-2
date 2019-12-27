@@ -65,6 +65,7 @@ public class CUndoPacket {
                 final BitAccess ba = baOpt.get();
                 final VoxelBlob vb = ba.getNativeBlob();
                 InventoryUtils.CalculatedInventory inventory = InventoryUtils.buildInventory(player);
+                inventory.determineEffectState(world, pos);
 
                 final BitIterator i = new BitIterator();
                 while(i.hasNext()) {

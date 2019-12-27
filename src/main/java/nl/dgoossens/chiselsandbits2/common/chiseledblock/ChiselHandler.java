@@ -89,6 +89,7 @@ public class ChiselHandler {
                 for (int yOff = Math.min(from.getY(), to.getY()); yOff <= maxY; ++yOff) {
                     for (int zOff = Math.min(from.getZ(), to.getZ()); zOff <= maxZ; ++zOff) {
                         final BlockPos pos = new BlockPos(xOff, yOff, zOff);
+                        inventory.determineEffectState(world, pos);
                         //If we can't chisel here, don't chisel.
                         //This method is specifically a server only method, the client already does checking if we can chisel somewhere through ChiselUtil#canChiselPosition.
                         if (world.getServer().isBlockProtected(world, pos, player))
@@ -191,7 +192,7 @@ public class ChiselHandler {
                 }
                 if(!player.isCreative())
                     item.setCount(item.getCount() - 1);
-                ChiselUtil.playModificationSound(world, pos, true);
+                ChiselUtil.playModificationSound(world, pos, true); //Placement can play sound normally as block should be set already.
             }
         }
     }
@@ -243,6 +244,6 @@ public class ChiselHandler {
         //Reduce wrench durability
         player.getHeldItemMainhand().damageItem(1, player, (p) -> p.sendBreakAnimation(Hand.MAIN_HAND));
         player.getStats().increment(player, Stats.ITEM_USED.get(ChiselsAndBits2.getInstance().getItems().WRENCH), 1);
-        ChiselUtil.playModificationSound(world, pos, true);
+        ChiselUtil.playModificationSound(world, pos, true); //Wrench can play sound of the block as it has been set for this world.
     }
 }

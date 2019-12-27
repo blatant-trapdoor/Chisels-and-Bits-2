@@ -54,11 +54,27 @@ public class ChiselUtil {
      * Plays the sound to be played when a chiseled block is modified.
      */
     public static void playModificationSound(final World world, final BlockPos pos, final boolean placement) {
+        BlockState state = getChiseledTileMainState(world, pos);
+        playModificationSound(world, pos, placement, state);
+    }
+
+    /**
+     * Internal utility method for calculating what the primary blockstate of a block
+     * is.
+     */
+    public static BlockState getChiseledTileMainState(final World world, final BlockPos pos) {
         BlockState state = world.getBlockState(pos);
         if(world.getTileEntity(pos) instanceof ChiseledBlockTileEntity) {
             int a = ((ChiseledBlockTileEntity) world.getTileEntity(pos)).getPrimaryBlock();
             if(a != VoxelBlob.AIR_BIT) state = BitUtil.getBlockState(a);
         }
+        return state;
+    }
+
+    /**
+     * Plays the sound to be played when a chiseled block is modified with a set state.
+     */
+    public static void playModificationSound(final World world, final BlockPos pos, final boolean placement, final BlockState state) {
         SoundType st = state.getSoundType();
         world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, placement ? st.getPlaceSound() : st.getBreakSound(), SoundCategory.BLOCKS, st.getVolume(), st.getPitch() * 0.9F);
     }

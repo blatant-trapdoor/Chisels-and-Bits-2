@@ -1,6 +1,7 @@
 package nl.dgoossens.chiselsandbits2.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -80,7 +81,9 @@ public class ClientSideHelper {
     protected BlockPos previousPartial;
     protected ItemStack previousItem;
     protected IntegerBox modelBounds;
+    protected BlockState previousState;
     protected boolean previousSilhoutte;
+    protected long previousTileIteration = -Long.MAX_VALUE;
 
     /**
      * Cleans up some data when a player leaves the current save game.
@@ -93,9 +96,7 @@ public class ClientSideHelper {
         selectionStart = null;
         operation = null;
 
-        ghostCache = null;
-        previousPartial = null;
-        previousPosition = null;
+        resetPlacementGhost();
         modelBounds = null;
 
         ChiselsAndBits2.getInstance().getUndoTracker().clean();
@@ -479,7 +480,22 @@ public class ClientSideHelper {
         previousPartial = null;
         previousPosition = null;
         previousItem = null;
+        previousState = null;
+        previousTileIteration = -Long.MAX_VALUE;
         previousSilhoutte = false;
+    }
+
+    /**
+     * Determines if there is a difference between te and previousTile.
+     */
+    private boolean didTileChange(final TileEntity te) {
+        if(te == null && previousTileIteration == -Long.MAX_VALUE) return false; //Both null? Same.
+        if(te == null || previousTileIteration == -Long.MAX_VALUE) return true; //Not both not null? Different!
+        if(te instanceof ChiseledBlockTileEntity) {
+            final ChiseledBlockTileEntity newTile = (ChiseledBlockTileEntity) te;
+            return newTile.getIteration() != previousTileIteration;
+        }
+        return true; //It changed if it isn't a chiseled block anymore.
     }
 
     /**
@@ -488,25 +504,28 @@ public class ClientSideHelper {
     protected void showGhost(ItemStack item, NBTBlobConverter c, World world, BlockPos pos, Direction face, BlockPos partial, float partialTicks, final boolean silhoutte) {
         final PlayerEntity player = Minecraft.getInstance().player;
         IBakedModel model = null;
-        if(ghostCache != null && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial))
+        if(ghostCache != null && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial) && world.getBlockState(pos).equals(previousState) && !didTileChange(world.getTileEntity(pos)))
             model = ghostCache;
         else {
+            System.out.println("Redoing model ["+ghostCache+"] "+(item.equals(previousItem))+", "+pos.equals(previousPosition)+", "+partial.equals(previousPartial)+", "+world.getBlockState(pos).equals(previousState)+", "+!didTileChange(world.getTileEntity(pos)));
             previousPosition = pos;
             previousPartial = partial;
             previousItem = item;
             previousSilhoutte = silhoutte;
+            previousState = world.getBlockState(pos);
 
             final TileEntity te = world.getTileEntity(pos);
 
             boolean modified = false;
             VoxelBlob blob = c.getVoxelBlob();
             if(te instanceof ChiseledBlockTileEntity) {
+                previousTileIteration = ((ChiseledBlockTileEntity) te).getIteration();
                 VoxelBlob b = ((ChiseledBlockTileEntity) te).getVoxelBlob();
                 if(ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_MERGE)) {
                     blob.intersect(b);
                     modified = true;
                 }
-            }
+            } else previousTileIteration = -Long.MAX_VALUE;
             modelBounds = blob.getBounds();
 
             if(modified) {
