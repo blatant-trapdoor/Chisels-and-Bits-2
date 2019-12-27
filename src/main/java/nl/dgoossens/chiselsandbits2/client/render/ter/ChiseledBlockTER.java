@@ -167,7 +167,8 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         final TileChunk rc = te.getChunk(te.getWorld());
         final BlockPos chunkOffset = te.getChunk(te.getWorld()).chunkOffset();
 
-        rc.validate(te, rc.needsRebuilding());
+        if(!rc.needsRebuilding() && te.getRenderTracker().isInvalid(te.getWorld(), te.getPos()))
+            rc.rebuild();
 
         if (rc.needsRebuilding()) {
             //Rebuild!

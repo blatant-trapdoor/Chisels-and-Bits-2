@@ -1,6 +1,5 @@
 package nl.dgoossens.chiselsandbits2.client.render;
 
-import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -15,20 +14,15 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.common.ForgeConfig;
-import net.minecraftforge.common.ForgeMod;
 import nl.dgoossens.chiselsandbits2.client.render.models.BaseSmartModel;
-import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateInstance;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelNeighborRenderTracker;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 
 import javax.annotation.Nonnull;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -73,7 +67,6 @@ public class ChiseledBlockSmartModel extends BaseSmartModel {
     public static boolean isInvalid(final ModelRenderState mrs) {
         //Invalidate this cache if the render tracker changed
         if (mrs != null && mrs.isDirty()) {
-            System.out.println("Invalidating model!");
             modelCache.invalidate(mrs);
             return true;
         }

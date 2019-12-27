@@ -23,6 +23,7 @@ import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -124,6 +125,16 @@ public class ChiseledBlock extends Block implements BaseBlock {
         TileEntity te = world.getTileEntity(pos);
         if (te == null) return null;
         return BitUtil.getBlockState(((ChiseledBlockTileEntity) te).getPrimaryBlock());
+    }
+
+    @Override
+    public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos) {
+        //Considering updating post placement doesn't occur that often. (not like every tick)
+        //So we just always rebuild the chunk if we get this. We rebuild every time we chisel something so this isn't that performance heavy.
+        TileEntity te = worldIn.getTileEntity(currentPos);
+        if (te instanceof ChiseledBlockTileEntity)
+            ((ChiseledBlockTileEntity) te).getRenderTracker().invalidate();
+        return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
     }
 
     //-- HANDLE BLOCK DROPS, COPIED FROM BLOCKSHULKERBOX.JAVA ---

@@ -507,7 +507,6 @@ public class ClientSideHelper {
         if(ghostCache != null && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial) && world.getBlockState(pos).equals(previousState) && !didTileChange(world.getTileEntity(pos)))
             model = ghostCache;
         else {
-            System.out.println("Redoing model ["+ghostCache+"] "+(item.equals(previousItem))+", "+pos.equals(previousPosition)+", "+partial.equals(previousPartial)+", "+world.getBlockState(pos).equals(previousState)+", "+!didTileChange(world.getTileEntity(pos)));
             previousPosition = pos;
             previousPartial = partial;
             previousItem = item;

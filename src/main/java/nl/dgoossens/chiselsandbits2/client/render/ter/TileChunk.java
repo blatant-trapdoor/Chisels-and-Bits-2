@@ -13,7 +13,6 @@ public class TileChunk extends RenderCache {
     public static final int CHUNK_COORDINATE_MASK = 0xfffffff8;
 
     private final Collection<ChiseledBlockTileEntity> tiles = new HashSet<>();
-    private long lastValidation = 0;
 
     /**
      * Create the chunk by scanning all tile entities and registering them without triggering
@@ -57,17 +56,6 @@ public class TileChunk extends RenderCache {
     public void update(final ChiseledBlockTileEntity which, final boolean update) {
         which.getRenderTracker().invalidate();
         if(update) rebuild();
-    }
-
-    public void validate(final ChiseledBlockTileEntity te, boolean alreadyRebuilding) {
-        //Don't validate more often than every 5ms.
-        if((System.currentTimeMillis() - lastValidation) >= 5) {
-            lastValidation = System.currentTimeMillis();
-
-            //Make sure to only rebuild once
-            if(!alreadyRebuilding && te.getRenderTracker().isInvalid(te.getWorld(), te.getPos()))
-                rebuild();
-        }
     }
 
     /**
