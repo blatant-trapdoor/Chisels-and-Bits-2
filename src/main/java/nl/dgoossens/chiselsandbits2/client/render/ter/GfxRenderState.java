@@ -145,7 +145,8 @@ public abstract class GfxRenderState {
 
         @Override
         protected void finalize() throws Throwable {
-            if (vertexbuffer != null) ChiseledBlockTER.addNextFrameTask(vertexbuffer::deleteGlBuffers);
+            if (vertexbuffer != null)
+                ChiseledBlockTER.INSTANCE.addNextFrameTask(vertexbuffer::deleteGlBuffers);
         }
     }
 }

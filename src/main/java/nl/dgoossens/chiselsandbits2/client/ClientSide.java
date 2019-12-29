@@ -54,7 +54,7 @@ public class ClientSide extends ClientSideHelper {
      * Setup all client side only things to register.
      */
     public void setup() {
-        ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, new ChiseledBlockTER());
+        ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, ChiseledBlockTER.INSTANCE);
         Minecraft.getInstance().getBlockColors().register(new ChiseledBlockColor(),
                 ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK);
         Minecraft.getInstance().getItemColors().register(new ChiseledBlockItemColor(),

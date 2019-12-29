@@ -48,6 +48,7 @@ public final class VoxelNeighborRenderTracker {
 
     //Checks all neighbours and sees if any have changed to no longer be a chiseled block.
     public boolean isInvalid(final World world, final BlockPos pos) {
+        if(world == null) return false; //Just in case
         final TileEntity me = world.getTileEntity(pos);
         if (me instanceof ChiseledBlockTileEntity) {
             if(this != ((ChiseledBlockTileEntity) me).getRenderTracker())

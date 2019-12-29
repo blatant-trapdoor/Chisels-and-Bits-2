@@ -38,11 +38,11 @@ public class RenderCache {
 
     /**
      * Prepares the rendering state.
-     * @throws NullPointerException If {@link #needsRebuilding()} returns true.
      */
-    public void prepareRenderState(Tessellator tx) {
-        if(vboRenderer == null) throw new NullPointerException("Can't prepare when we still need to render!");
+    public boolean prepareRenderState(Tessellator tx) {
+        if(vboRenderer == null) return false;
         vboRenderer = vboRenderer.prepare(tx);
+        return true;
     }
 
     /**
