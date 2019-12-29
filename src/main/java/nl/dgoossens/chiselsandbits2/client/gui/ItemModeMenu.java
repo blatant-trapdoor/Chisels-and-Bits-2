@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ItemModeMenu extends RadialMenu {
     public final static double RING_INNER_EDGE = 20;
     public final static double RING_OUTER_EDGE = 55;
@@ -62,7 +61,7 @@ public class ItemModeMenu extends RadialMenu {
 
     @Override
     public boolean shouldShow(final PlayerEntity player) {
-        return player.getHeldItemMainhand().getItem() instanceof IItemMenu;
+        return super.shouldShow(player) && player.getHeldItemMainhand().getItem() instanceof IItemMenu;
     }
 
     @Override

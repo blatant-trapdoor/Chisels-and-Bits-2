@@ -190,9 +190,12 @@ public abstract class RadialMenu extends Screen {
                 getMinecraft().mouseHelper.ungrabMouse();
                 if (ChiselsAndBits2.getInstance().getConfig().enableVivecraftCompatibility.get()) getMinecraft().currentScreen = this;
             } else {
-                getMinecraft().mouseHelper.grabMouse();
-                if (ChiselsAndBits2.getInstance().getConfig().enableVivecraftCompatibility.get())
-                    getMinecraft().displayGuiScreen(null);
+                //Only grab the mouse if we're currently in our menu, so don't grab if someone is in their inventory
+                if(Minecraft.getInstance().currentScreen == null || Minecraft.getInstance().currentScreen == this) {
+                    getMinecraft().mouseHelper.grabMouse();
+                    if (ChiselsAndBits2.getInstance().getConfig().enableVivecraftCompatibility.get())
+                        getMinecraft().displayGuiScreen(null);
+                }
             }
         }
     }
@@ -208,7 +211,9 @@ public abstract class RadialMenu extends Screen {
      * Whether or not a player should be able to see the menu, this means whether or
      * not the player's held item has a menu.
      */
-    public abstract boolean shouldShow(final PlayerEntity player);
+    public boolean shouldShow(final PlayerEntity player) {
+        return Minecraft.getInstance().currentScreen == null || Minecraft.getInstance().currentScreen == this; //Prevent having radial menu open whilst also having another menu open.
+    }
 
     /**
      * Triggers the effect when the menu disappears.
