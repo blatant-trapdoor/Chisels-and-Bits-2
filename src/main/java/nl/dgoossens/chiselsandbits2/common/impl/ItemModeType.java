@@ -33,6 +33,21 @@ public enum ItemModeType implements IItemModeType {
     private List<IItemMode> cache;
 
     @Override
+    public IItemMode getDefault() {
+        switch(this) {
+            case SELECTED: return SelectedItemMode.NONE;
+            case CHISEL: return ItemMode.CHISEL_SINGLE;
+            case PATTERN: return ItemMode.PATTERN_REPLACE;
+            case TAPEMEASURE: return ItemMode.TAPEMEASURE_BIT;
+            case WRENCH: return ItemMode.WRENCH_ROTATE;
+            case BLUEPRINT: return ItemMode.BLUEPRINT_UNKNOWN;
+            case MALLET: return ItemMode.MALLET_UNKNOWN;
+            case CHISELED_BLOCK: return ItemMode.CHISELED_BLOCK_FIT;
+        }
+        throw new UnsupportedOperationException("No default given for item mode type "+this);
+    }
+
+    @Override
     public List<IItemMode> getItemModes(final ItemStack item) {
         if (this == SELECTED)
             return item.getCapability(StorageCapabilityProvider.STORAGE).map(s -> s.listTypesAsItemModes(item.getItem())).orElse(new ArrayList<>());

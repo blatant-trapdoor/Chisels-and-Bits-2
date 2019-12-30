@@ -176,22 +176,13 @@ public class ItemModeUtil implements CacheClearable {
         final CompoundNBT nbt = stack.getTag();
         if (nbt != null && nbt.contains("mode")) {
             try {
-                return resolveMode(nbt.getString("mode"), nbt.getBoolean("isDynamic"), nbt.getInt("dynamicId"));
+                return resolveMode(((IItemMenu) stack.getItem()).getAssociatedType(), nbt.getString("mode"), nbt.getBoolean("isDynamic"), nbt.getInt("dynamicId"));
             } catch (final Exception x) {
                 x.printStackTrace();
             }
         }
 
-        return (stack.getItem() instanceof BitBagItem) ||
-                (stack.getItem() instanceof BitBeakerItem) ||
-                (stack.getItem() instanceof PaletteItem) ? SelectedItemMode.NONE :
-                (stack.getItem() instanceof ChiseledBlockItem) ? CHISELED_BLOCK_FIT :
-                        (stack.getItem() instanceof PatternItem) ? PATTERN_REPLACE :
-                                (stack.getItem() instanceof TapeMeasureItem) ? TAPEMEASURE_BIT :
-                                        (stack.getItem() instanceof WrenchItem) ? WRENCH_ROTATE :
-                                                (stack.getItem() instanceof MalletItem) ? MALLET_UNKNOWN :
-                                                    (stack.getItem() instanceof BlueprintItem) ? BLUEPRINT_UNKNOWN :
-                                                        CHISEL_SINGLE;
+        return ((IItemMenu) stack.getItem()).getAssociatedType().getDefault();
     }
 
     /**
@@ -239,24 +230,28 @@ public class ItemModeUtil implements CacheClearable {
      * Resolves an IItemMode from the output of
      * {@link IItemMode#getName()}
      */
-    public static IItemMode resolveMode(final String name, final boolean isDynamic, final int dynamicId) {
+    public static IItemMode resolveMode(final IItemModeType type, final String name, final boolean isDynamic, final int dynamicId) {
         if(isDynamic) {
             //Dynamic Item Mode
             //TODO Allow external dynamic item modes.
             return name.equals(SelectedItemMode.NONE.getName()) ? SelectedItemMode.NONE : SelectedItemMode.fromVoxelType(dynamicId);
         } else {
             for(ItemModeEnum e : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes()) {
-                if(e.name().equals(name))
+                //Only allow same type to avoid items having the wrong typed mode
+                if(e.getType().equals(type) && e.name().equals(name))
                     return e;
             }
         }
-        return CHISEL_SINGLE;
+        return type.getDefault();
     }
 
     /**
      * Set the mode of this itemstack to this enum value.
      */
     public static void setMode(final PlayerEntity player, final ItemStack stack, final IItemMode mode, final boolean updateTimestamp) {
+        //Can't set to wrong type
+        if (stack != null && stack.getItem() instanceof IItemMenu && !mode.getType().equals(((IItemMenu) stack.getItem()).getAssociatedType())) return;
+
         if (mode.getType() == ItemModeType.CHISELED_BLOCK) {
             chiseledBlockMode.put(player.getUniqueID(), mode);
             return;

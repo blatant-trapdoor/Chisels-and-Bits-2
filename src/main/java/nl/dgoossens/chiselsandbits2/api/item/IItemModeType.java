@@ -17,6 +17,11 @@ public interface IItemModeType {
     String name();
 
     /**
+     * Get the default value for this type.
+     */
+    IItemMode getDefault();
+
+    /**
      * Get a list of item modes that are a part of this item mode type.
      */
     public default List<IItemMode> getItemModes(final ItemStack item) {
