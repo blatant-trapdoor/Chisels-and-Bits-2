@@ -1,8 +1,8 @@
-package nl.dgoossens.chiselsandbits2.api.item.interfaces;
+package nl.dgoossens.chiselsandbits2.api.item.attributes;
 
 import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 
 /**
  * Interface for any item that is capable of modifying bits in the world.
@@ -48,8 +48,8 @@ public interface IBitModifyItem {
                 case PLACE:
                 case BUILD:
                     return !leftClick; //Right Click
-                case ROTATE: return ItemModeUtil.isItemMode(item, ItemMode.WRENCH_ROTATE, ItemMode.WRENCH_ROTATECCW) && !leftClick; //Right Click
-                case MIRROR: return ItemModeUtil.isItemMode(item, ItemMode.WRENCH_MIRROR) && !leftClick; //Right Click
+                case ROTATE: return ItemPropertyUtil.isItemMode(item, ItemMode.WRENCH_ROTATE, ItemMode.WRENCH_ROTATECCW) && !leftClick; //Right Click
+                case MIRROR: return ItemPropertyUtil.isItemMode(item, ItemMode.WRENCH_MIRROR) && !leftClick; //Right Click
             }
             return false;
         }

@@ -7,7 +7,7 @@ import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 
 import java.util.function.Supplier;
 
@@ -76,7 +76,7 @@ public class CChiselBlockPacket {
         try {
             boolean isDynamic = buffer.readBoolean();
             int dynamicId = buffer.readVarInt();
-            pc.mode = ItemModeUtil.resolveMode(null, buffer.readString(256), isDynamic, dynamicId);
+            pc.mode = ItemPropertyUtil.resolveMode(null, buffer.readString(256), isDynamic, dynamicId);
         } catch (Exception x) {
             x.printStackTrace();
         }

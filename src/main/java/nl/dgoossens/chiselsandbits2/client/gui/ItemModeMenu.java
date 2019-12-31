@@ -15,9 +15,8 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
@@ -25,10 +24,11 @@ import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.api.radial.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
+import nl.dgoossens.chiselsandbits2.client.ClientSideHelper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import org.lwjgl.opengl.GL11;
 
@@ -43,8 +43,6 @@ public class ItemModeMenu extends RadialMenu {
     public final static double TEXT_DISTANCE = 65;
     public final static double HALF_PI = Math.PI * 0.5;
 
-    private IItemMode switchTo = null;
-    private IMenuAction doAction = null;
     private List<MenuRegion> modes;
     private List<MenuButton> buttons;
     private long buttonLastHighlighted = 0L;
@@ -52,6 +50,8 @@ public class ItemModeMenu extends RadialMenu {
 
     public ItemModeMenu() {
         super(new StringTextComponent("Radial Menu"));
+        modes = getShownModes();
+        buttons = getShownButtons();
     }
 
     @Override
@@ -65,27 +65,17 @@ public class ItemModeMenu extends RadialMenu {
     }
 
     @Override
-    public boolean hasSelection() {
-        return hasSwitchTo() || hasAction();
-    }
-
-    @Override
     public void triggerEffect() {
-        if (hasSwitchTo() || hasAction()) {
+        if (hasAction()) {
             final float volume = ChiselsAndBits2.getInstance().getConfig().radialMenuVolume.get().floatValue();
             if (volume >= 0.0001f)
                 Minecraft.getInstance().getSoundHandler().play(new SimpleSound(SoundEvents.UI_BUTTON_CLICK, SoundCategory.MASTER, volume, 1.0f, Minecraft.getInstance().player.getPosition()));
+
+            getAction().run();
         }
 
-        if (hasSwitchTo())
-            ItemModeUtil.changeItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), getSwitchTo());
-
-        if (hasAction())
-            getAction().trigger();
-
         //Reset actions
-        switchTo = null;
-        doAction = null;
+        resetAction();
     }
 
     @Override
@@ -112,11 +102,6 @@ public class ItemModeMenu extends RadialMenu {
 
         final double middle_x = ((double) getWindow().getScaledWidth()) / 2;
         final double middle_y = ((double) getWindow().getScaledHeight()) / 2;
-
-        switchTo = null;
-        doAction = null;
-        modes = getShownModes();
-        buttons = getShownButtons();
 
         //Set the invisibility for all rendered bars.
         getDurabilityBarRenderer().setAlpha(getVisibility() * 0.65f);
@@ -207,12 +192,13 @@ public class ItemModeMenu extends RadialMenu {
                 if (begin_rad <= radians && radians <= end_rad && quad) {
                     if(f < 0.8f) f = 0.8f;
                     mnuRgn.highlighted = true;
-                    switchTo = mnuRgn.mode;
+                    if(mnuRgn.mode != null) setAction(() -> ItemPropertyUtil.setItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), mnuRgn.mode));
+                    else if(mnuRgn.item != null) setAction(() -> ItemPropertyUtil.setSelectedVoxelWrapper(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), mnuRgn.item, true));
                 }
 
-                if(mnuRgn.mode instanceof SelectedItemMode && ((SelectedItemMode) mnuRgn.mode).getVoxelType() == VoxelType.COLOURED) {
+                if(mnuRgn.item != null && mnuRgn.item.getType() == VoxelType.COLOURED) {
                     if(f < 0.1f) f = 0.4f;
-                    Color color = ((SelectedItemMode) mnuRgn.mode).getColour();
+                    Color color = (Color) mnuRgn.item.get();
                     int red = (int) Math.round(color.getRed()*f), green = (int) Math.round(color.getGreen()*f), blue = (int) Math.round(color.getBlue()*f), alp = (int) Math.round(color.getAlpha()*a);
 
                     buffer.pos(middle_x + x1m1, middle_y + y1m1, blitOffset).color(red, green, blue ,alp).endVertex();
@@ -237,7 +223,7 @@ public class ItemModeMenu extends RadialMenu {
             if (btn.x1 <= vecX && btn.x2 >= vecX && btn.y1 <= vecY && btn.y2 >= vecY) {
                 f = 1;
                 btn.highlighted = true;
-                doAction = btn.action;
+                setAction(btn.action);
             }
 
             buffer.pos(middle_x + btn.x1, middle_y + btn.y1, blitOffset).color(f, f, f, a).endVertex();
@@ -355,13 +341,13 @@ public class ItemModeMenu extends RadialMenu {
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5;
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5;
                 Color base = new Color(255, 255, 255);
-                if(mnuRgn.mode instanceof SelectedItemMode && ((SelectedItemMode) mnuRgn.mode).getVoxelType() == VoxelType.COLOURED)
-                    base = ((SelectedItemMode) mnuRgn.mode).getColour();
+                if(mnuRgn.item != null && mnuRgn.item.getType() == VoxelType.COLOURED)
+                    base = (Color) mnuRgn.item.get();
                 int color = new Color(base.getRed(), base.getGreen(), base.getBlue(),(int) Math.round((212-(!mnuRgn.highlighted ? remove : 0)) * getVisibility() * (((double)base.getAlpha())/255))).hashCode();
 
                 int fixed_x = (int) (x * TEXT_DISTANCE);
                 final int fixed_y = (int) (y * TEXT_DISTANCE);
-                final String text = mnuRgn.mode.getLocalizedName();
+                final String text = mnuRgn.mode == null ? mnuRgn.item.getDisplayName() : mnuRgn.mode.getLocalizedName();
 
                 if (x <= -0.2) {
                     fixed_x -= getFontRenderer().getStringWidth(text);
@@ -373,13 +359,13 @@ public class ItemModeMenu extends RadialMenu {
                 GlStateManager.disableAlphaTest();
                 getFontRenderer().drawStringWithShadow(text, (int) middle_x + fixed_x, (int) middle_y + fixed_y, color);
             }
-            if (mnuRgn.mode instanceof SelectedItemMode) {
-                if (SelectedItemMode.isNone(mnuRgn.mode)) continue;
+            if (mnuRgn.item != null) {
+                if (mnuRgn.item.isEmpty()) continue;
 
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
-                if(((SelectedItemMode) mnuRgn.mode).getVoxelType() == VoxelType.COLOURED) {
+                if(mnuRgn.item.getType() == VoxelType.COLOURED) {
                     //We're currently not using this system.
                     /*if(buffer==null)
                         continue;
@@ -400,7 +386,7 @@ public class ItemModeMenu extends RadialMenu {
                         continue;
 
                     //We use minecrafts (actually forges) item renderer instead of our own here because we can't support alpha in item rendering anyways.
-                    getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(null, ((SelectedItemMode) mnuRgn.mode).getStack(), (int) Math.round(middle_x + x - w), (int) Math.round(middle_y + y - w));
+                    getMinecraft().getItemRenderer().renderItemAndEffectIntoGUI(null, mnuRgn.item.getStack(), (int) Math.round(middle_x + x - w), (int) Math.round(middle_y + y - w));
                 }
             }
         }
@@ -416,15 +402,14 @@ public class ItemModeMenu extends RadialMenu {
         if(store == null) return; //If it's null we can't do nothing.
 
         for (final MenuRegion mnuRgn : modes) {
-            if (mnuRgn.mode instanceof SelectedItemMode) {
-                SelectedItemMode s = (SelectedItemMode) mnuRgn.mode;
+            if (mnuRgn.item != null) {
                 //None or bookmarks don't have amounts.
-                if (SelectedItemMode.isNone(s) || s.getVoxelType() == VoxelType.COLOURED) continue;
+                if (mnuRgn.item.isEmpty() || mnuRgn.item.getType() == VoxelType.COLOURED) continue;
 
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
-                getDurabilityBarRenderer().renderDurabilityBar(ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - store.get(s.getVoxelWrapper()),
+                getDurabilityBarRenderer().renderDurabilityBar(ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - store.get(mnuRgn.item),
                         ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get(), (int) Math.round(middle_x + x - 9), (int) Math.round(middle_y + y - 7));
             }
         }
@@ -434,8 +419,9 @@ public class ItemModeMenu extends RadialMenu {
         List<MenuRegion> modes = new ArrayList<>();
 
         //Setup mode regions
-        for (IItemMode m : ItemModeUtil.getItemMode(getMinecraft().player.getHeldItemMainhand()).getType().getItemModes(getMinecraft().player.getHeldItemMainhand()))
-            modes.add(new MenuRegion(m, getMinecraft().player.getHeldItemMainhand(), getMinecraft().player));
+        for (IItemMode m : ItemPropertyUtil.getItemMode(getMinecraft().player.getHeldItemMainhand()).getType().getItemModes(getMinecraft().player.getHeldItemMainhand()))
+            modes.add(new MenuRegion(m, getMinecraft().player.getHeldItemMainhand()));
+        //TODO add bag contents to the menu, actually make the menu open to begin with for bit storages
 
         return modes;
     }
@@ -458,24 +444,8 @@ public class ItemModeMenu extends RadialMenu {
         return cache;
     }
 
-    public boolean hasSwitchTo() {
-        return switchTo != null;
-    }
-
-    public IItemMode getSwitchTo() {
-        return switchTo;
-    }
-
-    public boolean hasAction() {
-        return doAction != null;
-    }
-
-    public IMenuAction getAction() {
-        return doAction;
-    }
-
     public static class MenuButton {
-        final MenuAction action;
+        final Runnable action;
         TextureAtlasSprite sprite;
         double x1, x2;
         double y1, y2;
@@ -484,15 +454,14 @@ public class ItemModeMenu extends RadialMenu {
         String name;
         Direction textSide;
 
-        public MenuButton(final MenuAction action, final double x, final double y, final Direction textSide) {
-            this(action, x, y, 0xffffffff, textSide);
-            sprite = Minecraft.getInstance().getTextureMap().getSprite(ClientSide.getMenuActionIconLocation(action));
+
+        public MenuButton(final IMenuAction menuAction, final double x, final double y, final Direction textSide) {
+            this(menuAction.getLocalizedName(), x, y, 0xffffffff, textSide, menuAction::trigger);
+            this.sprite = Minecraft.getInstance().getTextureMap().getSprite(ClientSideHelper.getMenuActionIconLocation(menuAction));
         }
 
-        public MenuButton(final MenuAction action, final double x, final double y, final int col, final Direction textSide) {
-            if(action == null) throw new RuntimeException("Menu buttons need an action!");
-
-            this.name = action.getLocalizedName();
+        public MenuButton(final String name, final double x, final double y, final int col, final Direction textSide, final Runnable action) {
+            this.name = name;
             this.action = action;
             x1 = x;
             x2 = x + 18;
@@ -500,10 +469,6 @@ public class ItemModeMenu extends RadialMenu {
             y2 = y + 18;
             color = col;
             this.textSide = textSide;
-        }
-
-        public MenuAction getMenuAction() {
-            return action;
         }
     }
 
@@ -519,29 +484,33 @@ public class ItemModeMenu extends RadialMenu {
     }
 
     public static class MenuRegion {
-        public final IItemMode mode;
+        public IItemMode mode;
+        public VoxelWrapper item;
         public RegionType type;
         public double x1, x2;
         public double y1, y2;
         public boolean highlighted;
 
-        public MenuRegion(final IItemMode mode, final ItemStack stack, final PlayerEntity player) {
+        public MenuRegion(final IItemMode mode, final ItemStack stack) {
+            if(!(stack.getItem() instanceof TypedItem)) return;
             this.mode = mode;
-            SelectedItemMode s = ItemModeUtil.getSelectedItemMode(stack);
-            if (s == null) type = ItemModeUtil.getItemMode(stack).equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
-            else {
-                if(!s.equals(mode) || SelectedItemMode.isNone(mode)) {
-                    type = RegionType.DEFAULT;
-                    return;
-                }
-                int b = ItemModeUtil.getGlobalSelectedBit(player);
-                if(b != s.getBitId()) {
-                    //Highlighted = selected in this bitstorage but won't be used atm to build.
-                    type = RegionType.HIGHLIGHTED;
-                } else
-                    //Selected in this storage and going to get used.
-                    type = RegionType.SELECTED;
+            type = ((TypedItem) stack.getItem()).getSelectedMode(stack).equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
+        }
+
+        public MenuRegion(final VoxelWrapper item, final ItemStack stack, final PlayerEntity player) {
+            if(!(stack.getItem() instanceof StorageItem)) return;
+            VoxelWrapper s = ((StorageItem) stack.getItem()).getSelected(stack);
+            if(s.isEmpty() || !s.equals(item)) {
+                type = RegionType.DEFAULT;
+                return;
             }
+            int b = ItemPropertyUtil.getGlobalSelectedVoxelWrapper(player).getId();
+            if(b != s.getId()) {
+                //Highlighted = selected in this bitstorage but won't be used atm to build.
+                type = RegionType.HIGHLIGHTED;
+            } else
+                //Selected in this storage and going to get used.
+                type = RegionType.SELECTED;
         }
     }
 }

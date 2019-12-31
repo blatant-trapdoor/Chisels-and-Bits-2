@@ -15,11 +15,6 @@ import java.util.List;
 
 public class PaletteItem extends StorageItem {
     @Override
-    public IItemModeType getAssociatedType() {
-        return ItemModeType.SELECTED;
-    }
-
-    @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "palette.help",

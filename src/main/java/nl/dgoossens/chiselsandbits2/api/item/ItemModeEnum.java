@@ -6,7 +6,6 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 
 /**
  * A general interface that can be extended by any enum that wants to register new item modes.
- * Register this using {@link ItemPropertyAPI#registerMode(ItemModeEnum)}
  */
 public interface ItemModeEnum extends IItemMode {
     /**
@@ -38,15 +37,7 @@ public interface ItemModeEnum extends IItemMode {
     /**
      * Get this item mode's type.
      */
-    public default IItemModeType getType() {
-        return ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModeTypes().parallelStream()
-                .filter(f -> name().startsWith(f.name())).findAny().orElse(getDefaultType());
-    }
-
-    /**
-     * Get the default type for this enum.
-     */
-    IItemModeType getDefaultType();
+    IItemModeType getType();
 
     /**
      * Returns whether or not this mode has an icon.

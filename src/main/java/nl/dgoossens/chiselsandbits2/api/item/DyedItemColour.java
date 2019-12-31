@@ -1,6 +1,8 @@
 package nl.dgoossens.chiselsandbits2.api.item;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.item.DyeColor;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 
 /**
  * The different colours that IColourable items can be coloured to look like.
@@ -53,5 +55,9 @@ public enum DyedItemColour {
             case BLACK: return BLACK;
         }
         return BLACK;
+    }
+
+    public String getLocalizedName() {
+        return I18n.format("general."+ ChiselsAndBits2.MOD_ID+".tape_measure." + name().toLowerCase());
     }
 }

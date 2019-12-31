@@ -9,7 +9,7 @@ import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.DyedItemColour;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IColourable;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IColourable;
 import nl.dgoossens.chiselsandbits2.common.items.*;
 
 import java.lang.reflect.Field;

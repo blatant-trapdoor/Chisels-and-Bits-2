@@ -19,12 +19,12 @@ public interface IMenuAction {
     String name();
 
     /**
-     * Set to true if this
+     * Set to true if this menu action has a custom icon.
      */
     boolean hasIcon();
 
     /**
-     * Execute the client-side player having triggered this menu action.
+     * Trigger this menu action being clicked.
      */
     void trigger();
 

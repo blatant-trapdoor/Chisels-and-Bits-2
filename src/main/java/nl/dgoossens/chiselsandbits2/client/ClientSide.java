@@ -22,16 +22,18 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.*;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IItemScrollWheel;
+import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IItemScrollWheel;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.ColourableItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
 import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockItemColor;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.MorphingBitItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
+import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 
@@ -57,9 +59,9 @@ public class ClientSide extends ClientSideHelper {
         ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, ChiseledBlockTER.INSTANCE);
         Minecraft.getInstance().getBlockColors().register(new ChiseledBlockColor(),
                 ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK);
+
         Minecraft.getInstance().getItemColors().register(new ChiseledBlockItemColor(),
-                Item.getItemFromBlock(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK));
-        Minecraft.getInstance().getItemColors().register(new MorphingBitItemColor(),
+                Item.getItemFromBlock(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK),
                 ChiselsAndBits2.getInstance().getItems().MORPHING_BIT);
 
         //Register all coloured items as having an item color
@@ -88,13 +90,14 @@ public class ClientSide extends ClientSideHelper {
         //Only register to the texture map.
         if(!e.getMap().getBasePath().equals("textures")) return;
 
-        for (final IMenuAction menuAction : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getMenuActions()) {
+        //We only do this for our own, addons need to do this themselves.
+        for (final IMenuAction menuAction : MenuAction.values()) {
             if (!menuAction.hasIcon()) continue;
             menuActionLocations.put(menuAction, menuAction.getIconResourceLocation());
             e.addSprite(menuActionLocations.get(menuAction));
         }
 
-        for (final ItemModeEnum itemMode : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes()) {
+        for (final ItemModeEnum itemMode : ItemMode.values()) {
             if (!itemMode.hasIcon()) continue;
             modeIconLocations.put(itemMode, itemMode.getIconResourceLocation());
             e.addSprite(modeIconLocations.get(itemMode));
@@ -113,16 +116,19 @@ public class ClientSide extends ClientSideHelper {
         for (ItemModeEnum im : keybindings.modeHotkeys.keySet()) {
             KeyBinding kb = keybindings.modeHotkeys.get(im);
             if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME))
-                ItemModeUtil.changeItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), im);
+                ItemPropertyUtil.setItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), im);
         }
         for (IMenuAction ma : keybindings.actionHotkeys.keySet()) {
             KeyBinding kb = keybindings.actionHotkeys.get(ma);
             if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME)) {
                 if(ma.equals(MenuAction.PLACE) || ma.equals(MenuAction.SWAP)) {
-                    if (ItemModeUtil.getMenuActionMode(Minecraft.getInstance().player.getHeldItemMainhand()).equals(MenuAction.PLACE))
-                        MenuAction.PLACE.trigger();
-                    else
-                        MenuAction.SWAP.trigger();
+                    ItemStack stack = Minecraft.getInstance().player.getHeldItemMainhand();
+                    if(stack.getItem() instanceof ChiselMimicItem) {
+                        if (((ChiselMimicItem) stack.getItem()).isPlacing(stack))
+                            MenuAction.PLACE.trigger();
+                        else
+                             MenuAction.SWAP.trigger();
+                    }
                     continue;
                 }
                 ma.trigger();
@@ -154,33 +160,28 @@ public class ClientSide extends ClientSideHelper {
                 for (int slot = 8; slot >= -1; --slot) {
                     //-1 is the off-hand
                     ItemStack item = slot == -1 ? player.inventory.offHandInventory.get(0) : player.inventory.mainInventory.get(slot);
-                    if (item.getItem() instanceof IItemMenu && ((IItemMenu) item.getItem()).showIconInHotbar()) {
-                        final IItemMode mode = ItemModeUtil.getItemMode(item);
+                    if (item.getItem() instanceof TypedItem && ((TypedItem) item.getItem()).showIconInHotbar()) {
+                        final IItemMode mode = ((TypedItem) item.getItem()).getSelectedMode(item);
                         final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + (slot == -1 ? -9 : 0) + 2) * 2;
                         final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
 
                         final ResourceLocation sprite = modeIconLocations.get(mode);
-                        if (mode instanceof SelectedItemMode) {
-                            if (((SelectedItemMode) mode).getVoxelType() == VoxelType.COLOURED) continue;
-                            ir.renderItemIntoGUI(((SelectedItemMode) mode).getStack(), x, y);
-                        } else {
-                            //Don't render null sprite.
-                            if (sprite == null) continue;
+                        //Don't render null sprite.
+                        if (sprite == null) continue;
 
-                            GlStateManager.translatef(0, 0, 200); //The item models are also rendered 150 higher
-                            GlStateManager.enableBlend();
-                            int blitOffset = 0;
-                            try {
-                                Field f = AbstractGui.class.getDeclaredField("blitOffset");
-                                f.setAccessible(true);
-                                blitOffset = (int) f.get(Minecraft.getInstance().ingameGUI);
-                            } catch (Exception rx) {
-                                rx.printStackTrace();
-                            }
-                            AbstractGui.blit(x + 2, y + 2, blitOffset, 16, 16, Minecraft.getInstance().getTextureMap().getSprite(sprite));
-                            GlStateManager.disableBlend();
-                            GlStateManager.translatef(0, 0, -200);
+                        GlStateManager.translatef(0, 0, 200); //The item models are also rendered 150 higher
+                        GlStateManager.enableBlend();
+                        int blitOffset = 0;
+                        try {
+                            Field f = AbstractGui.class.getDeclaredField("blitOffset");
+                            f.setAccessible(true);
+                            blitOffset = (int) f.get(Minecraft.getInstance().ingameGUI);
+                        } catch (Exception rx) {
+                            rx.printStackTrace();
                         }
+                        AbstractGui.blit(x + 2, y + 2, blitOffset, 16, 16, Minecraft.getInstance().getTextureMap().getSprite(sprite));
+                        GlStateManager.disableBlend();
+                        GlStateManager.translatef(0, 0, -200);
                     }
                 }
                 GlStateManager.scalef(2, 2, 1);
@@ -228,8 +229,8 @@ public class ClientSide extends ClientSideHelper {
         final ItemStack is = player.getHeldItemMainhand();
 
         if (is.getItem() instanceof IItemScrollWheel && player.isSneaking()) {
-            ((IItemScrollWheel) is.getItem()).scroll(player, is, dwheel);
-            me.setCanceled(true);
+            if(((IItemScrollWheel) is.getItem()).scroll(player, is, dwheel))
+                me.setCanceled(true);
         }
     }
 }

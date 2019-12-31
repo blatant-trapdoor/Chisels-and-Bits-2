@@ -9,7 +9,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 
 import java.util.function.Supplier;
 
@@ -55,7 +55,7 @@ public class SSynchronizeBitStoragePacket {
             target.inventory.getStackInSlot(pkt.inventorySlot).getCapability(StorageCapabilityProvider.STORAGE).ifPresent(storage -> {
                 StorageCapabilityProvider.STORAGE.readNBT(storage, null, pkt.nbt);
             });
-            ItemModeUtil.recalculateSelectedBit(target);
+            ItemPropertyUtil.recalculateGlobalSelectedVoxelWrapper(target);
         });
         ctx.get().setPacketHandled(true);
     }

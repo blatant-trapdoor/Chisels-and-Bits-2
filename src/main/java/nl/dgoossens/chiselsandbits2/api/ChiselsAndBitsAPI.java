@@ -4,7 +4,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.api.bit.RestrictionAPI;
 import nl.dgoossens.chiselsandbits2.api.block.BitAccess;
-import nl.dgoossens.chiselsandbits2.api.item.ItemPropertyAPI;
 
 import java.util.Optional;
 
@@ -25,12 +24,6 @@ public interface ChiselsAndBitsAPI {
      * chiseled block.
      */
     Optional<BitAccess> getBitAccess(final World world, final BlockPos pos);
-
-    /**
-     * Get the registry that manages everything related to C&B items and their properties. Includes things like registering
-     * item modes, item mode types or additional buttons for in the radial menu.
-     */
-    ItemPropertyAPI getItemPropertyRegistry();
 
     /**
      * Get the API that manages blocked or restricted blocks for rotating or using in chiseled blocks. Here blocks can be

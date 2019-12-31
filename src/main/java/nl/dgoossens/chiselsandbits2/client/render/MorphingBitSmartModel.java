@@ -3,18 +3,15 @@ package nl.dgoossens.chiselsandbits2.client.render;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.client.render.models.BaseSmartModel;
-import nl.dgoossens.chiselsandbits2.client.render.models.CacheClearable;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 
-import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class MorphingBitSmartModel extends BaseSmartModel {
@@ -43,6 +40,6 @@ public class MorphingBitSmartModel extends BaseSmartModel {
 
     @Override
     public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, LivingEntity entity) {
-        return getCachedModel(entity instanceof PlayerEntity ? ItemModeUtil.getGlobalSelectedBit((PlayerEntity) entity) : world == null || world.isRemote ? ItemModeUtil.getGlobalSelectedBit(Minecraft.getInstance().player) : VoxelBlob.AIR_BIT);
+        return getCachedModel(entity instanceof PlayerEntity ? ItemPropertyUtil.getGlobalSelectedVoxelWrapper((PlayerEntity) entity).getId() : world == null || world.isRemote ? ItemPropertyUtil.getGlobalSelectedVoxelWrapper().getId() : VoxelBlob.AIR_BIT);
     }
 }

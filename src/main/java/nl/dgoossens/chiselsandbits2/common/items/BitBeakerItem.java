@@ -18,25 +18,19 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IColourable;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IColourable;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 public class BitBeakerItem extends StorageItem implements IColourable {
-    @Override
-    public IItemModeType getAssociatedType() {
-        return ItemModeType.SELECTED;
-    }
-
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
@@ -76,7 +70,7 @@ public class BitBeakerItem extends StorageItem implements IColourable {
                                 VoxelWrapper<Fluid> wrapper = VoxelWrapper.forFluid(fluid);
                                 b.set(wrapper, b.get(wrapper) + (int) Math.pow(VoxelBlob.DIMENSION, 3));
                                 //Set mode causes a capability update here.
-                                ItemModeUtil.setMode(playerIn, itemstack, SelectedItemMode.fromVoxelWrapper(wrapper), true);
+                                ItemPropertyUtil.setSelectedVoxelWrapper(playerIn, itemstack, wrapper, true);
                             } catch(Exception x) {
                                 x.printStackTrace();
                             }

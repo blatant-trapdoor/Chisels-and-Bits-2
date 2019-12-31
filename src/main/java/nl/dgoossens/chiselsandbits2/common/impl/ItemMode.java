@@ -1,10 +1,7 @@
 package nl.dgoossens.chiselsandbits2.common.impl;
 
-import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.ItemModeEnum;
-
-import static nl.dgoossens.chiselsandbits2.common.impl.ItemModeType.CHISEL;
 
 /**
  * The current mode the item is using shared between all item mode types in base C&B2.
@@ -36,8 +33,6 @@ public enum ItemMode implements ItemModeEnum {
     WRENCH_ROTATE,
     WRENCH_ROTATECCW,
     WRENCH_MIRROR,
-    //WRENCH_NUDGE_BIT,
-    //WRENCH_NUDGE_BLOCK,
 
     BLUEPRINT_UNKNOWN,
 
@@ -51,13 +46,12 @@ public enum ItemMode implements ItemModeEnum {
 
     private IItemModeType type;
     private String typelessName;
+
     ItemMode() {
         //Hardcore the chiseled block as it starts with CHISEL which can mess up
         //We can get all types now because this enum doesn't contain those that don't use types already registered.
-        type = name().startsWith("CHISELED_BLOCK") ? ItemModeType.CHISELED_BLOCK : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModeTypes().parallelStream().filter(f -> name().startsWith(f.name())).findAny().orElse(getDefaultType());
+        type = calculateType();
         typelessName = name().substring(getType().name().length() + 1).toLowerCase();
-
-        ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().registerMode(this);
     }
 
     //Cache typeless name for improved performance
@@ -66,15 +60,53 @@ public enum ItemMode implements ItemModeEnum {
         return typelessName;
     }
 
+    //We don't always calculate the type like this, we cache it.
+    private IItemModeType calculateType() {
+        switch(this) {
+            case CHISEL_SINGLE:
+            case CHISEL_LINE:
+            case CHISEL_PLANE:
+            case CHISEL_CONNECTED_PLANE:
+            case CHISEL_CONNECTED_MATERIAL:
+            case CHISEL_DRAWN_REGION:
+            case CHISEL_SAME_MATERIAL:
+            case CHISEL_SNAP8:
+            case CHISEL_SNAP4:
+            case CHISEL_SNAP2:
+            case CHISEL_CUBE3:
+            case CHISEL_CUBE5:
+            case CHISEL_CUBE7:
+                return ItemModeType.CHISEL;
+            case PATTERN_REPLACE:
+            case PATTERN_ADDITIVE:
+            case PATTERN_PLACEMENT:
+            case PATTERN_IMPOSE:
+                return ItemModeType.PATTERN;
+            case TAPEMEASURE_BIT:
+            case TAPEMEASURE_BLOCK:
+            case TAPEMEASURE_DISTANCE:
+                return ItemModeType.TAPEMEASURE;
+            case WRENCH_ROTATE:
+            case WRENCH_ROTATECCW:
+            case WRENCH_MIRROR:
+                return ItemModeType.WRENCH;
+            case BLUEPRINT_UNKNOWN:
+                return ItemModeType.BLUEPRINT;
+            case MALLET_UNKNOWN:
+                return ItemModeType.MALLET;
+            case CHISELED_BLOCK_GRID:
+            case CHISELED_BLOCK_FIT:
+            case CHISELED_BLOCK_OVERLAP:
+            case CHISELED_BLOCK_MERGE:
+                return ItemModeType.CHISELED_BLOCK;
+        }
+        throw new UnsupportedOperationException("No type set for item mode "+name());
+    }
+
     //We also cache the type.
     @Override
     public IItemModeType getType() {
         return type;
-    }
-
-    @Override
-    public IItemModeType getDefaultType() {
-        return CHISEL;
     }
 
     @Override

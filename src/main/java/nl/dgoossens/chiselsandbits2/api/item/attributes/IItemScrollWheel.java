@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api.item.interfaces;
+package nl.dgoossens.chiselsandbits2.api.item.attributes;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;

@@ -21,7 +21,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
@@ -30,9 +30,13 @@ import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
+import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
+import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
 import nl.dgoossens.chiselsandbits2.common.network.client.CPlaceBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CWrenchBlockPacket;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.RotationUtil;
@@ -70,26 +74,44 @@ public class ChiselEvent {
                         case BUILD:
                         case EXTRACT:
                         {
+                            if(!(i.getItem() instanceof ChiselMimicItem)) return;
+                            ChiselMimicItem tit = (ChiselMimicItem) i.getItem();
+
                             //Chisel
                             RayTraceResult rtr = ChiselUtil.rayTrace(player);
+                            if(i.getItem() instanceof MorphingBitItem) {
+                                if(rtr.getType() != RayTraceResult.Type.BLOCK) {
+                                    //Toggle locked state
+                                    boolean b = ((MorphingBitItem) i.getItem()).isLocked(i);
+                                    //Set the currently selected type too just in case
+                                    ItemPropertyUtil.setSelectedVoxelWrapper(player, i, ItemPropertyUtil.getGlobalSelectedVoxelWrapper(), false);
+                                    ClientItemPropertyUtil.setItemState(!b);
+                                    if(b) player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.unlocked_mb"), true);
+                                    else player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.locked_ab"), true);
+                                    return;
+                                }
+                            }
                             if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
 
-                            final BitOperation operation = leftClick ? BitOperation.REMOVE : (ItemModeUtil.getMenuActionMode(i).equals(MenuAction.SWAP) ? BitOperation.SWAP : BitOperation.PLACE);
-                            startChiselingBlock((BlockRayTraceResult) rtr, ItemModeUtil.getItemMode(i), player, operation);
+                            final BitOperation operation = leftClick ? BitOperation.REMOVE : (tit.isSwapping(i) ? BitOperation.SWAP : BitOperation.PLACE);
+                            startChiselingBlock((BlockRayTraceResult) rtr, tit.getSelectedMode(i), player, operation, i);
                             break;
                         }
                         case ROTATE:
                         case MIRROR:
                         {
+                            if(!(i.getItem() instanceof TypedItem)) return;
+                            TypedItem tit = (TypedItem) i.getItem();
+
                             //Wrench
-                            performBlockRotation(ItemModeUtil.getItemMode(i), player);
+                            performBlockRotation(tit.getSelectedMode(i), player);
                             break;
                         }
                         case PLACE:
                         {
                             //Chiseled Block
                             RayTraceResult rtr = null;
-                            IItemMode mode = ItemModeUtil.getChiseledBlockMode(player);
+                            IItemMode mode = ClientItemPropertyUtil.getGlobalCBM();
                             if(mode.equals(ItemMode.CHISELED_BLOCK_GRID))
                                 //Object mouse over ignores the chiseled block's custom hitbox
                                 rtr = Minecraft.getInstance().objectMouseOver;
@@ -115,7 +137,7 @@ public class ChiselEvent {
     /**
      * Handle the block chiselling with the given bit operation.
      */
-    public static void startChiselingBlock(final BlockRayTraceResult rayTrace, final IItemMode mode, final PlayerEntity player, final BitOperation operation) {
+    public static void startChiselingBlock(final BlockRayTraceResult rayTrace, final IItemMode mode, final PlayerEntity player, final BitOperation operation, final ItemStack stack) {
         if (!player.world.isRemote)
             throw new UnsupportedOperationException("Block chiseling can only be started on the client-side.");
 
@@ -128,7 +150,7 @@ public class ChiselEvent {
         if (!state.isReplaceable(context) && !ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(state)) return; //You can place on replacable blocks.
         if (!ChiselUtil.canChiselPosition(pos, player, state, rayTrace.getFace())) return;
 
-        if(ItemModeUtil.getItemMode(player.getHeldItemMainhand()).equals(ItemMode.CHISEL_DRAWN_REGION)) {
+        if(ItemPropertyUtil.isItemMode(player.getHeldItemMainhand(), ItemMode.CHISEL_DRAWN_REGION)) {
             ClientSide clientSide = ChiselsAndBits2.getInstance().getClient();
             //If we don't have a selection start yet select the clicked location.
             if(!clientSide.hasSelectionStart(operation)) {
@@ -137,11 +159,14 @@ public class ChiselEvent {
             }
         }
 
-        //Default for remove operations, we only get a placed bit when not removing
-        int placedBit = -1;
-        if(!operation.equals(BitOperation.REMOVE))
-            placedBit = ItemModeUtil.getGlobalSelectedItemMode(player).getPlacementBitId(context);
+        //Default is -1 for remove operations, we only get a placed bit when not removing
         //We determine the placed bit on the client and include it in the packet so we can reuse the BlockItemUseContext from earlier.
+        int placedBit = -1;
+        if(!operation.equals(BitOperation.REMOVE)) {
+            //If this is a locked morphing bit place that specific item
+            if(stack.getItem() instanceof MorphingBitItem && ((MorphingBitItem) stack.getItem()).isLocked(stack)) placedBit = ((MorphingBitItem) stack.getItem()).getSelected(stack).getId();
+            else placedBit = ItemPropertyUtil.getGlobalSelectedVoxelWrapper(player).getPlacementBitId(context);
+        }
 
         //If we couldn't find a selected type, don't chisel.
         if (placedBit == VoxelBlob.AIR_BIT) {
@@ -149,7 +174,7 @@ public class ChiselEvent {
             return;
         }
 
-        if(ItemMode.CHISEL_DRAWN_REGION.equals(ItemModeUtil.getItemMode(player.getHeldItemMainhand()))) {
+        if(ItemPropertyUtil.isItemMode(player.getHeldItemMainhand(), ItemMode.CHISEL_DRAWN_REGION)) {
             final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, mode, placedBit);
             ChiselsAndBits2.getInstance().getClient().resetSelectionStart();
             ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
@@ -175,13 +200,13 @@ public class ChiselEvent {
         nbt.readChiselData(item.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
 
         boolean canPlace = true;
-        if (player.isSneaking() && !ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_GRID)) {
+        if (player.isSneaking() && !ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_GRID)) {
             //TODO remove this status message when off-grid is finished
             player.sendStatusMessage(new StringTextComponent("Off-grid placement is temporarily disabled, it will be re-enabled in a future alpha!"), true);
             return;
             //if (!BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl)) canPlace = false;
         } else {
-            if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ItemModeUtil.getChiseledBlockMode(player) == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
+            if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
                 offset = offset.offset(face);
 
             if(!BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt))

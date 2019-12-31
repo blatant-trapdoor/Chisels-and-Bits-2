@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.common.items;
 
 import com.google.common.collect.Multimap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -15,12 +16,13 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
+import nl.dgoossens.chiselsandbits2.api.item.property.StateProperty;
 import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
@@ -28,25 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ChiselItem extends TypedItem implements IBitModifyItem {
-    public ChiselItem(Item.Properties builder) {
-        super(builder);
-    }
-
-    @Override
-    public boolean canPerformModification(ModificationType type) {
-        return type == ModificationType.BUILD || type == ModificationType.EXTRACT;
-    }
-
-    @Override
-    public boolean showIconInHotbar() {
-        return true;
-    }
-
-    @Override
-    public IItemModeType getAssociatedType() {
-        return ItemModeType.CHISEL;
-    }
+public class ChiselItem extends ChiselMimicItem {
+    public ChiselItem(Item.Properties builder) { super(builder); }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
@@ -56,16 +41,6 @@ public class ChiselItem extends TypedItem implements IBitModifyItem {
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
-    }
-
-    @Override
-    public Set<ItemModeMenu.MenuButton> getMenuButtons(final ItemStack item) {
-        Set<ItemModeMenu.MenuButton> ret = new HashSet<>();
-        if (ItemModeUtil.getMenuActionMode(item).equals(MenuAction.PLACE))
-            ret.add(new ItemModeMenu.MenuButton(MenuAction.PLACE, -ItemModeMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
-        else
-            ret.add(new ItemModeMenu.MenuButton(MenuAction.SWAP, -ItemModeMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
-        return ret;
     }
 
     /**

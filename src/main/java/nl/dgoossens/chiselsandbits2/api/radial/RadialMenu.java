@@ -65,6 +65,7 @@ public abstract class RadialMenu extends Screen {
     private long lastSelection = 0, resetMenu = 0;
     private boolean currentlyShown = false, pressedButton = false, effectHappened = false;
     private MainWindow window;
+    private Runnable action = null;
 
     public void cleanup() {
         //Reset everything to avoid menu destroying itself
@@ -136,6 +137,22 @@ public abstract class RadialMenu extends Screen {
 
     public void setPressingButton(boolean d) {
         pressedButton = d;
+    }
+
+    public boolean hasAction() {
+        return action != null;
+    }
+
+    public Runnable getAction() {
+        return action;
+    }
+
+    public void resetAction() {
+        action = null;
+    }
+
+    public void setAction(Runnable action) {
+        this.action = action;
     }
 
     public void selectHoverOver() {
@@ -223,7 +240,9 @@ public abstract class RadialMenu extends Screen {
     /**
      * Returns whether or not there's currently something selected.
      */
-    public abstract boolean hasSelection();
+    public boolean hasSelection() {
+        return hasAction();
+    }
 
     //--- EVENTS ---
     @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)

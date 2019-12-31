@@ -1,7 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -13,10 +12,10 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.*;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IBitModifyItem;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IItemScrollWheel;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IRotatableItem;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IVoxelStorer;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IItemScrollWheel;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IRotatableItem;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IVoxelStorer;
 import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -24,7 +23,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
@@ -95,7 +94,7 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
      */
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        IItemMode im = ItemModeUtil.getChiseledBlockMode();
+        IItemMode im = ItemPropertyUtil.getChiseledBlockMode();
         return displayName + " - " + im.getLocalizedName();
     }
 
@@ -104,8 +103,6 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
      */
     @Override
     public boolean scroll(final PlayerEntity player, final ItemStack stack, final double dwheel) {
-        final IItemMode mode = ItemModeUtil.getHeldItemMode(player);
-        ItemModeUtil.scrollOption(player, mode, stack, dwheel);
-        return true;
+        return TypedItem.scroll(player, stack, dwheel, ItemPropertyUtil.getChiseledBlockMode(), getAssociatedType());
     }
 }

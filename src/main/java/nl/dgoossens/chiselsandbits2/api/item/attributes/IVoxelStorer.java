@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.api.item.interfaces;
+package nl.dgoossens.chiselsandbits2.api.item.attributes;
 
 import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;

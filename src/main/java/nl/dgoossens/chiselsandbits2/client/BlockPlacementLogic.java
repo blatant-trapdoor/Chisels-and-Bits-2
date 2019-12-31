@@ -9,7 +9,8 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemModeUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 
 public class BlockPlacementLogic {
     /**
@@ -19,7 +20,7 @@ public class BlockPlacementLogic {
         if(ChiselUtil.isBlockReplaceable(player, world, pos, face, false))
             return true;
 
-        if(ItemModeUtil.getChiseledBlockMode(player).equals(ItemMode.CHISELED_BLOCK_FIT)) {
+        if(ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_FIT)) {
             if(world.getTileEntity(pos) instanceof ChiseledBlockTileEntity) {
                 ChiseledBlockTileEntity cbte = (ChiseledBlockTileEntity) world.getTileEntity(pos);
                 if(cbte != null && !nbt.getVoxelBlob().canMerge(cbte.getVoxelBlob()))
@@ -27,7 +28,7 @@ public class BlockPlacementLogic {
                 return true;
             }
         }
-        switch((ItemMode) ItemModeUtil.getChiseledBlockMode(player)) {
+        switch(ClientItemPropertyUtil.getGlobalCBM()) {
             case CHISELED_BLOCK_GRID:
                 return false;
             default:

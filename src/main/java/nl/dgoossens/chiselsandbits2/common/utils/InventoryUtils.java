@@ -2,14 +2,12 @@ package nl.dgoossens.chiselsandbits2.common.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.SoundType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
@@ -18,7 +16,6 @@ import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
-import nl.dgoossens.chiselsandbits2.common.impl.SelectedItemMode;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
@@ -151,7 +148,7 @@ public class InventoryUtils {
         private Set<Integer> modifiedBitStorages = new HashSet<>();
         private Map<Integer, Integer> lastModifiedSlot = new HashMap<>(); //The last modified slot of the bit bag, this slot will be selected if possible.
         private int nextSelect = -1; //The slot to be selected next.
-        private SelectedItemMode selectedMode = null; //The mode to be selected next.
+        private VoxelWrapper selectedMode = null; //The mode to be selected next.
         private HashMap<VoxelWrapper, Long> extracted = new HashMap<>();
         private boolean wastingBits = false, changed = true;
         private long delta = 0; //Tracker to see if we removed things or added
@@ -219,27 +216,27 @@ public class InventoryUtils {
             applyMaterialChanges();
 
             //Update selected slot without updating timestamp, "passive selection"
-            SelectedItemMode m = ItemModeUtil.getGlobalSelectedItemMode(getPlayer());
-            long t = ItemModeUtil.getHighestSelectionTimestamp(getPlayer());
+            VoxelWrapper m = ItemPropertyUtil.getGlobalSelectedVoxelWrapper(getPlayer());
+            long t = ItemPropertyUtil.getHighestSelectionTimestamp(getPlayer());
             for(int i : lastModifiedSlot.keySet()) {
-                if(!m.isNone() && ItemModeUtil.getSelectionTime(inventory.get(i)) == t) continue; //Don't change it for the currently selected one.
+                if(!m.isEmpty() && ItemPropertyUtil.getSelectionTime(inventory.get(i)) == t) continue; //Don't change it for the currently selected one.
                 int slot = lastModifiedSlot.get(i);
                 final BitStorage bs = bitStorages.get(i);
                 if(slot < 0 || slot > bs.getSlots()) continue; //Invalid slot
-                ItemModeUtil.setMode(getPlayer(), inventory.get(i), SelectedItemMode.fromVoxelWrapper(bs.getSlotContent(slot)), false);
+                ItemPropertyUtil.setItemMode(getPlayer(), inventory.get(i), bs.getSlotContent(slot), false);
             }
 
             //Select the nextSelect if applicable
             if(nextSelect != -1)
-                ItemModeUtil.setMode(getPlayer(), inventory.get(nextSelect), selectedMode, true);
+                ItemPropertyUtil.setItemMode(getPlayer(), inventory.get(nextSelect), selectedMode, true);
 
             //Send updates for all modified bit bags
             for(int i : modifiedBitStorages) {
                 if(i < 0) {
-                    ItemModeUtil.updateStackCapability(inventory.get(-i), bitStorages.get(i), getPlayer());
+                    ItemPropertyUtil.updateStackCapability(inventory.get(-i), bitStorages.get(i), getPlayer());
                     continue;
                 }
-                ItemModeUtil.updateStackCapability(inventory.get(i), bitStorages.get(i), getPlayer());
+                ItemPropertyUtil.updateStackCapability(inventory.get(i), bitStorages.get(i), getPlayer());
             }
             modifiedBitStorages.clear();
 
@@ -253,8 +250,8 @@ public class InventoryUtils {
          */
         private void applyMaterialChanges() {
             //Timestamp for the truly selected bag
-            long t = ItemModeUtil.getHighestSelectionTimestamp(getPlayer());
-            SelectedItemMode m = ItemModeUtil.getGlobalSelectedItemMode(getPlayer());
+            long t = ItemPropertyUtil.getHighestSelectionTimestamp(getPlayer());
+            VoxelWrapper m = ItemPropertyUtil.getGlobalSelectedVoxelWrapper(getPlayer());
 
             for(VoxelWrapper w : extracted.keySet()) {
                 if(VoxelType.isColoured(w.getId())) continue; //Ignore giving coloured bits
@@ -266,7 +263,7 @@ public class InventoryUtils {
                 Function<Long, Boolean> canStop = added < 0 ? ((i) -> i >= 0) : ((i) -> i <= 0);
 
                 //First try to do/take from the currently selected bag first
-                int i = ItemModeUtil.getGlobalSelectedItemSlot(getPlayer());
+                int i = ItemPropertyUtil.getGlobalSelectedVoxelWrapperSlot(getPlayer());
                 added = addToStorage(i, w, added, t, m, true);
 
                 //Now try to take from any random other bit storage that contains it
@@ -290,7 +287,7 @@ public class InventoryUtils {
         }
 
         //Interal method for modifying storage contents for a given storage in a given slot.
-        private long addToStorage(int slot, VoxelWrapper w, long added, long t, SelectedItemMode m, boolean requireContains) {
+        private long addToStorage(int slot, VoxelWrapper w, long added, long t, VoxelWrapper m, boolean requireContains) {
             if(!bitStorages.containsKey(slot)) return added; //If invalid we return instantly
             BitStorage bs = bitStorages.get(slot);
             if(requireContains && !bs.has(w)) return added; //If we can't take any more items we stop
@@ -304,14 +301,14 @@ public class InventoryUtils {
 
             //If this is the currently selected one, keep the selection going by re-selecting this bit type elsewhere.
             //Also make sure this is the type currently being placed!
-            if(bs.get(w) <= 0 && !m.isNone() && w.equals(m.getVoxelWrapper()) && ItemModeUtil.getSelectionTime(getPlayer().inventory.mainInventory.get(slot)) == t) {
+            if(bs.get(w) <= 0 && !m.isEmpty() && w.equals(m) && ItemPropertyUtil.getSelectionTime(getPlayer().inventory.mainInventory.get(slot)) == t) {
                 for(int otherSlot : bitStorages.keySet()) {
                     BitStorage otherBs = bitStorages.get(slot);
                     //Does this one have this bit?
                     if(otherBs.get(w) > 0) {
                         //Select the other bag now
                         nextSelect = otherSlot;
-                        selectedMode = SelectedItemMode.fromVoxelWrapper(w);
+                        selectedMode = w;
                         break;
                     }
                 }
@@ -352,7 +349,7 @@ public class InventoryUtils {
 
                         ItemStack newChisel = inventory.getStackInSlot(foundChisel);
                         if (oldMode != null)
-                            ItemModeUtil.setMode(getPlayer(), newChisel, oldMode, true);
+                            ItemPropertyUtil.setItemMode(getPlayer(), newChisel, oldMode, true);
                         inventory.removeStackFromSlot(foundChisel);
                         inventory.setInventorySlotContents(targetSlot, newChisel);
                         if (!target.isEmpty())
@@ -363,7 +360,7 @@ public class InventoryUtils {
                     }
 
                     //Prevent unnecessary mode fetching.
-                    oldMode = !(target.getItem() instanceof IItemMenu) ? oldMode : ItemModeUtil.getItemMode(target);
+                    oldMode = !(target.getItem() instanceof IItemMenu) ? oldMode : ItemPropertyUtil.getItemMode(target);
                     //Get the maximum we can take from this chisel.
                     long capacity = Math.min(usedDurability, target.getMaxDamage() - target.getDamage());
                     //Take durability from the current item.

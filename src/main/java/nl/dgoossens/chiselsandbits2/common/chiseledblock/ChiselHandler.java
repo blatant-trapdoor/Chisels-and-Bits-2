@@ -12,9 +12,9 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IBitModifyItem;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IRotatableItem;
-import nl.dgoossens.chiselsandbits2.api.item.interfaces.IVoxelStorer;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IRotatableItem;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IVoxelStorer;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
@@ -30,9 +30,6 @@ import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
 import nl.dgoossens.chiselsandbits2.common.utils.RotationUtil;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static nl.dgoossens.chiselsandbits2.api.block.BitOperation.*;
 

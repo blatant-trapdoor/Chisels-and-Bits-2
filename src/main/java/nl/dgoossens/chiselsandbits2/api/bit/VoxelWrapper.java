@@ -1,7 +1,10 @@
 package nl.dgoossens.chiselsandbits2.api.bit;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.fluid.Fluid;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
 
 import javax.annotation.Nullable;
@@ -87,6 +90,34 @@ public class VoxelWrapper<T> {
      */
     public int getId() {
         return id;
+    }
+
+    /**
+     * Return whether or nor this voxel wrapper is empty.
+     * (whether or not it is air)
+     */
+    public boolean isEmpty() {
+        return id == VoxelBlob.AIR_BIT;
+    }
+
+    /**
+     * Gets the name of this selected item mode.
+     */
+    public String getDisplayName() {
+        if(!isEmpty()) {
+            switch(type) {
+                case COLOURED:
+                    Color c = (Color) get();
+                    return "("+c.getRed()+","+c.getGreen()+","+c.getBlue()+","+c.getAlpha()+")";
+                case BLOCKSTATE:
+                    Block b = (Block) get();
+                    return I18n.format("block" + "." + b.getRegistryName().getNamespace() + "." + b.getRegistryName().getPath());
+                case FLUIDSTATE:
+                    Fluid f = (Fluid) get();
+                    return I18n.format("block" + "." + f.getRegistryName().getNamespace() + "." + f.getRegistryName().getPath());
+            }
+        }
+        return I18n.format("general." + ChiselsAndBits2.MOD_ID + ".none");
     }
 
     /**
