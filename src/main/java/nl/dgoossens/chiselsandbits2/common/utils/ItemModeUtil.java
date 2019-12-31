@@ -236,10 +236,13 @@ public class ItemModeUtil implements CacheClearable {
             //TODO Allow external dynamic item modes.
             return name.equals(SelectedItemMode.NONE.getName()) ? SelectedItemMode.NONE : SelectedItemMode.fromVoxelType(dynamicId);
         } else {
-            for(ItemModeEnum e : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes()) {
+            if(type == null) {
+                for(ItemModeEnum e : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes())
+                    if(e.name().equals(name)) return e;
+            } else {
                 //Only allow same type to avoid items having the wrong typed mode
-                if(e.getType().equals(type) && e.name().equals(name))
-                    return e;
+                for(ItemModeEnum e : ChiselsAndBits2.getInstance().getAPI().getItemPropertyRegistry().getModes())
+                    if(e.getType().equals(type) && e.name().equals(name)) return e;
             }
         }
         return type.getDefault();

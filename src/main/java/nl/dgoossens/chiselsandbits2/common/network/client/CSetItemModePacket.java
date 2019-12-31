@@ -47,7 +47,7 @@ public class CSetItemModePacket {
         try {
             boolean dynamic = buffer.readBoolean();
             int dynamicId = buffer.readInt();
-            pc.newMode = ItemModeUtil.resolveMode(buffer.readString(256), dynamic, dynamicId);
+            pc.newMode = ItemModeUtil.resolveMode(null, buffer.readString(256), dynamic, dynamicId);
         } catch (final Exception x) {
             x.printStackTrace();
         }

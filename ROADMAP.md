@@ -8,26 +8,13 @@ The alphas and betas will be released to curseforge whenever they are stable eno
 ## Alphas
 Here's a rough outline of which features need to be added, all features need adding eventually but they have been ordered in terms of importance and grouped together in a release by similarity or code being shared.
 
-#### Alpha 4
-Alpha 4 will focus on finishing the behaviour of all current features.
-- Adding placement code for the chiseled block to allow merging two chiseled blocks, off-grid placement and more.
-- Finishing the code behind the undo/redo buttons that were added in alpha 3.
-- Adding rotation to the chiseled block
-- Adding the wrench; as it also uses the rotation code
-- Item descriptions in JEI
-- Rewriting the way rendering tasks are distributed and when blocks are re-rendered
-- Full rewrite to the way the chisel puts chiseled bits into bags and determines durability
-- Allow other mods to make custom menu actions and item modes for existing items or their own items
-
-#### Alpha 5
-Alpha 5 is planned to address all currently standing issues that hold the mod back from being usable by everyone.
-- Finalise the way chiseled blocks are stored to disk, currently I use the exact C&B1 method but I want to see if there is room for improvement
+#### Alpha 5 / 6 / 7
+Alpha 5, 6 and 7 (maybe there'll be less or more alphas) will all focus on fixing all bugs in the mod and making sure all current items get their full functionality.
 - Compatiblity with optifine (at least fixing major issues)
 - Multiplayer support for the mod
-- Finalising the Worldfixer program which can convert 1.12 worlds to 1.14 C&B2.
-
-### Alpha 6
-Alpha 6 will include the last few rendering things that need to get sorted out before the mod can be used in modpacks properly.
+- Finalise the way chiseled blocks are stored to disk, currently I use the exact C&B1 method but I want to see if there is room for improvement
+- Add off-grid placement to chiseled blocks
+- ~~Finalising the Worldfixer program which can convert 1.12 worlds to 1.14 C&B2.~~ _(will be worked on at some future point)_
 - Finishing proper light level rendering and dynamically updating light level of chiseled blocks to the amount of glowing blocks contained in it
 - Looking at optimization of the block shape (bounding box) and isFullCube method.
 - Revamping the model generation code as that is still largely copied from C&B1 without having been looked at.
@@ -37,10 +24,10 @@ Alpha 6 will include the last few rendering things that need to get sorted out b
 At this point releases will be published to curseforge where I'll start releasing them under the versioning scheme <a|b|r>release.update.fix where a (alpha), b (beta) and r (release) will correspond to how the update is marked on curseforge.
 
 #### a0.7.0
-Slightly updated version of alpha 6 with better stability, performance and many bugfixes.
+Slightly updated version of alpha 5/6 with more improvements.
 
 #### a0.8.0
-Beta 2 will reintroduce the pattern and all features it brings with.
+Beta 8 will reintroduce the pattern and all features it brings with.
 - Add patterns including all modes like the mirror pattern and the negative pattern
 - The pattern binder, a large book in which you can store all your patterns easily.
 - Pattern Table; a block similar to the cartography table to fulfill a couple features relating to patterns that fit better in a custom block, like mirroring the pattern, merging patterns or building chiseled blocks from a pattern.
