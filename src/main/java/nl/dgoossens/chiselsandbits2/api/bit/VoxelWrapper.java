@@ -1,8 +1,11 @@
 package nl.dgoossens.chiselsandbits2.api.bit;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
@@ -54,13 +57,12 @@ public class VoxelWrapper<T> {
     /**
      * Returned the wrapped object, can be either Block, Fluid or Color.
      */
-    @Nullable
     public T get() {
         switch(type) {
             case BLOCKSTATE: return (T) BitUtil.getBlockState(id).getBlock();
             case FLUIDSTATE: return (T) BitUtil.getFluidState(id).getFluid();
             case COLOURED: return (T) BitUtil.getColourState(id);
-            default: return null;
+            default: return (T) Blocks.AIR;
         }
     }
 
@@ -93,6 +95,13 @@ public class VoxelWrapper<T> {
     }
 
     /**
+     * Get this voxel wrapper's type.
+     */
+    public VoxelType getType() {
+        return type;
+    }
+
+    /**
      * Return whether or nor this voxel wrapper is empty.
      * (whether or not it is air)
      */
@@ -118,6 +127,40 @@ public class VoxelWrapper<T> {
             }
         }
         return I18n.format("general." + ChiselsAndBits2.MOD_ID + ".none");
+    }
+
+    /**
+     * Get the item stack to be shown when this mode is selected.
+     */
+    public ItemStack getStack() {
+        switch(type) {
+            case BLOCKSTATE:
+                return new ItemStack((Block) get());
+            case FLUIDSTATE:
+                return new ItemStack(((Fluid) get()).getFilledBucket());
+        }
+        return null;
+    }
+
+    /**
+     * Get the bit id that should be placed.
+     * This factors in blockstate properties, like leaves will always place as 0 distance from log
+     * or how logs will place rotated.
+     */
+    public int getPlacementBitId(BlockItemUseContext context) {
+        switch(type) {
+            case BLOCKSTATE:
+                return BitUtil.getBlockId(((Block) get()).getStateForPlacement(context));
+            default:
+                return getId();
+        }
+    }
+
+    /**
+     * Creates an empty voxel object.
+     */
+    public static <T> VoxelWrapper<T> empty() {
+        return new VoxelWrapper<>(0);
     }
 
     /**

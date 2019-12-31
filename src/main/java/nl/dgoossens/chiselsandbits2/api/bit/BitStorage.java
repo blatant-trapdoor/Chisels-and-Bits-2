@@ -22,12 +22,6 @@ public interface BitStorage {
     int findSlot(VoxelWrapper w);
 
     /**
-     * Returns a set of all types of blocks in this storage.
-     * Lists them as SelectedBlockItemMode instances.
-     */
-    List<IItemMode> listTypesAsItemModes(Item item);
-
-    /**
      * Adds a wrapper to the first empty slot.
      * @return How much couldn't be put into the bag.
      */

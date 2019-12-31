@@ -175,11 +175,11 @@ public class ChiselEvent {
         }
 
         if(ItemPropertyUtil.isItemMode(player.getHeldItemMainhand(), ItemMode.CHISEL_DRAWN_REGION)) {
-            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, mode, placedBit);
+            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, ChiselsAndBits2.getInstance().getClient().getSelectionStart(operation), location, face, ItemMode.CHISEL_DRAWN_REGION, placedBit);
             ChiselsAndBits2.getInstance().getClient().resetSelectionStart();
             ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
-        } else {
-            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, mode, placedBit);
+        } else if(mode instanceof ItemMode) {
+            final CChiselBlockPacket pc = new CChiselBlockPacket(operation, location, face, (ItemMode) mode, placedBit);
             ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
         }
     }
@@ -190,6 +190,8 @@ public class ChiselEvent {
     public static void performPlaceBlock(final ItemStack item, final BlockRayTraceResult rayTrace, final IItemMode mode, final PlayerEntity player) {
         if (!player.world.isRemote)
             throw new UnsupportedOperationException("Block placement can only be started on the client-side.");
+        if(!(mode instanceof ItemMode))
+            throw new UnsupportedOperationException("Unsupported placement mode type!");
 
         //Test if we can currently place
         final BitLocation bl = new BitLocation(rayTrace, true, BitOperation.PLACE);
@@ -218,7 +220,7 @@ public class ChiselEvent {
         }
 
         //Send placement packet
-        final CPlaceBlockPacket pc = new CPlaceBlockPacket(offset, bl, face, mode, player.isSneaking());
+        final CPlaceBlockPacket pc = new CPlaceBlockPacket(offset, bl, face, (ItemMode) mode, player.isSneaking());
         ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
     }
 
@@ -228,6 +230,8 @@ public class ChiselEvent {
     public static void performBlockRotation(final IItemMode mode, final PlayerEntity player) {
         if (!player.world.isRemote)
             throw new UnsupportedOperationException("Block rotation can only be started on the client-side.");
+        if(!(mode instanceof ItemMode))
+            throw new UnsupportedOperationException("Unsupported placement mode type!");
 
         final RayTraceResult rayTrace = Minecraft.getInstance().objectMouseOver;
         if(!(rayTrace instanceof BlockRayTraceResult) || rayTrace.getType() != RayTraceResult.Type.BLOCK)
@@ -250,7 +254,7 @@ public class ChiselEvent {
             }
         }
 
-        final CWrenchBlockPacket pc = new CWrenchBlockPacket(pos, face, mode);
+        final CWrenchBlockPacket pc = new CWrenchBlockPacket(pos, face, (ItemMode) mode);
         ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(pc);
     }
 }

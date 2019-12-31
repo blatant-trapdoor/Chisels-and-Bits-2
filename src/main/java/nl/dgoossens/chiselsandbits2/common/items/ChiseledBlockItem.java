@@ -23,6 +23,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
@@ -94,7 +95,7 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
      */
     @Override
     public String getHighlightTip(ItemStack item, String displayName) {
-        IItemMode im = ItemPropertyUtil.getChiseledBlockMode();
+        IItemMode im = ClientItemPropertyUtil.getGlobalCBM();
         return displayName + " - " + im.getLocalizedName();
     }
 
@@ -103,6 +104,6 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
      */
     @Override
     public boolean scroll(final PlayerEntity player, final ItemStack stack, final double dwheel) {
-        return TypedItem.scroll(player, stack, dwheel, ItemPropertyUtil.getChiseledBlockMode(), getAssociatedType());
+        return TypedItem.scroll(player, stack, dwheel, ClientItemPropertyUtil.getGlobalCBM(), getAssociatedType());
     }
 }

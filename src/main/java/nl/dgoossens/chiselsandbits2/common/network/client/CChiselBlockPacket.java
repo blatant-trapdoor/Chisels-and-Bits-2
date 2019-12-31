@@ -7,6 +7,7 @@ import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 
 import java.util.function.Supplier;
@@ -20,12 +21,12 @@ public class CChiselBlockPacket {
     public BitLocation to;
     public BitOperation operation;
     public Direction side;
-    public IItemMode mode;
+    public ItemMode mode;
     public int placedBit;
 
     private CChiselBlockPacket() {}
 
-    public CChiselBlockPacket(final BitOperation operation, final BitLocation from, final BitLocation to, final Direction side, final IItemMode mode, final int placedBit) {
+    public CChiselBlockPacket(final BitOperation operation, final BitLocation from, final BitLocation to, final Direction side, final ItemMode mode, final int placedBit) {
         this.operation = operation;
         this.from = BitLocation.min(from, to);
         this.to = BitLocation.max(from, to);
@@ -34,7 +35,7 @@ public class CChiselBlockPacket {
         this.placedBit = placedBit;
     }
 
-    public CChiselBlockPacket(final BitOperation operation, final BitLocation location, final Direction side, final IItemMode mode, final int placedBit) {
+    public CChiselBlockPacket(final BitOperation operation, final BitLocation location, final Direction side, final ItemMode mode, final int placedBit) {
         this.operation = operation;
         from = to = location;
         this.side = side;
@@ -60,9 +61,7 @@ public class CChiselBlockPacket {
         buf.writeVarInt(msg.placedBit);
         buf.writeEnumValue(msg.operation);
         buf.writeVarInt(msg.side.ordinal());
-        buf.writeBoolean(msg.mode.getType().isDynamic());
-        buf.writeVarInt(msg.mode.getDynamicId());
-        buf.writeString(msg.mode.getName());
+        buf.writeVarInt(msg.mode.ordinal());
     }
 
     public static CChiselBlockPacket decode(PacketBuffer buffer) {
@@ -73,13 +72,7 @@ public class CChiselBlockPacket {
         pc.placedBit = buffer.readVarInt();
         pc.operation = buffer.readEnumValue(BitOperation.class);
         pc.side = Direction.values()[buffer.readVarInt()];
-        try {
-            boolean isDynamic = buffer.readBoolean();
-            int dynamicId = buffer.readVarInt();
-            pc.mode = ItemPropertyUtil.resolveMode(null, buffer.readString(256), isDynamic, dynamicId);
-        } catch (Exception x) {
-            x.printStackTrace();
-        }
+        pc.mode = ItemMode.values()[buffer.readVarInt()];
         return pc;
     }
 

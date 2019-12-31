@@ -20,6 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.item.*;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
@@ -32,6 +33,7 @@ import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
+import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
@@ -160,10 +162,10 @@ public class ClientSide extends ClientSideHelper {
                 for (int slot = 8; slot >= -1; --slot) {
                     //-1 is the off-hand
                     ItemStack item = slot == -1 ? player.inventory.offHandInventory.get(0) : player.inventory.mainInventory.get(slot);
+                    final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + (slot == -1 ? -9 : 0) + 2) * 2;
+                    final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
                     if (item.getItem() instanceof TypedItem && ((TypedItem) item.getItem()).showIconInHotbar()) {
                         final IItemMode mode = ((TypedItem) item.getItem()).getSelectedMode(item);
-                        final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + (slot == -1 ? -9 : 0) + 2) * 2;
-                        final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
 
                         final ResourceLocation sprite = modeIconLocations.get(mode);
                         //Don't render null sprite.
@@ -182,6 +184,10 @@ public class ClientSide extends ClientSideHelper {
                         AbstractGui.blit(x + 2, y + 2, blitOffset, 16, 16, Minecraft.getInstance().getTextureMap().getSprite(sprite));
                         GlStateManager.disableBlend();
                         GlStateManager.translatef(0, 0, -200);
+                    } else if(item.getItem() instanceof StorageItem && ((StorageItem) item.getItem()).showIconInHotbar()) {
+                        VoxelWrapper w = ((StorageItem) item.getItem()).getSelected(item);
+                        if (w.isEmpty() || w.getType() == VoxelType.COLOURED) continue;
+                        ir.renderItemIntoGUI(w.getStack(), x, y);
                     }
                 }
                 GlStateManager.scalef(2, 2, 1);

@@ -1,6 +1,5 @@
 package nl.dgoossens.chiselsandbits2.common.bitstorage;
 
-import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
@@ -15,11 +14,6 @@ public class BitStorageImpl implements BitStorage {
     //TODO it remains a mystery how we're gonna determine which voxel type a given bit storage is.
     private VoxelType stored = VoxelType.BLOCKSTATE;
     private HashMap<Integer, Pair<VoxelWrapper, Long>> contents;
-    private List<IItemMode> cache;
-
-    private void resetCaches() {
-        cache = null;
-    }
 
     //Gets the amount of slots this bit storage has
     @Override
@@ -110,19 +104,6 @@ public class BitStorageImpl implements BitStorage {
     }
 
     @Override
-    public List<IItemMode> listTypesAsItemModes(Item item) {
-        if(cache == null) {
-            cache = new ArrayList<>();
-            for(int i = 0; i < getSlots(); i++) {
-                Pair<VoxelWrapper, Long> p = contents.get(i);
-                if(p == null) cache.add(SelectedItemMode.NONE);
-                else cache.add(SelectedItemMode.fromVoxelWrapper(p.getLeft()));
-            }
-        }
-        return cache;
-    }
-
-    @Override
     public long add(final VoxelWrapper w, final long amount) {
         checkServerside();
 
@@ -141,7 +122,6 @@ public class BitStorageImpl implements BitStorage {
 
         pair = Pair.of(pair.getLeft(), pair.getRight() + use);
         contents.put(slot, pair.getValue() <= 0 ? null : pair);
-        resetCaches();
 
         return amount - use;
     }
@@ -156,7 +136,6 @@ public class BitStorageImpl implements BitStorage {
         if(pair == null) pair = Pair.of(w, 0L);
         pair = Pair.of(pair.getLeft(), amount);
         contents.put(slot, pair.getValue() <= 0 ? null : pair);
-        resetCaches();
     }
 
     @Override
@@ -186,10 +165,10 @@ public class BitStorageImpl implements BitStorage {
 
     @Override
     public VoxelWrapper getSlotContent(int slot) {
-        if(slot < 0 || slot > contents.size()) return null;
+        if(slot < 0 || slot > contents.size()) return VoxelWrapper.empty();
         Pair<VoxelWrapper, Long> p = contents.get(slot);
         if(p != null) return p.getLeft();
-        return null;
+        return VoxelWrapper.empty();
     }
 
     @Override
@@ -204,14 +183,12 @@ public class BitStorageImpl implements BitStorage {
     public void setSlot(final int index, final VoxelWrapper w, final long amount) {
         if(index < 0 || index > contents.size()) return;
         contents.put(index, Pair.of(w, amount));
-        resetCaches();
     }
 
     @Override
     public void clearSlot(final int index) {
         if(index < 0 || index > contents.size()) return;
         contents.put(index, null);
-        resetCaches();
     }
 }
 

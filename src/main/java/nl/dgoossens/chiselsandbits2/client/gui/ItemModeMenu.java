@@ -21,11 +21,13 @@ import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.api.radial.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.client.ClientSideHelper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
@@ -47,11 +49,10 @@ public class ItemModeMenu extends RadialMenu {
     private List<MenuButton> buttons;
     private long buttonLastHighlighted = 0L;
     private DurabilityBarRenderer cache;
+    private ItemStack cachedStack;
 
     public ItemModeMenu() {
         super(new StringTextComponent("Radial Menu"));
-        modes = getShownModes();
-        buttons = getShownButtons();
     }
 
     @Override
@@ -81,6 +82,13 @@ public class ItemModeMenu extends RadialMenu {
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
         if (!(getMinecraft().player.getHeldItemMainhand().getItem() instanceof IItemMenu)) return;
+
+        //Update information
+        if(!getMinecraft().player.getHeldItemMainhand().equals(cachedStack)) {
+            cachedStack = getMinecraft().player.getHeldItemMainhand();
+            modes = getShownModes();
+            buttons = getShownButtons();
+        }
 
         GlStateManager.pushMatrix();
         GlStateManager.translatef(0.0F, 0.0F, 200.0F);
@@ -418,11 +426,20 @@ public class ItemModeMenu extends RadialMenu {
     public List<MenuRegion> getShownModes() {
         List<MenuRegion> modes = new ArrayList<>();
 
-        //Setup mode regions
-        for (IItemMode m : ItemPropertyUtil.getItemMode(getMinecraft().player.getHeldItemMainhand()).getType().getItemModes(getMinecraft().player.getHeldItemMainhand()))
-            modes.add(new MenuRegion(m, getMinecraft().player.getHeldItemMainhand()));
-        //TODO add bag contents to the menu, actually make the menu open to begin with for bit storages
-
+        final ItemStack item = getMinecraft().player.getHeldItemMainhand();
+        if(item.getItem() instanceof TypedItem) {
+            //TODO add support for addons' item modes
+            //We iterate over the enum by default as this is the fastest way to do this and this code is ran semi-often.
+            IItemModeType type = ((TypedItem) item.getItem()).getAssociatedType();
+            for(ItemMode it : ItemMode.values()) {
+                if(it.getType().equals(type)) modes.add(new MenuRegion(it, item));
+            }
+        } else if(item.getItem() instanceof StorageItem) {
+            item.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(bitStorage -> {
+                for(int i = 0; i < bitStorage.getSlots(); i++)
+                    modes.add(new MenuRegion(bitStorage.getSlotContent(i), item, getMinecraft().player));
+            });
+        }
         return modes;
     }
 

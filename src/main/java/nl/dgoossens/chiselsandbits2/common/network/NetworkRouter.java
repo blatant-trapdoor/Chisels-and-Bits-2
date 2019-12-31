@@ -26,8 +26,6 @@ public class NetworkRouter {
     public void init() {
         //Client
         HANDLER.registerMessage(disc++, CChiselBlockPacket.class, CChiselBlockPacket::encode, CChiselBlockPacket::decode, CChiselBlockPacket::handle);
-        HANDLER.registerMessage(disc++, CSetItemModePacket.class, CSetItemModePacket::encode, CSetItemModePacket::decode, CSetItemModePacket::handle);
-        HANDLER.registerMessage(disc++, CSetMenuActionModePacket.class, CSetMenuActionModePacket::encode, CSetMenuActionModePacket::decode, CSetMenuActionModePacket::handle);
         HANDLER.registerMessage(disc++, CUndoPacket.class, CUndoPacket::encode, CUndoPacket::decode, CUndoPacket::handle);
         HANDLER.registerMessage(disc++, CRotateItemPacket.class, CRotateItemPacket::encode, CRotateItemPacket::decode, CRotateItemPacket::handle);
         HANDLER.registerMessage(disc++, CWrenchBlockPacket.class, CWrenchBlockPacket::encode, CWrenchBlockPacket::decode, CWrenchBlockPacket::handle);

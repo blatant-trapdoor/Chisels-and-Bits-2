@@ -22,6 +22,7 @@ import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselItem;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
+import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
 
 import java.util.*;
 import java.util.function.Function;
@@ -223,12 +224,12 @@ public class InventoryUtils {
                 int slot = lastModifiedSlot.get(i);
                 final BitStorage bs = bitStorages.get(i);
                 if(slot < 0 || slot > bs.getSlots()) continue; //Invalid slot
-                ItemPropertyUtil.setItemMode(getPlayer(), inventory.get(i), bs.getSlotContent(slot), false);
+                ItemPropertyUtil.setSelectedVoxelWrapper(getPlayer(), inventory.get(i), bs.getSlotContent(slot), false);
             }
 
             //Select the nextSelect if applicable
             if(nextSelect != -1)
-                ItemPropertyUtil.setItemMode(getPlayer(), inventory.get(nextSelect), selectedMode, true);
+                ItemPropertyUtil.setSelectedVoxelWrapper(getPlayer(), inventory.get(nextSelect), selectedMode, true);
 
             //Send updates for all modified bit bags
             for(int i : modifiedBitStorages) {
@@ -349,7 +350,7 @@ public class InventoryUtils {
 
                         ItemStack newChisel = inventory.getStackInSlot(foundChisel);
                         if (oldMode != null)
-                            ItemPropertyUtil.setItemMode(getPlayer(), newChisel, oldMode, true);
+                            ItemPropertyUtil.setItemMode(getPlayer(), newChisel, oldMode);
                         inventory.removeStackFromSlot(foundChisel);
                         inventory.setInventorySlotContents(targetSlot, newChisel);
                         if (!target.isEmpty())
@@ -360,7 +361,7 @@ public class InventoryUtils {
                     }
 
                     //Prevent unnecessary mode fetching.
-                    oldMode = !(target.getItem() instanceof IItemMenu) ? oldMode : ItemPropertyUtil.getItemMode(target);
+                    oldMode = !(target.getItem() instanceof TypedItem) ? oldMode : ((TypedItem) target.getItem()).getSelectedMode(target);
                     //Get the maximum we can take from this chisel.
                     long capacity = Math.min(usedDurability, target.getMaxDamage() - target.getDamage());
                     //Take durability from the current item.

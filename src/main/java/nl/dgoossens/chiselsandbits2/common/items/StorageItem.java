@@ -10,6 +10,7 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
+import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IItemScrollWheel;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IPropertyOwner;
 import nl.dgoossens.chiselsandbits2.api.item.property.SelectedProperty;
@@ -18,12 +19,22 @@ import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItemGroups;
 
-public abstract class StorageItem extends Item implements IItemScrollWheel, IPropertyOwner {
+public abstract class StorageItem extends Item implements IItemScrollWheel, IPropertyOwner, IItemMenu {
     protected int PROPERTY_SELECTED;
     public StorageItem() {
         super(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
 
         PROPERTY_SELECTED = addProperty(new SelectedProperty(() -> VoxelWrapper.forAbstract(VoxelBlob.AIR_BIT)));
+    }
+
+    @Override
+    public IItemModeType getAssociatedType() {
+        return null;
+    }
+
+    @Override
+    public boolean showIconInHotbar() {
+        return true;
     }
 
     /**

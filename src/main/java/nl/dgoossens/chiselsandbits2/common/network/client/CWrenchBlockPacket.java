@@ -6,6 +6,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
+import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 
 import java.util.function.Supplier;
@@ -17,11 +18,11 @@ import java.util.function.Supplier;
 public class CWrenchBlockPacket {
     public BlockPos pos;
     public Direction side;
-    public IItemMode mode;
+    public ItemMode mode;
 
     private CWrenchBlockPacket() {}
 
-    public CWrenchBlockPacket(final BlockPos pos, final Direction side, final IItemMode mode) {
+    public CWrenchBlockPacket(final BlockPos pos, final Direction side, final ItemMode mode) {
         this.pos = pos;
         this.side = side;
         this.mode = mode;
@@ -30,22 +31,14 @@ public class CWrenchBlockPacket {
     public static void encode(CWrenchBlockPacket msg, PacketBuffer buf) {
         buf.writeBlockPos(msg.pos);
         buf.writeVarInt(msg.side.ordinal());
-        buf.writeBoolean(msg.mode.getType().isDynamic());
-        buf.writeVarInt(msg.mode.getDynamicId());
-        buf.writeString(msg.mode.getName());
+        buf.writeVarInt(msg.mode.ordinal());
     }
 
     public static CWrenchBlockPacket decode(PacketBuffer buffer) {
         CWrenchBlockPacket pc = new CWrenchBlockPacket();
         pc.pos = buffer.readBlockPos();
         pc.side = Direction.values()[buffer.readVarInt()];
-        try {
-            boolean isDynamic = buffer.readBoolean();
-            int dynamicId = buffer.readVarInt();
-            pc.mode = ItemPropertyUtil.resolveMode(null, buffer.readString(256), isDynamic, dynamicId);
-        } catch (Exception x) {
-            x.printStackTrace();
-        }
+        pc.mode = ItemMode.values()[buffer.readVarInt()];
         return pc;
     }
 
