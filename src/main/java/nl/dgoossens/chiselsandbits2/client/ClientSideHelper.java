@@ -197,8 +197,8 @@ public class ClientSideHelper {
      * Automatically handles whether or not a selection has already started and caching the measurement.
      */
     public void useTapeMeasure(BlockRayTraceResult rayTrace) {
-        //Clear measurements if there are measurements
-        if(Minecraft.getInstance().player.isSneaking() && !ChiselsAndBits2.getInstance().getClient().tapeMeasurements.isEmpty()) {
+        //Clear measurements if there are measurements and we're not currently selecting one.
+        if(tapeMeasureCache == null && Minecraft.getInstance().player.isSneaking() && !ChiselsAndBits2.getInstance().getClient().tapeMeasurements.isEmpty()) {
             ChiselsAndBits2.getInstance().getClient().tapeMeasurements.clear();
             Minecraft.getInstance().player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.cleared_measurements"), true);
             return;
