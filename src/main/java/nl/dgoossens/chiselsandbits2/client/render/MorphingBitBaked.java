@@ -38,15 +38,15 @@ public class MorphingBitBaked extends BaseBakedBlockModel {
     /**
      * Creates a new morphing bit baked model for a given bit id.
      */
-    public MorphingBitBaked(int bitId) {
+    public MorphingBitBaked(int bitId, boolean big) {
         //If this is AIR, use a nice transparent gray bit colour.
         if(bitId == VoxelBlob.AIR_BIT)
             bitId = BitUtil.getColourId(new Color(86, 86, 86, 175));
 
         final FaceBakery faceBakery = new FaceBakery();
 
-        final Vector3f to = new Vector3f(BIT_BEGIN, Y_BIT_BEGIN, BIT_BEGIN);
-        final Vector3f from = new Vector3f(BIT_END, Y_BIT_END, BIT_END);
+        final Vector3f to = big ? new Vector3f(0, 0, 0) : new Vector3f(BIT_BEGIN, Y_BIT_BEGIN, BIT_BEGIN);
+        final Vector3f from = big ? new Vector3f(16, 16 ,16) : new Vector3f(BIT_END, Y_BIT_END, BIT_END);
 
         final BlockPartRotation bpr = null;
         final ModelRotation mr = ModelRotation.X0_Y0;
@@ -60,7 +60,7 @@ public class MorphingBitBaked extends BaseBakedBlockModel {
                 continue;
 
             for (final ModelQuadLayer clayer : layers) {
-                final BlockFaceUV uv = new BlockFaceUV(getFaceUvs(myFace), 0);
+                final BlockFaceUV uv = new BlockFaceUV(getFaceUvs(myFace, big), 0);
                 final BlockPartFace bpf = new BlockPartFace(myFace, clayer.tint, "", uv);
 
                 Vector3f toB, fromB;
@@ -100,16 +100,16 @@ public class MorphingBitBaked extends BaseBakedBlockModel {
         generic.trimToSize();
     }
 
-    private float[] getFaceUvs(final Direction face) {
+    private float[] getFaceUvs(final Direction face, final boolean big) {
         float[] afloat;
 
-        final int from_x = (int) BIT_BEGIN;
-        final int from_y = (int) BIT_BEGIN;
-        final int from_z = (int) BIT_BEGIN;
+        final int from_x = big ? 0 : (int) BIT_BEGIN;
+        final int from_y = big ? 0 : (int) BIT_BEGIN;
+        final int from_z = big ? 0 : (int) BIT_BEGIN;
 
-        final int to_x = (int) BIT_END;
-        final int to_y = (int) BIT_END;
-        final int to_z = (int) BIT_END;
+        final int to_x = big ? 16 : (int) BIT_END;
+        final int to_y = big ? 16 : (int) BIT_END;
+        final int to_z = big ? 16 : (int) BIT_END;
 
         switch (face) {
             case DOWN:

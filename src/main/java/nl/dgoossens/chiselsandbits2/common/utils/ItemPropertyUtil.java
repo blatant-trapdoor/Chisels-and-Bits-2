@@ -20,6 +20,8 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.items.*;
+import nl.dgoossens.chiselsandbits2.common.network.client.CItemModePacket;
+import nl.dgoossens.chiselsandbits2.common.network.client.CVoxelWrapperPacket;
 import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
 
 import java.util.*;
@@ -71,11 +73,19 @@ public class ItemPropertyUtil implements CacheClearable {
      * Set the voxel wapper for a StorageItem
      */
     public static void setSelectedVoxelWrapper(final PlayerEntity player, final ItemStack item, final VoxelWrapper w, final boolean updateTimestamp) {
+        if(player.world.isRemote) {
+            if(!item.equals(player.getHeldItemMainhand(), false))
+                throw new UnsupportedOperationException("Can't set voxel wrapper for different item on client!");
+
+            ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CVoxelWrapperPacket(w, updateTimestamp));
+            return;
+        }
+
         if(item.getItem() instanceof StorageItem) {
             ((StorageItem) item.getItem()).setSelected(player.world, item, w);
             if(updateTimestamp) item.setTagInfo("timestamp", new LongNBT(w.isEmpty() ? 0 : System.currentTimeMillis())); //Update timestamp (make sure empty will never be first)
         } else if(item.getItem() instanceof MorphingBitItem) {
-            ((MorphingBitItem) item.getItem()).setSelected(player.world, item, w);
+            ((MorphingBitItem) item.getItem()).setSelected(item, w);
         }
     }
 
@@ -83,13 +93,21 @@ public class ItemPropertyUtil implements CacheClearable {
      * Set the mode of this itemstack to this enum value.
      */
     public static void setItemMode(final PlayerEntity player, final ItemStack stack, final IItemMode mode) {
-        if(player.world.isRemote)
-            throw new UnsupportedOperationException("Can't set item mode from client side!");
+        if(player.world.isRemote) {
+            if (mode instanceof ItemMode && mode.getType() == ItemModeType.CHISELED_BLOCK) {
+                ClientItemPropertyUtil.setGlobalCBM((ItemMode) mode);
+                return;
+            }
 
-        if (mode instanceof ItemMode && mode.getType() == ItemModeType.CHISELED_BLOCK) {
-            ClientItemPropertyUtil.setGlobalCBM((ItemMode) mode);
+            if(!stack.equals(player.getHeldItemMainhand(), false))
+                throw new UnsupportedOperationException("Can't set item mode for different item on client!");
+
+            ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CItemModePacket(mode));
             return;
         }
+
+        if (mode instanceof ItemMode && mode.getType() == ItemModeType.CHISELED_BLOCK)
+            throw new UnsupportedOperationException("Can't set chiseled block item mode on the server side!");
 
         if (stack == null) return;
         if (stack.getItem() instanceof TypedItem) {

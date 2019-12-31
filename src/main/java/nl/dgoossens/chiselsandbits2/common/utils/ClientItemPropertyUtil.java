@@ -10,6 +10,8 @@ import nl.dgoossens.chiselsandbits2.api.item.DyedItemColour;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.network.client.CItemStatePacket;
+import nl.dgoossens.chiselsandbits2.common.network.client.CTapeMeasureColour;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -40,7 +42,7 @@ public class ClientItemPropertyUtil {
      * Set a tape measure you're holding's colour to the passed colour.
      */
     public static void setTapeMeasureColor(DyedItemColour c) {
-
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CTapeMeasureColour(c));
     }
 
     /**
@@ -50,52 +52,14 @@ public class ClientItemPropertyUtil {
      * - Chisel PLace/Swap
      */
     public static void setItemState(boolean b) {
-
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CItemStatePacket(b));
     }
-
-    /**
-     * Set the main item mode of an itemstack.
-     *
-     public static void changeItemMode(final PlayerEntity player, final ItemStack item, final IItemMode newMode) {
-     if(newMode instanceof SelectedItemMode && !(item.getItem() instanceof StorageItem)) {
-     throw new RuntimeException("Can't set mode of item stack to selected item mode if item is not a storage item.");
-     }
-
-     final CSetItemModePacket packet = new CSetItemModePacket(newMode);
-     ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
-
-     //Update stack on client
-     setMode(player, item, newMode, !SelectedItemMode.isNone(newMode)); //Don't update timestamp if this is empty.
-     if(newMode.getType() == ItemModeType.CHISELED_BLOCK)
-     ChiselsAndBits2.getInstance().getClient().resetPlacementGhost();
-
-     //Show item mode change in hotbar
-     if(packet.isValid(player))
-     ClientUtil.reshowHighlightedStack();
-
-     if(newMode instanceof SelectedItemMode)
-     selected.remove(player.getUniqueID());
-     }*/
-
-    /**
-     * Set the menu action mode of an itemstack.
-     * MenuAction#COLOURS and MenuAction#PLACE/MenuAction#SWAP
-     * are accepted.
-     *
-     public static void changeMenuActionMode(final IMenuAction newAction) {
-     final CSetMenuActionModePacket packet = new CSetMenuActionModePacket(newAction);
-     ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(packet);
-
-     //Show item mode change in hotbar
-     if(packet.isValid(Minecraft.getInstance().player))
-     ClientUtil.reshowHighlightedStack();
-     }*/
 
     /**
      * Reshows the highlighted stack item.
      * Only works on client-side.
      */
-    protected static void reshowHighlightedStack() {
+    public static void reshowHighlightedStack() {
         try {
             IngameGui ig = Minecraft.getInstance().ingameGUI;
             //IngameGui#highlightingItemStack

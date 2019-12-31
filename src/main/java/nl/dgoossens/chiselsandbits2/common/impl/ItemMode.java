@@ -47,16 +47,10 @@ public enum ItemMode implements ItemModeEnum {
     private IItemModeType type;
     private String typelessName;
 
-    ItemMode() {
-        //Hardcore the chiseled block as it starts with CHISEL which can mess up
-        //We can get all types now because this enum doesn't contain those that don't use types already registered.
-        type = calculateType();
-        typelessName = name().substring(getType().name().length() + 1).toLowerCase();
-    }
-
     //Cache typeless name for improved performance
     @Override
     public String getTypelessName() {
+        if(typelessName == null) getType(); //force load typelessName
         return typelessName;
     }
 
@@ -106,6 +100,10 @@ public enum ItemMode implements ItemModeEnum {
     //We also cache the type.
     @Override
     public IItemModeType getType() {
+        if(type == null) {
+            type = calculateType();
+            typelessName = name().substring(getType().name().length() + 1).toLowerCase();
+        }
         return type;
     }
 

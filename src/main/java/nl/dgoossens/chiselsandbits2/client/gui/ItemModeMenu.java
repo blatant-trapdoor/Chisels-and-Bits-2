@@ -153,6 +153,8 @@ public class ItemModeMenu extends RadialMenu {
         if (radians < -HALF_PI)
             radians = radians + Math.PI * 2;
 
+
+        boolean highlightedAny = false;
         if (!modes.isEmpty()) {
             final int totalModes = Math.max(3, modes.size());
             int currentMode = 0;
@@ -200,8 +202,12 @@ public class ItemModeMenu extends RadialMenu {
                 if (begin_rad <= radians && radians <= end_rad && quad) {
                     if(f < 0.8f) f = 0.8f;
                     mnuRgn.highlighted = true;
+                    highlightedAny = true;
+
                     if(mnuRgn.mode != null) setAction(() -> ItemPropertyUtil.setItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), mnuRgn.mode));
                     else if(mnuRgn.item != null) setAction(() -> ItemPropertyUtil.setSelectedVoxelWrapper(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), mnuRgn.item, true));
+                } else {
+                    mnuRgn.highlighted = false;
                 }
 
                 if(mnuRgn.item != null && mnuRgn.item.getType() == VoxelType.COLOURED) {
@@ -232,6 +238,9 @@ public class ItemModeMenu extends RadialMenu {
                 f = 1;
                 btn.highlighted = true;
                 setAction(btn.action);
+                highlightedAny = true;
+            } else {
+                btn.highlighted = false;
             }
 
             buffer.pos(middle_x + btn.x1, middle_y + btn.y1, blitOffset).color(f, f, f, a).endVertex();
@@ -239,6 +248,9 @@ public class ItemModeMenu extends RadialMenu {
             buffer.pos(middle_x + btn.x2, middle_y + btn.y2, blitOffset).color(f, f, f, a).endVertex();
             buffer.pos(middle_x + btn.x2, middle_y + btn.y1, blitOffset).color(f, f, f, a).endVertex();
         }
+        //If no button is highlighted, clear the action.
+        if(!highlightedAny)
+            resetAction();
     }
 
     /**
@@ -509,13 +521,15 @@ public class ItemModeMenu extends RadialMenu {
         public boolean highlighted;
 
         public MenuRegion(final IItemMode mode, final ItemStack stack) {
-            if(!(stack.getItem() instanceof TypedItem)) return;
+            if(!(stack.getItem() instanceof TypedItem))
+                throw new UnsupportedOperationException("Invalid item given to make menu region, give typed item.");
             this.mode = mode;
             type = ((TypedItem) stack.getItem()).getSelectedMode(stack).equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
         }
 
         public MenuRegion(final VoxelWrapper item, final ItemStack stack, final PlayerEntity player) {
-            if(!(stack.getItem() instanceof StorageItem)) return;
+            if(!(stack.getItem() instanceof StorageItem))
+                throw new UnsupportedOperationException("Invalid item given to make menu region, give storage item.");
             VoxelWrapper s = ((StorageItem) stack.getItem()).getSelected(stack);
             if(s.isEmpty() || !s.equals(item)) {
                 type = RegionType.DEFAULT;

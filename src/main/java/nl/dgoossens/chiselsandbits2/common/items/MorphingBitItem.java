@@ -1,17 +1,23 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.registries.ForgeRegistries;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
-import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
-import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.PropertyOwner;
 import nl.dgoossens.chiselsandbits2.api.item.property.SelectedProperty;
 import nl.dgoossens.chiselsandbits2.api.item.property.StateProperty;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
@@ -39,15 +45,12 @@ public class MorphingBitItem extends ChiselMimicItem {
     }
 
     @Override
-    public String getHighlightTip(ItemStack item, String displayName) {
-        VoxelWrapper s = getSelected(item);
-        if(s.isEmpty()) return super.getHighlightTip(item, displayName);
-        return super.getHighlightTip(item, displayName) + " - " + s.getDisplayName();
-    }
-
-    @Override
     public ITextComponent getDisplayName(ItemStack stack) {
-        if(isLocked(stack)) return new TranslationTextComponent(getTranslationKey() + ".locked");
+        if(isLocked(stack)) {
+            VoxelWrapper s = getSelected(stack);
+            if(s.isEmpty()) return new TranslationTextComponent(getTranslationKey() + ".locked.none");
+            return new StringTextComponent(I18n.format(getTranslationKey() + ".locked").replaceAll("\\$", s.getDisplayName()));
+        }
         return super.getDisplayName(stack);
     }
 
@@ -55,11 +58,37 @@ public class MorphingBitItem extends ChiselMimicItem {
         return getProperty(PROPERTY_SELECTED, VoxelWrapper.class).get(stack);
     }
 
-    public void setSelected(final World world, final ItemStack stack, final VoxelWrapper w) {
-        getProperty(PROPERTY_SELECTED, VoxelWrapper.class).set(world, stack, w);
+    public void setSelected(final ItemStack stack, final VoxelWrapper w) {
+        getProperty(PROPERTY_SELECTED, VoxelWrapper.class).set(stack, w);
     }
 
     public boolean isLocked(final ItemStack stack) {
         return getProperty(PROPERTY_LOCKED, Boolean.class).get(stack);
+    }
+
+    public void setLocked(final ItemStack stack, final boolean value) {
+        getProperty(PROPERTY_LOCKED, Boolean.class).set(stack, value);
+    }
+
+    //This method is called every time the creative panel is opened, so moderate performance impact if this is slow.
+    @Override
+    public void fillItemGroup(ItemGroup group, NonNullList<ItemStack> items) {
+        if (this.isInGroup(group)) {
+            items.add(new ItemStack(this));
+
+            //Create morphing bits for all blocks
+            PropertyOwner.BUILDING_CREATIVE_TAB = true;
+            for(Block b : ForgeRegistries.BLOCKS.getValues()) {
+                if(b instanceof ChiseledBlock) continue; //Don't create a chiseled block morphing bit.. this will end badly.
+                if(ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(b.getDefaultState())) {
+                    //Only make a locked bit if we can chisel this one
+                    ItemStack it = new ItemStack(this);
+                    setLocked(it, true);
+                    setSelected(it, VoxelWrapper.forBlock(b));
+                    items.add(it);
+                }
+            }
+            PropertyOwner.BUILDING_CREATIVE_TAB = false;
+        }
     }
 }

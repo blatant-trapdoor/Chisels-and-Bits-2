@@ -31,7 +31,6 @@ public class ModItems {
     public final Item TAPE_MEASURE = new TapeMeasureItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
     public Item WRENCH = new WrenchItem(new Item.Properties().maxDamage(1536).group(ModItemGroups.CHISELS_AND_BITS2));
     public Item BLUEPRINT;
-    public final Item MORPHING_BIT = new MorphingBitItem(new Item.Properties().group(ModItemGroups.CHISELS_AND_BITS2));
 
     public final Item BIT_BAG = new BitBagItem();
     public Item BIT_BEAKER;
@@ -42,6 +41,9 @@ public class ModItems {
     public Item JUNGLE_PALETTE;
     public Item ACACIA_PALETTE;
     public Item DARK_OAK_PALETTE;
+
+    //Morphing bit goes dead last because of the locked bit items
+    public final Item MORPHING_BIT = new MorphingBitItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
     
     public ModItems() {
         //Temporarily initialise in constructor but only if the feature is finished

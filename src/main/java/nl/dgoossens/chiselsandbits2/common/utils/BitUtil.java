@@ -6,6 +6,8 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 
 import java.awt.*;
 
@@ -48,6 +50,7 @@ public class BitUtil {
      * Get a blockstate's id.
      */
     public static int getBlockId(final BlockState state) {
+        if(state.getBlock() instanceof ChiseledBlock) return VoxelBlob.AIR_BIT; //Avoid infinite recursion.
         //Writing the identifier as these long numbers seems useless but it's necessary to keep java from screwing with them.
         return 0b11000000000000000000000000000000 + Math.max(0, Block.BLOCK_STATE_IDS.get(state));
     }

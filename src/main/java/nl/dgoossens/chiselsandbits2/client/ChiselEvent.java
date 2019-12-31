@@ -56,6 +56,23 @@ public class ChiselEvent {
      */
     @SubscribeEvent
     public static void onPlayerInteract(PlayerInteractEvent e) {
+        if(e instanceof PlayerInteractEvent.RightClickEmpty || e instanceof PlayerInteractEvent.LeftClickEmpty) {
+            if(e.getPlayer().getHeldItemMainhand().getItem() instanceof MorphingBitItem && e.getPlayer().isSneaking()) {
+                if (System.currentTimeMillis() - lastClick < 150) return;
+                lastClick = System.currentTimeMillis();
+
+                final ItemStack i = e.getPlayer().getHeldItemMainhand();
+                final PlayerEntity player = e.getPlayer();
+
+                boolean b = ((MorphingBitItem) i.getItem()).isLocked(i);
+                //Set the currently selected type too just in case
+                ItemPropertyUtil.setSelectedVoxelWrapper(player, i, ItemPropertyUtil.getGlobalSelectedVoxelWrapper(), false);
+                ClientItemPropertyUtil.setItemState(!b);
+                if(b) player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.unlocked_mb"), true);
+                else player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.locked_mb"), true);
+            }
+        }
+
         boolean leftClick = e instanceof PlayerInteractEvent.LeftClickBlock;
         if (!leftClick && !(e instanceof PlayerInteractEvent.RightClickBlock)) return;
 
@@ -79,18 +96,6 @@ public class ChiselEvent {
 
                             //Chisel
                             RayTraceResult rtr = ChiselUtil.rayTrace(player);
-                            if(i.getItem() instanceof MorphingBitItem) {
-                                if(rtr.getType() != RayTraceResult.Type.BLOCK) {
-                                    //Toggle locked state
-                                    boolean b = ((MorphingBitItem) i.getItem()).isLocked(i);
-                                    //Set the currently selected type too just in case
-                                    ItemPropertyUtil.setSelectedVoxelWrapper(player, i, ItemPropertyUtil.getGlobalSelectedVoxelWrapper(), false);
-                                    ClientItemPropertyUtil.setItemState(!b);
-                                    if(b) player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.unlocked_mb"), true);
-                                    else player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.locked_ab"), true);
-                                    return;
-                                }
-                            }
                             if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
 
                             final BitOperation operation = leftClick ? BitOperation.REMOVE : (tit.isSwapping(i) ? BitOperation.SWAP : BitOperation.PLACE);

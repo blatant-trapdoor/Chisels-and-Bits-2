@@ -39,6 +39,10 @@ public class TapeMeasureItem extends TypedItem {
         return getProperty(PROPERTY_COLOR, DyedItemColour.class).get(stack);
     }
 
+    public void setColour(final ItemStack stack, final DyedItemColour value) {
+        getProperty(PROPERTY_COLOR, DyedItemColour.class).set(stack, value);
+    }
+
     @Override
     public boolean showIconInHotbar() {
         return false;

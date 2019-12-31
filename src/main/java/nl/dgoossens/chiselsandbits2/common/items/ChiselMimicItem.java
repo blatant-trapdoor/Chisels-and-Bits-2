@@ -29,6 +29,10 @@ public class ChiselMimicItem extends TypedItem implements IBitModifyItem {
         return getProperty(PROPERTY_PLACEMENT, Boolean.class).get(stack);
     }
 
+    public void setSwap(final ItemStack stack, final boolean value) {
+        getProperty(PROPERTY_PLACEMENT, Boolean.class).set(stack, value);
+    }
+
     @Override
     public boolean canPerformModification(ModificationType type) {
         return type == ModificationType.BUILD || type == ModificationType.EXTRACT;
@@ -57,5 +61,5 @@ public class ChiselMimicItem extends TypedItem implements IBitModifyItem {
         else
             ret.add(new ItemModeMenu.MenuButton(MenuAction.SWAP, -ItemModeMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
         return ret;
-    }
+    };
 }

@@ -12,14 +12,14 @@ import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IItemScrollWheel;
-import nl.dgoossens.chiselsandbits2.api.item.attributes.IPropertyOwner;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.PropertyOwner;
 import nl.dgoossens.chiselsandbits2.api.item.property.SelectedProperty;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItemGroups;
+import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 
-public abstract class StorageItem extends Item implements IItemScrollWheel, IPropertyOwner, IItemMenu {
+public abstract class StorageItem extends PropertyOwner implements IItemScrollWheel, IItemMenu {
     protected int PROPERTY_SELECTED;
     public StorageItem() {
         super(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2));
@@ -48,7 +48,7 @@ public abstract class StorageItem extends Item implements IItemScrollWheel, IPro
      * Set the selected item for this storage.
      */
     public void setSelected(final World world, final ItemStack stack, final VoxelWrapper w) {
-        getProperty(PROPERTY_SELECTED, VoxelWrapper.class).set(world, stack, w);
+        getProperty(PROPERTY_SELECTED, VoxelWrapper.class).set(stack, w);
     }
 
     @Override
@@ -95,7 +95,7 @@ public abstract class StorageItem extends Item implements IItemScrollWheel, IPro
             if(bs.getOccupiedSlotCount() <= j) j = 0;
             if(j < 0) j = bs.getOccupiedSlotCount() - 1;
 
-            getProperty(PROPERTY_SELECTED, VoxelWrapper.class).set(player.world, stack, bs.getSlotContent(j));
+            ItemPropertyUtil.setSelectedVoxelWrapper(player, stack, bs.getSlotContent(j), true);
         });
         return true;
     }

@@ -1,7 +1,6 @@
 package nl.dgoossens.chiselsandbits2.api.item;
 
 import net.minecraft.item.ItemStack;
-import nl.dgoossens.chiselsandbits2.api.item.attributes.IPropertyOwner;
 import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 
 import java.util.Set;

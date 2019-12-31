@@ -9,7 +9,7 @@ import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IItemScrollWheel;
-import nl.dgoossens.chiselsandbits2.api.item.attributes.IPropertyOwner;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.PropertyOwner;
 import nl.dgoossens.chiselsandbits2.api.item.property.ItemModeProperty;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
@@ -17,7 +17,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 
 import static nl.dgoossens.chiselsandbits2.common.impl.ItemMode.values;
 
-public abstract class TypedItem extends Item implements IItemScrollWheel, IItemMenu, IPropertyOwner {
+public abstract class TypedItem extends PropertyOwner implements IItemScrollWheel, IItemMenu {
     protected int PROPERTY_ITEMMODE;
 
     public TypedItem(Item.Properties builder) {
@@ -37,7 +37,7 @@ public abstract class TypedItem extends Item implements IItemScrollWheel, IItemM
      * Set the selected item mode.
      */
     public void setSelectedMode(final World world, final ItemStack stack, final IItemMode mode) {
-        getProperty(PROPERTY_ITEMMODE, IItemMode.class).set(world, stack, mode);
+        getProperty(PROPERTY_ITEMMODE, IItemMode.class).set(stack, mode);
     }
 
     /**
@@ -67,10 +67,7 @@ public abstract class TypedItem extends Item implements IItemScrollWheel, IItemM
             if (offset >= values().length) offset = 0;
             if (offset < 0) offset = values().length - 1;
         } while (ItemMode.values()[offset].getType() != type);
-        if(stack.getItem() instanceof TypedItem)
-            ((TypedItem) stack.getItem()).setSelectedMode(player.world, stack, ItemMode.values()[offset]);
-        else if(stack.getItem() instanceof ChiseledBlockItem)
-            ClientItemPropertyUtil.setGlobalCBM(ItemMode.values()[offset]);
+        ItemPropertyUtil.setItemMode(player, stack, ItemMode.values()[offset]);
         return true;
     }
 }
