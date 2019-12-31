@@ -142,14 +142,18 @@ public class ModItems {
     /**
      * Internal method to automatically register all fields in the class to the registry.
      */
-    static <T extends IForgeRegistryEntry<T>> void registerAll(final RegistryEvent.Register<T> register, final Object k, final Class<T> type) {
-        for (Field f : k.getClass().getFields()) {
+    static <T extends IForgeRegistryEntry<T>> void registerAll(final RegistryEvent.Register<T> register, final Object k, final Class<T> type, ForgeRegistryEntry<T>... excludes) {
+        b: for (Field f : k.getClass().getFields()) {
             if (!type.isAssignableFrom(f.getType())) continue;
             try {
                 ForgeRegistryEntry<T> g = (ForgeRegistryEntry<T>) f.get(k);
-                if(g!=null)
-                    register.getRegistry().register(g.setRegistryName(ChiselsAndBits2.MOD_ID,
-                        f.getName().toLowerCase()));
+                if(g!=null) {
+                    //Exclude these
+                    for(ForgeRegistryEntry<T> q : excludes) {
+                        if(g.equals(q)) continue b;
+                    }
+                    register.getRegistry().register(g.setRegistryName(ChiselsAndBits2.MOD_ID, f.getName().toLowerCase()));
+                }
             } catch (Exception x) {
                 x.printStackTrace();
             }
@@ -159,7 +163,7 @@ public class ModItems {
     @SubscribeEvent
     public static void onItemRegistry(final RegistryEvent.Register<Item> e) {
         //Register all items in this class automatically.
-        registerAll(e, ChiselsAndBits2.getInstance().getItems(), Item.class);
+        registerAll(e, ChiselsAndBits2.getInstance().getItems(), Item.class, ChiselsAndBits2.getInstance().getItems().MORPHING_BIT); //exclude the morphing bit
 
         //Register IColourables
         for(Map.Entry<Class<? extends IColourable>, Map<DyedItemColour, IColourable>> r : ChiselsAndBits2.getInstance().getItems().colourables.entrySet()) {
@@ -168,5 +172,8 @@ public class ModItems {
                 e.getRegistry().register(i.setRegistryName(ChiselsAndBits2.MOD_ID, en.getKey().name().toLowerCase()+ChiselsAndBits2.getInstance().getItems().colourableRegistryNames.get(r.getKey()).toLowerCase()));
             }
         }
+
+        //Register the morphing bit dead last so all of the morphing bits are last in the creative menu
+        e.getRegistry().register(ChiselsAndBits2.getInstance().getItems().MORPHING_BIT.setRegistryName(ChiselsAndBits2.MOD_ID, "morphing_bit"));
     }
 }
