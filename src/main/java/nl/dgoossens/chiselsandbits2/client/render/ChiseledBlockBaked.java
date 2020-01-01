@@ -32,63 +32,67 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
 
     // Analyze FaceBakery / makeBakedQuad and prepare static data for face gen.
     static {
-        final Vector3f to = new Vector3f(0, 0, 0);
-        final Vector3f from = new Vector3f(16, 16, 16);
+        try {
+            final Vector3f to = new Vector3f(0, 0, 0);
+            final Vector3f from = new Vector3f(16, 16, 16);
 
-        for (final Direction myFace : Direction.values()) {
-            final FaceBakery faceBakery = new FaceBakery();
+            for (final Direction myFace : Direction.values()) {
+                final FaceBakery faceBakery = new FaceBakery();
 
-            final BlockPartRotation bpr = null;
-            final ModelRotation mr = ModelRotation.X0_Y0;
+                final BlockPartRotation bpr = null;
+                final ModelRotation mr = ModelRotation.X0_Y0;
 
-            final float[] defUVs = new float[]{0, 0, 1, 1};
-            final BlockFaceUV uv = new BlockFaceUV(defUVs, 0);
-            final BlockPartFace bpf = new BlockPartFace(myFace, 0, "", uv);
+                final float[] defUVs = new float[]{0, 0, 1, 1};
+                final BlockFaceUV uv = new BlockFaceUV(defUVs, 0);
+                final BlockPartFace bpf = new BlockPartFace(myFace, 0, "", uv);
 
-            final TextureAtlasSprite texture = ChiselsAndBits2.getInstance().getClient().getMissingIcon();
-            final BakedQuad q = faceBakery.makeBakedQuad(to, from, bpf, texture, myFace, mr, bpr, true);
+                final TextureAtlasSprite texture = ChiselsAndBits2.getInstance().getClient().getMissingIcon();
+                final BakedQuad q = faceBakery.makeBakedQuad(to, from, bpf, texture, myFace, mr, bpr, true);
 
-            final int[] vertData = q.getVertexData();
+                final int[] vertData = q.getVertexData();
 
-            int a = 0;
-            int b = 2;
+                int a = 0;
+                int b = 2;
 
-            switch (myFace) {
-                case NORTH:
-                case SOUTH:
-                    a = 0;
-                    b = 1;
-                    break;
-                case EAST:
-                case WEST:
-                    a = 1;
-                    b = 2;
-                    break;
-                default:
-            }
-
-            final int p = vertData.length / 4;
-            for (int vertNum = 0; vertNum < 4; vertNum++) {
-                final float A = Float.intBitsToFloat(vertData[vertNum * p + a]);
-                final float B = Float.intBitsToFloat(vertData[vertNum * p + b]);
-
-                for (int o = 0; o < 3; o++) {
-                    final float v = Float.intBitsToFloat(vertData[vertNum * p + o]);
-                    final float scaler = 1.0f / 16.0f; // pos start in the 0-16
-                    quadMapping[myFace.ordinal()][vertNum][o * 2] = v * scaler;
-                    quadMapping[myFace.ordinal()][vertNum][o * 2 + 1] = (1.0f - v) * scaler;
+                switch (myFace) {
+                    case NORTH:
+                    case SOUTH:
+                        a = 0;
+                        b = 1;
+                        break;
+                    case EAST:
+                    case WEST:
+                        a = 1;
+                        b = 2;
+                        break;
+                    default:
                 }
 
-                if (ModelUtil.isZero(A) && ModelUtil.isZero(B)) {
-                    faceVertMap[myFace.getIndex()][vertNum] = 0;
-                } else if (ModelUtil.isZero(A) && ModelUtil.isOne(B)) {
-                    faceVertMap[myFace.getIndex()][vertNum] = 3;
-                } else if (ModelUtil.isOne(A) && ModelUtil.isZero(B)) {
-                    faceVertMap[myFace.getIndex()][vertNum] = 1;
-                } else {
-                    faceVertMap[myFace.getIndex()][vertNum] = 2;
+                final int p = vertData.length / 4;
+                for (int vertNum = 0; vertNum < 4; vertNum++) {
+                    final float A = Float.intBitsToFloat(vertData[vertNum * p + a]);
+                    final float B = Float.intBitsToFloat(vertData[vertNum * p + b]);
+
+                    for (int o = 0; o < 3; o++) {
+                        final float v = Float.intBitsToFloat(vertData[vertNum * p + o]);
+                        final float scaler = 1.0f / 16.0f; // pos start in the 0-16
+                        quadMapping[myFace.ordinal()][vertNum][o * 2] = v * scaler;
+                        quadMapping[myFace.ordinal()][vertNum][o * 2 + 1] = (1.0f - v) * scaler;
+                    }
+
+                    if (ModelUtil.isZero(A) && ModelUtil.isZero(B)) {
+                        faceVertMap[myFace.getIndex()][vertNum] = 0;
+                    } else if (ModelUtil.isZero(A) && ModelUtil.isOne(B)) {
+                        faceVertMap[myFace.getIndex()][vertNum] = 3;
+                    } else if (ModelUtil.isOne(A) && ModelUtil.isZero(B)) {
+                        faceVertMap[myFace.getIndex()][vertNum] = 1;
+                    } else {
+                        faceVertMap[myFace.getIndex()][vertNum] = 2;
+                    }
                 }
             }
+        } catch(Exception x) {
+            x.printStackTrace();
         }
     }
 

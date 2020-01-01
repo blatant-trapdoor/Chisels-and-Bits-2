@@ -67,7 +67,7 @@ public class ChiselEvent {
                 boolean b = ((MorphingBitItem) i.getItem()).isLocked(i);
                 //Set the currently selected type too just in case
                 ItemPropertyUtil.setSelectedVoxelWrapper(player, i, ItemPropertyUtil.getGlobalSelectedVoxelWrapper(), false);
-                ClientItemPropertyUtil.setItemState(!b);
+                ClientItemPropertyUtil.setLockState(!b);
                 if(b) player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.unlocked_mb"), true);
                 else player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.locked_mb"), true);
             }

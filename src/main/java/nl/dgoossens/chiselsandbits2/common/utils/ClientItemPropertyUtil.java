@@ -46,13 +46,17 @@ public class ClientItemPropertyUtil {
     }
 
     /**
-     * Set the item state of an item to this value.
-     * Works for:
-     * - Morphing Bit Lock
-     * - Chisel PLace/Swap
+     * Set the lock state for the held item.
      */
-    public static void setItemState(boolean b) {
-        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CItemStatePacket(b));
+    public static void setLockState(boolean b) {
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CItemStatePacket(b, true));
+    }
+
+    /**
+     * Set the swap state for the held item.
+     */
+    public static void setSwapState(boolean b) {
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CItemStatePacket(b, false));
     }
 
     /**

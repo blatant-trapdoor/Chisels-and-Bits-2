@@ -48,7 +48,7 @@ public enum MenuAction implements IMenuAction {
                 break;
             case PLACE:
             case SWAP:
-                ClientItemPropertyUtil.setItemState(this.equals(MenuAction.SWAP));
+                ClientItemPropertyUtil.setSwapState(this.equals(MenuAction.SWAP));
                 break;
         }
     }
