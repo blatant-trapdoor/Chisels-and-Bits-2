@@ -2,10 +2,10 @@ package nl.dgoossens.chiselsandbits2.client.render;
 
 import net.minecraft.util.Direction;
 
-class FaceRegion {
-    final public Direction face;
-    final int blockStateID;
-    final boolean isEdge;
+public class FaceRegion {
+    private final Direction face;
+    private final int state;
+    private final boolean isEdge;
     private int minX;
     private int minY;
     private int minZ;
@@ -13,13 +13,9 @@ class FaceRegion {
     private int maxY;
     private int maxZ;
 
-    public FaceRegion(
-            final Direction myFace,
-            final int centerX, final int centerY, final int centerZ,
-            final int blockStateID,
-            final boolean isEdgeFace) {
+    FaceRegion(final Direction myFace, final int centerX, final int centerY, final int centerZ, final int myState, final boolean isEdgeFace) {
         face = myFace;
-        this.blockStateID = blockStateID;
+        state = myState;
         isEdge = isEdgeFace;
         minX = centerX;
         minY = centerY;
@@ -53,11 +49,21 @@ class FaceRegion {
         return maxZ;
     }
 
-    public boolean extend(
-            final FaceRegion currentFace) {
-        if (currentFace.blockStateID != blockStateID) {
+    public boolean isEdge() {
+        return isEdge;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public Direction getFace() {
+        return face;
+    }
+
+    boolean extend(final FaceRegion currentFace) {
+        if (currentFace.state != state)
             return false;
-        }
 
         switch (face) {
             case DOWN:
