@@ -22,7 +22,7 @@ public class ModItemGroups {
 
         @Override
         public int getSearchbarWidth() {
-            return 80; //9 less than normal because our tab name is slightly longer
+            return 74; //15 less than normal because our tab name is slightly longer
         }
 
         @Override
