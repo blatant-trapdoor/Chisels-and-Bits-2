@@ -4,8 +4,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 public class TileChunk extends RenderCache {
     //Every tile chunk is one quarter chunk.

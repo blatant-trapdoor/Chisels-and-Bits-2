@@ -2,6 +2,7 @@ package nl.dgoossens.chiselsandbits2.client.render.ter;
 
 import net.minecraft.client.renderer.Tessellator;
 
+import java.util.*;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -9,6 +10,7 @@ import java.util.concurrent.FutureTask;
  * A region of 8x8x8 is stored in one render cache.
  */
 public class RenderCache {
+    private final UUID uniqueId = UUID.randomUUID();
     private FutureTask<Tessellator> renderTask = null;
     private GfxRenderState vboRenderer = null; //if this is null the RenderCache is new.
     private GfxRenderState oldRenderer = null; //To use if the vboRenderer isn't ready yet.
@@ -67,6 +69,14 @@ public class RenderCache {
     }
 
     /**
+     * Cancels the current ongoing rendering task.
+     */
+    public void cancelTask() {
+        if(renderTask != null && !renderTask.isDone())
+            renderTask.cancel(true);
+    }
+
+    /**
      * Marks the rendering as done and resets the rendering task.
      */
     public void finishRendering() {
@@ -91,5 +101,14 @@ public class RenderCache {
         setRenderState(null);
         if (renderTask != null) renderTask.cancel(true);
         renderTask = null;
+    }
+
+    /**
+     * Get the unique id attached to this render cache.
+     * This is used to ensure a single render cache can't have two tasks
+     * pending.
+     */
+    public UUID getUniqueId() {
+        return uniqueId;
     }
 }
