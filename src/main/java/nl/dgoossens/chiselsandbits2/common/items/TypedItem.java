@@ -36,8 +36,8 @@ public abstract class TypedItem extends PropertyOwner implements IItemScrollWhee
     /**
      * Set the selected item mode.
      */
-    public void setSelectedMode(final World world, final ItemStack stack, final IItemMode mode) {
-        getProperty(PROPERTY_ITEMMODE, IItemMode.class).set(stack, mode);
+    public void setSelectedMode(final PlayerEntity player, final ItemStack stack, final IItemMode mode) {
+        getProperty(PROPERTY_ITEMMODE, IItemMode.class).set(player, stack, mode);
     }
 
     /**

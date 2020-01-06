@@ -3,6 +3,7 @@ package nl.dgoossens.chiselsandbits2.common.items;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.DyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
@@ -39,8 +40,8 @@ public class TapeMeasureItem extends TypedItem {
         return getProperty(PROPERTY_COLOR, DyedItemColour.class).get(stack);
     }
 
-    public void setColour(final ItemStack stack, final DyedItemColour value) {
-        getProperty(PROPERTY_COLOR, DyedItemColour.class).set(stack, value);
+    public void setColour(final PlayerEntity player, final ItemStack stack, final DyedItemColour value) {
+        getProperty(PROPERTY_COLOR, DyedItemColour.class).set(player, stack, value);
     }
 
     @Override

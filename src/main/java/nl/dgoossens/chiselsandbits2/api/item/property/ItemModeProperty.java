@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.api.item.property;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.ByteNBT;
 import net.minecraft.nbt.IntNBT;
@@ -26,12 +27,13 @@ public class ItemModeProperty extends IItemProperty<IItemMode> {
     }
 
     @Override
-    public void set(ItemStack stack, IItemMode value) {
-        super.set(stack, value);
+    public void set(PlayerEntity player, ItemStack stack, IItemMode value) {
+        super.set(player, stack, value);
         if(value instanceof ItemMode) {
             stack.setTagInfo("bmode_"+slot, new ByteNBT((byte) 1));
             stack.setTagInfo("mode_"+slot, new IntNBT(((ItemMode) value).ordinal()));
         } else
             stack.setTagInfo("bmode_"+slot, new ByteNBT((byte) 0));
+        updateStack(player, stack);
     }
 }

@@ -38,7 +38,7 @@ public class CTapeMeasureColour {
             PlayerEntity player = ctx.get().getSender();
             ItemStack stack = player.getHeldItemMainhand();
             if(stack.getItem() instanceof TapeMeasureItem)
-                ((TapeMeasureItem) stack.getItem()).setColour(stack, pkt.state);
+                ((TapeMeasureItem) stack.getItem()).setColour(player, stack, pkt.state);
         });
         ctx.get().setPacketHandled(true);
     }

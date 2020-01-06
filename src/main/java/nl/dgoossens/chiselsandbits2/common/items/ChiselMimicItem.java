@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
@@ -29,8 +30,8 @@ public class ChiselMimicItem extends TypedItem implements IBitModifyItem {
         return getProperty(PROPERTY_PLACEMENT, Boolean.class).get(stack);
     }
 
-    public void setSwap(final ItemStack stack, final boolean value) {
-        getProperty(PROPERTY_PLACEMENT, Boolean.class).set(stack, value);
+    public void setSwap(final PlayerEntity player, final ItemStack stack, final boolean value) {
+        getProperty(PROPERTY_PLACEMENT, Boolean.class).set(player, stack, value);
     }
 
     @Override

@@ -36,6 +36,7 @@ public class ClientItemPropertyUtil {
      */
     public static void setGlobalCBM(final ItemMode itemMode) {
         globalCBM = itemMode;
+        reshowHighlightedStack();
     }
 
     /**

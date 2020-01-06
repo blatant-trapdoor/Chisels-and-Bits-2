@@ -82,10 +82,10 @@ public class ItemPropertyUtil implements CacheClearable {
         }
 
         if(item.getItem() instanceof StorageItem) {
-            ((StorageItem) item.getItem()).setSelected(player.world, item, w);
+            ((StorageItem) item.getItem()).setSelected(player, item, w);
             if(updateTimestamp) item.setTagInfo("timestamp", new LongNBT(w.isEmpty() ? 0 : System.currentTimeMillis())); //Update timestamp (make sure empty will never be first)
         } else if(item.getItem() instanceof MorphingBitItem) {
-            ((MorphingBitItem) item.getItem()).setSelected(item, w);
+            ((MorphingBitItem) item.getItem()).setSelected(player, item, w);
         }
     }
 
@@ -113,7 +113,7 @@ public class ItemPropertyUtil implements CacheClearable {
         if (stack.getItem() instanceof TypedItem) {
             TypedItem it = (TypedItem) stack.getItem();
             if(!mode.getType().equals(it.getAssociatedType())) return;
-            it.setSelectedMode(player.world, stack, mode);
+            it.setSelectedMode(player, stack, mode);
             selected.remove(player.getUniqueID());
         }
     }

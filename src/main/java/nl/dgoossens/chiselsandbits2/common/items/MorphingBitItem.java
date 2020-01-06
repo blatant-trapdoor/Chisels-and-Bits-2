@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
@@ -58,16 +59,16 @@ public class MorphingBitItem extends ChiselMimicItem {
         return getProperty(PROPERTY_SELECTED, VoxelWrapper.class).get(stack);
     }
 
-    public void setSelected(final ItemStack stack, final VoxelWrapper w) {
-        getProperty(PROPERTY_SELECTED, VoxelWrapper.class).set(stack, w);
+    public void setSelected(final PlayerEntity player, final ItemStack stack, final VoxelWrapper w) {
+        getProperty(PROPERTY_SELECTED, VoxelWrapper.class).set(player, stack, w);
     }
 
     public boolean isLocked(final ItemStack stack) {
         return getProperty(PROPERTY_LOCKED, Boolean.class).get(stack);
     }
 
-    public void setLocked(final ItemStack stack, final boolean value) {
-        getProperty(PROPERTY_LOCKED, Boolean.class).set(stack, value);
+    public void setLocked(final PlayerEntity player, final ItemStack stack, final boolean value) {
+        getProperty(PROPERTY_LOCKED, Boolean.class).set(player, stack, value);
     }
 
     //This method is called every time the creative panel is opened, so moderate performance impact if this is slow.
@@ -78,13 +79,14 @@ public class MorphingBitItem extends ChiselMimicItem {
 
             //Create morphing bits for all blocks
             PropertyOwner.BUILDING_CREATIVE_TAB = true;
+            final PlayerEntity player = ChiselsAndBits2.getInstance().getClient().getPlayer();
             for(Block b : ForgeRegistries.BLOCKS.getValues()) {
                 if(b instanceof ChiseledBlock) continue; //Don't create a chiseled block morphing bit.. this will end badly.
                 if(ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(b.getDefaultState())) {
                     //Only make a locked bit if we can chisel this one
                     ItemStack it = new ItemStack(this);
-                    setLocked(it, true);
-                    setSelected(it, VoxelWrapper.forBlock(b));
+                    setLocked(player, it, true);
+                    setSelected(player, it, VoxelWrapper.forBlock(b));
                     items.add(it);
                 }
             }

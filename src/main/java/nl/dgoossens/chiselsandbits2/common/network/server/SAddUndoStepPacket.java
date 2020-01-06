@@ -13,19 +13,19 @@ import java.util.function.Supplier;
  * Adds an undo step to the client tracker.
  * Sent SERVER -> CLIENT.
  */
-public class SAddUndoStep {
+public class SAddUndoStepPacket {
     private BlockPos pos;
     private VoxelBlobStateReference before, after;
 
-    private SAddUndoStep() {}
+    private SAddUndoStepPacket() {}
 
-    public SAddUndoStep(final BlockPos pos, final VoxelBlobStateReference before, final VoxelBlobStateReference after) {
+    public SAddUndoStepPacket(final BlockPos pos, final VoxelBlobStateReference before, final VoxelBlobStateReference after) {
         this.pos = pos;
         this.after = after;
         this.before = before;
     }
 
-    public static void encode(SAddUndoStep msg, PacketBuffer buf) {
+    public static void encode(SAddUndoStepPacket msg, PacketBuffer buf) {
         buf.writeBlockPos(msg.pos);
         final byte[] bef = msg.before.getByteArray();
         buf.writeVarInt(bef.length);
@@ -35,8 +35,8 @@ public class SAddUndoStep {
         buf.writeBytes(aft);
     }
 
-    public static SAddUndoStep decode(PacketBuffer buffer) {
-        SAddUndoStep pc = new SAddUndoStep();
+    public static SAddUndoStepPacket decode(PacketBuffer buffer) {
+        SAddUndoStepPacket pc = new SAddUndoStepPacket();
         pc.pos = buffer.readBlockPos();
         final int lena = buffer.readVarInt();
         final byte[] ta = new byte[lena];
@@ -50,7 +50,7 @@ public class SAddUndoStep {
         return pc;
     }
 
-    public static void handle(final SAddUndoStep pkt, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(final SAddUndoStepPacket pkt, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             PlayerEntity player = ChiselsAndBits2.getInstance().getClient().getPlayer();
             ChiselsAndBits2.getInstance().getUndoTracker().add(player, player.getEntityWorld(), pkt.pos, pkt.before, pkt.after);

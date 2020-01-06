@@ -47,8 +47,8 @@ public abstract class StorageItem extends PropertyOwner implements IItemScrollWh
     /**
      * Set the selected item for this storage.
      */
-    public void setSelected(final World world, final ItemStack stack, final VoxelWrapper w) {
-        getProperty(PROPERTY_SELECTED, VoxelWrapper.class).set(stack, w);
+    public void setSelected(final PlayerEntity player, final ItemStack stack, final VoxelWrapper w) {
+        getProperty(PROPERTY_SELECTED, VoxelWrapper.class).set(player, stack, w);
     }
 
     @Override

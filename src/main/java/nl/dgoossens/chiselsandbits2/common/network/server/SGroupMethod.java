@@ -1,7 +1,5 @@
 package nl.dgoossens.chiselsandbits2.common.network.server;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -13,16 +11,14 @@ import java.util.function.Supplier;
  * Sent SERVER -> CLIENT.
  */
 public class SGroupMethod {
-    public static class BeginGroup {
-        public BeginGroup() {}
+    public static class BeginGroupPacket {
+        public static void encode(BeginGroupPacket msg, PacketBuffer buf) {}
 
-        public static void encode(BeginGroup msg, PacketBuffer buf) { }
-
-        public static BeginGroup decode(PacketBuffer buffer) {
-            return new BeginGroup();
+        public static BeginGroupPacket decode(PacketBuffer buffer) {
+            return new BeginGroupPacket();
         }
 
-        public static void handle(final BeginGroup pkt, Supplier<NetworkEvent.Context> ctx) {
+        public static void handle(final BeginGroupPacket pkt, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() ->
                     ChiselsAndBits2.getInstance().getUndoTracker().beginGroup(ChiselsAndBits2.getInstance().getClient().getPlayer())
             );
@@ -30,16 +26,14 @@ public class SGroupMethod {
         }
     }
 
-    public static class EndGroup {
-        public EndGroup() {}
+    public static class EndGroupPacket {
+        public static void encode(EndGroupPacket msg, PacketBuffer buf) {}
 
-        public static void encode(EndGroup msg, PacketBuffer buf) {}
-
-        public static EndGroup decode(PacketBuffer buffer) {
-            return new EndGroup();
+        public static EndGroupPacket decode(PacketBuffer buffer) {
+            return new EndGroupPacket();
         }
 
-        public static void handle(final EndGroup pkt, Supplier<NetworkEvent.Context> ctx) {
+        public static void handle(final EndGroupPacket pkt, Supplier<NetworkEvent.Context> ctx) {
             ctx.get().enqueueWork(() ->
                 ChiselsAndBits2.getInstance().getUndoTracker().endGroup(ChiselsAndBits2.getInstance().getClient().getPlayer())
             );

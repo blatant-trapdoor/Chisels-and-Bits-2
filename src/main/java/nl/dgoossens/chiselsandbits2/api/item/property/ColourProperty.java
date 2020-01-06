@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.api.item.property;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.IntNBT;
 import nl.dgoossens.chiselsandbits2.api.item.DyedItemColour;
@@ -18,8 +19,9 @@ public class ColourProperty extends IItemProperty<DyedItemColour> {
     }
 
     @Override
-    public void set(ItemStack stack, DyedItemColour value) {
-        super.set(stack, value);
+    public void set(PlayerEntity player, ItemStack stack, DyedItemColour value) {
+        super.set(player, stack, value);
         stack.setTagInfo("colour_"+slot, new IntNBT(value.ordinal()));
+        updateStack(player, stack);
     }
 }

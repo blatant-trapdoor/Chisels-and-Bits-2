@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.api.item.attributes;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -26,25 +27,9 @@ public abstract class PropertyOwner extends Item {
     public static boolean BUILDING_CREATIVE_TAB = false;
     private static NullProperty NULL_PROPERTY = new NullProperty();
     private Map<Integer, IItemProperty> properties = new HashMap<>();
-    private CompoundNBT lastNBT = null;
 
     public PropertyOwner(final Item.Properties builder) {
         super(builder);
-    }
-
-    @Override
-    public void readShareTag(ItemStack stack, @Nullable CompoundNBT nbt) {
-        super.readShareTag(stack, nbt);
-        System.out.println("READ SHARE TAG");
-
-        //Is this item being held?
-        if(ChiselsAndBits2.getInstance().getClient().getPlayer().getHeldItemMainhand().equals(stack, false)) {
-            if(lastNBT == null && nbt == null) return;
-            if(lastNBT != null && lastNBT.equals(nbt)) return;
-            lastNBT = nbt;
-            //Reshow the item's name as it has changed now
-            ClientItemPropertyUtil.reshowHighlightedStack();
-        }
     }
 
     /**
@@ -76,8 +61,8 @@ public abstract class PropertyOwner extends Item {
         }
 
         @Override
-        public void set(ItemStack stack, Object value) {
-            super.set(stack, value);
+        public void set(PlayerEntity player, ItemStack stack, Object value) {
+            super.set(player, stack, value);
         }
     }
 }

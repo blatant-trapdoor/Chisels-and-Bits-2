@@ -41,9 +41,9 @@ public class CItemStatePacket {
             PlayerEntity player = ctx.get().getSender();
             ItemStack stack = player.getHeldItemMainhand();
             if(pkt.lock && stack.getItem() instanceof MorphingBitItem)
-                ((MorphingBitItem)stack.getItem()).setLocked(stack, pkt.state);
+                ((MorphingBitItem)stack.getItem()).setLocked(player, stack, pkt.state);
             if(!pkt.lock && stack.getItem() instanceof ChiselMimicItem)
-                ((ChiselMimicItem)stack.getItem()).setSwap(stack, pkt.state);
+                ((ChiselMimicItem)stack.getItem()).setSwap(player, stack, pkt.state);
         });
         ctx.get().setPacketHandled(true);
     }

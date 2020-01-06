@@ -10,7 +10,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
 import nl.dgoossens.chiselsandbits2.common.network.client.CUndoPacket;
-import nl.dgoossens.chiselsandbits2.common.network.server.SAddUndoStep;
+import nl.dgoossens.chiselsandbits2.common.network.server.SAddUndoStepPacket;
 import nl.dgoossens.chiselsandbits2.common.network.server.SGroupMethod;
 
 import java.util.*;
@@ -68,7 +68,7 @@ public class UndoTracker {
                 level = undoLevels.size() - 1;
             } else {
                 //Server
-                ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SAddUndoStep(pos, before, after), (ServerPlayerEntity) player);
+                ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SAddUndoStepPacket(pos, before, after), (ServerPlayerEntity) player);
             }
         }
     }
@@ -105,7 +105,7 @@ public class UndoTracker {
      */
     public void beginGroup(PlayerEntity player) {
         if(!player.getEntityWorld().isRemote) {
-            ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SGroupMethod.BeginGroup(), (ServerPlayerEntity) player);
+            ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SGroupMethod.BeginGroupPacket(), (ServerPlayerEntity) player);
             return;
         }
         if(ignorePlayer(player)) return;
@@ -124,7 +124,7 @@ public class UndoTracker {
      */
     public void endGroup(PlayerEntity player) {
         if(!player.getEntityWorld().isRemote) {
-            ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SGroupMethod.EndGroup(), (ServerPlayerEntity) player);
+            ChiselsAndBits2.getInstance().getNetworkRouter().sendTo(new SGroupMethod.EndGroupPacket(), (ServerPlayerEntity) player);
             return;
         }
         if(ignorePlayer(player)) return;

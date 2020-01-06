@@ -7,8 +7,9 @@ import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.common.network.client.*;
-import nl.dgoossens.chiselsandbits2.common.network.server.SAddUndoStep;
+import nl.dgoossens.chiselsandbits2.common.network.server.SAddUndoStepPacket;
 import nl.dgoossens.chiselsandbits2.common.network.server.SGroupMethod;
+import nl.dgoossens.chiselsandbits2.common.network.server.SRehighlightItemPacket;
 import nl.dgoossens.chiselsandbits2.common.network.server.SSynchronizeBitStoragePacket;
 
 public class NetworkRouter {
@@ -37,9 +38,10 @@ public class NetworkRouter {
 
         //Server
         HANDLER.registerMessage(disc++, SSynchronizeBitStoragePacket.class, SSynchronizeBitStoragePacket::encode, SSynchronizeBitStoragePacket::decode, SSynchronizeBitStoragePacket::handle);
-        HANDLER.registerMessage(disc++, SAddUndoStep.class, SAddUndoStep::encode, SAddUndoStep::decode, SAddUndoStep::handle);
-        HANDLER.registerMessage(disc++, SGroupMethod.BeginGroup.class, SGroupMethod.BeginGroup::encode, SGroupMethod.BeginGroup::decode, SGroupMethod.BeginGroup::handle);
-        HANDLER.registerMessage(disc++, SGroupMethod.EndGroup.class, SGroupMethod.EndGroup::encode, SGroupMethod.EndGroup::decode, SGroupMethod.EndGroup::handle);
+        HANDLER.registerMessage(disc++, SAddUndoStepPacket.class, SAddUndoStepPacket::encode, SAddUndoStepPacket::decode, SAddUndoStepPacket::handle);
+        HANDLER.registerMessage(disc++, SRehighlightItemPacket.class, SRehighlightItemPacket::encode, SRehighlightItemPacket::decode, SRehighlightItemPacket::handle);
+        HANDLER.registerMessage(disc++, SGroupMethod.BeginGroupPacket.class, SGroupMethod.BeginGroupPacket::encode, SGroupMethod.BeginGroupPacket::decode, SGroupMethod.BeginGroupPacket::handle);
+        HANDLER.registerMessage(disc++, SGroupMethod.EndGroupPacket.class, SGroupMethod.EndGroupPacket::encode, SGroupMethod.EndGroupPacket::decode, SGroupMethod.EndGroupPacket::handle);
     }
 
     /**
