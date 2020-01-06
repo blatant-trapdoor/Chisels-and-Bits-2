@@ -32,7 +32,6 @@ public class MorphingBitBaked extends BaseBakedBlockModel {
     private static final float BIT_END = BIT_BEGIN + BIT_WIDTH;
     private static final float Y_BIT_END = Y_BIT_BEGIN + BIT_WIDTH;
 
-    
     private final ArrayList<BakedQuad> generic = new ArrayList<>(6);
     
     /**

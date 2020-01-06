@@ -4,10 +4,13 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.util.InputMappings;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.client.settings.KeyModifier;
 import nl.dgoossens.chiselsandbits2.client.render.models.BaseSmartModel;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
@@ -54,7 +57,7 @@ public class MorphingBitSmartModel extends BaseSmartModel {
         if(!(stack.getItem() instanceof MorphingBitItem)) return getCachedModel(VoxelBlob.AIR_BIT, false);
         MorphingBitItem mbi = (MorphingBitItem) stack.getItem();
         if(mbi.isLocked(stack))
-            return getCachedModel(mbi.getSelected(stack).getId(), entity.isSneaking());
+            return getCachedModel(mbi.getSelected(stack).getId(), entity.isSneaking() || KeyModifier.SHIFT.isActive(KeyConflictContext.GUI));
         return getCachedModel(entity instanceof PlayerEntity ? ItemPropertyUtil.getGlobalSelectedVoxelWrapper((PlayerEntity) entity).getId() : world == null || world.isRemote ? ItemPropertyUtil.getGlobalSelectedVoxelWrapper().getId() : VoxelBlob.AIR_BIT, false);
     }
 }
