@@ -10,8 +10,8 @@ Here's a rough outline of which features need to be added, all features need add
 
 #### Alpha 5 / 6 / 7
 Alpha 5, 6 and 7 (maybe there'll be less or more alphas) will all focus on fixing all bugs in the mod and making sure all current items get their full functionality.
-- Compatiblity with optifine (at least fixing major issues)
-- Multiplayer support for the mod
+- ~~Compatiblity with optifine (at least fixing major issues)~~
+- ~~Multiplayer support for the mod~~
 - Finalise the way chiseled blocks are stored to disk, currently I use the exact C&B1 method but I want to see if there is room for improvement
 - Add off-grid placement to chiseled blocks
 - ~~Finalising the Worldfixer program which can convert 1.12 worlds to 1.14 C&B2.~~ _(will be worked on at some future point)_
