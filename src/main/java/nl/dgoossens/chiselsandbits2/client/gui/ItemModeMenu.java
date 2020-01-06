@@ -536,6 +536,8 @@ public class ItemModeMenu extends RadialMenu {
         public MenuRegion(final VoxelWrapper item, final ItemStack stack, final PlayerEntity player) {
             if(!(stack.getItem() instanceof StorageItem))
                 throw new UnsupportedOperationException("Invalid item given to make menu region, give storage item.");
+
+            this.item = item;
             VoxelWrapper s = ((StorageItem) stack.getItem()).getSelected(stack);
             if(s.isEmpty() || !s.equals(item)) {
                 type = RegionType.DEFAULT;
