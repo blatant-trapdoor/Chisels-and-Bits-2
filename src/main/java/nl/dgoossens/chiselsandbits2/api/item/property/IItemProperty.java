@@ -7,7 +7,6 @@ import net.minecraftforge.fml.common.thread.SidedThreadGroups;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.PropertyOwner;
 import nl.dgoossens.chiselsandbits2.common.network.server.SRehighlightItemPacket;
-import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
 
 /**
  * A single item property that an item can have.
@@ -34,7 +33,11 @@ public abstract class IItemProperty<T> {
         slot = s;
     }
 
-    public void updateStack(final PlayerEntity player, final ItemStack stack) {
+    /**
+     * Update the stack by rehighlighting the stack name for the player if this is currently the
+     * selected item.
+     */
+    protected void updateStack(final PlayerEntity player, final ItemStack stack) {
         if(PropertyOwner.BUILDING_CREATIVE_TAB) return;
 
         //Is this item being held?

@@ -3,12 +3,9 @@ package nl.dgoossens.chiselsandbits2.api.item.attributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.item.property.IItemProperty;
-import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
 
-import javax.annotation.Nullable;
+import nl.dgoossens.chiselsandbits2.api.item.property.IItemProperty;
+
 import java.util.HashMap;
 import java.util.Map;
 
