@@ -29,7 +29,10 @@ import nl.dgoossens.chiselsandbits2.client.ClientSideHelper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.items.ChiseledBlockItem;
+import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
+import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import org.lwjgl.opengl.GL11;
@@ -439,18 +442,18 @@ public class ItemModeMenu extends RadialMenu {
         List<MenuRegion> modes = new ArrayList<>();
 
         final ItemStack item = getMinecraft().player.getHeldItemMainhand();
-        if(item.getItem() instanceof TypedItem) {
-            //TODO add support for addons' item modes
-            //We iterate over the enum by default as this is the fastest way to do this and this code is ran semi-often.
-            IItemModeType type = ((TypedItem) item.getItem()).getAssociatedType();
-            for(ItemMode it : ItemMode.values()) {
-                if(it.getType().equals(type)) modes.add(new MenuRegion(it, item));
-            }
-        } else if(item.getItem() instanceof StorageItem) {
+        if(item.getItem() instanceof StorageItem) {
             item.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(bitStorage -> {
                 for(int i = 0; i < bitStorage.getSlots(); i++)
                     modes.add(new MenuRegion(bitStorage.getSlotContent(i), item, getMinecraft().player));
             });
+        } else if(item.getItem() instanceof IItemMenu) {
+            //TODO add support for addons' item modes
+            //We iterate over the enum by default as this is the fastest way to do this and this code is ran semi-often.
+            IItemModeType type = ((IItemMenu) item.getItem()).getAssociatedType();
+            for(ItemMode it : ItemMode.values()) {
+                if(it.getType().equals(type)) modes.add(new MenuRegion(it, item));
+            }
         }
         return modes;
     }
@@ -521,10 +524,13 @@ public class ItemModeMenu extends RadialMenu {
         public boolean highlighted;
 
         public MenuRegion(final IItemMode mode, final ItemStack stack) {
-            if(!(stack.getItem() instanceof TypedItem))
-                throw new UnsupportedOperationException("Invalid item given to make menu region, give typed item.");
             this.mode = mode;
-            type = ((TypedItem) stack.getItem()).getSelectedMode(stack).equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
+            if(stack.getItem() instanceof ChiseledBlockItem) {
+                type = ClientItemPropertyUtil.getGlobalCBM().equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
+            } else if(stack.getItem() instanceof TypedItem) {
+                type = ((TypedItem) stack.getItem()).getSelectedMode(stack).equals(mode) ? RegionType.SELECTED : RegionType.DEFAULT;
+            } else
+                throw new UnsupportedOperationException("Invalid item given to make menu region! Gave '"+stack.getItem().getRegistryName()+"'.");
         }
 
         public MenuRegion(final VoxelWrapper item, final ItemStack stack, final PlayerEntity player) {
