@@ -1,10 +1,15 @@
 package nl.dgoossens.chiselsandbits2.common.registry;
 
+import com.mojang.datafixers.DSL;
+import com.mojang.datafixers.DataFixUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.SharedConstants;
+import net.minecraft.util.datafix.DataFixesManager;
+import net.minecraft.util.datafix.TypeReferences;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;

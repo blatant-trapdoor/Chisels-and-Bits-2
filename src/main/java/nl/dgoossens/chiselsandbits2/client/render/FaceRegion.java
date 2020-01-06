@@ -13,7 +13,7 @@ public class FaceRegion {
     private int maxY;
     private int maxZ;
 
-    FaceRegion(final Direction myFace, final int centerX, final int centerY, final int centerZ, final int myState, final boolean isEdgeFace) {
+    public FaceRegion(final Direction myFace, final int centerX, final int centerY, final int centerZ, final int myState, final boolean isEdgeFace) {
         face = myFace;
         state = myState;
         isEdge = isEdgeFace;

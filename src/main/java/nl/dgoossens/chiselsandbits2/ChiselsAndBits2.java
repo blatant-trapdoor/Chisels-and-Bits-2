@@ -15,6 +15,7 @@ import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.client.UndoTracker;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapability;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.LegacyBlobSerializer;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselsAndBitsAPIImpl;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.registry.*;
@@ -57,6 +58,9 @@ public class ChiselsAndBits2 {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, CONFIGURATION.SERVER);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CONFIGURATION.CLIENT);
+
+        //Force this class to be loaded.
+        LegacyBlobSerializer.load();
     }
 
     public static ChiselsAndBits2 getInstance() {
