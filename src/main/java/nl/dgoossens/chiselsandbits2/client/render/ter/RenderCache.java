@@ -69,14 +69,6 @@ public class RenderCache {
     }
 
     /**
-     * Cancels the current ongoing rendering task.
-     */
-    public void cancelTask() {
-        if(renderTask != null && !renderTask.isDone())
-            renderTask.cancel(true);
-    }
-
-    /**
      * Marks the rendering as done and resets the rendering task.
      */
     public void finishRendering() {
@@ -103,12 +95,16 @@ public class RenderCache {
         renderTask = null;
     }
 
-    /**
-     * Get the unique id attached to this render cache.
-     * This is used to ensure a single render cache can't have two tasks
-     * pending.
-     */
-    public UUID getUniqueId() {
-        return uniqueId;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RenderCache)) return false;
+        RenderCache that = (RenderCache) o;
+        return Objects.equals(uniqueId, that.uniqueId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uniqueId);
     }
 }

@@ -126,13 +126,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
      */
     private void uploadVBOs() {
         final WorldTracker tracker = getTracker();
-        tracker.futureTrackers.removeIf(f -> {
-            if(finalizeRendering(f)) {
-                f.cancelTask();
-                return true;
-            }
-            return false;
-        });
+        tracker.futureTrackers.removeIf(this::finalizeRendering);
         final Stopwatch w = Stopwatch.createStarted();
         do { //We always upload one, no matter how many ms you want us to do it for.
             final UploadTracker t = tracker.uploaders.poll();
@@ -187,20 +181,17 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         if(!rc.needsRebuilding() && te.getRenderTracker().isInvalid(te.getWorld(), te.getPos()))
             rc.rebuild();
 
-        if (rc.needsRebuilding()) {
-            //Rebuild!
-            getTracker().removeTasks(rc);
-            if (getTracker().acceptsNewTasks()) {
-                try {
-                    final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE));
-                    final FutureTask<Tessellator> newFuture = new FutureTask<>(new BackgroundRenderer(cache, chunkOffset, te.getChunk(te.getWorld()).getTileList()));
-                    rc.setRenderingTask(newFuture);
+        //Rebuild if necessary
+        if (rc.needsRebuilding() && getTracker().acceptsNewTasks(rc)) {
+            try {
+                final Region cache = new Region(getWorld(), chunkOffset, chunkOffset.add(TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE, TileChunk.TILE_CHUNK_SIZE));
+                final FutureTask<Tessellator> newFuture = new FutureTask<>(new BackgroundRenderer(cache, chunkOffset, te.getChunk(te.getWorld()).getTileList()));
+                rc.setRenderingTask(newFuture);
 
-                    pool.submit(newFuture);
-                    addFutureTracker(rc);
-                } catch (RejectedExecutionException err) {
-                    err.printStackTrace();
-                }
+                pool.submit(newFuture);
+                addFutureTracker(rc);
+            } catch (RejectedExecutionException err) {
+                err.printStackTrace();
             }
         }
 
@@ -296,29 +287,15 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
 
     private static class WorldTracker {
         //Previously the futureTrackers where a linked list of FutureTracker which was a hull for the RenderCache object.
-        private final LinkedList<RenderCache> futureTrackers = new LinkedList<>();
+        private final HashSet<RenderCache> futureTrackers = new HashSet<>();
         private final Queue<UploadTracker> uploaders = new ConcurrentLinkedQueue<>();
         private final Queue<Runnable> nextFrameTasks = new ConcurrentLinkedQueue<>();
 
         /**
-         * Removes all currently pending tasks from the given
-         * render cache.
-         */
-        public void removeTasks(RenderCache cache) {
-            futureTrackers.removeIf(f -> {
-                if(f.getUniqueId().equals(cache.getUniqueId())) {
-                    f.cancelTask();
-                    return true;
-                }
-                return false;
-            });
-        }
-
-        /**
          * Returns true if a new future tracker can be added to this tracker.
          */
-        public boolean acceptsNewTasks() {
-            return futureTrackers.size() < ChiseledBlockTER.INSTANCE.getMaxTesselators();
+        public boolean acceptsNewTasks(RenderCache cache) {
+            return futureTrackers.contains(cache) || futureTrackers.size() < ChiseledBlockTER.INSTANCE.getMaxTesselators();
         }
     }
 
