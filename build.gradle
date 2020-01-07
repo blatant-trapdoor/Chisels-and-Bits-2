@@ -49,6 +49,8 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'info'
+            property 'fml.earlyprogresswindow', 'false'
+            ideaModule "${project.name}.main"
 
             //CREDIT TO https://github.com/mekanism/Mekanism/blob/1.14.x/build.gradle for this gradle setup!
 
@@ -84,6 +86,8 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'info'
+            property 'fml.earlyprogresswindow', 'false'
+            ideaModule "${project.name}.main"
             args 'nogui'
 
             mods {
@@ -97,6 +101,8 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'info'
+            property 'fml.earlyprogresswindow', 'false'
+            ideaModule "${project.name}.main"
             args '--mod', 'chiselsandbits2', '--all', '--output', file('src/main/generated/')
 
             mods {
