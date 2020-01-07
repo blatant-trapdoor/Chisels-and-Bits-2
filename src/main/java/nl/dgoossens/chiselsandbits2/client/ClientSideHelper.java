@@ -14,6 +14,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -30,6 +31,8 @@ import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.radial.RadialMenu;
+import nl.dgoossens.chiselsandbits2.client.gui.BitBagScreen;
+import nl.dgoossens.chiselsandbits2.common.bitstorage.BagContainer;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
@@ -570,5 +573,10 @@ public class ClientSideHelper {
             this.mode = mode;
             this.dimension = dimension;
         }
+    }
+
+    //--- BIT BAG ---
+    public void openBitBag(PlayerEntity player, Hand hand) {
+
     }
 }

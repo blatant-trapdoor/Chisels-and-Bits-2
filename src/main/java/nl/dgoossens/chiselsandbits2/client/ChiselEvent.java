@@ -70,6 +70,9 @@ public class ChiselEvent {
                 ClientItemPropertyUtil.setLockState(!b);
                 if(b) player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.unlocked_mb"), true);
                 else player.sendStatusMessage(new TranslationTextComponent("general."+ChiselsAndBits2.MOD_ID+".info.locked_mb"), true);
+
+                e.setCanceled(true);
+                return;
             }
         }
 

@@ -34,6 +34,7 @@ public class ChiselsAndBits2 {
     private final ModStatistics STATISTICS;
     private final ModRecipes RECIPES;
     private final UndoTracker UNDO;
+    private final ModContainers CONTAINERS;
     private ClientSide CLIENT;
     private ModKeybindings KEYBINDINGS;
 
@@ -47,6 +48,7 @@ public class ChiselsAndBits2 {
         STATISTICS = new ModStatistics();
         RECIPES = new ModRecipes();
         UNDO = new UndoTracker();
+        CONTAINERS = new ModContainers();
 
         //Only register the client and keybindings classes when on the CLIENT distribution.
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
@@ -117,6 +119,10 @@ public class ChiselsAndBits2 {
 
     public UndoTracker getUndoTracker() {
         return UNDO;
+    }
+
+    public ModContainers getContainers() {
+        return CONTAINERS;
     }
 
     /**
