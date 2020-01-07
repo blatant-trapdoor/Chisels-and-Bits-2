@@ -53,7 +53,6 @@ public class SSynchronizeBitStoragePacket {
                 target = ctx.get().getSender();
 
             target.inventory.getStackInSlot(pkt.inventorySlot).getCapability(StorageCapabilityProvider.STORAGE).ifPresent(storage -> storage.loadFromNBT(pkt.nbt));
-            System.out.println("Data: "+target.inventory.getStackInSlot(pkt.inventorySlot).getCapability(StorageCapabilityProvider.STORAGE).orElse(null));
             ItemPropertyUtil.recalculateGlobalSelectedVoxelWrapper(target);
         });
         ctx.get().setPacketHandled(true);

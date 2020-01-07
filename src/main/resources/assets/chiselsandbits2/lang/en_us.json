@@ -185,5 +185,8 @@
   "advancements.story.craft_chisel.title": "A World of Bits",
   "advancements.story.craft_chisel.description": "Obtain a chisel",
   "advancements.story.get_bag.title": "Portable Bit Storage",
-  "advancements.story.get_bag.description": "Craft a bit bag to store bits in"
+  "advancements.story.get_bag.description": "Craft a bit bag to store bits in",
+
+  "button.chiselsandbits2.trash": "Clear bag contents; hold item to filter",
+  "button.chiselsandbits2.input": "Add chiseled blocks to bag"
 }

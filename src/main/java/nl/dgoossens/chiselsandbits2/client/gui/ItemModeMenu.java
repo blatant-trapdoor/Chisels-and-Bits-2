@@ -424,6 +424,7 @@ public class ItemModeMenu extends RadialMenu {
         BitStorage store = stack.getCapability(StorageCapabilityProvider.STORAGE).orElse(null);
         if(store == null) return; //If it's null we can't do nothing.
 
+        long s = ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get();
         for (final MenuRegion mnuRgn : modes) {
             if (mnuRgn.item != null) {
                 //None or bookmarks don't have amounts.
@@ -432,8 +433,7 @@ public class ItemModeMenu extends RadialMenu {
                 //Selectable blocks should render the item that's inside!
                 final double x = (mnuRgn.x1 + mnuRgn.x2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
                 final double y = (mnuRgn.y1 + mnuRgn.y2) * 0.5 * (RING_OUTER_EDGE * 0.6 + 0.4 * RING_INNER_EDGE);
-                getDurabilityBarRenderer().renderDurabilityBar(ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get() - store.get(mnuRgn.item),
-                        ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get(), (int) Math.round(middle_x + x - 9), (int) Math.round(middle_y + y - 7));
+                getDurabilityBarRenderer().renderDurabilityBar(s - store.get(mnuRgn.item), s, (int) Math.round(middle_x + x - 9), (int) Math.round(middle_y + y - 7));
             }
         }
     }

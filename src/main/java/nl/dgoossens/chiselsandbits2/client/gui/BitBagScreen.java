@@ -5,24 +5,30 @@ import net.minecraft.block.Block;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.client.config.GuiButtonExt;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BagContainer;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.items.BitBagItem;
+import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class BitBagScreen extends ContainerScreen<BagContainer> {
     private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ChiselsAndBits2.MOD_ID, "textures/gui/bit_bag.png");
     private int selectedSlot = -1;
+    private DurabilityBarRenderer cache;
+    private GuiButtonExt trashButton;
 
     public BitBagScreen(BagContainer container, PlayerInventory inv, ITextComponent text) {
         super(container, inv, text);
@@ -32,6 +38,11 @@ public class BitBagScreen extends ContainerScreen<BagContainer> {
     @Override
     protected void init() {
         super.init();
+
+        //Setup buttons
+        addButton(trashButton = new GuiButtonExt(guiLeft - 18, guiTop + 2, 18, 18, "", b -> {
+
+        }));
 
         //Determine selected slot
         final ItemStack bag = container.getBag();
@@ -54,18 +65,27 @@ public class BitBagScreen extends ContainerScreen<BagContainer> {
     public void render(int mouseX, int mouseY, float mouseZ) {
         this.renderBackground();
         super.render(mouseX, mouseY, mouseZ);
-        if (this.minecraft.player.inventory.getItemStack().isEmpty() && this.hoveredSlot != null && this.hoveredSlot.getHasStack()) {
-            final ItemStack item = this.hoveredSlot.getStack();
-            FontRenderer font = item.getItem().getFontRenderer(item);
-            net.minecraftforge.fml.client.config.GuiUtils.preItemToolTip(item);
-            ArrayList<String> text = new ArrayList<>(this.getTooltipFromItem(item));
-            if(this.hoveredSlot.inventory == container.getBagInventory()) {
-                //Add bit count if this is in the bag
-                long bits = container.getBag().getCapability(StorageCapabilityProvider.STORAGE).map(b -> b.get(VoxelWrapper.forBlock(Block.getBlockFromItem(item.getItem())))).orElse(0L);
-                text.add(TextFormatting.GRAY.toString()+(((bits*100) / 4096)/100.0d)+" blocks "+TextFormatting.ITALIC.toString()+"("+bits+" bits)");
+        if(trashButton.isHovered()) {
+            FontRenderer font = getMinecraft().fontRenderer;
+            this.renderTooltip(Arrays.asList(I18n.format("button."+ChiselsAndBits2.MOD_ID+".trash")), mouseX, mouseY, (font == null ? this.font : font));
+        } else if(hoveredSlot == container.getInputSlot()) {
+            FontRenderer font = getMinecraft().fontRenderer;
+            this.renderTooltip(Arrays.asList(I18n.format("button."+ChiselsAndBits2.MOD_ID+".input")), mouseX, mouseY, (font == null ? this.font : font));
+        } else {
+            //Avoid double rendering tooltips
+            if (this.minecraft.player.inventory.getItemStack().isEmpty() && this.hoveredSlot != null && this.hoveredSlot.getHasStack()) {
+                final ItemStack item = this.hoveredSlot.getStack();
+                FontRenderer font = item.getItem().getFontRenderer(item);
+                net.minecraftforge.fml.client.config.GuiUtils.preItemToolTip(item);
+                ArrayList<String> text = new ArrayList<>(this.getTooltipFromItem(item));
+                if(this.hoveredSlot.inventory == container.getBagInventory()) {
+                    //Add bit count if this is in the bag
+                    long bits = container.getBag().getCapability(StorageCapabilityProvider.STORAGE).map(b -> b.get(VoxelWrapper.forBlock(Block.getBlockFromItem(item.getItem())))).orElse(0L);
+                    text.add(TextFormatting.GRAY.toString()+(((bits*100) / 4096)/100.0d)+" blocks "+TextFormatting.ITALIC.toString()+"("+bits+" bits)");
+                }
+                this.renderTooltip(text, mouseX, mouseY, (font == null ? this.font : font));
+                net.minecraftforge.fml.client.config.GuiUtils.postItemToolTip();
             }
-            this.renderTooltip(text, mouseX, mouseY, (font == null ? this.font : font));
-            net.minecraftforge.fml.client.config.GuiUtils.postItemToolTip();
         }
     }
 
@@ -77,12 +97,32 @@ public class BitBagScreen extends ContainerScreen<BagContainer> {
         this.font.drawString(this.playerInventory.getDisplayName().getFormattedText(), 8.0F, (float)(this.ySize - 96 + 2), 4210752);
 
         //Render selection marker over the selected slot
+        this.minecraft.getTextureManager().bindTexture(GUI_TEXTURE);
         if(selectedSlot >= 0) {
-            this.minecraft.getTextureManager().bindTexture(GUI_TEXTURE);
             //We are already translated to the top left corner of the GUI here
             //Draw selection marker
             this.blit(5 + (selectedSlot % 9) * 18, 15 + (selectedSlot / 9) * 18, 176, 18, 22, 22);
         }
+
+        //Render button icons
+        this.blit(-15, 5, 176, 40, 12, 13);
+        this.blit(-14, 24, 176, 53, 10, 11);
+
+        //Render durability bars
+        if(this.minecraft.player.isCreative()) return; //No durability bars in creative
+        BitStorage store = container.getBag().getCapability(StorageCapabilityProvider.STORAGE).orElse(null);
+        if(store == null) return;
+        getDurabilityBarRenderer().setAlpha(0.5f); //Make them a bit translucent
+        long s = ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get();
+        drawForEachSlot(7, 17, (i, j, k) -> {
+            if(store.getSlotContent(k).isEmpty()) return;
+            getDurabilityBarRenderer().renderDurabilityBar(s - store.get(store.getSlotContent(k)), ChiselsAndBits2.getInstance().getConfig().bitsPerTypeSlot.get(), i, j);
+        });
+    }
+
+    public DurabilityBarRenderer getDurabilityBarRenderer() {
+        if(cache == null) cache = new DurabilityBarRenderer();
+        return cache;
     }
 
     /**
@@ -91,28 +131,32 @@ public class BitBagScreen extends ContainerScreen<BagContainer> {
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.minecraft.getTextureManager().bindTexture(GUI_TEXTURE);
-        int i = (this.width - this.xSize) / 2;
-        int j = (this.height - this.ySize) / 2;
+        int i2 = (this.width - this.xSize) / 2;
+        int j2 = (this.height - this.ySize) / 2;
         //Draw player inventory
-        this.blit(i, j + container.getRowCount() * 18 + 17, 0, 126, this.xSize, 96);
+        this.blit(i2, j2 + container.getRowCount() * 18 + 17, 0, 126, this.xSize, 96);
         //Draw background for slots
-        this.blit(i, j, 0, 0, this.xSize, container.getRowCount() * 18 + 17);
-
-        i += 7;
-        j += 17;
+        this.blit(i2, j2, 0, 0, this.xSize, container.getRowCount() * 18 + 17);
 
         //Draw slots
+        drawForEachSlot(i2 + 7, j2 + 17, (i, j, k) -> this.blit(i, j, 176, 0, 18, 18));
+
+        //Draw input slot background
+        this.blit(i2 - 18, j2 + 20, 176, 64, 18, 18);
+    }
+
+    private void drawForEachSlot(int i, int j, TriConsumer<Integer, Integer, Integer> draw) {
         int looseSlots = container.getSlotCount() - ((container.getRowCount() - 1) * 9);
         //Draw rows - 1 full rows
-        for(int k = 0; k < (container.getRowCount() - 1); k++)
-            drawRow(i, j + k * 18,9);
+        for(int q = 0; q < (container.getRowCount() - 1); q++)
+            drawRow(i, j + q * 18, 9, draw);
         //Draw one row with the remainder of the slots
-        drawRow(i, j + ((container.getRowCount() - 1) * 18), looseSlots);
+        drawRow(i, j + (((container.getRowCount() - 1) * 18)), looseSlots, draw);
     }
 
     //Draws a row of slots
-    private void drawRow(int i, int j, int rowSize) {
+    private void drawRow(int i, int j, int rowSize, TriConsumer<Integer, Integer, Integer> run) {
         for(int k = 0; k < rowSize; k++)
-            this.blit(i + 18 * k, j, 176, 0, 18, 18);
+            run.accept(i + k * 18, j, k);
     }
 }

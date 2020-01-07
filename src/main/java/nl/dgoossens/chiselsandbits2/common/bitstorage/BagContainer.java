@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.bitstorage;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -8,11 +9,14 @@ import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 
 public class BagContainer extends Container {
+    private Inventory fakeInventory = new Inventory(1);
     private Inventory bagInventory;
     private ItemStack item;
     private int slotCount;
+    private Slot inputSlot;
 
     public BagContainer(int id, PlayerInventory playerInventory) {
         this(id, playerInventory.player, new Inventory(Math.min( //Take occupied + 1 up to maximum. So you always have a slot to put it into the bag.
@@ -49,13 +53,24 @@ public class BagContainer extends Container {
         for(int i1 = 0; i1 < 9; ++i1) {
             this.addSlot(new Slot(player.inventory, i1, 8 + i1 * 18, 161 + i));
         }
+
+        //Input slot
+        inputSlot = new Slot(fakeInventory, 0, -17, 21);
+        this.addSlot(inputSlot);
+    }
+
+    public Slot getInputSlot() {
+        return inputSlot;
     }
 
     public void updateInventoryContents() {
         final BitStorage store = item.getCapability(StorageCapabilityProvider.STORAGE).orElse(null);
         if(store == null) return;
-        for(int i = 0; i < bagInventory.getSizeInventory(); i++)
-            bagInventory.setInventorySlotContents(i, store.getSlotContent(i).getStack());
+        for(int i = 0; i < bagInventory.getSizeInventory(); i++) {
+            ItemStack s = store.getSlotContent(i).getStack();
+            s.setCount(Math.max(1, (int) (store.get(VoxelWrapper.forBlock(Block.getBlockFromItem(s.getItem()))) / 4096)));
+            bagInventory.setInventorySlotContents(i, s);
+        }
     }
 
     public Inventory getBagInventory() {
