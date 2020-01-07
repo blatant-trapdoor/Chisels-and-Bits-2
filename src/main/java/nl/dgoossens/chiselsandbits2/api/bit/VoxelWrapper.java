@@ -139,7 +139,7 @@ public class VoxelWrapper<T> {
             case FLUIDSTATE:
                 return new ItemStack(((Fluid) get()).getFilledBucket());
         }
-        return null;
+        return ItemStack.EMPTY;
     }
 
     /**

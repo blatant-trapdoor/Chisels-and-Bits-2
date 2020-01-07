@@ -68,7 +68,7 @@ public class BitBeakerItem extends StorageItem implements IColourable {
                         itemstack.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(b -> {
                             try {
                                 VoxelWrapper<Fluid> wrapper = VoxelWrapper.forFluid(fluid);
-                                b.set(wrapper, b.get(wrapper) + (int) Math.pow(VoxelBlob.DIMENSION, 3));
+                                b.add(wrapper, (int) Math.pow(VoxelBlob.DIMENSION, 3));
                                 //Set mode causes a capability update here.
                                 ItemPropertyUtil.setSelectedVoxelWrapper(playerIn, itemstack, wrapper, true);
                             } catch(Exception x) {

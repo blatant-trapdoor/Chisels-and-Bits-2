@@ -30,7 +30,6 @@ import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.ChiseledBlockItem;
-import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
 import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
@@ -87,8 +86,8 @@ public class ItemModeMenu extends RadialMenu {
         if (!(getMinecraft().player.getHeldItemMainhand().getItem() instanceof IItemMenu)) return;
 
         //Update information
-        if(!getMinecraft().player.getHeldItemMainhand().equals(cachedStack)) {
-            cachedStack = getMinecraft().player.getHeldItemMainhand();
+        if(cachedStack == null || !getMinecraft().player.getHeldItemMainhand().equals(cachedStack, true)) {
+            cachedStack = getMinecraft().player.getHeldItemMainhand().copy();
             modes = getShownModes();
             buttons = getShownButtons();
         }
@@ -420,6 +419,7 @@ public class ItemModeMenu extends RadialMenu {
      * Render durability bars showing how full slots are.
      */
     private void renderCapacityBars(double middle_x, double middle_y) {
+        if(getMinecraft().player.isCreative()) return; //No capacity bars in creative
         ItemStack stack = getMinecraft().player.getHeldItemMainhand();
         BitStorage store = stack.getCapability(StorageCapabilityProvider.STORAGE).orElse(null);
         if(store == null) return; //If it's null we can't do nothing.
@@ -444,8 +444,16 @@ public class ItemModeMenu extends RadialMenu {
         final ItemStack item = getMinecraft().player.getHeldItemMainhand();
         if(item.getItem() instanceof StorageItem) {
             item.getCapability(StorageCapabilityProvider.STORAGE).ifPresent(bitStorage -> {
-                for(int i = 0; i < bitStorage.getSlots(); i++)
-                    modes.add(new MenuRegion(bitStorage.getSlotContent(i), item, getMinecraft().player));
+                for(int i = 0; i < bitStorage.getMaximumSlots(); i++) {
+                    if(!bitStorage.getSlotContent(i).isEmpty()) //The item menu resizes as your bag grows.
+                        modes.add(new MenuRegion(bitStorage.getSlotContent(i), item, getMinecraft().player));
+                }
+
+                //Amount of minimum empties to have (required otherwise item menu can't render properly
+                int frees = Math.max(0, 2 - bitStorage.getOccupiedSlotCount());
+                if(bitStorage.getOccupiedSlotCount() < bitStorage.getMaximumSlots()) frees++; //Always one free if it isn't full.
+                for(int i = 0; i < frees; i++)
+                    modes.add(new MenuRegion(VoxelWrapper.empty(), item, getMinecraft().player));
             });
         } else if(item.getItem() instanceof IItemMenu) {
             //TODO add support for addons' item modes
@@ -550,6 +558,20 @@ public class ItemModeMenu extends RadialMenu {
             } else
                 //Selected in this storage and going to get used.
                 type = RegionType.SELECTED;
+        }
+
+        @Override
+        public String toString() {
+            return "MenuRegion{" +
+                    "mode=" + mode +
+                    ", item=" + item +
+                    ", type=" + type +
+                    ", x1=" + x1 +
+                    ", x2=" + x2 +
+                    ", y1=" + y1 +
+                    ", y2=" + y2 +
+                    ", highlighted=" + highlighted +
+                    '}';
         }
     }
 }

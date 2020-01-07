@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -23,14 +24,17 @@ public class BitBagItem extends StorageItem implements IColourable {
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "bit_bag.help",
+                Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu);
     }
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
-        ItemStack itemstack = playerIn.getHeldItem(handIn);
-        ChiselsAndBits2.getInstance().getClient().openBitBag(playerIn, handIn);
-        playerIn.addStat(Stats.ITEM_USED.get(this));
-        return new ActionResult<>(ActionResultType.SUCCESS, itemstack);
+        if(handIn == Hand.MAIN_HAND) {
+            ItemStack itemstack = playerIn.getHeldItemMainhand();
+            ChiselsAndBits2.getInstance().getClient().openBitBag();
+            playerIn.addStat(Stats.ITEM_USED.get(this));
+            return new ActionResult<>(ActionResultType.SUCCESS, itemstack);
+        } else return super.onItemRightClick(worldIn, playerIn, handIn);
     }
 }

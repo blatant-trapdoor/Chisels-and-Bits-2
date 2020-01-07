@@ -4,20 +4,15 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import nl.dgoossens.chiselsandbits2.common.utils.ModelUtil;
 
 public class ModelUVReader extends ModelReader {
+    private final float[] quadUVs = new float[]{0, 0, 0, 1, 1, 0, 1, 1};
+    private final float minU;
+    private final float maxUMinusMin;
+    private final float minV;
+    private final float maxVMinusMin;
+    private int corners;
+    private int uCoord, vCoord;
 
-    public final float[] quadUVs = new float[]{0, 0, 0, 1, 1, 0, 1, 1};
-    final float minU;
-    final float maxUMinusMin;
-    final float minV;
-    final float maxVMinusMin;
-    public int corners;
-    int uCoord, vCoord;
-
-
-    public ModelUVReader(
-            final TextureAtlasSprite texture,
-            final int uFaceCoord,
-            final int vFaceCoord) {
+    public ModelUVReader(final TextureAtlasSprite texture, final int uFaceCoord, final int vFaceCoord) {
         minU = texture.getMinU();
         maxUMinusMin = texture.getMaxU() - minU;
 
@@ -28,10 +23,12 @@ public class ModelUVReader extends ModelReader {
         vCoord = vFaceCoord;
     }
 
+    public float[] getQuadUVs() {
+        return quadUVs;
+    }
+
     @Override
-    public void put(
-            final int element,
-            final float... data) {
+    public void put(final int element, final float... data) {
         super.put(element, data);
 
         if (element == getVertexFormat().getElementCount() - 1) {

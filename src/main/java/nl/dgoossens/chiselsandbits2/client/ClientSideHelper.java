@@ -48,6 +48,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
+import nl.dgoossens.chiselsandbits2.common.network.client.COpenBitBagPacket;
 import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
@@ -576,7 +577,7 @@ public class ClientSideHelper {
     }
 
     //--- BIT BAG ---
-    public void openBitBag(PlayerEntity player, Hand hand) {
-
+    public void openBitBag() {
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new COpenBitBagPacket());
     }
 }

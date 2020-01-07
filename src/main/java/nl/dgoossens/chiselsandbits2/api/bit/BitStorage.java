@@ -1,6 +1,7 @@
 package nl.dgoossens.chiselsandbits2.api.bit;
 
 import net.minecraft.item.Item;
+import net.minecraft.nbt.INBT;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface BitStorage {
     /**
      * Returns how many slots this storage has.
      */
-    int getSlots();
+    int getMaximumSlots();
 
     /**
      * Finds the first available slot for a given type.
@@ -26,11 +27,6 @@ public interface BitStorage {
      * @return How much couldn't be put into the bag.
      */
     long add(final VoxelWrapper w, final long amount);
-
-    /**
-     * Sets a given voxel type to a given amount.
-     */
-    void set(final VoxelWrapper w, final long amount);
 
     /**
      * Returns whether this storage stores a given voxel type.
@@ -87,4 +83,15 @@ public interface BitStorage {
      * Validates the
      */
     void validate();
+
+    /**
+     * Loads this storage from NBT.
+     */
+    void loadFromNBT(INBT nbt);
+
+    /**
+     * Creates NBT from this BitStorage that is loadable by
+     * {@link #loadFromNBT(INBT)}
+     */
+    INBT toNBT();
 }

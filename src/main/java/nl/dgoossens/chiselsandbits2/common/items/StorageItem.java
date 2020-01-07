@@ -58,6 +58,7 @@ public abstract class StorageItem extends PropertyOwner implements IItemScrollWh
 
     @Override
     public boolean showDurabilityBar(ItemStack stack) {
+        if(ChiselsAndBits2.getInstance().getClient().getPlayer().isCreative()) return false; //Don't show durability bars in creative.
         return !getSelected(stack).isEmpty() && ChiselsAndBits2.getInstance().getConfig().showBitsAvailableAsDurability.get();
     }
 

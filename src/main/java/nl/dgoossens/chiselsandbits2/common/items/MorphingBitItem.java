@@ -8,6 +8,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -23,7 +24,7 @@ import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.*;
 
 public class MorphingBitItem extends ChiselMimicItem {
     protected int PROPERTY_LOCKED;
@@ -80,8 +81,8 @@ public class MorphingBitItem extends ChiselMimicItem {
             //Create morphing bits for all blocks
             PropertyOwner.BUILDING_CREATIVE_TAB = true;
             final PlayerEntity player = ChiselsAndBits2.getInstance().getClient().getPlayer();
-            for(Block b : ForgeRegistries.BLOCKS.getValues()) {
-                if(b instanceof ChiseledBlock) continue; //Don't create a chiseled block morphing bit.. this will end badly.
+            Registry.BLOCK.forEach(b -> { //We use Registry instead of ForgeRegistries on purpose as ForgeRegistries is sorted by registry key whilst Registry is sorted by registration order. You might say: who cares? Well this way the creative menu looks more similar to the search menu.
+                if(b instanceof ChiseledBlock) return; //Don't create a chiseled block morphing bit.. this will end badly.
                 if(ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(b.getDefaultState())) {
                     //Only make a locked bit if we can chisel this one
                     ItemStack it = new ItemStack(this);
@@ -89,7 +90,7 @@ public class MorphingBitItem extends ChiselMimicItem {
                     setSelected(player, it, VoxelWrapper.forBlock(b));
                     items.add(it);
                 }
-            }
+            });
             PropertyOwner.BUILDING_CREATIVE_TAB = false;
         }
     }

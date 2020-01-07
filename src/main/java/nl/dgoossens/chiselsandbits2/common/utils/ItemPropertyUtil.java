@@ -82,8 +82,11 @@ public class ItemPropertyUtil implements CacheClearable {
         }
 
         if(item.getItem() instanceof StorageItem) {
-            ((StorageItem) item.getItem()).setSelected(player, item, w);
-            if(updateTimestamp) item.setTagInfo("timestamp", new LongNBT(w.isEmpty() ? 0 : System.currentTimeMillis())); //Update timestamp (make sure empty will never be first)
+            //Check if this storage item at least contains this wrapper
+            if(w.isEmpty() || item.getCapability(StorageCapabilityProvider.STORAGE).map(f -> f.get(w) > 0).orElse(false)) {
+                ((StorageItem) item.getItem()).setSelected(player, item, w);
+                if(updateTimestamp) item.setTagInfo("timestamp", new LongNBT(w.isEmpty() ? 0 : System.currentTimeMillis())); //Update timestamp (make sure empty will never be first)
+            }
         } else if(item.getItem() instanceof MorphingBitItem) {
             ((MorphingBitItem) item.getItem()).setSelected(player, item, w);
         }

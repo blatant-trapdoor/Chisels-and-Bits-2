@@ -35,6 +35,7 @@ public class NetworkRouter {
         HANDLER.registerMessage(disc++, CTapeMeasureColour.class, CTapeMeasureColour::encode, CTapeMeasureColour::decode, CTapeMeasureColour::handle);
         HANDLER.registerMessage(disc++, CItemModePacket.class, CItemModePacket::encode, CItemModePacket::decode, CItemModePacket::handle);
         HANDLER.registerMessage(disc++, CVoxelWrapperPacket.class, CVoxelWrapperPacket::encode, CVoxelWrapperPacket::decode, CVoxelWrapperPacket::handle);
+        register(COpenBitBagPacket.class);
 
         //Server
         HANDLER.registerMessage(disc++, SSynchronizeBitStoragePacket.class, SSynchronizeBitStoragePacket::encode, SSynchronizeBitStoragePacket::decode, SSynchronizeBitStoragePacket::handle);
@@ -42,6 +43,17 @@ public class NetworkRouter {
         HANDLER.registerMessage(disc++, SRehighlightItemPacket.class, SRehighlightItemPacket::encode, SRehighlightItemPacket::decode, SRehighlightItemPacket::handle);
         HANDLER.registerMessage(disc++, SGroupMethod.BeginGroupPacket.class, SGroupMethod.BeginGroupPacket::encode, SGroupMethod.BeginGroupPacket::decode, SGroupMethod.BeginGroupPacket::handle);
         HANDLER.registerMessage(disc++, SGroupMethod.EndGroupPacket.class, SGroupMethod.EndGroupPacket::encode, SGroupMethod.EndGroupPacket::decode, SGroupMethod.EndGroupPacket::handle);
+    }
+
+    /**
+     * Easy registration method for packets  by only giving the class as long as it extends IPacket.
+     */
+    public <T extends IPacket<T>> void register(Class<T> packet) {
+        try {
+            HANDLER.registerMessage(disc++, packet, IPacket::encode, packet.newInstance().getDecoder(), IPacket::handle);
+        } catch(Exception x) {
+            x.printStackTrace();
+        }
     }
 
     /**

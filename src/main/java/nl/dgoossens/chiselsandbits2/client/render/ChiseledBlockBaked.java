@@ -41,7 +41,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
     private BakedQuad[] west;
     private BakedQuad[] generic;
 
-    ChiseledBlockBaked(final VoxelBlobStateReference data, final ModelRenderState mrs, final VertexFormat format) {
+    public ChiseledBlockBaked(final VoxelBlobStateReference data, final ModelRenderState mrs, final VertexFormat format) {
         this.format = format;
         if (data == null) return;
         validateInitialised();

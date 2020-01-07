@@ -61,7 +61,7 @@ public class FaceRegion {
         return face;
     }
 
-    boolean extend(final FaceRegion currentFace) {
+    public boolean extend(final FaceRegion currentFace) {
         if (currentFace.state != state)
             return false;
 

@@ -25,11 +25,11 @@ public class StorageCapabilityProvider implements ICapabilitySerializable<INBT> 
 
     @Override
     public INBT serializeNBT() {
-        return STORAGE.getStorage().writeNBT(STORAGE, this.instance, null);
+        return instance.toNBT();
     }
 
     @Override
     public void deserializeNBT(INBT nbt) {
-        STORAGE.getStorage().readNBT(STORAGE, this.instance, null, nbt);
+        instance.loadFromNBT(nbt);
     }
 }

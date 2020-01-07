@@ -14,7 +14,6 @@ import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
-import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
@@ -42,17 +41,6 @@ public class InventoryUtils {
      */
     public static CalculatedInventory buildInventory(ServerPlayerEntity player) {
         return new CalculatedInventory(player);
-    }
-
-    /**
-     * Builds an inventory snapshot that can be queried for information. Variant of the CalculatedInventory that can only
-     * be queried, not modified.
-     *
-     * @deprecated Draft API: Not fully finished, for now don't try to do these calculations on the client side. Let the server handle it.
-     */
-    @Deprecated
-    public static InventorySnapshot takeSnapshot(PlayerEntity player) {
-        return new InventorySnapshot(player);
     }
 
     /**
@@ -221,10 +209,10 @@ public class InventoryUtils {
             long t = ItemPropertyUtil.getHighestSelectionTimestamp(getPlayer());
             for(int i : lastModifiedSlot.keySet()) {
                 if(!m.isEmpty() && ItemPropertyUtil.getSelectionTime(inventory.get(i)) == t) continue; //Don't change it for the currently selected one.
-                int slot = lastModifiedSlot.get(i);
+                int bagSlot = lastModifiedSlot.get(i);
                 final BitStorage bs = bitStorages.get(i);
-                if(slot < 0 || slot > bs.getSlots()) continue; //Invalid slot
-                ItemPropertyUtil.setSelectedVoxelWrapper(getPlayer(), inventory.get(i), bs.getSlotContent(slot), false);
+                if(bagSlot < 0 || bagSlot > bs.getMaximumSlots()) continue; //Invalid slot
+                ItemPropertyUtil.setSelectedVoxelWrapper(getPlayer(), inventory.get(i), bs.getSlotContent(bagSlot), false);
             }
 
             //Select the nextSelect if applicable
@@ -232,13 +220,8 @@ public class InventoryUtils {
                 ItemPropertyUtil.setSelectedVoxelWrapper(getPlayer(), inventory.get(nextSelect), selectedMode, true);
 
             //Send updates for all modified bit bags
-            for(int i : modifiedBitStorages) {
-                if(i < 0) {
-                    ItemPropertyUtil.updateStackCapability(inventory.get(-i), bitStorages.get(i), getPlayer());
-                    continue;
-                }
+            for(int i : modifiedBitStorages)
                 ItemPropertyUtil.updateStackCapability(inventory.get(i), bitStorages.get(i), getPlayer());
-            }
             modifiedBitStorages.clear();
 
             //Notify of bits wasted
@@ -268,17 +251,17 @@ public class InventoryUtils {
                 added = addToStorage(i, w, added, t, m, true);
 
                 //Now try to take from any random other bit storage that contains it
-                for(int slot : bitStorages.keySet()) {
-                    if(i == slot) continue;
+                for(int invSlot : bitStorages.keySet()) {
+                    if(i == invSlot) continue;
                     if(canStop.apply(added)) break; //If we no longer have a problem we're done.
-                    added = addToStorage(slot, w, added, t, m,true);
+                    added = addToStorage(invSlot, w, added, t, m,true);
                 }
 
                 //For adding we also try storages that don't contain it
                 if(added > 0) {
-                    for(int slot : bitStorages.keySet()) {
+                    for(int invSlot : bitStorages.keySet()) {
                         if(canStop.apply(added)) break; //If we no longer have a problem we're done.
-                        added = addToStorage(slot, w, added, t, m,false);
+                        added = addToStorage(invSlot, w, added, t, m,false);
                     }
                 }
 
@@ -288,27 +271,28 @@ public class InventoryUtils {
         }
 
         //Interal method for modifying storage contents for a given storage in a given slot.
-        private long addToStorage(int slot, VoxelWrapper w, long added, long t, VoxelWrapper m, boolean requireContains) {
-            if(!bitStorages.containsKey(slot)) return added; //If invalid we return instantly
-            BitStorage bs = bitStorages.get(slot);
+        private long addToStorage(int invSlot, VoxelWrapper w, long added, long t, VoxelWrapper m, boolean requireContains) {
+            if(!bitStorages.containsKey(invSlot)) return added; //If invalid we return instantly
+            BitStorage bs = bitStorages.get(invSlot);
+            if(bs.getOccupiedSlotCount() >= bs.getMaximumSlots()) return added; //If we have no space, return!
             if(requireContains && !bs.has(w)) return added; //If we can't take any more items we stop
             long capacity = added < 0 ? Math.max(added, -bs.get(bitPlaced)) : Math.min(added, bs.queryRoom(w));
             bs.add(w, capacity);
             //If adding select this slot passively
-            if(capacity > 0) lastModifiedSlot.put(slot, bs.findSlot(w));
-            modifiedBitStorages.add(slot);
+            if(capacity > 0) lastModifiedSlot.put(invSlot, bs.findSlot(w));
+            modifiedBitStorages.add(invSlot);
             //Always lower added
             added += capacity > 0 ? -capacity : capacity;
 
             //If this is the currently selected one, keep the selection going by re-selecting this bit type elsewhere.
             //Also make sure this is the type currently being placed!
-            if(bs.get(w) <= 0 && !m.isEmpty() && w.equals(m) && ItemPropertyUtil.getSelectionTime(getPlayer().inventory.mainInventory.get(slot)) == t) {
-                for(int otherSlot : bitStorages.keySet()) {
-                    BitStorage otherBs = bitStorages.get(slot);
+            if(bs.get(w) <= 0 && !m.isEmpty() && w.equals(m) && ItemPropertyUtil.getSelectionTime(getPlayer().inventory.mainInventory.get(invSlot)) == t) {
+                for(int otherInvSlot : bitStorages.keySet()) {
+                    BitStorage otherBs = bitStorages.get(invSlot);
                     //Does this one have this bit?
                     if(otherBs.get(w) > 0) {
                         //Select the other bag now
-                        nextSelect = otherSlot;
+                        nextSelect = otherInvSlot;
                         selectedMode = w;
                         break;
                     }
