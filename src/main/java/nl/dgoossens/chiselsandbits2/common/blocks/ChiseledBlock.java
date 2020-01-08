@@ -29,6 +29,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.loot.LootContext;
 import net.minecraft.world.storage.loot.LootParameters;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
@@ -43,8 +44,6 @@ import java.util.Random;
 import java.util.function.Consumer;
 
 public class ChiseledBlock extends Block implements BaseBlock {
-    public static final ResourceLocation field_220169_b = new ResourceLocation("block_drop");
-
     public ChiseledBlock(Properties properties) {
         super(properties);
     }
@@ -95,8 +94,8 @@ public class ChiseledBlock extends Block implements BaseBlock {
     }
 
     @Override
-    public boolean canRenderInLayer(BlockState state, BlockRenderLayer layer) {
-        return true;
+    public BlockRenderLayer getRenderLayer() {
+        return BlockRenderLayer.TRANSLUCENT;
     }
 
     //Redirect getSoundType to the primary block.
@@ -109,11 +108,6 @@ public class ChiseledBlock extends Block implements BaseBlock {
     @Override
     public float getSlipperiness(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity entity) {
         return getPrimaryState(world, pos).getSlipperiness(world, pos, entity);
-    }
-
-    @Override
-    public boolean isSolid(BlockState state) {
-        return false; //We say it's never solid to avoid shouldSideBeRendered from returning false somehow.
     }
 
     /**
@@ -136,7 +130,6 @@ public class ChiseledBlock extends Block implements BaseBlock {
         return super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
     }
 
-    //-- HANDLE BLOCK DROPS, COPIED FROM BLOCKSHULKERBOX.JAVA ---
     /**
      * Called before the Block is set to air in the world. Called regardless of if the player's tool can actually collect
      * this block.
@@ -163,7 +156,7 @@ public class ChiseledBlock extends Block implements BaseBlock {
     public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
         TileEntity tileentity = builder.get(LootParameters.BLOCK_ENTITY);
         if (tileentity instanceof ChiseledBlockTileEntity)
-            builder = builder.withDynamicDrop(field_220169_b, (p_220168_1_, p_220168_2_) -> {
+            builder = builder.withDynamicDrop(new ResourceLocation(ChiselsAndBits2.MOD_ID, "chiseled_block_drop"), (a, b) -> {
                 ((ChiseledBlockTileEntity) tileentity).getItemStack();
             });
         return super.getDrops(state, builder);
