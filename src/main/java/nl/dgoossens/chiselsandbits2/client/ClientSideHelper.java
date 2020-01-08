@@ -90,6 +90,7 @@ public class ClientSideHelper {
     protected IntegerBox modelBounds;
     protected BlockState previousState;
     protected boolean previousSilhoutte;
+    protected IItemMode previousMode;
     protected long previousTileIteration = -Long.MAX_VALUE;
 
     /**
@@ -489,6 +490,7 @@ public class ClientSideHelper {
         previousState = null;
         previousTileIteration = -Long.MAX_VALUE;
         previousSilhoutte = false;
+        previousMode = null;
     }
 
     /**
@@ -510,7 +512,7 @@ public class ClientSideHelper {
     protected void showGhost(ItemStack item, NBTBlobConverter c, World world, BlockPos pos, Direction face, BlockPos partial, float partialTicks, final boolean silhoutte) {
         final PlayerEntity player = Minecraft.getInstance().player;
         IBakedModel model = null;
-        if(ghostCache != null && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial) && world.getBlockState(pos).equals(previousState) && !didTileChange(world.getTileEntity(pos)))
+        if(ghostCache != null && ClientItemPropertyUtil.getGlobalCBM().equals(previousMode) && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial) && world.getBlockState(pos).equals(previousState) && !didTileChange(world.getTileEntity(pos)))
             model = ghostCache;
         else {
             previousPosition = pos;
@@ -518,6 +520,7 @@ public class ClientSideHelper {
             previousItem = item;
             previousSilhoutte = silhoutte;
             previousState = world.getBlockState(pos);
+            previousMode = ClientItemPropertyUtil.getGlobalCBM();
 
             final TileEntity te = world.getTileEntity(pos);
 

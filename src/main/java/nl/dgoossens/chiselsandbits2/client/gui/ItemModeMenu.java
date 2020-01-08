@@ -52,6 +52,7 @@ public class ItemModeMenu extends RadialMenu {
     private long buttonLastHighlighted = 0L;
     private DurabilityBarRenderer cache;
     private ItemStack cachedStack;
+    private IItemMode cachedMode;
 
     public ItemModeMenu() {
         super(new StringTextComponent("Radial Menu"));
@@ -86,10 +87,13 @@ public class ItemModeMenu extends RadialMenu {
         if (!(getMinecraft().player.getHeldItemMainhand().getItem() instanceof IItemMenu)) return;
 
         //Update information
-        if(cachedStack == null || !getMinecraft().player.getHeldItemMainhand().equals(cachedStack, true)) {
+        final ItemStack item = getMinecraft().player.getHeldItemMainhand();
+        if(cachedStack == null || !item.equals(cachedStack, true) ||
+                (item.getItem() instanceof ChiseledBlockItem && ClientItemPropertyUtil.getGlobalCBM().equals(cachedMode))) {
             cachedStack = getMinecraft().player.getHeldItemMainhand().copy();
             modes = getShownModes();
             buttons = getShownButtons();
+            cachedMode = ClientItemPropertyUtil.getGlobalCBM();
         }
 
         GlStateManager.pushMatrix();
@@ -138,7 +142,7 @@ public class ItemModeMenu extends RadialMenu {
         //Render the overlays, there's no buffer here. This renders the texts and itemstacks.
         renderOverlay(middle_x, middle_y, null);
 
-        if(getMinecraft().player.getHeldItemMainhand().getItem() instanceof StorageItem)
+        if(item.getItem() instanceof StorageItem)
             renderCapacityBars(middle_x, middle_y);
 
         GlStateManager.popMatrix();

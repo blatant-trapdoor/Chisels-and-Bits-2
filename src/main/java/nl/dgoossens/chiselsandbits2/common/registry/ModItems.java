@@ -80,10 +80,10 @@ public class ModItems {
     }
     
     /**
-     * Get the rgb colour of a IColourable.
+     * Get the rgb colour of a IColourable. This method has been optimized as much as possible
+     * as item colours request this and item colours are called every frame for every item.
      */
     public int getColourableColour(final ItemStack stack) {
-        //Optimized the fudge out of this method because ItemColors get called every frame.
         //Light gray and light blue can't be distinguished by the first 6 chars so we do one of them seperate
         if(stack.getItem().getRegistryName().getPath().toUpperCase().startsWith("LIGHT_GRAY")) return 10329495;
         switch(stack.getItem().getRegistryName().getPath().substring(0, 3).toUpperCase()) { //Only first three characters! (enough to distinguish colours)
@@ -141,6 +141,12 @@ public class ModItems {
 
     /**
      * Internal method to automatically register all fields in the class to the registry.
+     * If this method breaks in the future, switch the entire system over to DeferredRegisters, this system is not
+     * how you should register your items ideally! However, this system does work and make registering new items/blocks
+     * doable in a single line which was the goal. It's also from before DeferredRegisters existed.
+     *
+     * DeferredRegister will probably make the way I register colourable items harder but that's a necessary change as
+     * the way it works currently is very much hacky.
      */
     static <T extends IForgeRegistryEntry<T>> void registerAll(final RegistryEvent.Register<T> register, final Object k, final Class<T> type, ForgeRegistryEntry<T>... excludes) {
         b: for (Field f : k.getClass().getFields()) {

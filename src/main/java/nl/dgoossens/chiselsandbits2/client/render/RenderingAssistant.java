@@ -181,7 +181,7 @@ public class RenderingAssistant {
         ChiseledTintColor colorProvider = new ChiseledBlockColor(worldObj, blockPos); //Pass the location so grass/water is tinted properly
         if(expand) {
             //Expand just a slight bit larger so no z-fighting occurs
-            GlStateManager.scaled(1.01 ,1.01, 1.01);
+            GlStateManager.scaled(1.02 ,1.02, 1.02);
             GlStateManager.translated(-0.005, -0.005, -0.005);
         }
         renderModel(Math.max(3, Math.round(10.0f * Math.max(worldObj.getLightFor(LightType.BLOCK, blockPos), worldObj.getSunBrightness(partialTicks) * worldObj.getLightFor(LightType.SKY, blockPos)))), baked, colorProvider, notPlaceable);
