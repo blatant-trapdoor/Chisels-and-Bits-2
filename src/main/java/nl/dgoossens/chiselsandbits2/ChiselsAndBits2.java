@@ -70,8 +70,6 @@ public class ChiselsAndBits2 {
 
     // Ran after all registry events have finished.
     private void setup(final FMLCommonSetupEvent event) {
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> CLIENT::setup);
-
         //Register things
         CapabilityManager.INSTANCE.register(BitStorage.class, new StorageCapability(), BitStorageImpl::new);
         NETWORK_ROUTER.init();
@@ -82,6 +80,7 @@ public class ChiselsAndBits2 {
 
     private void setupClient(final FMLClientSetupEvent event) {
         //Register keybindings
+        CLIENT.setup();
         KEYBINDINGS.setup();
         CONTAINERS.registerScreens();
     }
