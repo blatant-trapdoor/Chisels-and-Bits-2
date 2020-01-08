@@ -33,11 +33,6 @@ import java.util.*;
 public class LegacyBlobSerializer extends BlobSerializer {
     private static Gson gson = new GsonBuilder().create();
 
-    public static void load() {
-        //Set up data fixers
-        
-    }
-
     @Override
     protected int readStateID(final PacketBuffer buffer) {
         final String name = buffer.readString(2047);

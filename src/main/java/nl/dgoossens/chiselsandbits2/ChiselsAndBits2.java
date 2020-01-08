@@ -7,6 +7,7 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
@@ -53,16 +54,13 @@ public class ChiselsAndBits2 {
         //Only register the client and keybindings classes when on the CLIENT distribution.
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             CLIENT = new ClientSide();
-            KEYBINDINGS = new ModKeybindings();
         });
 
         //Register to mod bus
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setupClient);
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, CONFIGURATION.SERVER);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CONFIGURATION.CLIENT);
-
-        //Force this class to be loaded.
-        LegacyBlobSerializer.load();
     }
 
     public static ChiselsAndBits2 getInstance() {
@@ -79,6 +77,11 @@ public class ChiselsAndBits2 {
 
         //Setup vanilla restrictions
         getAPI().getRestrictions().restrictBlockStateProperty(BlockStateProperties.SNOWY, false, true); //Make all snowy grass not snowy automatically
+    }
+
+    private void setupClient(final FMLClientSetupEvent event) {
+        //Register keybindings
+        KEYBINDINGS = new ModKeybindings();
     }
 
     public ChiselsAndBitsAPI getAPI() {
