@@ -36,10 +36,6 @@ public class ModKeybindings {
     public Map<ItemMode, KeyBinding> modeHotkeys = new HashMap<>();
 
     public ModKeybindings() {
-        //This is null if this is a data mode startup. (or server)
-        if(Minecraft.getInstance()==null)
-            return;
-
         //Generate Hotkeys
         for (MenuAction ma : MenuAction.values())
             if (ma.hasHotkey()) {
@@ -56,17 +52,24 @@ public class ModKeybindings {
                 if(ma.equals(MenuAction.PLACE)) continue; //No keybind for place because its shared with swap.
                 KeyBinding kb = new KeyBinding("general.chiselsandbits2.menuaction." + ma.name().toLowerCase() + ".hotkey", CONFLICT, mod, def, CATEGORY);
                 actionHotkeys.put(ma, kb);
-                ClientRegistry.registerKeyBinding(kb);
             }
 
         for (ItemMode im : ItemMode.values())
             if (im.hasHotkey()) {
                 KeyBinding kb = new KeyBinding("general.chiselsandbits2.itemmode." + im.getTypelessName().toLowerCase() + ".hotkey", CONFLICT, NONE, CATEGORY);
                 modeHotkeys.put(im, kb);
-                ClientRegistry.registerKeyBinding(kb);
             }
 
+
+    }
+
+    public void setup() {
         //Register Everything
+        for(KeyBinding kb : actionHotkeys.values())
+            ClientRegistry.registerKeyBinding(kb);
+        for(KeyBinding kb : modeHotkeys.values())
+            ClientRegistry.registerKeyBinding(kb);
+
         for (Field f : getClass().getFields()) {
             if (!KeyBinding.class.isAssignableFrom(f.getType())) continue;
             try {

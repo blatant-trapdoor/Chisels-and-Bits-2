@@ -111,7 +111,6 @@ public class ChiseledBlock extends Block implements BaseBlock {
         return getPrimaryState(world, pos).getSlipperiness(world, pos, entity);
     }
 
-    //TODO make solid depending on a kind of fullBlock value just like C&B1, saves performance when you have large amounts of full block mixed blocks.
     @Override
     public boolean isSolid(BlockState state) {
         return false; //We say it's never solid to avoid shouldSideBeRendered from returning false somehow.
@@ -150,7 +149,7 @@ public class ChiseledBlock extends Block implements BaseBlock {
         TileEntity tileentity = worldIn.getTileEntity(pos);
         if (tileentity instanceof ChiseledBlockTileEntity) {
             ChiseledBlockTileEntity cte = (ChiseledBlockTileEntity) tileentity;
-            ItemEntity itementity = new ItemEntity(worldIn, (double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), cte.getItemStack());
+            ItemEntity itementity = new ItemEntity(worldIn, pos.getX(), pos.getY(), pos.getZ(), cte.getItemStack());
             itementity.setDefaultPickupDelay();
             worldIn.addEntity(itementity);
         }

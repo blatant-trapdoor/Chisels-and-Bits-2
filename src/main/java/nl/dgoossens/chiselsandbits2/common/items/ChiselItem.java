@@ -31,7 +31,9 @@ import java.util.List;
 import java.util.Set;
 
 public class ChiselItem extends ChiselMimicItem {
-    public ChiselItem(Item.Properties builder) { super(builder); }
+    public ChiselItem(Item.Properties builder) {
+        super(builder);
+    }
 
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {

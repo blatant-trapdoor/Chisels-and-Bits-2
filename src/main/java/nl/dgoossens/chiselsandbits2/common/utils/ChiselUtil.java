@@ -23,7 +23,6 @@ import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
 

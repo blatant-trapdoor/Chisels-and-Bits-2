@@ -14,13 +14,13 @@ import nl.dgoossens.chiselsandbits2.common.bitstorage.BagContainer;
 public class ModContainers {
     public final ContainerType<BagContainer> BIT_BAG = buildType("bit_bag", BagContainer::new);
 
-    public ModContainers() {
-        //Register container screens where applicable
-        ScreenManager.registerFactory(BIT_BAG, BitBagScreen::new);
-    }
-
     public <T extends Container> ContainerType<T> buildType(String key, ContainerType.IFactory<T> factory) {
         return (ContainerType<T>) new ContainerType<>(factory).setRegistryName(ChiselsAndBits2.MOD_ID, key);
+    }
+
+    public void registerScreens() {
+        //Register container screens where applicable
+        ScreenManager.registerFactory(BIT_BAG, BitBagScreen::new);
     }
 
     @SubscribeEvent

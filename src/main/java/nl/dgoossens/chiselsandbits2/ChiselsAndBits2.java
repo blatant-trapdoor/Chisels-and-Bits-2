@@ -50,6 +50,7 @@ public class ChiselsAndBits2 {
         RECIPES = new ModRecipes();
         UNDO = new UndoTracker();
         CONTAINERS = new ModContainers();
+        KEYBINDINGS = new ModKeybindings();
 
         //Only register the client and keybindings classes when on the CLIENT distribution.
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
@@ -81,7 +82,8 @@ public class ChiselsAndBits2 {
 
     private void setupClient(final FMLClientSetupEvent event) {
         //Register keybindings
-        KEYBINDINGS = new ModKeybindings();
+        KEYBINDINGS.setup();
+        CONTAINERS.registerScreens();
     }
 
     public ChiselsAndBitsAPI getAPI() {
