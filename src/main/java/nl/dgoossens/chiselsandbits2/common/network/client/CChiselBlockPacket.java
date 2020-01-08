@@ -4,11 +4,9 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Direction;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
-import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.ChiselHandler;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
 
 import java.util.function.Supplier;
 

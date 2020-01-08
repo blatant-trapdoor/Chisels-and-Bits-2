@@ -3,7 +3,7 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 import net.minecraft.block.Blocks;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import nl.dgoossens.chiselsandbits2.api.render.IStateRef;
-import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.util.BitUtil;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;

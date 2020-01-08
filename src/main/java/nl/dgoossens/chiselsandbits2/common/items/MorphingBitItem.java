@@ -1,6 +1,5 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -13,15 +12,14 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-import net.minecraftforge.registries.ForgeRegistries;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.PropertyOwner;
 import nl.dgoossens.chiselsandbits2.api.item.property.SelectedProperty;
 import nl.dgoossens.chiselsandbits2.api.item.property.StateProperty;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.*;

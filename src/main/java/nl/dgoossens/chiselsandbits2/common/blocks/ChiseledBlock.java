@@ -32,10 +32,10 @@ import net.minecraft.world.storage.loot.LootParameters;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.ChiseledBlockItem;
-import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.util.BitUtil;
 
 import javax.annotation.Nullable;
 import java.awt.*;

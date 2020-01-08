@@ -3,8 +3,8 @@ package nl.dgoossens.chiselsandbits2.common.network.client;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 
 import java.util.function.Supplier;
 

@@ -1,7 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -9,8 +8,7 @@ import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
-import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
 
 public class NBTBlobConverter {
     public static final String NBT_VERSIONED_VOXEL = "X";

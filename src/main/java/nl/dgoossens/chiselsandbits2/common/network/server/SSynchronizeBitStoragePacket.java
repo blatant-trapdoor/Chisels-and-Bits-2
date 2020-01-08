@@ -9,7 +9,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 
 import java.util.function.Supplier;
 

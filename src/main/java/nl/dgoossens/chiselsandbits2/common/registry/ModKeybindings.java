@@ -6,8 +6,8 @@ import net.minecraft.client.util.InputMappings;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

@@ -10,9 +10,9 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IRotatableItem;
 import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;

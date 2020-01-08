@@ -1,7 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.items;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.DyeColor;
@@ -17,11 +16,9 @@ import nl.dgoossens.chiselsandbits2.api.item.DyedItemColour;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.property.ColourProperty;
 import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;

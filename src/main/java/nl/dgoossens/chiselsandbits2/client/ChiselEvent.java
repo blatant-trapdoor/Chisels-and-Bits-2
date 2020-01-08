@@ -12,7 +12,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -26,20 +25,19 @@ import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
 import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
 import nl.dgoossens.chiselsandbits2.common.network.client.CPlaceBlockPacket;
 import nl.dgoossens.chiselsandbits2.common.network.client.CWrenchBlockPacket;
-import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.network.client.CChiselBlockPacket;
-import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.RotationUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.util.RotationUtil;
 
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)

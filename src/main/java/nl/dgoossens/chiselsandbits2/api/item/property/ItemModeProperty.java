@@ -6,7 +6,7 @@ import net.minecraft.nbt.ByteNBT;
 import net.minecraft.nbt.IntNBT;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
 
 public class ItemModeProperty extends IItemProperty<IItemMode> {
     private  final IItemModeType type;

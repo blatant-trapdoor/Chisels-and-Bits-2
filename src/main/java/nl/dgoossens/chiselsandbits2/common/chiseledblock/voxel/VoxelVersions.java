@@ -7,7 +7,6 @@ public enum VoxelVersions {
     ANY(-1),
     LEGACY(-42, LegacyBlobSerializer.class), //For compatibility with C&B-WorldFixer
     COMPACT(1, BlobSerializer.class),
-    //MODERN(2, ModernBlobSerializer.class),
     ;
 
     private int id;

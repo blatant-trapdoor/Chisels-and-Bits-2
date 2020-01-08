@@ -4,8 +4,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import nl.dgoossens.chiselsandbits2.client.render.ChiseledBlockSmartModel;
-import nl.dgoossens.chiselsandbits2.client.render.ModelRenderState;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
 /**

@@ -14,7 +14,6 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -31,30 +30,28 @@ import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.radial.RadialMenu;
-import nl.dgoossens.chiselsandbits2.client.gui.BitBagScreen;
-import nl.dgoossens.chiselsandbits2.common.bitstorage.BagContainer;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ter.RenderingManager;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselTypeIterator;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.chisel.ChiselIterator;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.chisel.ChiselTypeIterator;
+import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
+import nl.dgoossens.chiselsandbits2.common.impl.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
 import nl.dgoossens.chiselsandbits2.common.network.client.COpenBitBagPacket;
-import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
 import nl.dgoossens.chiselsandbits2.common.items.TapeMeasureItem;
-import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.util.BitUtil;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -68,6 +65,9 @@ import java.util.List;
  */
 public class ClientSideHelper {
     //--- GENERAL ---
+    //Managers
+    private final RenderingManager RENDER_MANAGER;
+
     //General Constants
     protected static final double BIT_SIZE = 1.0 / 16.0;
     protected static final double HALF_BIT = BIT_SIZE / 2.0f;
@@ -92,6 +92,17 @@ public class ClientSideHelper {
     protected boolean previousSilhoutte;
     protected IItemMode previousMode;
     protected long previousTileIteration = -Long.MAX_VALUE;
+
+    public ClientSideHelper() {
+        RENDER_MANAGER = new RenderingManager();
+    }
+
+    /**
+     * Get the general rendering manager.
+     */
+    public RenderingManager getRenderingManager() {
+        return RENDER_MANAGER;
+    }
 
     /**
      * Cleans up some data when a player leaves the current save game.

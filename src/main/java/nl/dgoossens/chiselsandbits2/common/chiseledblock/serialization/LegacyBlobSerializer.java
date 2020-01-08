@@ -2,27 +2,18 @@ package nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.Dynamic;
-import com.mojang.datafixers.types.Type;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.state.IProperty;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SharedConstants;
-import net.minecraft.util.datafix.DataFixesManager;
-import net.minecraft.util.datafix.TypeReferences;
 import net.minecraft.util.datafix.fixes.BlockStateFlatteningMap;
-import net.minecraft.util.datafix.versions.V0099;
-import net.minecraft.util.registry.Registry;
 import net.minecraftforge.registries.ForgeRegistries;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
-import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.util.BitUtil;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.URLDecoder;
 import java.util.*;
 

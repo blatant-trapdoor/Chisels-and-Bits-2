@@ -6,6 +6,7 @@ import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.api.bit.RestrictionAPI;
 import nl.dgoossens.chiselsandbits2.api.block.BitAccess;
 import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
+import nl.dgoossens.chiselsandbits2.common.impl.voxel.BitAccessImpl;
 
 import java.util.Optional;
 

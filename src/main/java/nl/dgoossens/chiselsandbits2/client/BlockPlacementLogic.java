@@ -8,13 +8,12 @@ import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IVoxelStorer;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
 
 /**
  * A class dedicated to calculating whether or not we can currently place a block and where it gets placed

@@ -8,8 +8,8 @@ import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.property.StateProperty;
 import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -6,7 +6,6 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
 import nl.dgoossens.chiselsandbits2.common.items.MorphingBitItem;
-import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
 
 import java.util.function.Supplier;
 

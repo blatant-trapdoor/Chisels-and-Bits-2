@@ -2,7 +2,6 @@ package nl.dgoossens.chiselsandbits2.common.items;
 
 import com.google.common.collect.Multimap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -11,24 +10,14 @@ import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTier;
-import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
-import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
-import nl.dgoossens.chiselsandbits2.api.item.property.StateProperty;
-import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ChiselItem extends ChiselMimicItem {
     public ChiselItem(Item.Properties builder) {

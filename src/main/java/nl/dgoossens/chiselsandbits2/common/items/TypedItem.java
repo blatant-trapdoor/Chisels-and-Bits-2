@@ -3,7 +3,6 @@ package nl.dgoossens.chiselsandbits2.common.items;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
@@ -11,11 +10,10 @@ import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IItemScrollWheel;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.PropertyOwner;
 import nl.dgoossens.chiselsandbits2.api.item.property.ItemModeProperty;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 
-import static nl.dgoossens.chiselsandbits2.common.impl.ItemMode.values;
+import static nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode.values;
 
 public abstract class TypedItem extends PropertyOwner implements IItemScrollWheel, IItemMenu {
     protected int PROPERTY_ITEMMODE;

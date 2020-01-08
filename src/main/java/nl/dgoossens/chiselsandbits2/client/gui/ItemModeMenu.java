@@ -27,12 +27,12 @@ import nl.dgoossens.chiselsandbits2.api.radial.RadialMenu;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.client.ClientSideHelper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.ChiseledBlockItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
-import nl.dgoossens.chiselsandbits2.common.utils.ClientItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import org.lwjgl.opengl.GL11;
 

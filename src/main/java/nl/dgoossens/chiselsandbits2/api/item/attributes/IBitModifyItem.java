@@ -1,8 +1,8 @@
 package nl.dgoossens.chiselsandbits2.api.item.attributes;
 
 import net.minecraft.item.ItemStack;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 
 /**
  * Interface for any item that is capable of modifying bits in the world.

@@ -7,7 +7,7 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import nl.dgoossens.chiselsandbits2.api.bit.RestrictionAPI;
-import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
+import nl.dgoossens.chiselsandbits2.client.cull.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import org.apache.commons.lang3.tuple.Pair;
 

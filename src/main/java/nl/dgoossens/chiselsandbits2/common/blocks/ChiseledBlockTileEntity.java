@@ -18,14 +18,14 @@ import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
-import nl.dgoossens.chiselsandbits2.client.render.ter.TileChunk;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ter.TileChunk;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelNeighborRenderTracker;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
-import nl.dgoossens.chiselsandbits2.common.utils.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
+import nl.dgoossens.chiselsandbits2.common.util.BitUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

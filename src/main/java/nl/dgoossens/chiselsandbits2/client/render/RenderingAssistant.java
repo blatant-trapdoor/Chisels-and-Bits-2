@@ -15,15 +15,17 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
-import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledTintColor;
+import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledBlockColor;
+import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledTintColor;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Assists with generic rendering tasks, mostly those called by the ClientSideHelper.
+ */
 public class RenderingAssistant {
     public static void drawSelectionBoundingBoxIfExists(final AxisAlignedBB bb, final BlockPos blockPos, final PlayerEntity player, final float partialTicks, final boolean normalBoundingBox, final int red, final int green, final int blue, final int alpha, final int seeThruAlpha) {
         if (bb != null) {

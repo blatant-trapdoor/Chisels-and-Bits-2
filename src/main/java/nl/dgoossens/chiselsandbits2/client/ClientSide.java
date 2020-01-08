@@ -12,11 +12,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.settings.KeyConflictContext;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -27,17 +24,17 @@ import nl.dgoossens.chiselsandbits2.api.item.*;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IItemScrollWheel;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.ColourableItemColor;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockColor;
-import nl.dgoossens.chiselsandbits2.client.render.overlay.ChiseledBlockItemColor;
-import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
+import nl.dgoossens.chiselsandbits2.client.render.color.ColourableItemColor;
+import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledBlockColor;
+import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledBlockItemColor;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
-import nl.dgoossens.chiselsandbits2.common.impl.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
-import nl.dgoossens.chiselsandbits2.common.utils.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 
@@ -60,7 +57,7 @@ public class ClientSide extends ClientSideHelper {
      * Setup all client side only things to register.
      */
     public void setup() {
-        ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, ChiseledBlockTER.INSTANCE);
+        ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, new ChiseledBlockTER());
         Minecraft.getInstance().getBlockColors().register(new ChiseledBlockColor(),
                 ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK);
 

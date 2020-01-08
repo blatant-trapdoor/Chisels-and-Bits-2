@@ -9,8 +9,9 @@ import nl.dgoossens.chiselsandbits2.api.render.ICullTest;
 import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.BlobSerilizationCache;
-import nl.dgoossens.chiselsandbits2.common.utils.BitUtil;
-import nl.dgoossens.chiselsandbits2.common.utils.RotationUtil;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.bit.BitIterator;
+import nl.dgoossens.chiselsandbits2.common.util.BitUtil;
+import nl.dgoossens.chiselsandbits2.common.util.RotationUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -71,15 +72,18 @@ public final class VoxelBlob implements IVoxelSrc {
         return new VoxelBlob().fill(BitUtil.getBlockId(type));
     }
 
-    //--- PROTECTED METHODS ---
-    protected int getBit(final int offset) {
-        return values[offset];
+    /**
+     * Get the bit at a given index.
+     */
+    public int getIndex(final int index) {
+        return values[index];
     }
 
-    //--- MODIFICATION METHODS ---
-
-    protected void putBit(final int offset, final int newValue) {
-        values[offset] = newValue;
+    /**
+     * Set the bit at a given index.
+     */
+    public void setIndex(final int index, final int value) {
+        values[index] = value;
     }
 
     /**
@@ -390,21 +394,21 @@ public final class VoxelBlob implements IVoxelSrc {
      * Gets a pit at a given position.
      */
     public int get(final int x, final int y, final int z) {
-        return getBit(x | y << 4 | z << 8);
+        return getIndex(x | y << 4 | z << 8);
     }
 
     /**
      * Sets a bit at a given x/y/z to a value.
      */
     public void set(final int x, final int y, final int z, final int value) {
-        putBit(x | y << 4 | z << 8, value);
+        setIndex(x | y << 4 | z << 8, value);
     }
 
     /**
      * Sets a bit to air a given position.
      */
     public void clear(final int x, final int y, final int z) {
-        putBit(x | y << 4 | z << 8, AIR_BIT);
+        setIndex(x | y << 4 | z << 8, AIR_BIT);
     }
 
     //--- STATIC CONSTRUCTION METHODS ---

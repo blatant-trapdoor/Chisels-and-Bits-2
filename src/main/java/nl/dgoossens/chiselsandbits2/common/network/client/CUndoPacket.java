@@ -13,10 +13,10 @@ import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitAccess;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitIterator;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.bit.BitIterator;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
-import nl.dgoossens.chiselsandbits2.common.utils.InventoryUtils;
+import nl.dgoossens.chiselsandbits2.common.util.InventoryUtils;
 
 import java.util.*;
 import java.util.function.Supplier;
