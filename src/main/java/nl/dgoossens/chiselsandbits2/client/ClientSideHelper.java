@@ -463,8 +463,10 @@ public class ClientSideHelper {
             nbt.readChiselData(currentItem.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
 
             if (player.isSneaking() && !ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_GRID)) {
-                final BitLocation bl = new BitLocation((BlockRayTraceResult) mop, true, BitOperation.PLACE);
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl));
+                RayTraceResult newMop = ChiselUtil.rayTrace(player);
+                BlockRayTraceResult r = (newMop instanceof BlockRayTraceResult) ? (BlockRayTraceResult) newMop : (BlockRayTraceResult) mop;
+                final BitLocation bl = new BitLocation(r, true, BitOperation.PLACE);
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, r.getFace(), new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, r.getFace(), bl));
             } else {
                 //If we can already place where we're looking we don't have to move.
                 //On grid we don't do this.

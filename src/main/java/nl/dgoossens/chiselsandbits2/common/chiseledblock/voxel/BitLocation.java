@@ -129,4 +129,14 @@ public class BitLocation {
         // valid position and move on.
         return Math.min(Math.max(0, x), 15);
     }
+
+    @Override
+    public String toString() {
+        return "BitLocation{" +
+                "blockPos=" + blockPos +
+                ", bitX=" + bitX +
+                ", bitY=" + bitY +
+                ", bitZ=" + bitZ +
+                '}';
+    }
 }

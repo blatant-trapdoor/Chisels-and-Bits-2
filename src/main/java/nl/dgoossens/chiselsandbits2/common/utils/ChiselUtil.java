@@ -171,7 +171,7 @@ public class ChiselUtil {
     /**
      * Calculates the partial offset used by ghost rendering.
      */
-    public static BlockPos getPartialOffset(final Direction side, final BlockPos partial, final IntegerBox modelBounds ) {
+    public static BlockPos getPartialOffset(final Direction side, final BlockPos partial, final IntegerBox modelBounds) {
         int offset_x = modelBounds.minX;
         int offset_y = modelBounds.minY;
         int offset_z = modelBounds.minZ;

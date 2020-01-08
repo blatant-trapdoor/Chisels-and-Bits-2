@@ -55,7 +55,7 @@ public interface BitStorage {
     void setSlot(final int index, final VoxelWrapper w, final long amount);
 
     /**
-     * Removes the given slot.
+     * Removes the contents of the given slot.
      */
     void clearSlot(final int index);
 
