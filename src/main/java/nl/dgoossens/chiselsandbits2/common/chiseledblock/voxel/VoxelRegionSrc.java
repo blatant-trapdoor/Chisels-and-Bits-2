@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -19,7 +20,7 @@ public class VoxelRegionSrc implements IVoxelSrc {
 
     final VoxelBlob blobs[];
 
-    private VoxelRegionSrc(final World src, final BlockPos min, final BlockPos max, final BlockPos actingCenter) {
+    private VoxelRegionSrc(final PlayerEntity player, final World src, final BlockPos min, final BlockPos max, final BlockPos actingCenter) {
         this.min = min;
         this.max = max;
         this.actingCenter = actingCenter.subtract(min);
@@ -34,7 +35,7 @@ public class VoxelRegionSrc implements IVoxelSrc {
             for (int y = min.getY(); y <= max.getY(); ++y) {
                 for (int z = min.getZ(); z <= max.getZ(); ++z) {
                     final int idx = x - min.getX() + (y - min.getY()) * wrapX + (z - min.getZ()) * wrapX * wrapY;
-                    final Optional<BitAccess> access = ChiselsAndBits2.getInstance().getAPI().getBitAccess(src, new BlockPos(x, y, z));
+                    final Optional<BitAccess> access = ChiselsAndBits2.getInstance().getAPI().getBitAccess(player, src, new BlockPos(x, y, z));
                     if (access.isPresent()) blobs[idx] = access.get().getNativeBlob();
                     else blobs[idx] = new VoxelBlob();
                 }
@@ -42,8 +43,8 @@ public class VoxelRegionSrc implements IVoxelSrc {
         }
     }
 
-    public VoxelRegionSrc(final World theWorld, final BlockPos blockPos, final int range) {
-        this(theWorld, blockPos.add(-range, -range, -range), blockPos.add(range, range, range), blockPos);
+    public VoxelRegionSrc(final PlayerEntity player, final World theWorld, final BlockPos blockPos, final int range) {
+        this(player, theWorld, blockPos.add(-range, -range, -range), blockPos.add(range, range, range), blockPos);
     }
 
     @Override

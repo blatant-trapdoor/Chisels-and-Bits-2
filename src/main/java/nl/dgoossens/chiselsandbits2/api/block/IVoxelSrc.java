@@ -10,8 +10,5 @@ public interface IVoxelSrc {
      * Safe method, impossible coordinates will be clamped to
      * be valid.
      */
-    int getSafe(
-            int x,
-            int y,
-            int i);
+    int getSafe(int x, int y, int i);
 }

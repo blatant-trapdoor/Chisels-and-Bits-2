@@ -21,8 +21,8 @@ public class SAddUndoStepPacket {
 
     public SAddUndoStepPacket(final BlockPos pos, final VoxelBlobStateReference before, final VoxelBlobStateReference after) {
         this.pos = pos;
-        this.after = after;
         this.before = before;
+        this.after = after;
     }
 
     public static void encode(SAddUndoStepPacket msg, PacketBuffer buf) {

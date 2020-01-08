@@ -261,9 +261,12 @@ public class ChiseledBlockTileEntity extends TileEntity {
 
     public void completeEditOperation(final PlayerEntity player, final VoxelBlob vb, final boolean updateUndoTracker) {
         iteration++;
+        final VoxelBlobStateReference before = getVoxelReference();
         //Empty voxelblob = we need to destroy this block.
         if(vb.filled() <= 0) {
             world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
+            if(updateUndoTracker)
+                ChiselsAndBits2.getInstance().getUndoTracker().add(player, getWorld(), getPos(), before, new VoxelBlobStateReference(new VoxelBlob()));
             return;
         }
 
@@ -271,18 +274,26 @@ public class ChiseledBlockTileEntity extends TileEntity {
         int singleType = vb.singleType();
         if(singleType != VoxelBlob.AIR_BIT) {
             VoxelType type = VoxelType.getType(singleType);
+            boolean destroy = false;
             switch(type) {
                 case BLOCKSTATE:
                     world.setBlockState(pos, BitUtil.getBlockState(singleType), 3);
-                    return;
+                    destroy = true;
+                    break;
                 case FLUIDSTATE:
                     world.setBlockState(pos, BitUtil.getFluidState(singleType).getBlockState(), 3);
-                    return;
+                    destroy = true;
+                    break;
+            }
+            //Removing also needs to add to the undo tracker!
+            if(destroy) {
+                if(updateUndoTracker)
+                    ChiselsAndBits2.getInstance().getUndoTracker().add(player, getWorld(), getPos(), before, new VoxelBlobStateReference(new VoxelBlob()));
+                return;
             }
         }
 
         if(updateUndoTracker) {
-            final VoxelBlobStateReference before = getVoxelReference();
             setBlob(vb);
             final VoxelBlobStateReference after = getVoxelReference();
 

@@ -53,7 +53,7 @@ public class CUndoPacket {
 
         try {
             final World world = player.getEntityWorld();
-            final Optional<BitAccess> baOpt = ChiselsAndBits2.getInstance().getAPI().getBitAccess(world, pos);
+            final Optional<BitAccess> baOpt = ChiselsAndBits2.getInstance().getAPI().getBitAccess(player, world, pos);
             if(baOpt.isPresent()) {
                 final VoxelBlob bbef = before.getVoxelBlob();
                 final VoxelBlob baft = after.getVoxelBlob();
@@ -96,6 +96,10 @@ public class CUndoPacket {
 
                 //Actually apply the operation.
                 TileEntity te = world.getTileEntity(pos);
+                if(!(te instanceof ChiseledBlockTileEntity)) {
+                    world.setBlockState(pos, ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), 3);
+                    te = world.getTileEntity(pos);
+                }
                 if(te instanceof ChiseledBlockTileEntity)
                     ((ChiseledBlockTileEntity) te).completeEditOperation(player, vb, false);
 
