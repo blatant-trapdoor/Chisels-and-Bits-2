@@ -16,8 +16,10 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
@@ -51,7 +53,7 @@ import java.lang.reflect.Field;
  *
  * Events are located in this class, all methods are put in ClientSideHelper.
  */
-@OnlyIn(Dist.CLIENT)
+@Mod.EventBusSubscriber(Dist.CLIENT)
 public class ClientSide extends ClientSideHelper {
     //--- GENERAL SETUP ---
     /**
@@ -72,7 +74,6 @@ public class ClientSide extends ClientSideHelper {
         i.runForAllColourableItems((a) -> Minecraft.getInstance().getItemColors().register(cic, a));
 
         //We've got both normal and mod event bus events.
-        MinecraftForge.EVENT_BUS.register(getClass());
         FMLJavaModLoadingContext.get().getModEventBus().register(getClass());
     }
 
@@ -144,7 +145,6 @@ public class ClientSide extends ClientSideHelper {
      * item portrait.
      */
     @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
     public static void drawLast(final RenderGameOverlayEvent.Post e) {
         if (e.getType() == RenderGameOverlayEvent.ElementType.HOTBAR && ChiselsAndBits2.getInstance().getConfig().enableToolbarIcons.get()) {
             Minecraft.getInstance().getProfiler().startSection("chiselsandbit2-toolbaricons");
@@ -202,7 +202,6 @@ public class ClientSide extends ClientSideHelper {
      * For drawing our custom highlight bounding boxes!
      */
     @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
     public static void drawHighlights(final DrawBlockHighlightEvent.HighlightBlock e) {
         //Cancel if the draw blocks highlight method successfully rendered a highlight.
         if(ChiselsAndBits2.getInstance().getClient().drawBlockHighlight(e.getPartialTicks()))
@@ -213,7 +212,6 @@ public class ClientSide extends ClientSideHelper {
      * For rendering the block placement ghost and static tape measurements.
      */
     @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
     public static void drawLast(final RenderWorldLastEvent e) {
         if (Minecraft.getInstance().gameSettings.hideGUI) return;
 
@@ -226,7 +224,6 @@ public class ClientSide extends ClientSideHelper {
      * Handles calling the scroll methods on all items implementing IItemScrollWheel.
      */
     @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
     public static void wheelEvent(final InputEvent.MouseScrollEvent me) {
         final int dwheel = me.getScrollDelta() < 0 ? -1 : me.getScrollDelta() > 0 ? 1 : 0;
         if (me.isCanceled() || dwheel == 0) return;
