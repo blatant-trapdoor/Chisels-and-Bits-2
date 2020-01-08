@@ -71,6 +71,10 @@ public class BitLocation {
             bitY = 15;
         }
     }
+    
+    public BitLocation(final BitLocation other) {
+        this(other.blockPos, other.bitX, other.bitY, other.bitZ);
+    }
 
     public static BitLocation min(final BitLocation from, final BitLocation to) {
         final int bitX = min(from.blockPos.getX(), to.blockPos.getX(), from.bitX, to.bitX);
@@ -106,6 +110,34 @@ public class BitLocation {
         if (x > x2) return bitX2;
         if (x2 == x) return Math.max(bitX2, bitX3);
         return bitX3;
+    }
+    
+    public BitLocation add(final int x, final int y, final int z) {
+        bitX += x;
+        bitY += y;
+        bitZ += z;
+        if(bitX < 0) {
+            bitX += 16;
+            blockPos = blockPos.add(-1, 0, 0);
+        } else if(bitX >= 16) {
+            bitX -= 16;
+            blockPos = blockPos.add(1, 0, 0);
+        }
+        if(bitY < 0) {
+            bitY += 16;
+            blockPos = blockPos.add(0, -1, 0);
+        } else if(bitY >= 16) {
+            bitY -= 16;
+            blockPos = blockPos.add(0, 1, 0);
+        }
+        if(bitZ < 0) {
+            bitZ += 16;
+            blockPos = blockPos.add(0, 0, -1);
+        } else if(bitZ >= 16) {
+            bitZ -= 16;
+            blockPos = blockPos.add(0, 0, 1);
+        }
+        return this;
     }
 
     public BlockPos getBlockPos() {

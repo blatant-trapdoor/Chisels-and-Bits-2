@@ -18,7 +18,7 @@ public final class IntegerBox {
     }
 
     public AxisAlignedBB toBoundingBox() {
-        return new AxisAlignedBB(((double)minX) / 16, ((double)minY) / 16, ((double)minZ) / 16, (((double)maxX) + 1) / 16, (((double)maxY) + 1) / 16, (((double)maxZ) + 1) / 16);
+        return new AxisAlignedBB(minX / 16.0d, minY / 16.0d, minZ / 16.0d, (maxX + 1) / 16.0d, (maxY + 1) / 16.0d, (maxZ + 1) / 16.0d);
     }
 
     public void move(final Direction side, final int scale) {
@@ -28,6 +28,18 @@ public final class IntegerBox {
         maxY += side.getYOffset() * scale;
         minZ += side.getZOffset() * scale;
         maxZ += side.getZOffset() * scale;
+    }
+
+    public int width() {
+        return maxX - minX;
+    }
+
+    public int height() {
+        return maxY - minY;
+    }
+
+    public int depth() {
+        return maxZ - minZ;
     }
 
     public boolean extendsOutsideAllowedBB() {

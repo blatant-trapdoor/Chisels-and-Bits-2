@@ -118,16 +118,9 @@ public class ChiselEvent {
                         case PLACE:
                         {
                             //Chiseled Block
-                            RayTraceResult rtr = null;
                             IItemMode mode = ClientItemPropertyUtil.getGlobalCBM();
-                            if(mode.equals(ItemMode.CHISELED_BLOCK_GRID))
-                                //Object mouse over ignores the chiseled block's custom hitbox
-                                rtr = Minecraft.getInstance().objectMouseOver;
-                            else {
-                                rtr = ChiselUtil.rayTrace(player);
-                                if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
-                            }
-
+                            RayTraceResult rtr = ChiselUtil.rayTrace(player);
+                            if (!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
                             performPlaceBlock(i, (BlockRayTraceResult) rtr, mode, player);
                             break;
                         }
@@ -211,10 +204,7 @@ public class ChiselEvent {
 
         boolean canPlace = true;
         if (player.isSneaking() && !ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_GRID)) {
-            //TODO remove this status message when off-grid is finished
-            player.sendStatusMessage(new StringTextComponent("Off-grid placement is temporarily disabled, it will be re-enabled in a future alpha!"), true);
-            return;
-            //if (!BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl)) canPlace = false;
+            if (!BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl, player.getHeldItemMainhand())) canPlace = false;
         } else {
             if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
                 offset = offset.offset(face);

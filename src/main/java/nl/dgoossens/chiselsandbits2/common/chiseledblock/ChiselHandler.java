@@ -15,10 +15,13 @@ import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IRotatableItem;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IVoxelStorer;
+import nl.dgoossens.chiselsandbits2.client.BlockPlacementLogic;
 import nl.dgoossens.chiselsandbits2.client.culling.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.ChiselIterator;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.impl.ItemMode;
@@ -102,7 +105,7 @@ public class ChiselHandler {
                         if (te instanceof ChiseledBlockTileEntity) {
                             final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
                             final VoxelBlob vb = tec.getVoxelBlob();
-                            final ChiselIterator i = ChiselUtil.getIterator(pkt, new VoxelRegionSrc(world, pos, 1), pos, pkt.operation);
+                            final ChiselIterator i = ChiselUtil.getIterator(pkt, new VoxelRegionSrc(player, world, pos, 1), pos, pkt.operation);
 
                             //Handle the operation
                             switch (pkt.operation) {
@@ -163,21 +166,79 @@ public class ChiselHandler {
         if (!ibm.canPerformModification(IBitModifyItem.ModificationType.PLACE))
             return; //Make sure this item can do the operations
 
-        if(pkt.offgrid) return; //TODO add off-grid placement
-
         final World world = player.world;
-        final BlockPos pos = pkt.pos;
 
         if(pkt.mode instanceof ItemMode) {
             ItemStack item = player.getHeldItemMainhand();
             if(!(item.getItem() instanceof IVoxelStorer)) return;
             IVoxelStorer it = (IVoxelStorer) item.getItem();
+
+            if(pkt.offgrid) {
+                //Offgrid mode, place in all blockpositions concerned
+                final BitLocation target = pkt.location;
+                final VoxelBlob placedBlob = it.getVoxelBlob(item);
+                final IntegerBox bounds = placedBlob.getBounds();
+                final BlockPos offset = BlockPlacementLogic.getPartialOffset(pkt.side, new BlockPos(target.bitX, target.bitY, target.bitZ), bounds);
+                System.out.println("Offset is "+offset);
+                final BitLocation offsetLocation = new BitLocation(target).add(offset.getX(), offset.getY(), offset.getZ());
+                final BlockPos from = offsetLocation.getBlockPos();
+                final BlockPos to = offsetLocation.add(bounds.width(), bounds.height(), bounds.depth()).getBlockPos();
+
+                final int maxX = Math.max(from.getX(), to.getX());
+                final int maxY = Math.max(from.getY(), to.getY());
+                final int maxZ = Math.max(from.getZ(), to.getZ());
+                for (int xOff = Math.min(from.getX(), to.getX()); xOff <= maxX; ++xOff) {
+                    for (int yOff = Math.min(from.getY(), to.getY()); yOff <= maxY; ++yOff) {
+                        for (int zOff = Math.min(from.getZ(), to.getZ()); zOff <= maxZ; ++zOff) {
+                            final BlockPos pos = new BlockPos(xOff, yOff, zOff);
+                            //If we can't chisel here, don't chisel.
+                            if (world.getServer().isBlockProtected(world, pos, player))
+                                continue;
+                            if (!ChiselUtil.canChiselPosition(pos, player, world.getBlockState(pos), pkt.side))
+                                continue;
+
+                            final int myX = xOff * 16 - target.bitX - target.blockPos.getX() * 16;
+                            final int myY = yOff * 16 - target.bitY - target.blockPos.getY() * 16;
+                            final int myZ = zOff * 16 - target.bitZ - target.blockPos.getZ() * 16;
+                            final VoxelBlob slice = placedBlob.offset(myX, myY, myZ); //Calculate what part of the block needs to go onto this block
+
+                            //Replace the block with a chiseled block.
+                            ChiselUtil.replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.side);
+
+                            final TileEntity te = world.getTileEntity(pos);
+                            if (te instanceof ChiseledBlockTileEntity) {
+                                final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
+
+                                switch(pkt.mode) {
+                                    case CHISELED_BLOCK_FIT:
+                                    case CHISELED_BLOCK_MERGE:
+                                    case CHISELED_BLOCK_OVERLAP:
+                                        final VoxelBlob vb = tec.getVoxelBlob();
+                                        if(pkt.mode.equals(ItemMode.CHISELED_BLOCK_OVERLAP))
+                                            vb.overlap(slice);
+                                        else
+                                            vb.merge(slice);
+                                        tec.completeEditOperation(player, vb, false);
+                                        break;
+                                }
+                                if(!player.isCreative())
+                                    item.setCount(item.getCount() - 1);
+                                ChiselUtil.playModificationSound(world, pos, true); //Placement can play sound normally as block should be set already.
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+
+            //Normal mode, place in this block position
+            final BlockPos pos = pkt.pos;
             ChiselUtil.replaceWithChiseled(player, player.world, pos, world.getBlockState(pos), pkt.side);
 
             final TileEntity te = world.getTileEntity(pos);
             if (te instanceof ChiseledBlockTileEntity) {
                 final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
-                switch((ItemMode) pkt.mode) {
+                switch(pkt.mode) {
                     case CHISELED_BLOCK_GRID:
                         tec.setBlob(it.getVoxelBlob(item));
                         break;

@@ -286,7 +286,7 @@ public class ClientSideHelper {
                 RenderingAssistant.drawSelectionBoundingBoxIfExists(
                         ChiselTypeIterator.create(
                                 VoxelBlob.DIMENSION, location.bitX, location.bitY, location.bitZ,
-                                new VoxelRegionSrc(world, location.blockPos, 1),
+                                new VoxelRegionSrc(player, world, location.blockPos, 1),
                                 ((TypedItem) stack.getItem()).getSelectedMode(stack),
                                 ((BlockRayTraceResult) rayTrace).getFace(),
                                 operation.equals(BitOperation.PLACE)
@@ -450,24 +450,22 @@ public class ClientSideHelper {
         if (!ChiselsAndBits2.getInstance().getConfig().enablePlacementGhost.get()) return;
 
         final PlayerEntity player = Minecraft.getInstance().player;
-        final RayTraceResult mop = Minecraft.getInstance().objectMouseOver;
-        if(!(mop instanceof BlockRayTraceResult)) return;
+        RayTraceResult rtr = ChiselUtil.rayTrace(player);
+        if(!(rtr instanceof BlockRayTraceResult)) return;
+        final BlockRayTraceResult r = (BlockRayTraceResult) rtr;
         final ItemStack currentItem = player.getHeldItemMainhand();
-        final Direction face = ((BlockRayTraceResult) mop).getFace();
-        BlockPos offset = ((BlockRayTraceResult) mop).getPos();
+        BlockPos offset = r.getPos();
+        Direction face = r.getFace();
 
         if(!currentItem.isEmpty() && currentItem.getItem() instanceof BlockItem && ((BlockItem) currentItem.getItem()).getBlock() instanceof ChiseledBlock) {
-            if (mop.getType() != RayTraceResult.Type.BLOCK) return;
             if (!currentItem.hasTag()) return;
 
             final NBTBlobConverter nbt = new NBTBlobConverter();
             nbt.readChiselData(currentItem.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
 
             if (player.isSneaking() && !ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_GRID)) {
-                RayTraceResult newMop = ChiselUtil.rayTrace(player);
-                BlockRayTraceResult r = (newMop instanceof BlockRayTraceResult) ? (BlockRayTraceResult) newMop : (BlockRayTraceResult) mop;
                 final BitLocation bl = new BitLocation(r, true, BitOperation.PLACE);
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, r.getFace(), new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, r.getFace(), bl));
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl, currentItem));
             } else {
                 //If we can already place where we're looking we don't have to move.
                 //On grid we don't do this.
@@ -553,7 +551,7 @@ public class ClientSideHelper {
         GlStateManager.pushMatrix();
         GlStateManager.translated(pos.getX() - x, pos.getY() - y, pos.getZ() - z);
         if (!partial.equals(BlockPos.ZERO)) {
-            final BlockPos t = ChiselUtil.getPartialOffset(face, partial, modelBounds);
+            final BlockPos t = BlockPlacementLogic.getPartialOffset(face, partial, modelBounds);
             final double fullScale = 1.0 / VoxelBlob.DIMENSION;
             GlStateManager.translated(t.getX() * fullScale, t.getY() * fullScale, t.getZ() * fullScale);
         }
