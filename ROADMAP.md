@@ -12,11 +12,11 @@ Here's a rough outline of which features need to be added, all features need add
 Alpha 5, 6 and 7 (maybe there'll be less or more alphas) will all focus on fixing all bugs in the mod and making sure all current items get their full functionality.
 - ~~Compatiblity with optifine (at least fixing major issues)~~
 - ~~Multiplayer support for the mod~~
+- ~~Add a GUI to the bit bag~~
+- ~~Add off-grid placement to chiseled blocks~~
+- ~~Finalising the Worldfixer program which can convert 1.12 worlds to 1.14 C&B2.~~ _(impossible at the moment until Forge changes)_
 - Finalise the way chiseled blocks are stored to disk, currently I use the exact C&B1 method but I want to see if there is room for improvement
-- Add off-grid placement to chiseled blocks
-- ~~Finalising the Worldfixer program which can convert 1.12 worlds to 1.14 C&B2.~~ _(will be worked on at some future point)_
 - Finishing proper light level rendering and dynamically updating light level of chiseled blocks to the amount of glowing blocks contained in it
-- Looking at optimization of the block shape (bounding box) and isFullCube method.
 - Revamping the model generation code as that is still largely copied from C&B1 without having been looked at.
 - Bugfixes, stability improvements and lots of testing
 
@@ -45,7 +45,6 @@ Beta 9 will add the bit saw and scoop. Two tools for turning one chiseled block 
 Beta 10 will add the remaining bit storages allowing you to use both liquids and coloured bits in your builds.
 - Adding the bit beaker; including adding full functionality to liquid bits
 - Adding the palette; including adding transparency to bits
-- GUIs for the bit bag, beaker and palette.
 
 #### b0.11.0
 Beta 11 will get blueprints added and maybe a prototype of the workshop.

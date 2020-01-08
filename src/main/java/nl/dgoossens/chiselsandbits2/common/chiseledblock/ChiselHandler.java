@@ -183,6 +183,7 @@ public class ChiselHandler {
                 final BitLocation offsetLocation = new BitLocation(target).add(offset.getX(), offset.getY(), offset.getZ());
                 final BlockPos from = offsetLocation.getBlockPos();
                 final BlockPos to = offsetLocation.add(bounds.width(), bounds.height(), bounds.depth()).getBlockPos();
+                System.out.println("Placing from "+from+" to "+to);
 
                 final int maxX = Math.max(from.getX(), to.getX());
                 final int maxY = Math.max(from.getY(), to.getY());
@@ -197,7 +198,7 @@ public class ChiselHandler {
                             if (!ChiselUtil.canChiselPosition(pos, player, world.getBlockState(pos), pkt.side))
                                 continue;
 
-                            final int myX = xOff * 16 - target.bitX - target.blockPos.getX() * 16;
+                            final int myX = (xOff - target.blockPos.getX()) * 16 - target.bitX;
                             final int myY = yOff * 16 - target.bitY - target.blockPos.getY() * 16;
                             final int myZ = zOff * 16 - target.bitZ - target.blockPos.getZ() * 16;
                             final VoxelBlob slice = placedBlob.offset(myX, myY, myZ); //Calculate what part of the block needs to go onto this block
