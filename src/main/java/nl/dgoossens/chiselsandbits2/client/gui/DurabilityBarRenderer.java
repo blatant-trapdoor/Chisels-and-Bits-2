@@ -60,10 +60,10 @@ public class DurabilityBarRenderer {
     private void draw(BufferBuilder renderer, int x, int y, int width, int height, int red, int green, int blue) {
         renderer.begin(7, DefaultVertexFormats.POSITION_COLOR);
         int a = Math.round(alpha*255);
-        renderer.pos((double)(x + 0), (double)(y + 0), 0.0D).color(red, green, blue, a).endVertex();
-        renderer.pos((double)(x + 0), (double)(y + height), 0.0D).color(red, green, blue, a).endVertex();
-        renderer.pos((double)(x + width), (double)(y + height), 0.0D).color(red, green, blue, a).endVertex();
-        renderer.pos((double)(x + width), (double)(y + 0), 0.0D).color(red, green, blue, a).endVertex();
+        renderer.pos(x, y, 0.0D).color(red, green, blue, a).endVertex();
+        renderer.pos(x, y + height, 0.0D).color(red, green, blue, a).endVertex();
+        renderer.pos(x + width, y + height, 0.0D).color(red, green, blue, a).endVertex();
+        renderer.pos(x + width, y, 0.0D).color(red, green, blue, a).endVertex();
         Tessellator.getInstance().draw();
     }
 }

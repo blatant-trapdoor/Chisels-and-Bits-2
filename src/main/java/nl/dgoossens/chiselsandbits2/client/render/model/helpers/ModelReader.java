@@ -6,8 +6,8 @@ import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import java.util.Arrays;
 
 public class ModelReader extends BaseModelReader {
-    float pos[];
-    float uv[];
+    protected float pos[];
+    protected float uv[];
 
     @Override
     public void put(int element, float... data) {

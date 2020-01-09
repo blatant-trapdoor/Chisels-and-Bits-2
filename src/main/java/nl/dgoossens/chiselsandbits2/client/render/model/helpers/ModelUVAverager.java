@@ -16,9 +16,7 @@ public class ModelUVAverager extends BaseModelReader {
     }
 
     @Override
-    public void put(
-            final int element,
-            final float... data) {
+    public void put(final int element, final float... data) {
         final VertexFormatElement e = getVertexFormat().getElement(element);
         if (e.getUsage() == VertexFormatElement.Usage.UV && e.getIndex() != 1) {
             sumU += data[0];
@@ -26,5 +24,4 @@ public class ModelUVAverager extends BaseModelReader {
             ++vertCount;
         }
     }
-
 }

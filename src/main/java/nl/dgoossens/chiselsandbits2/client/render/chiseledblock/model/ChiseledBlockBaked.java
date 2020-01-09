@@ -1,7 +1,6 @@
 package nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -9,6 +8,7 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.Vec3i;
+import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.common.ForgeConfig;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -16,8 +16,8 @@ import nl.dgoossens.chiselsandbits2.api.render.ICullTest;
 import nl.dgoossens.chiselsandbits2.api.render.IFaceBuilder;
 import nl.dgoossens.chiselsandbits2.api.render.IStateRef;
 import nl.dgoossens.chiselsandbits2.client.cull.MCCullTest;
+import nl.dgoossens.chiselsandbits2.client.render.model.BaseBakedModel;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.ModelRenderState;
-import nl.dgoossens.chiselsandbits2.client.render.model.BaseBakedBlockModel;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
@@ -27,7 +27,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class ChiseledBlockBaked extends BaseBakedBlockModel {
+public class ChiseledBlockBaked extends BaseBakedModel implements IBakedModel, IForgeBakedModel {
     private VertexFormat format;
     private BakedQuad[] up;
     private BakedQuad[] down;
@@ -416,10 +416,5 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
         return getList(side);
-    }
-
-    @Override
-    public TextureAtlasSprite getParticleTexture() {
-        return null;
     }
 }

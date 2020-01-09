@@ -6,7 +6,7 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.client.render.model.CacheType;
+import nl.dgoossens.chiselsandbits2.api.cache.CacheType;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class RenderingEvents {

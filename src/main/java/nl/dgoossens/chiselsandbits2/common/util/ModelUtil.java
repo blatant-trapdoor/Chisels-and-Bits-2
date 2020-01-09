@@ -16,7 +16,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidAttributes;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
-import nl.dgoossens.chiselsandbits2.client.render.model.CacheClearable;
+import nl.dgoossens.chiselsandbits2.api.cache.CacheClearable;
+import nl.dgoossens.chiselsandbits2.api.cache.CacheType;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelUVAverager;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelVertexRange;
@@ -33,6 +34,11 @@ public class ModelUtil implements CacheClearable {
     private final static HashMap<Integer, ResourceLocation> blockToTexture = new HashMap<>();
     private static HashMap<Integer, ModelQuadLayer[]> cache = new HashMap<>();
     private static HashMap<Integer, TextureAtlasSprite> breakCache = new HashMap<>();
+
+    static {
+        //Register this class to be cache cleared.
+        CacheType.DEFAULT.register(new ModelUtil());
+    }
 
     public static boolean isOne(final float v) {
         return Math.abs(v) < 0.01;

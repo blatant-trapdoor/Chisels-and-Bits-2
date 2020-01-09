@@ -7,11 +7,13 @@ import net.minecraft.client.renderer.model.BlockFaceUV;
 import net.minecraft.client.renderer.model.BlockPartFace;
 import net.minecraft.client.renderer.model.BlockPartRotation;
 import net.minecraft.client.renderer.model.FaceBakery;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Direction;
+import net.minecraftforge.client.extensions.IForgeBakedModel;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.client.render.model.BaseBakedBlockModel;
+import nl.dgoossens.chiselsandbits2.client.render.model.BaseBakedModel;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.util.BitUtil;
@@ -23,7 +25,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-public class MorphingBitBaked extends BaseBakedBlockModel {
+public class MorphingBitBaked extends BaseBakedModel implements IBakedModel, IForgeBakedModel {
     private static final float PIXELS_PER_BLOCK = 16.0f;
     private static final float BIT_BEGIN = 4.0f;
     private static final float BIT_WIDTH = 8.0f;
@@ -135,10 +137,5 @@ public class MorphingBitBaked extends BaseBakedBlockModel {
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand) {
         if (side != null) return Collections.emptyList();
         return generic;
-    }
-
-    @Override
-    public TextureAtlasSprite getParticleTexture() {
-        return ChiselsAndBits2.getInstance().getClient().getMissingIcon();
     }
 }

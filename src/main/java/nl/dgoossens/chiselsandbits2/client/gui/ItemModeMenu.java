@@ -277,7 +277,6 @@ public class ItemModeMenu extends RadialMenu {
             final double y2 = y + 8;
 
             final TextureAtlasSprite sprite = Minecraft.getInstance().getTextureMap().getSprite(ClientSide.getModeIconLocation(mnuRgn.mode));
-
             final float f = 1.0f;
             final float a = 1.0f * getVisibility();
 

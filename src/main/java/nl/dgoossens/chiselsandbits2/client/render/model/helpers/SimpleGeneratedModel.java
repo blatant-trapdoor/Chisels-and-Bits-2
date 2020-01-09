@@ -17,24 +17,19 @@ import java.util.List;
 import java.util.Random;
 
 public class SimpleGeneratedModel implements IBakedModel {
+    private final List<BakedQuad>[] face = new List[6];
+    private final TextureAtlasSprite texture;
 
-    @SuppressWarnings("unchecked")
-    final List<BakedQuad>[] face = new List[6];
-
-    final TextureAtlasSprite texture;
-
-    public SimpleGeneratedModel(
-            final TextureAtlasSprite texture) {
+    public SimpleGeneratedModel(final TextureAtlasSprite texture) {
         // create lists...
-        face[0] = new ArrayList<BakedQuad>();
-        face[1] = new ArrayList<BakedQuad>();
-        face[2] = new ArrayList<BakedQuad>();
-        face[3] = new ArrayList<BakedQuad>();
-        face[4] = new ArrayList<BakedQuad>();
-        face[5] = new ArrayList<BakedQuad>();
+        face[0] = new ArrayList<>();
+        face[1] = new ArrayList<>();
+        face[2] = new ArrayList<>();
+        face[3] = new ArrayList<>();
+        face[4] = new ArrayList<>();
+        face[5] = new ArrayList<>();
 
         this.texture = texture;
-
         final float[] afloat = new float[]{0, 0, 16, 16};
         final BlockFaceUV uv = new BlockFaceUV(afloat, 0);
         final FaceBakery faceBakery = new FaceBakery();
@@ -84,10 +79,7 @@ public class SimpleGeneratedModel implements IBakedModel {
         }
     }
 
-    private BakedQuad finishFace(
-            final BakedQuad g,
-            final Direction myFace,
-            final VertexFormat format) {
+    private BakedQuad finishFace(final BakedQuad g, final Direction myFace, final VertexFormat format) {
         final int[] vertData = g.getVertexData();
         final int wrapAt = vertData.length / 4;
 
@@ -140,14 +132,9 @@ public class SimpleGeneratedModel implements IBakedModel {
     }
 
     @Override
-    public List<BakedQuad> getQuads(
-            final BlockState state,
-            final Direction side,
-            final Random rand) {
-        if (side == null) {
+    public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand) {
+        if (side == null)
             return Collections.emptyList();
-        }
-
         return face[side.ordinal()];
     }
 

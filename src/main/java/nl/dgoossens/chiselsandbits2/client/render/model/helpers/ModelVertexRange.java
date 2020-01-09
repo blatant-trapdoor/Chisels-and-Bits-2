@@ -3,7 +3,7 @@ package nl.dgoossens.chiselsandbits2.client.render.model.helpers;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 
 public class ModelVertexRange extends BaseModelReader {
-    int vertCount = 0;
+    private int vertCount = 0;
     private float minSumX = 1;
     private float minSumY = 1;
     private float minSumZ = 1;
@@ -12,9 +12,8 @@ public class ModelVertexRange extends BaseModelReader {
     private float maxSumZ = 0;
 
     public float getLargestRange() {
-        if (vertCount == 0) {
+        if (vertCount == 0)
             return 0;
-        }
 
         final float x = maxSumX - minSumX;
         final float y = maxSumY - minSumY;
@@ -23,9 +22,7 @@ public class ModelVertexRange extends BaseModelReader {
     }
 
     @Override
-    public void put(
-            final int element,
-            final float... data) {
+    public void put(final int element, final float... data) {
         final VertexFormatElement e = getVertexFormat().getElement(element);
         if (e.getUsage() == VertexFormatElement.Usage.POSITION) {
             if (vertCount == 0) {

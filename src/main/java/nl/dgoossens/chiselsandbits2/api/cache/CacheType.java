@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.client.render.model;
+package nl.dgoossens.chiselsandbits2.api.cache;
 
 import java.util.*;
 
@@ -21,10 +21,16 @@ public enum CacheType {
         }, repeating, repeating);
     }
 
+    /**
+     * Register a class implementing {@link CacheClearable} to this cache.
+     */
     public void register(CacheClearable c) {
         clearable.add(c);
     }
 
+    /**
+     * Clear all {@link CacheClearable} registered to this cache type.
+     */
     public void call() {
         for (CacheClearable c : clearable)
             c.clearCache();

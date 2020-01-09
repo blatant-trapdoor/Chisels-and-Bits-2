@@ -2,6 +2,8 @@ package nl.dgoossens.chiselsandbits2.client.render.model;
 
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.ItemOverrideList;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.common.model.TRSRTransformation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -10,7 +12,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
 
-public abstract class BaseBakedPerspectiveModel implements IBakedModel, IForgeBakedModel {
+public abstract class BaseBakedModel implements IBakedModel, IForgeBakedModel {
     private static final Matrix4f ground;
     private static final Matrix4f gui;
     private static final Matrix4f fixed;
@@ -27,14 +29,7 @@ public abstract class BaseBakedPerspectiveModel implements IBakedModel, IForgeBa
         firstPerson_righthand = firstPerson_lefthand = getMatrix(0, 0, 0, 0, 45, 0, 0.40f);
     }
 
-    private static Matrix4f getMatrix(
-            final float transX,
-            final float transY,
-            final float transZ,
-            final float rotX,
-            final float rotY,
-            final float rotZ,
-            final float scaleXYZ) {
+    private static Matrix4f getMatrix(final float transX, final float transY, final float transZ, final float rotX, final float rotY, final float rotZ, final float scaleXYZ) {
         final javax.vecmath.Vector3f translation = new javax.vecmath.Vector3f(transX, transY, transZ);
         final javax.vecmath.Vector3f scale = new javax.vecmath.Vector3f(scaleXYZ, scaleXYZ, scaleXYZ);
         final Quat4f rotation = TRSRTransformation.quatFromXYZDegrees(new javax.vecmath.Vector3f(rotX, rotY, rotZ));
@@ -44,8 +39,7 @@ public abstract class BaseBakedPerspectiveModel implements IBakedModel, IForgeBa
     }
 
     @Override
-    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(
-            final ItemCameraTransforms.TransformType cameraTransformType) {
+    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(final ItemCameraTransforms.TransformType cameraTransformType) {
         switch (cameraTransformType) {
             case FIRST_PERSON_LEFT_HAND:
                 return new ImmutablePair<IBakedModel, Matrix4f>(this, firstPerson_lefthand);
@@ -64,5 +58,35 @@ public abstract class BaseBakedPerspectiveModel implements IBakedModel, IForgeBa
             default:
         }
         return new ImmutablePair<IBakedModel, Matrix4f>(this, fixed);
+    }
+
+    @Override
+    final public boolean isAmbientOcclusion() {
+        return true;
+    }
+
+    @Override
+    final public boolean isGui3d() {
+        return true;
+    }
+
+    @Override
+    final public boolean isBuiltInRenderer() {
+        return false;
+    }
+
+    @Override
+    final public ItemCameraTransforms getItemCameraTransforms() {
+        return ItemCameraTransforms.DEFAULT;
+    }
+
+    @Override
+    public ItemOverrideList getOverrides() {
+        return ItemOverrideList.EMPTY;
+    }
+
+    @Override
+    public TextureAtlasSprite getParticleTexture() {
+        return null;
     }
 }

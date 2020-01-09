@@ -13,6 +13,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.world.World;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.model.data.IModelData;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,9 +23,59 @@ import java.util.Random;
 
 public abstract class BaseSmartModel implements IBakedModel, IForgeBakedModel {
     private final ItemOverrideList overrides;
+    private static final IBakedModel NULL_MODEL = new IBakedModel() {
+        @Override
+        public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand, @Nonnull final IModelData modelData) {
+            return getQuads(state, side, rand);
+        }
+
+        @Override
+        public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean isAmbientOcclusion() {
+            return false;
+        }
+
+        @Override
+        public boolean isGui3d() {
+            return false;
+        }
+
+        @Override
+        public boolean isBuiltInRenderer() {
+            return false;
+        }
+
+        @Override
+        public TextureAtlasSprite getParticleTexture() {
+            return ChiselsAndBits2.getInstance().getClient().getMissingIcon();
+        }
+
+        @Override
+        public ItemOverrideList getOverrides() {
+            return ItemOverrideList.EMPTY;
+        }
+    };
 
     public BaseSmartModel() {
         overrides = new OverrideHelper(this);
+    }
+
+    /**
+     * Handle the model when rendered for a block.
+     */
+    public IBakedModel handleBlockState(final BlockState state, final Random rand, @Nonnull final IModelData modelData) {
+        return NULL_MODEL;
+    }
+
+    /**
+     * Handle the model when it is rendered by an item.
+     */
+    public IBakedModel handleItemState(final IBakedModel originalModel, final ItemStack stack, final World world, final LivingEntity entity) {
+        return originalModel;
     }
 
     @Override
@@ -49,8 +100,7 @@ public abstract class BaseSmartModel implements IBakedModel, IForgeBakedModel {
 
     @Override
     public TextureAtlasSprite getParticleTexture() {
-        final TextureAtlasSprite sprite = Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getTexture(Blocks.STONE.getDefaultState());
-        return sprite;
+        return ChiselsAndBits2.getInstance().getClient().getMissingIcon();
     }
 
     @Override
@@ -64,17 +114,9 @@ public abstract class BaseSmartModel implements IBakedModel, IForgeBakedModel {
         return Collections.emptyList();
     }
 
-    public IBakedModel handleBlockState(final BlockState state, final Random rand, @Nonnull final IModelData modelData) {
-        return NullBakedModel.instance;
-    }
-
     @Override
     public ItemOverrideList getOverrides() {
         return overrides;
-    }
-
-    public IBakedModel handleItemState(final IBakedModel originalModel, final ItemStack stack, final World world, final LivingEntity entity) {
-        return originalModel;
     }
 
     private static class OverrideHelper extends ItemOverrideList {
