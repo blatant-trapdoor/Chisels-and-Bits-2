@@ -204,11 +204,6 @@ public class ChiseledBlockTileEntity extends TileEntity {
     }
 
     @Override
-    public boolean hasFastRenderer() {
-        return true;
-    }
-
-    @Override
     public boolean canRenderBreaking() {
         return true;
     }

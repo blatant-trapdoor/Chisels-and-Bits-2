@@ -95,7 +95,7 @@ public class ChiseledBlock extends Block implements BaseBlock {
 
     @Override
     public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.TRANSLUCENT;
+        return BlockRenderLayer.CUTOUT_MIPPED; //For some reason we can still have transparency despite this.
     }
 
     //Redirect getSoundType to the primary block.

@@ -118,8 +118,7 @@ public class ModelUtil implements CacheClearable {
                 final IBakedModel model = ModelUtil.solveModel(state, weight, Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(state));
                 final int lv = state.getLightValue();
 
-                final HashMap<Direction, ArrayList<ModelQuadLayer.ModelQuadLayerBuilder>> tmp = new HashMap<>();
-
+                final HashMap<Direction, ArrayList<ModelQuadLayer.Builder>> tmp = new HashMap<>();
                 for (final Direction f : Direction.values())
                     tmp.put(f, new ArrayList<>());
 
@@ -134,12 +133,10 @@ public class ModelUtil implements CacheClearable {
 
                 for (final Direction f : Direction.values()) {
                     final int cacheV = stateID << 4 | f.ordinal();
-                    final ArrayList<ModelQuadLayer.ModelQuadLayerBuilder> x = tmp.get(f);
+                    final ArrayList<ModelQuadLayer.Builder> x = tmp.get(f);
                     final ModelQuadLayer[] mp = new ModelQuadLayer[x.size()];
-
-                    for (int z = 0; z < x.size(); z++) {
-                        mp[z] = x.get(z).build(stateID, 0xffffff, lv);
-                    }
+                    for (int z = 0; z < x.size(); z++)
+                        mp[z] = x.get(z).build(stateID, lv);
 
                     cache.put(cacheV, mp);
                 }
@@ -150,7 +147,7 @@ public class ModelUtil implements CacheClearable {
                 for (final Direction xf : Direction.values()) {
                     final ModelQuadLayer[] mp = new ModelQuadLayer[1];
                     mp[0] = new ModelQuadLayer();
-                    mp[0].color = 0xffffff;
+                    mp[0].tint = stateID;
                     mp[0].light = fluid.getBlockState().getLightValue();
 
                     final float V = 0.5f;
@@ -171,7 +168,6 @@ public class ModelUtil implements CacheClearable {
                             mp[0].uvs = new float[]{U, 0, 0, 0, U, V, 0, V};
                         }
                     }
-                    mp[0].tint = stateID;
 
                     final int cacheV = stateID << 4 | xf.ordinal();
                     cache.put(cacheV, mp);
@@ -182,7 +178,8 @@ public class ModelUtil implements CacheClearable {
                 for (final Direction xf : Direction.values()) {
                     final ModelQuadLayer[] mp = new ModelQuadLayer[1];
                     mp[0] = new ModelQuadLayer();
-                    mp[0].color = 0xffffff;
+                    mp[0].tint = stateID;
+                    mp[0].light = Blocks.WHITE_CONCRETE.getDefaultState().getLightValue();
 
                     final float V = 0.5f;
                     final float Uf = 1.0f;
@@ -197,7 +194,6 @@ public class ModelUtil implements CacheClearable {
                     } else {
                         mp[0].uvs = new float[]{U, 0, 0, 0, U, V, 0, V};
                     }
-                    mp[0].tint = stateID;
 
                     final int cacheV = stateID << 4 | xf.ordinal();
                     cache.put(cacheV, mp);
@@ -345,7 +341,7 @@ public class ModelUtil implements CacheClearable {
         return out;
     }
 
-    private static void processFaces(final HashMap<Direction, ArrayList<ModelQuadLayer.ModelQuadLayerBuilder>> tmp, final List<BakedQuad> quads, final BlockState state) {
+    private static void processFaces(final HashMap<Direction, ArrayList<ModelQuadLayer.Builder>> tmp, final List<BakedQuad> quads, final BlockState state) {
         for (final BakedQuad q : quads) {
             final Direction face = q.getFace();
 
@@ -354,11 +350,11 @@ public class ModelUtil implements CacheClearable {
 
             try {
                 final TextureAtlasSprite sprite = findQuadTexture(q, state);
-                final ArrayList<ModelQuadLayer.ModelQuadLayerBuilder> l = tmp.get(face);
+                final ArrayList<ModelQuadLayer.Builder> l = tmp.get(face);
 
-                ModelQuadLayer.ModelQuadLayerBuilder b = null;
-                for (final ModelQuadLayer.ModelQuadLayerBuilder lx : l) {
-                    if (lx.cache.sprite == sprite) {
+                ModelQuadLayer.Builder b = null;
+                for (final ModelQuadLayer.Builder lx : l) {
+                    if (lx.getSprite() == sprite) {
                         b = lx;
                         break;
                     }
@@ -383,14 +379,15 @@ public class ModelUtil implements CacheClearable {
                         default:
                     }
 
-                    b = new ModelQuadLayer.ModelQuadLayerBuilder(sprite, uCoord, vCoord);
-                    b.cache.tint = q.getTintIndex();
+                    b = new ModelQuadLayer.Builder(sprite, uCoord, vCoord);
+                    if(q.hasTintIndex())
+                        b.hasTint();
                     l.add(b);
                 }
 
-                q.pipe(b.uvr);
-                b.lv.setVertexFormat(q.getFormat());
-                q.pipe(b.lv);
+                q.pipe(b.getUVReader());
+                b.getLightMapReader().setVertexFormat(q.getFormat());
+                q.pipe(b.getLightMapReader());
             } catch (final Exception e) {}
         }
     }

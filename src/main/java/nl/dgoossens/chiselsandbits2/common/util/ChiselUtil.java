@@ -138,9 +138,11 @@ public class ChiselUtil {
             if (te != null) {
                 if (!isAir) te.fillWith(blockId);
                 else {
+                    te.fillWith(VoxelBlob.AIR_BIT);
+                    //TODO re-enable fluid bits!
                     //If there was a fluid previously make this a fluid block instead of an air block.
-                    if (fluid.isEmpty()) te.fillWith(VoxelBlob.AIR_BIT);
-                    else te.fillWith(BitUtil.getFluidId(fluid));
+                    //if (fluid.isEmpty()) te.fillWith(VoxelBlob.AIR_BIT);
+                    //else te.fillWith(BitUtil.getFluidId(fluid));
                 }
             }
         }

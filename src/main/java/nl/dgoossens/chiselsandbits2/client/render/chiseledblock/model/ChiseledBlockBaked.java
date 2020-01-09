@@ -2,7 +2,6 @@ package nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.model.*;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
@@ -16,6 +15,7 @@ import nl.dgoossens.chiselsandbits2.api.render.ICullTest;
 import nl.dgoossens.chiselsandbits2.api.render.IFaceBuilder;
 import nl.dgoossens.chiselsandbits2.api.render.IStateRef;
 import nl.dgoossens.chiselsandbits2.client.cull.MCCullTest;
+import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledTintColor;
 import nl.dgoossens.chiselsandbits2.client.render.model.BaseBakedModel;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.ModelRenderState;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelQuadLayer;
@@ -188,8 +188,7 @@ public class ChiseledBlockBaked extends BaseBakedModel implements IBakedModel, I
                                         break;
 
                                     case COLOR:
-                                        final int cb = pc.color;
-                                        faceBuilder.put(elementIndex, byteToFloat(cb >> 16), byteToFloat(cb >> 8), byteToFloat(cb), notZero(byteToFloat(cb >> 24)));
+                                        faceBuilder.put(elementIndex, 1.0f, 1.0f, 1.0f, 1.0f); //We do no recoloring, let the BlockColor handle it.
                                         break;
 
                                     case NORMAL:
@@ -342,11 +341,6 @@ public class ChiseledBlockBaked extends BaseBakedModel implements IBakedModel, I
 
         switch (face) {
             case UP:
-                to_u = to[0] / 16.0f;
-                to_v = to[2] / 16.0f;
-                from_u = from[0] / 16.0f;
-                from_v = from[2] / 16.0f;
-                break;
             case DOWN:
                 to_u = to[0] / 16.0f;
                 to_v = to[2] / 16.0f;
@@ -354,11 +348,6 @@ public class ChiseledBlockBaked extends BaseBakedModel implements IBakedModel, I
                 from_v = from[2] / 16.0f;
                 break;
             case SOUTH:
-                to_u = to[0] / 16.0f;
-                to_v = to[1] / 16.0f;
-                from_u = from[0] / 16.0f;
-                from_v = from[1] / 16.0f;
-                break;
             case NORTH:
                 to_u = to[0] / 16.0f;
                 to_v = to[1] / 16.0f;
@@ -366,11 +355,6 @@ public class ChiseledBlockBaked extends BaseBakedModel implements IBakedModel, I
                 from_v = from[1] / 16.0f;
                 break;
             case EAST:
-                to_u = to[1] / 16.0f;
-                to_v = to[2] / 16.0f;
-                from_u = from[1] / 16.0f;
-                from_v = from[2] / 16.0f;
-                break;
             case WEST:
                 to_u = to[1] / 16.0f;
                 to_v = to[2] / 16.0f;

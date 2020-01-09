@@ -31,11 +31,6 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
     private int isConfigured = 0;
 
     @Override
-    public void renderTileEntityFast(final ChiseledBlockTileEntity te, final double x, final double y, final double z, final float partialTicks, final int destroyStage, final BufferBuilder buffer) {
-        renderLogic(te, x, y, z, partialTicks, destroyStage);
-    }
-
-    @Override
     public void render(final ChiseledBlockTileEntity te, final double x, final double y, final double z, final float partialTicks, final int destroyStage) {
         renderLogic(te, x, y, z, partialTicks, destroyStage);
     }
@@ -124,10 +119,10 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
         final String file = DESTROY_STAGES[destroyStage].toString().replace("textures/", "").replace(".png", "");
         final TextureAtlasSprite damageTexture = Minecraft.getInstance().getTextureMap().getAtlasSprite(file);
+        final BlockPos cp = te.getPos();
 
         GlStateManager.pushMatrix();
         GlStateManager.depthFunc(GL11.GL_LEQUAL);
-        final BlockPos cp = te.getPos();
         GlStateManager.translated(x - cp.getX(), y - cp.getY(), z - cp.getZ());
 
         final Tessellator tessellator = Tessellator.getInstance();
@@ -142,11 +137,10 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         final ChiseledBlockBaked model = ChiselsAndBits2.getInstance().getClient().getRenderingManager().getCachedModel(te);
 
         if (!model.isEmpty()) {
-            Random random = new Random();
-            final IBakedModel damageModel = new SimpleBakedModel.Builder(estate, model, damageTexture, random, random.nextLong())
-                    .setTexture(damageTexture) //Just to avoid the RuntimeException, we don't use this.
+            final IBakedModel damageModel = new SimpleBakedModel.Builder(estate, model, damageTexture, new Random(), System.currentTimeMillis())
+                    .setTexture(damageTexture) //We set this just to avoid the RuntimeException, we don't use it.
                     .build();
-            blockRenderer.getBlockModelRenderer().renderModel(te.getWorld(), damageModel, estate, cp, buffer, true, random, random.nextLong());
+            blockRenderer.getBlockModelRenderer().renderModel(te.getWorld(), damageModel, estate, cp, buffer, true, new Random(), System.currentTimeMillis());
         }
 
         tessellator.draw();

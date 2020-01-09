@@ -27,7 +27,7 @@ public class ChiseledBlockColor extends ChiseledTintColor implements IBlockColor
     }
 
     @Override
-    public int getDefaultColor(int v, int t) {
-        return Minecraft.getInstance().getBlockColors().getColor(BitUtil.getBlockState(v), world, pos, t);
+    public int getDefaultColor(int t) {
+        return Minecraft.getInstance().getBlockColors().getColor(BitUtil.getBlockState(t), world, pos, -1);
     }
 }

@@ -11,17 +11,10 @@ import nl.dgoossens.chiselsandbits2.common.util.BitUtil;
  * General parent for all items that need colouring based on bit type.
  */
 public class ChiseledTintColor {
-    public static final int TINT_BITS = 8;
-
     /**
      * Get the tint colour to display based on the bit type embedded in the tint.
      */
     public int getColor(int tint) {
-        if(tint == -1) return -1;
-
-        //If this block has a colour we hide it in the tint value. See ModelQuadLayer.java
-        int v = tint >> TINT_BITS;
-
         if(VoxelType.isColoured(tint))
             return BitUtil.getColourState(tint).hashCode();
 
@@ -31,13 +24,13 @@ public class ChiseledTintColor {
             return fstate.getFluid().getAttributes().getColor(f);
         }
 
-        return getDefaultColor(v, tint);
+        return getDefaultColor(tint);
     }
 
     /**
      * Get the default item colour, can be overwritten if need be for a block.
      */
-    public int getDefaultColor(int v, int tintValue) {
-        return Minecraft.getInstance().getItemColors().getColor(new ItemStack(BitUtil.getBlockState(v).getBlock().asItem()), tintValue);
+    public int getDefaultColor(int tintValue) {
+        return Minecraft.getInstance().getItemColors().getColor(new ItemStack(BitUtil.getBlockState(tintValue).getBlock()), 1);
     }
 }
