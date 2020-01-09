@@ -459,17 +459,17 @@ public class ClientSideHelper {
     public void renderPlacementGhost(float partialTicks) {
         //If placement ghosts are disabled, don't render anything.
         if (!ChiselsAndBits2.getInstance().getConfig().enablePlacementGhost.get()) return;
-
         final PlayerEntity player = Minecraft.getInstance().player;
-        RayTraceResult rtr = ChiselUtil.rayTrace(player);
-        if(!(rtr instanceof BlockRayTraceResult)) return;
-        final BlockRayTraceResult r = (BlockRayTraceResult) rtr;
         final ItemStack currentItem = player.getHeldItemMainhand();
-        BlockPos offset = r.getPos();
-        Direction face = r.getFace();
 
         if(!currentItem.isEmpty() && currentItem.getItem() instanceof BlockItem && ((BlockItem) currentItem.getItem()).getBlock() instanceof ChiseledBlock) {
             if (!currentItem.hasTag()) return;
+
+            RayTraceResult rtr = ChiselUtil.rayTrace(player);
+            if(!(rtr instanceof BlockRayTraceResult)) return;
+            final BlockRayTraceResult r = (BlockRayTraceResult) rtr;
+            BlockPos offset = r.getPos();
+            Direction face = r.getFace();
 
             final NBTBlobConverter nbt = new NBTBlobConverter();
             nbt.readChiselData(currentItem.getChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
@@ -524,6 +524,7 @@ public class ClientSideHelper {
         if(ghostCache != null && ClientItemPropertyUtil.getGlobalCBM().equals(previousMode) && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial) && world.getBlockState(pos).equals(previousState) && !didTileChange(world.getTileEntity(pos)))
             model = ghostCache;
         else {
+            System.out.println("UPDATING");
             previousPosition = pos;
             previousPartial = partial;
             previousItem = item;

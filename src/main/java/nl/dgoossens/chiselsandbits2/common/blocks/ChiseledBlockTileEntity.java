@@ -36,7 +36,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     public static final ModelProperty<VoxelNeighborRenderTracker> NEIGHBOUR_RENDER_TRACKER = new ModelProperty<>();
 
     private TileChunk chunk; //The rendering chunk this block belongs to.
-    private VoxelShape cachedShape, collisionShape;
+    private VoxelShape cachedShape, collisionShape, raytraceShape;
     private int primaryBlock;
     private VoxelBlobStateReference voxelBlob;
     private VoxelNeighborRenderTracker renderTracker;
@@ -125,11 +125,8 @@ public class ChiseledBlockTileEntity extends TileEntity {
     public VoxelShape getCollisionShape() {
         if (ChiselUtil.ACTIVELY_TRACING) {
             //This will trigger if we're doing raytracing, and we need to do a custom shape to also have fluids included.
-            VoxelShape base = VoxelShapes.empty();
-            if (getVoxelReference() != null)
-                for (AxisAlignedBB box : getVoxelReference().getInstance().getBoxes())
-                    base = VoxelShapes.combine(base, VoxelShapes.create(box), IBooleanFunction.OR);
-            return base.simplify();
+            if (raytraceShape == null) recalculateShape();
+            return raytraceShape == null ? VoxelShapes.empty() : raytraceShape;
         }
         if (collisionShape == null) recalculateShape();
         return collisionShape == null ? VoxelShapes.empty() : collisionShape;
@@ -145,6 +142,13 @@ public class ChiseledBlockTileEntity extends TileEntity {
                 for (AxisAlignedBB box : getVoxelReference().getInstance().getCollidableBoxes())
                     base = VoxelShapes.combine(base, VoxelShapes.create(box), IBooleanFunction.OR);
             collisionShape = base.simplify();
+        }
+        if(raytraceShape == null) {
+            VoxelShape base = VoxelShapes.empty();
+            if (getVoxelReference() != null)
+                for (AxisAlignedBB box : getVoxelReference().getInstance().getBoxes())
+                    base = VoxelShapes.combine(base, VoxelShapes.create(box), IBooleanFunction.OR);
+            raytraceShape = base.simplify();
         }
 
         if (cachedShape == null && getVoxelReference() != null)

@@ -32,12 +32,20 @@ import java.util.*;
  */
 public class ModelUtil implements CacheClearable {
     private final static HashMap<Integer, ResourceLocation> blockToTexture = new HashMap<>();
-    private static HashMap<Integer, ModelQuadLayer[]> cache = new HashMap<>();
+    private static HashMap<Long, ModelQuadLayer[]> sideCache = new HashMap<>();
     private static HashMap<Integer, TextureAtlasSprite> breakCache = new HashMap<>();
 
     static {
         //Register this class to be cache cleared.
         CacheType.DEFAULT.register(new ModelUtil());
+    }
+
+    public static ModelQuadLayer[] getCachedSides(final int state, final Direction side) {
+        return sideCache.get(((long) state) + side.ordinal() << 32);
+    }
+
+    public static ModelQuadLayer[] setCachedSides(final int state, final Direction side, final ModelQuadLayer[] mp) {
+        return sideCache.put(((long) state) + side.ordinal() << 32, mp);
     }
 
     public static boolean isOne(final float v) {
@@ -49,11 +57,10 @@ public class ModelUtil implements CacheClearable {
     }
 
     public static ModelQuadLayer[] getCachedFace(final int stateID, final Random weight, final Direction face) {
-        final int cacheVal = stateID << 4 | face.ordinal();
-        final ModelQuadLayer[] mpc = cache.get(cacheVal);
+        final ModelQuadLayer[] mpc = getCachedSides(stateID, face);
         if (mpc != null) return mpc;
 
-        return getInnerCachedFace(cacheVal, stateID, weight, face);
+        return getInnerCachedFace(stateID, weight, face);
     }
 
     public static IBakedModel solveModel(final BlockState state, final Random weight, final IBakedModel originalModel) {
@@ -109,7 +116,7 @@ public class ModelUtil implements CacheClearable {
         return mvr.getLargestRange() > 0 && !isMissing(texture);
     }
 
-    private static ModelQuadLayer[] getInnerCachedFace(final int cacheVal, final int stateID, final Random weight, final Direction face) {
+    private static ModelQuadLayer[] getInnerCachedFace(final int stateID, final Random weight, final Direction face) {
         final BlockState state = BitUtil.getBlockState(stateID);
         final IFluidState fluid = BitUtil.getFluidState(stateID);
 
@@ -132,16 +139,14 @@ public class ModelUtil implements CacheClearable {
                 }
 
                 for (final Direction f : Direction.values()) {
-                    final int cacheV = stateID << 4 | f.ordinal();
                     final ArrayList<ModelQuadLayer.Builder> x = tmp.get(f);
                     final ModelQuadLayer[] mp = new ModelQuadLayer[x.size()];
                     for (int z = 0; z < x.size(); z++)
                         mp[z] = x.get(z).build(stateID, lv);
 
-                    cache.put(cacheV, mp);
+                    setCachedSides(stateID, f, mp);
                 }
-
-                return cache.get(cacheVal);
+                break;
             }
             case FLUIDSTATE: {
                 for (final Direction xf : Direction.values()) {
@@ -169,10 +174,9 @@ public class ModelUtil implements CacheClearable {
                         }
                     }
 
-                    final int cacheV = stateID << 4 | xf.ordinal();
-                    cache.put(cacheV, mp);
+                    setCachedSides(stateID, xf, mp);
                 }
-                return cache.get(cacheVal);
+                break;
             }
             case COLOURED: {
                 for (final Direction xf : Direction.values()) {
@@ -195,13 +199,12 @@ public class ModelUtil implements CacheClearable {
                         mp[0].uvs = new float[]{U, 0, 0, 0, U, V, 0, V};
                     }
 
-                    final int cacheV = stateID << 4 | xf.ordinal();
-                    cache.put(cacheV, mp);
+                    setCachedSides(stateID, xf, mp);
                 }
-                return cache.get(cacheVal);
+                break;
             }
         }
-        return cache.get(cacheVal);
+        return getCachedSides(stateID, face);
     }
 
     public static TextureAtlasSprite findQuadTexture(final BakedQuad q, final BlockState state) throws IllegalArgumentException, NullPointerException {
@@ -429,7 +432,7 @@ public class ModelUtil implements CacheClearable {
     @Override
     public void clearCache() {
         blockToTexture.clear();
-        cache.clear();
+        sideCache.clear();
         breakCache.clear();
     }
 }
