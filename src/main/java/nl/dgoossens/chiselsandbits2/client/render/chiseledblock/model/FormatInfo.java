@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.client.render.chiseledblock;
+package nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model;
 
 import net.minecraft.client.renderer.vertex.VertexFormat;
 
@@ -83,5 +83,4 @@ public class FormatInfo {
 
         return out;
     }
-
 }

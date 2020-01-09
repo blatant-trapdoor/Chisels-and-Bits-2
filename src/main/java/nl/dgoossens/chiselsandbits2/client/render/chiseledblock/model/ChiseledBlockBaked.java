@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.client.render.chiseledblock;
+package nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.Vector3f;
@@ -28,10 +28,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class ChiseledBlockBaked extends BaseBakedBlockModel {
-    private final static int[][] faceVertMap = new int[6][4];
-    private final static float[][][] quadMapping = new float[6][4][6];
-    private static boolean initialisedStatic = false;
-
     private VertexFormat format;
     private BakedQuad[] up;
     private BakedQuad[] down;
@@ -44,7 +40,6 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
     public ChiseledBlockBaked(final VoxelBlobStateReference data, final ModelRenderState mrs, final VertexFormat format) {
         this.format = format;
         if (data == null) return;
-        validateInitialised();
 
         final VoxelBlob vb = data.getVoxelBlob();
         final ChiseledModelBuilder builder = new ChiseledModelBuilder();
@@ -58,74 +53,6 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
         north = builder.getSide(Direction.NORTH);
         south = builder.getSide(Direction.SOUTH);
         generic = builder.getSide(null);
-    }
-
-    private static void validateInitialised() {
-        if(!initialisedStatic) {
-            initialisedStatic = true;
-            try {
-                final Vector3f to = new Vector3f(0, 0, 0);
-                final Vector3f from = new Vector3f(16, 16, 16);
-
-                for (final Direction myFace : Direction.values()) {
-                    final FaceBakery faceBakery = new FaceBakery();
-
-                    final BlockPartRotation bpr = null;
-                    final ModelRotation mr = ModelRotation.X0_Y0;
-
-                    final float[] defUVs = new float[]{0, 0, 1, 1};
-                    final BlockFaceUV uv = new BlockFaceUV(defUVs, 0);
-                    final BlockPartFace bpf = new BlockPartFace(myFace, 0, "", uv);
-
-                    final TextureAtlasSprite texture = ChiselsAndBits2.getInstance().getClient().getMissingIcon();
-                    final BakedQuad q = faceBakery.makeBakedQuad(to, from, bpf, texture, myFace, mr, bpr, true);
-
-                    final int[] vertData = q.getVertexData();
-
-                    int a = 0;
-                    int b = 2;
-
-                    switch (myFace) {
-                        case NORTH:
-                        case SOUTH:
-                            a = 0;
-                            b = 1;
-                            break;
-                        case EAST:
-                        case WEST:
-                            a = 1;
-                            b = 2;
-                            break;
-                        default:
-                    }
-
-                    final int p = vertData.length / 4;
-                    for (int vertNum = 0; vertNum < 4; vertNum++) {
-                        final float A = Float.intBitsToFloat(vertData[vertNum * p + a]);
-                        final float B = Float.intBitsToFloat(vertData[vertNum * p + b]);
-
-                        for (int o = 0; o < 3; o++) {
-                            final float v = Float.intBitsToFloat(vertData[vertNum * p + o]);
-                            final float scaler = 1.0f / 16.0f; // pos start in the 0-16
-                            quadMapping[myFace.ordinal()][vertNum][o * 2] = v * scaler;
-                            quadMapping[myFace.ordinal()][vertNum][o * 2 + 1] = (1.0f - v) * scaler;
-                        }
-
-                        if (ModelUtil.isZero(A) && ModelUtil.isZero(B)) {
-                            faceVertMap[myFace.getIndex()][vertNum] = 0;
-                        } else if (ModelUtil.isZero(A) && ModelUtil.isOne(B)) {
-                            faceVertMap[myFace.getIndex()][vertNum] = 3;
-                        } else if (ModelUtil.isOne(A) && ModelUtil.isZero(B)) {
-                            faceVertMap[myFace.getIndex()][vertNum] = 1;
-                        } else {
-                            faceVertMap[myFace.getIndex()][vertNum] = 2;
-                        }
-                    }
-                }
-            } catch(Exception x) {
-                x.printStackTrace();
-            }
-        }
     }
 
     private static void offsetVec(final int[] result, final int toX, final int toY, final int toZ, final Direction f, final int d) {
@@ -224,7 +151,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
 
         // single reusable face builder.
         final IFaceBuilder darkBuilder = getBuilder(DefaultVertexFormats.ITEM);
-        final IFaceBuilder litBuilder = format == ChiselsAndBitsBakedQuad.VERTEX_FORMAT ? getBuilder(format) : darkBuilder;
+        final IFaceBuilder litBuilder = format == ChiselsAndBits2.getInstance().getClient().getRenderingManager().getModelFormat(false) ? getBuilder(format) : darkBuilder;
 
         for (final ArrayList<FaceRegion> src : rset) {
             mergeFaces(src);
@@ -277,8 +204,9 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
                                             final float v = maxLightmap * Math.max(0, Math.min(15, pc.light));
                                             faceBuilder.put(elementIndex, v, v);
                                         } else {
-                                            final float u = uvs[faceVertMap[myFace.getIndex()][vertNum] * 2 + 0];
-                                            final float v = uvs[faceVertMap[myFace.getIndex()][vertNum] * 2 + 1];
+                                            int i = ChiselsAndBits2.getInstance().getClient().getRenderingManager().getFaceVertexCount(myFace.getIndex(), vertNum) * 2;
+                                            final float u = uvs[i];
+                                            final float v = uvs[i + 1];
                                             faceBuilder.put(elementIndex, pc.sprite.getInterpolatedU(u), pc.sprite.getInterpolatedV(v));
                                         }
                                         break;
@@ -399,7 +327,7 @@ public class ChiseledBlockBaked extends BaseBakedBlockModel {
 
     // generate final pos from static data.
     private void getVertexPos(final float[] pos, final Direction side, final int vertNum, final int[] to, final int[] from) {
-        final float[] interpos = quadMapping[side.ordinal()][vertNum];
+        final float[] interpos = ChiselsAndBits2.getInstance().getClient().getRenderingManager().getQuadMapping(side, vertNum);
 
         pos[0] = to[0] * interpos[0] + from[0] * interpos[1];
         pos[1] = to[1] * interpos[2] + from[1] * interpos[3];

@@ -4,7 +4,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ChiseledBlockSmartModel;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
 /**
@@ -63,7 +64,7 @@ public final class VoxelNeighborRenderTracker {
 
             //Validate the model cache right here to avoid this validation returning true time after time.
             //This also instantly invalidates the model and removes it from the cache if need be.
-            return ChiseledBlockSmartModel.isInvalid(sides);
+            return ChiselsAndBits2.getInstance().getClient().getRenderingManager().isInvalid(sides);
         } else throw new RuntimeException("Validate was called on block that was not even a Chiseled Block");
     }
 

@@ -18,8 +18,9 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Region;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ChiseledBlockBaked;
-import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ChiseledBlockSmartModel;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model.ChiseledBlockBaked;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model.ChiseledBlockSmartModel;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.RenderingManager;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import org.lwjgl.opengl.GL11;
 
@@ -138,7 +139,7 @@ public class ChiseledBlockTER extends TileEntityRenderer<ChiseledBlockTileEntity
         final BlockRendererDispatcher blockRenderer = Minecraft.getInstance().getBlockRendererDispatcher();
         final BlockState estate = te.getBlockState();
 
-        final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(te);
+        final ChiseledBlockBaked model = ChiselsAndBits2.getInstance().getClient().getRenderingManager().getCachedModel(te);
 
         if (!model.isEmpty()) {
             Random random = new Random();

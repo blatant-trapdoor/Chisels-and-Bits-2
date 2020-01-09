@@ -30,7 +30,7 @@ import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.radial.RadialMenu;
-import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ter.RenderingManager;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.RenderingManager;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.client.render.RenderingAssistant;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;

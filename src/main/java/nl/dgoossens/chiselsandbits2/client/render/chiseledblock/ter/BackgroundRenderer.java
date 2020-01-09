@@ -8,8 +8,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Region;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ChiseledBlockBaked;
-import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ChiseledBlockSmartModel;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model.ChiseledBlockBaked;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import org.lwjgl.opengl.GL11;
 
@@ -50,7 +50,7 @@ public class BackgroundRenderer implements Callable<Tessellator> {
             BlockRendererDispatcher blockRenderer = Minecraft.getInstance().getBlockRendererDispatcher();
             for (final ChiseledBlockTileEntity tx : myPrivateList) {
                 if (!tx.isRemoved()) {
-                    final ChiseledBlockBaked model = ChiseledBlockSmartModel.getCachedModel(tx);
+                    final ChiseledBlockBaked model = ChiselsAndBits2.getInstance().getClient().getRenderingManager().getCachedModel(tx);
                     if (!model.isEmpty())
                         blockRenderer.getBlockModelRenderer().renderModel(cache, model, tx.getBlockState(), tx.getPos(), buffer, true, random, random.nextLong(), tx.getModelData());
                 }

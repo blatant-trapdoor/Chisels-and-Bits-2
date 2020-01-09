@@ -7,7 +7,7 @@ import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
-import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ChiseledBlockSmartModel;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model.ChiseledBlockSmartModel;
 import nl.dgoossens.chiselsandbits2.client.render.morphingbit.MorphingBitSmartModel;
 import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ter.GfxRenderState;
 import nl.dgoossens.chiselsandbits2.common.util.ModelUtil;

@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.client.render.chiseledblock;
+package nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model;
 
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -8,38 +8,18 @@ import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.pipeline.IVertexConsumer;
 import net.minecraftforge.client.model.pipeline.LightUtil;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.render.IFaceBuilder;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChiselsAndBitsBakedQuad extends BakedQuad {
-    public static final ConcurrentHashMap<VertexFormat, FormatInfo> formatData = new ConcurrentHashMap<>();
-    public static final VertexFormat VERTEX_FORMAT = new VertexFormat();
-
-    static {
-        for (final VertexFormatElement element : DefaultVertexFormats.ITEM.getElements())
-            VERTEX_FORMAT.addElement(element);
-
-        //Add the lightmap to our format
-        VERTEX_FORMAT.addElement(DefaultVertexFormats.TEX_2S);
+    public ChiselsAndBitsBakedQuad(final float[][][] unpackedData, final int tint, final Direction orientation, final TextureAtlasSprite sprite, VertexFormat format) {
+        super(ChiselsAndBits2.getInstance().getClient().getRenderingManager().getFormatInfo(format).pack(unpackedData), tint, orientation, sprite, true, format);
     }
 
-    public ChiselsAndBitsBakedQuad(
-            final float[][][] unpackedData,
-            final int tint,
-            final Direction orientation,
-            final TextureAtlasSprite sprite,
-            VertexFormat format) {
-        super(packData(format, unpackedData), tint, orientation, sprite, true, format);
-    }
-
-    private static int[] packData(VertexFormat format, float[][][] unpackedData) {
-        FormatInfo fi = formatData.get(format);
-        if (fi == null) {
-            fi = new FormatInfo(format);
-            formatData.put(format, fi);
-        }
-        return fi.pack(unpackedData);
+    private float[] getRawPart(int v, int i) {
+        return ChiselsAndBits2.getInstance().getClient().getRenderingManager().getFormatInfo(format).unpack(vertexData, v, i);
     }
 
     @Override
@@ -59,10 +39,6 @@ public class ChiselsAndBitsBakedQuad extends BakedQuad {
                     consumer.put(e);
             }
         }
-    }
-
-    private float[] getRawPart(int v, int i) {
-        return formatData.get(this.format).unpack(vertexData, v, i);
     }
 
     @Override

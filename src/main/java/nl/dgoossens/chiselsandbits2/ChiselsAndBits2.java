@@ -52,7 +52,7 @@ public class ChiselsAndBits2 {
         CONTAINERS = new ModContainers();
         KEYBINDINGS = new ModKeybindings();
 
-        //Only register the client and keybindings classes when on the CLIENT distribution.
+        //Only initialise the client class when on the CLIENT distribution.
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             CLIENT = new ClientSide();
         });
