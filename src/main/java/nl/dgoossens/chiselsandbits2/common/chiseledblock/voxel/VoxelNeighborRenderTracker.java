@@ -1,106 +1,78 @@
 package nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel;
 
-import java.lang.ref.WeakReference;
-
-import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import nl.dgoossens.chiselsandbits2.api.IStateRef;
-import nl.dgoossens.chiselsandbits2.client.render.ModelRenderState;
+import net.minecraft.world.World;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model.ChiseledBlockSmartModel;
+import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 
-public final class VoxelNeighborRenderTracker
-{
-	static final int IS_DYNAMIC = 1;
-	static final int IS_LOCKED = 2;
-	static final int IS_STATIC = 4;
+/**
+ * An object which wraps the ModelRenderState which handles
+ * storing references to the states of neighbouring blocks.
+ */
+public final class VoxelNeighborRenderTracker {
+    private final ModelRenderState sides = new ModelRenderState();
 
-	private WeakReference<VoxelBlobStateReference> lastCenter;
-	private ModelRenderState lrs = null;
+    public VoxelNeighborRenderTracker(World world, BlockPos pos) {
+        update(world, pos);
+    }
 
-	private byte isDynamic;
-	Integer[] faceCount = new Integer[4];
+    /**
+     * Updates the tracked neighbouring voxel references.
+     */
+    public void update(World world, BlockPos pos) {
+        if (world == null || pos == null) return; //No point in updating if we have no world/pos.
+        final TileEntity me = world.getTileEntity(pos);
+        if (!(me instanceof ChiseledBlockTileEntity)) return;
+        final ChiseledBlockTileEntity cme = (ChiseledBlockTileEntity) me;
 
-	public void unlockDynamic()
-	{
-		isDynamic = (byte) ( isDynamic & ~IS_LOCKED );
-	}
+        for (Direction d : Direction.values()) {
+            if (sides.has(d)) continue; //Only update direction if we don't have it already
 
-	public VoxelNeighborRenderTracker()
-	{
-		faceCount = new Integer[BlockRenderLayer.values().length];
-		isDynamic = IS_DYNAMIC | IS_LOCKED;
-		for ( int x = 0; x < faceCount.length; ++x )
-		{
-			faceCount[x] = 40 + 1; //TODO allow config here
-		}
-	}
+            final TileEntity te = world.getTileEntity(pos.offset(d));
+            if (te instanceof ChiseledBlockTileEntity) {
+                ((ChiseledBlockTileEntity) te).getChunk(world); //Make sure to get the chunk so it gets registered.
+                sides.put(d, ((ChiseledBlockTileEntity) te).getVoxelReference());
 
-	private final ModelRenderState sides = new ModelRenderState( null );
+                //Put me in the other block to avoid circle updates
+                if (((ChiseledBlockTileEntity) te).hasRenderTracker()) {
+                    VoxelNeighborRenderTracker rTracker = ((ChiseledBlockTileEntity) te).getRenderTracker();
+                    if (rTracker.sides.has(d.getOpposite())) continue; //If they have us, it's good
+                    rTracker.sides.put(d.getOpposite(), cme.getVoxelReference());
+                }
+            }
+        }
+    }
 
-	public boolean isAboveLimit()
-	{
-		int faces = 0;
+    //Checks all neighbours and sees if any have changed to no longer be a chiseled block.
+    public boolean isInvalid(final World world, final BlockPos pos) {
+        if(world == null) return false; //Just in case
+        final TileEntity me = world.getTileEntity(pos);
+        if (me instanceof ChiseledBlockTileEntity) {
+            if(this != ((ChiseledBlockTileEntity) me).getRenderTracker())
+                throw new RuntimeException("Validate was called on block that was not itself.");
 
-		for ( int x = 0; x < faceCount.length; ++x )
-		{
-			if ( faceCount[x] == null )
-			{
-				return false;
-			}
+            for (Direction d : Direction.values()) {
+                final TileEntity te = world.getTileEntity(pos.offset(d));
+                if (te instanceof ChiseledBlockTileEntity)
+                    sides.put(d, ((ChiseledBlockTileEntity) te).getVoxelReference());
+                else
+                    sides.remove(d);
+            }
 
-			faces += faceCount[x];
-		}
+            //Validate the model cache right here to avoid this validation returning true time after time.
+            //This also instantly invalidates the model and removes it from the cache if need be.
+            return ChiselsAndBits2.getInstance().getClient().getRenderingManager().isInvalid(sides);
+        } else throw new RuntimeException("Validate was called on block that was not even a Chiseled Block");
+    }
 
-		return faces >= 40;
-	}
+    public void invalidate() {
+        sides.invalidate();
+    }
 
-	public void setAbovelimit(
-			final BlockRenderLayer layer,
-			final int fc )
-	{
-		faceCount[layer.ordinal()] = fc;
-	}
-
-	public boolean isDynamic()
-	{
-		return ( isDynamic & IS_DYNAMIC ) != 0;
-	}
-
-	private boolean sameValue(
-			final IStateRef iStateRef,
-			final IStateRef value )
-	{
-		if ( iStateRef == value )
-		{
-			return true;
-		}
-
-		if ( iStateRef == null || value == null )
-		{
-			return false;
-		}
-
-		return value.equals( iStateRef );
-	}
-
-	public ModelRenderState getRenderState(
-			final VoxelBlobStateReference data )
-	{
-		if ( lrs == null || lastCenter == null )
-		{
-			lrs = new ModelRenderState( sides );
-			updateCenter( data );
-		}
-		else if ( lastCenter.get() != data )
-		{
-			updateCenter( data );
-			lrs = new ModelRenderState( sides );
-		}
-
-		return lrs;
-	}
-
-	private void updateCenter(final VoxelBlobStateReference data ) {
-		lastCenter = new WeakReference<>( data );
-	}
+    public ModelRenderState getRenderState() {
+        return sides;
+    }
 }

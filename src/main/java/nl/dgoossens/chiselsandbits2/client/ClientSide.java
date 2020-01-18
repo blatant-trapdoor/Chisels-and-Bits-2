@@ -1,111 +1,236 @@
 package nl.dgoossens.chiselsandbits2.client;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.renderer.ItemRenderer;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.*;
+import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import nl.dgoossens.chiselsandbits2.api.IItemScrollWheel;
-import nl.dgoossens.chiselsandbits2.api.modes.ItemMode;
-import nl.dgoossens.chiselsandbits2.client.render.ter.ChiseledBlockTER;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
+import nl.dgoossens.chiselsandbits2.api.item.*;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
+import nl.dgoossens.chiselsandbits2.api.item.attributes.IItemScrollWheel;
+import nl.dgoossens.chiselsandbits2.client.render.color.ColourableItemColor;
+import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledBlockColor;
+import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledBlockItemColor;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ter.ChiseledBlockTER;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.BitLocation;
-import nl.dgoossens.chiselsandbits2.common.utils.ModUtil;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
+import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
+import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
+import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 
-import javax.annotation.Nonnull;
+import java.lang.reflect.Field;
 
-@OnlyIn(Dist.CLIENT)
-public class ClientSide {
+/**
+ * Handles all features triggered by client-sided events.
+ * Examples:
+ * - Block Highlights
+ * - Placement Ghost
+ * - Tape Measure
+ * - Item Scrolling
+ *
+ * Events are located in this class, all methods are put in ClientSideHelper.
+ */
+@Mod.EventBusSubscriber(Dist.CLIENT)
+public class ClientSide extends ClientSideHelper {
     //--- GENERAL SETUP ---
-    public void setup(final FMLCommonSetupEvent event) {
+    /**
+     * Setup all client side only things to register.
+     */
+    public void setup() {
         ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, new ChiseledBlockTER());
-    }
+        Minecraft.getInstance().getBlockColors().register(new ChiseledBlockColor(),
+                ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK);
 
-    //--- UTILITY METHODS ---
-    public PlayerEntity getPlayer() { return Minecraft.getInstance().player; }
-    public TextureAtlasSprite getMissingIcon() {
-        return Minecraft.getInstance().getTextureMap().getSprite(new ResourceLocation("")); //The missing sprite is returned when an error occurs whilst searching for the texture.
-    }
-    public void breakSound(
-            final World world,
-            final BlockPos pos,
-            final int extractedState )
-    {
-        final BlockState state = ModUtil.getStateById( extractedState );
-        final Block block = state.getBlock();
-        world.playSound( pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                block.getSoundType(state).getBreakSound(), SoundCategory.BLOCKS,
-                (block.getSoundType(state).getVolume() + 1.0F) / 16.0F,
-                block.getSoundType(state).getPitch() * 0.9F, false );
-    }
+        Minecraft.getInstance().getItemColors().register(new ChiseledBlockItemColor(),
+                Item.getItemFromBlock(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK),
+                ChiselsAndBits2.getInstance().getItems().MORPHING_BIT);
 
-    //--- DRAW LAST ---
-    private byte frameId = Byte.MIN_VALUE;
+        //Register all coloured items as having an item color
+        final ModItems i = ChiselsAndBits2.getInstance().getItems();
+        final ColourableItemColor cic = new ColourableItemColor(1);
+        i.runForAllColourableItems((a) -> Minecraft.getInstance().getItemColors().register(cic, a));
+
+        //We've got both normal and mod event bus events.
+        FMLJavaModLoadingContext.get().getModEventBus().register(getClass());
+    }
 
     /**
-     * Return the current frame's id, please note that this id is arbitrary.
-     * The id is a byte that is supposed to roll over. (so don't worry)
-     *
-     * This frame id is stored in TER data to make sure TER's don't render
-     * twice or more a frame.
+     * Call the clean method.
      */
-    public byte getFrameId() { return frameId; }
-
     @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
-    public void drawLast(final RenderWorldLastEvent e) {
-        frameId++; //Increase the frame id every time a new frame is drawn.
+    public static void cleanupOnQuit(final ClientPlayerNetworkEvent.LoggedOutEvent e) {
+        ChiselsAndBits2.getInstance().getClient().clean();
     }
 
-    //--- ITEM SCROLL ---
-    /*@SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
-    public void wheelEvent(final InputEvent.MouseScrollEvent me) {
-        final int dwheel = me.getScrollDelta() < 0 ? -1 : me.getScrollDelta() > 0 ? 1 : 0;
-        if ( me.isCanceled() || dwheel == 0 ) {
-            return;
+    /**
+     * Register custom sprites.
+     */
+    @SubscribeEvent
+    public static void registerIconTextures(final TextureStitchEvent.Pre e) {
+        //Only register to the texture map.
+        if(!e.getMap().getBasePath().equals("textures")) return;
+
+        //We only do this for our own, addons need to do this themselves.
+        for (final IMenuAction menuAction : MenuAction.values()) {
+            if (!menuAction.hasIcon()) continue;
+            menuActionLocations.put(menuAction, menuAction.getIconResourceLocation());
+            e.addSprite(menuActionLocations.get(menuAction));
         }
 
-        final PlayerEntity player = getPlayer();
+        for (final ItemModeEnum itemMode : ItemMode.values()) {
+            if (!itemMode.hasIcon()) continue;
+            modeIconLocations.put(itemMode, itemMode.getIconResourceLocation());
+            e.addSprite(modeIconLocations.get(itemMode));
+        }
+    }
+
+    /**
+     * Handles hotkey presses.
+     */
+    @SubscribeEvent
+    public static void onKeyInput(final InputEvent.KeyInputEvent e) {
+        //Return if not in game.
+        if (Minecraft.getInstance().player == null) return;
+
+        final ModKeybindings keybindings = ChiselsAndBits2.getInstance().getKeybindings();
+        for (ItemModeEnum im : keybindings.modeHotkeys.keySet()) {
+            KeyBinding kb = keybindings.modeHotkeys.get(im);
+            if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME))
+                ItemPropertyUtil.setItemMode(Minecraft.getInstance().player, Minecraft.getInstance().player.getHeldItemMainhand(), im);
+        }
+        for (IMenuAction ma : keybindings.actionHotkeys.keySet()) {
+            KeyBinding kb = keybindings.actionHotkeys.get(ma);
+            if (kb.isPressed() && kb.getKeyModifier().isActive(KeyConflictContext.IN_GAME)) {
+                if(ma.equals(MenuAction.PLACE) || ma.equals(MenuAction.SWAP)) {
+                    ItemStack stack = Minecraft.getInstance().player.getHeldItemMainhand();
+                    if(stack.getItem() instanceof ChiselMimicItem) {
+                        if (((ChiselMimicItem) stack.getItem()).isPlacing(stack))
+                            MenuAction.PLACE.trigger();
+                        else
+                             MenuAction.SWAP.trigger();
+                    }
+                    continue;
+                }
+                ma.trigger();
+            }
+        }
+    }
+
+
+    /**
+     * For rendering the ghost selected menu option on the
+     * item portrait.
+     */
+    @SubscribeEvent
+    public static void drawLast(final RenderGameOverlayEvent.Post e) {
+        if (e.getType() == RenderGameOverlayEvent.ElementType.HOTBAR && ChiselsAndBits2.getInstance().getConfig().enableToolbarIcons.get()) {
+            Minecraft.getInstance().getProfiler().startSection("chiselsandbit2-toolbaricons");
+            final PlayerEntity player = Minecraft.getInstance().player;
+            if (!player.isSpectator()) {
+                //If at least one item wants to render something
+                if (!hasToolbarIconItem(player.inventory)) return;
+
+                final ItemRenderer ir = Minecraft.getInstance().getItemRenderer();
+                GlStateManager.translatef(0, 0, 50);
+                GlStateManager.scalef(0.5f, 0.5f, 1);
+                GlStateManager.color4f(1, 1, 1, 1.0f);
+                Minecraft.getInstance().getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+                RenderHelper.enableGUIStandardItemLighting();
+                for (int slot = 8; slot >= -1; --slot) {
+                    //-1 is the off-hand
+                    ItemStack item = slot == -1 ? player.inventory.offHandInventory.get(0) : player.inventory.mainInventory.get(slot);
+                    final int x = (e.getWindow().getScaledWidth() / 2 - 90 + slot * 20 + (slot == -1 ? -9 : 0) + 2) * 2;
+                    final int y = (e.getWindow().getScaledHeight() - 16 - 3) * 2;
+                    if (item.getItem() instanceof TypedItem && ((TypedItem) item.getItem()).showIconInHotbar()) {
+                        final IItemMode mode = ((TypedItem) item.getItem()).getSelectedMode(item);
+
+                        final ResourceLocation sprite = modeIconLocations.get(mode);
+                        //Don't render null sprite.
+                        if (sprite == null) continue;
+
+                        GlStateManager.translatef(0, 0, 200); //The item models are also rendered 150 higher
+                        GlStateManager.enableBlend();
+                        int blitOffset = 0;
+                        try {
+                            Field f = AbstractGui.class.getDeclaredField("blitOffset");
+                            f.setAccessible(true);
+                            blitOffset = (int) f.get(Minecraft.getInstance().ingameGUI);
+                        } catch (Exception rx) {
+                            rx.printStackTrace();
+                        }
+                        AbstractGui.blit(x + 2, y + 2, blitOffset, 16, 16, Minecraft.getInstance().getTextureMap().getSprite(sprite));
+                        GlStateManager.disableBlend();
+                        GlStateManager.translatef(0, 0, -200);
+                    } else if(item.getItem() instanceof StorageItem && ((StorageItem) item.getItem()).showIconInHotbar()) {
+                        VoxelWrapper w = ((StorageItem) item.getItem()).getSelected(item);
+                        if (w.isEmpty() || w.getType() == VoxelType.COLOURED) continue;
+                        ir.renderItemIntoGUI(w.getStack(), x, y);
+                    }
+                }
+                GlStateManager.scalef(2, 2, 1);
+                GlStateManager.translatef(0, 0, -50);
+                RenderHelper.disableStandardItemLighting();
+            }
+            Minecraft.getInstance().getProfiler().endSection();
+        }
+    }
+
+    /**
+     * For drawing our custom highlight bounding boxes!
+     */
+    @SubscribeEvent
+    public static void drawHighlights(final DrawBlockHighlightEvent.HighlightBlock e) {
+        //Cancel if the draw blocks highlight method successfully rendered a highlight.
+        if(ChiselsAndBits2.getInstance().getClient().drawBlockHighlight(e.getPartialTicks()))
+            e.setCanceled(true);
+    }
+
+    /**
+     * For rendering the block placement ghost and static tape measurements.
+     */
+    @SubscribeEvent
+    public static void drawLast(final RenderWorldLastEvent e) {
+        if (Minecraft.getInstance().gameSettings.hideGUI) return;
+
+        ClientSide client = ChiselsAndBits2.getInstance().getClient();
+        client.renderTapeMeasureBoxes(e.getPartialTicks());
+        client.renderPlacementGhost(e.getPartialTicks());
+    }
+
+    /**
+     * Handles calling the scroll methods on all items implementing IItemScrollWheel.
+     */
+    @SubscribeEvent
+    public static void wheelEvent(final InputEvent.MouseScrollEvent me) {
+        final int dwheel = me.getScrollDelta() < 0 ? -1 : me.getScrollDelta() > 0 ? 1 : 0;
+        if (me.isCanceled() || dwheel == 0) return;
+
+        final PlayerEntity player = Minecraft.getInstance().player;
         final ItemStack is = player.getHeldItemMainhand();
 
-        if ( dwheel != 0 && is != null && is.getItem() instanceof IItemScrollWheel && player.isSneaking() )
-        {
-            ( (IItemScrollWheel) is.getItem() ).scroll( player, is, dwheel );
-            me.setCanceled( true );
-        }
-    }*/
-
-    //--- DRAW START / START POS ---
-    private BitLocation drawStart;
-    private ItemMode lastTool;
-
-    public BitLocation getStartPos()
-    {
-        return drawStart;
-    }
-
-    public void pointAt(
-            @Nonnull final ItemMode type,
-            @Nonnull final BitLocation pos )
-    {
-        if ( drawStart == null )
-        {
-            drawStart = pos;
-            lastTool = type;
+        if (is.getItem() instanceof IItemScrollWheel && player.isSneaking()) {
+            if(((IItemScrollWheel) is.getItem()).scroll(player, is, dwheel))
+                me.setCanceled(true);
         }
     }
 }
