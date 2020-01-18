@@ -1,0 +1,11 @@
+{
+  "homepage": "https://www.curseforge.com/minecraft/mc-mods/chisels-bits-2",
+  "1.14.4": {
+    "alpha5": "https://github.com/Aeltumn/Chisels-and-Bits-2/releases/tag/alpha5",
+    "alpha4": "https://github.com/Aeltumn/Chisels-and-Bits-2/releases/tag/alpha4"
+  },
+  "promos": {
+    "1.14.4-latest": "alpha5",
+    "1.14.4-recommended": "alpha5"
+  }
+}
