@@ -1,5 +1,5 @@
 # Chisels & Bits 2
-A successor to AlgorithmX2's original Chisels & Bits for Minecraft 1.8 - 1.12. A Minecraft mod about chiseling, sculpting and designing custom blocks made of various materials, liquids or colours.
+A successor to [AlgorithmX2's original Chisels & Bits](https://github.com/AlgorithmX2/Chisels-and-Bits) for Minecraft 1.8 - 1.12. A Minecraft mod about chiseling, sculpting and designing custom blocks made of various materials, liquids or colours.
 
 Download
 --------------
