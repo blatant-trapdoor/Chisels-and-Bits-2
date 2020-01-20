@@ -148,11 +148,11 @@ public class ChiselHandler {
         //Try to rotate both hands if possible
         ItemStack it = player.getHeldItemMainhand();
         if(it.getItem() instanceof IRotatableItem)
-            ((IRotatableItem) it.getItem()).rotate(it, pkt.getAxis());
+            ((IRotatableItem) it.getItem()).rotate(it, pkt.getAxis(), pkt.isClockwise());
         else {
             it = player.getHeldItemOffhand();
             if(it.getItem() instanceof IRotatableItem)
-                ((IRotatableItem) it.getItem()).rotate(it, pkt.getAxis());
+                ((IRotatableItem) it.getItem()).rotate(it, pkt.getAxis(), pkt.isClockwise());
         }
     }
 

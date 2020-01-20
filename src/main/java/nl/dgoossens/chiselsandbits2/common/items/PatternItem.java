@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class PatternItem extends TypedItem implements IRotatableItem {
+public class PatternItem extends TypedItem {
     public PatternItem(Properties builder) {
         super(builder);
     }
@@ -35,14 +35,6 @@ public class PatternItem extends TypedItem implements IRotatableItem {
     }
 
     @Override
-    public Set<ItemModeMenu.MenuButton> getMenuButtons(final ItemStack item) {
-        Set<ItemModeMenu.MenuButton> ret = new HashSet<>();
-        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_X, -ItemModeMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
-        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_Z, -ItemModeMenu.TEXT_DISTANCE - 18, 4, Direction.WEST));
-        return ret;
-    }
-
-    @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         super.addInformation(stack, worldIn, tooltip, flagIn);
         ItemTooltipWriter.addItemInformation(tooltip, "pattern.help",
@@ -50,10 +42,5 @@ public class PatternItem extends TypedItem implements IRotatableItem {
                 Minecraft.getInstance().gameSettings.keyBindUseItem,
                 ChiselsAndBits2.getInstance().getKeybindings().modeMenu
         );
-    }
-
-    @Override
-    public void rotate(ItemStack item, Direction.Axis axis) {
-
     }
 }

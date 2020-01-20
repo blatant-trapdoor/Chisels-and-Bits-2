@@ -136,6 +136,7 @@
   "general.chiselsandbits2.menuaction.undo": "Undo",
   "general.chiselsandbits2.menuaction.redo": "Redo",
   "general.chiselsandbits2.menuaction.roll_x": "Rotate X Axis",
+  "general.chiselsandbits2.menuaction.roll_y": "Rotate Y Axis",
   "general.chiselsandbits2.menuaction.roll_z": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.place": "Place",
   "general.chiselsandbits2.menuaction.swap": "Swap",
@@ -160,6 +161,7 @@
   "general.chiselsandbits2.menuaction.undo.hotkey": "Undo",
   "general.chiselsandbits2.menuaction.redo.hotkey": "Redo",
   "general.chiselsandbits2.menuaction.roll_x.hotkey": "Rotate X Axis",
+  "general.chiselsandbits2.menuaction.roll_y.hotkey": "Rotate Y Axis",
   "general.chiselsandbits2.menuaction.roll_z.hotkey": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.swap.hotkey": "Switch Placement Mode",
 

@@ -524,7 +524,6 @@ public class ClientSideHelper {
         if(ghostCache != null && ClientItemPropertyUtil.getGlobalCBM().equals(previousMode) && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial) && world.getBlockState(pos).equals(previousState) && !didTileChange(world.getTileEntity(pos)))
             model = ghostCache;
         else {
-            System.out.println("UPDATING");
             previousPosition = pos;
             previousPartial = partial;
             previousItem = item;
