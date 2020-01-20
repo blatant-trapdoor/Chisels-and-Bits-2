@@ -36,6 +36,7 @@ public class NetworkRouter {
         HANDLER.registerMessage(disc++, CItemModePacket.class, CItemModePacket::encode, CItemModePacket::decode, CItemModePacket::handle);
         HANDLER.registerMessage(disc++, CVoxelWrapperPacket.class, CVoxelWrapperPacket::encode, CVoxelWrapperPacket::decode, CVoxelWrapperPacket::handle);
         register(COpenBitBagPacket.class);
+        register(CVoidBagPacket.class);
 
         //Server
         HANDLER.registerMessage(disc++, SSynchronizeBitStoragePacket.class, SSynchronizeBitStoragePacket::encode, SSynchronizeBitStoragePacket::decode, SSynchronizeBitStoragePacket::handle);

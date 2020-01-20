@@ -2,12 +2,13 @@ package nl.dgoossens.chiselsandbits2.client.gui;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.ClickType;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
@@ -19,20 +20,22 @@ import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BagContainer;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.items.BitBagItem;
+import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
+import nl.dgoossens.chiselsandbits2.common.network.client.CVoidBagPacket;
+import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class BitBagScreen extends ContainerScreen<BagContainer> {
     private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ChiselsAndBits2.MOD_ID, "textures/gui/bit_bag.png");
     private int selectedSlot = -1;
     private DurabilityBarRenderer cache;
     private GuiButtonExt trashButton;
+    private long trashButtonClicked;
 
     public BitBagScreen(BagContainer container, PlayerInventory inv, ITextComponent text) {
         super(container, inv, text);
-        this.ySize = 114 + container.getRowCount() * 18;
     }
 
     @Override
@@ -41,8 +44,22 @@ public class BitBagScreen extends ContainerScreen<BagContainer> {
 
         //Setup buttons
         addButton(trashButton = new GuiButtonExt(guiLeft - 18, guiTop + 2, 18, 18, "", b -> {
+            if(trashButtonClicked != 0 && System.currentTimeMillis() - trashButtonClicked > 500) { //Make sure it isn't triggered double.
+                //Actually void everything
+                trashButtonClicked = 0;
 
+                ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CVoidBagPacket(Minecraft.getInstance().player.inventory.getItemStack()));
+            } else {
+                //Set the trash button click to the current time
+                trashButtonClicked = System.currentTimeMillis();
+            }
         }));
+
+        updateSize();
+    }
+
+    private void updateSize() {
+        this.ySize = 114 + container.getRowCount() * 18;
 
         //Determine selected slot
         final ItemStack bag = container.getBag();
@@ -62,12 +79,21 @@ public class BitBagScreen extends ContainerScreen<BagContainer> {
     }
 
     @Override
+    protected void handleMouseClick(Slot slotIn, int slotId, int mouseButton, ClickType type) {
+        if((type == ClickType.PICKUP || type == ClickType.THROW) && trashButton.isHovered())
+            return;
+
+        super.handleMouseClick(slotIn, slotId, mouseButton, type);
+    }
+
+    @Override
     public void render(int mouseX, int mouseY, float mouseZ) {
         this.renderBackground();
         super.render(mouseX, mouseY, mouseZ);
+        if(!trashButton.isHovered()) trashButtonClicked = 0; //Always require continuous hovering during clicking.
         if(trashButton.isHovered()) {
             FontRenderer font = getMinecraft().fontRenderer;
-            this.renderTooltip(Arrays.asList(I18n.format("button."+ChiselsAndBits2.MOD_ID+".trash")), mouseX, mouseY, (font == null ? this.font : font));
+            this.renderTooltip(Arrays.asList(I18n.format("button."+ChiselsAndBits2.MOD_ID+".trash"+(trashButtonClicked != 0 ? ".confirm" : ""))), mouseX, mouseY, (font == null ? this.font : font));
         } else if(hoveredSlot == container.getInputSlot()) {
             FontRenderer font = getMinecraft().fontRenderer;
             this.renderTooltip(Arrays.asList(I18n.format("button."+ChiselsAndBits2.MOD_ID+".input")), mouseX, mouseY, (font == null ? this.font : font));
@@ -105,7 +131,9 @@ public class BitBagScreen extends ContainerScreen<BagContainer> {
         }
 
         //Render button icons
-        this.blit(-15, 5, 176, 40, 12, 13);
+        if(trashButtonClicked != 0) this.blit(-15, 5, 176 + 12, 40, 12, 13);
+        else this.blit(-15, 5, 176, 40, 12, 13);
+
         this.blit(-14, 24, 176, 53, 10, 11);
 
         //Render durability bars

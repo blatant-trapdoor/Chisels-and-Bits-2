@@ -88,7 +88,7 @@ public class ItemModeMenu extends RadialMenu {
 
         //Update information
         final ItemStack item = getMinecraft().player.getHeldItemMainhand();
-        if(cachedStack == null || !item.equals(cachedStack, true) || (item.getItem() instanceof ChiseledBlockItem && !ClientItemPropertyUtil.getGlobalCBM().equals(cachedMode))) {
+        if(cachedStack == null || !item.equals(cachedStack, false) || (item.getItem() instanceof ChiseledBlockItem && !ClientItemPropertyUtil.getGlobalCBM().equals(cachedMode))) {
             cachedStack = getMinecraft().player.getHeldItemMainhand().copy();
             modes = getShownModes();
             buttons = getShownButtons();

@@ -39,23 +39,20 @@ public class BagContainer extends Container {
         int i = (numRows - 4) * 18;
 
         for(int j = 0; j < numRows; ++j) {
-            for(int k = 0; k < ((slotCount - j * 9) >= 9 ? 9 : slotCount % 9); ++k) {
-                this.addSlot(new Slot(bagInventory, k + j * 9, 8 + k * 18, 18 + j * 18));
-            }
+            for(int k = 0; k < ((slotCount - j * 9) >= 9 ? 9 : slotCount % 9); ++k)
+                this.addSlot(new ReadonlySlot(bagInventory, k + j * 9, 8 + k * 18, 18 + j * 18));
         }
 
         for(int l = 0; l < 3; ++l) {
-            for(int j1 = 0; j1 < 9; ++j1) {
+            for(int j1 = 0; j1 < 9; ++j1)
                 this.addSlot(new Slot(player.inventory, j1 + l * 9 + 9, 8 + j1 * 18, 103 + l * 18 + i));
-            }
         }
 
-        for(int i1 = 0; i1 < 9; ++i1) {
+        for(int i1 = 0; i1 < 9; ++i1)
             this.addSlot(new Slot(player.inventory, i1, 8 + i1 * 18, 161 + i));
-        }
 
         //Input slot
-        inputSlot = new Slot(fakeInventory, 0, -17, 21);
+        inputSlot = new ReadonlySlot(fakeInventory, 0, -17, 21);
         this.addSlot(inputSlot);
     }
 

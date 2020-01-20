@@ -190,5 +190,6 @@
   "advancements.story.get_bag.description": "Craft a bit bag to store bits in",
 
   "button.chiselsandbits2.trash": "Clear bag contents; hold item to filter",
+  "button.chiselsandbits2.trash.confirm": "Are you sure you want to void all bag contents?",
   "button.chiselsandbits2.input": "Add chiseled blocks to bag"
 }
