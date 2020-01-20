@@ -33,7 +33,6 @@ import java.util.*;
 public class ModelUtil implements CacheClearable {
     private final static HashMap<Integer, ResourceLocation> blockToTexture = new HashMap<>();
     private static HashMap<Long, ModelQuadLayer[]> sideCache = new HashMap<>();
-    private static HashMap<Integer, TextureAtlasSprite> breakCache = new HashMap<>();
 
     static {
         //Register this class to be cache cleared.
@@ -41,11 +40,11 @@ public class ModelUtil implements CacheClearable {
     }
 
     public static ModelQuadLayer[] getCachedSides(final int state, final Direction side) {
-        return sideCache.get(((long) state) + side.ordinal() << 32);
+        return sideCache.get(((long) state) + ((long) side.ordinal()) << 32);
     }
 
     public static ModelQuadLayer[] setCachedSides(final int state, final Direction side, final ModelQuadLayer[] mp) {
-        return sideCache.put(((long) state) + side.ordinal() << 32, mp);
+        return sideCache.put(((long) state) + ((long) side.ordinal()) << 32, mp);
     }
 
     public static boolean isOne(final float v) {
@@ -328,22 +327,6 @@ public class ModelUtil implements CacheClearable {
         return texture;
     }
 
-    public static TextureAtlasSprite getBreakingTexture(int blockStateId) {
-        TextureAtlasSprite out = breakCache.get(blockStateId);
-
-        if (out == null && VoxelType.getType(blockStateId) == VoxelType.BLOCKSTATE) {
-            final BlockState state = BitUtil.getBlockState(blockStateId);
-            final IBakedModel model = ModelUtil.solveModel(state, new Random(), Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(BitUtil.getBlockState(blockStateId)));
-
-            if (model != null)
-                out = ModelUtil.findTexture(blockStateId, model, Direction.UP);
-
-            breakCache.put(blockStateId, out);
-        }
-
-        return out;
-    }
-
     private static void processFaces(final HashMap<Direction, ArrayList<ModelQuadLayer.Builder>> tmp, final List<BakedQuad> quads, final BlockState state) {
         for (final BakedQuad q : quads) {
             final Direction face = q.getFace();
@@ -433,6 +416,5 @@ public class ModelUtil implements CacheClearable {
     public void clearCache() {
         blockToTexture.clear();
         sideCache.clear();
-        breakCache.clear();
     }
 }
