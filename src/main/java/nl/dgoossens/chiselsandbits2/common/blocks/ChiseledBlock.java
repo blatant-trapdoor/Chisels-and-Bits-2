@@ -43,14 +43,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 
-public class ChiseledBlock extends Block implements BaseBlock {
+public class ChiseledBlock extends Block {
     public ChiseledBlock(Properties properties) {
         super(properties);
-    }
-
-    @Override
-    public BlockItem getBlockItem() {
-        return new ChiseledBlockItem(this, new Item.Properties());
     }
 
     @Override

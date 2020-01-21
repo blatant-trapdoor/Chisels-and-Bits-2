@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
+import net.minecraftforge.client.model.data.IDynamicBakedModel;
 import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.common.ForgeConfig;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
@@ -27,7 +28,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class ChiseledBlockBaked extends BaseBakedModel implements IBakedModel, IForgeBakedModel {
+public class ChiseledBlockBaked extends BaseBakedModel implements IDynamicBakedModel, IForgeBakedModel {
     private VertexFormat format;
     private BakedQuad[] up;
     private BakedQuad[] down;
@@ -389,11 +390,6 @@ public class ChiseledBlockBaked extends BaseBakedModel implements IBakedModel, I
         final float v1 = src[1] * inU + inv * src[3];
         final float v2 = src[5] * inU + inv * src[7];
         return v1 * inV + (1.0f - inV) * v2;
-    }
-
-    @Override
-    public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand) {
-        return getList(side);
     }
 
     @Nonnull

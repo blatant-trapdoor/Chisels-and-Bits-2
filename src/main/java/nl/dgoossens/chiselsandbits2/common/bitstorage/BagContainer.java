@@ -7,6 +7,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
@@ -18,7 +19,7 @@ public class BagContainer extends Container {
     private int slotCount;
     private Slot inputSlot;
 
-    public BagContainer(int id, PlayerInventory playerInventory) {
+    public BagContainer(int id, PlayerInventory playerInventory, PacketBuffer data) {
         this(id, playerInventory.player, new Inventory(Math.min( //Take occupied + 1 up to maximum. So you always have a slot to put it into the bag.
                 playerInventory.player.getHeldItemMainhand().getCapability(StorageCapabilityProvider.STORAGE).map(BitStorage::getMaximumSlots).orElse(0),
                 playerInventory.player.getHeldItemMainhand().getCapability(StorageCapabilityProvider.STORAGE).map(BitStorage::getOccupiedSlotCount).orElse(0) + 1
@@ -26,7 +27,7 @@ public class BagContainer extends Container {
     }
 
     public BagContainer(int id, PlayerEntity player, Inventory bagInventory, ItemStack item) {
-        super(ChiselsAndBits2.getInstance().getContainers().BIT_BAG, id);
+        super(ChiselsAndBits2.getInstance().getRegister().BIT_BAG_CONTAINER.get(), id);
         this.bagInventory = bagInventory;
         this.item = item;
         this.slotCount = bagInventory.getSizeInventory();

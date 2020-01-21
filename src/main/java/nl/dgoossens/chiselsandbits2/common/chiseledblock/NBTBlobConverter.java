@@ -85,7 +85,7 @@ public class NBTBlobConverter {
     }
 
     public ItemStack getItemStack() {
-        final Block blk = ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK;
+        final Block blk = ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get();
         final ItemStack is = new ItemStack(blk);
         final CompoundNBT compound = is.getOrCreateChildTag(ChiselUtil.NBT_BLOCKENTITYTAG);
         writeChiselData(compound);

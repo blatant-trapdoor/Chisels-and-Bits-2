@@ -97,7 +97,7 @@ public class CUndoPacket {
                 //Actually apply the operation.
                 TileEntity te = world.getTileEntity(pos);
                 if(!(te instanceof ChiseledBlockTileEntity)) {
-                    world.setBlockState(pos, ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), 3);
+                    world.setBlockState(pos, ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get().getDefaultState(), 3);
                     te = world.getTileEntity(pos);
                 }
                 if(te instanceof ChiseledBlockTileEntity)

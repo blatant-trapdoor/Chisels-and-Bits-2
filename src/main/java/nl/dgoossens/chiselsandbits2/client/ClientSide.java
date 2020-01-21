@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -40,7 +39,6 @@ import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
 import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 
 import java.lang.reflect.Field;
@@ -76,21 +74,16 @@ public class ClientSide extends ClientSideHelper {
      */
     public void registerItemColors(final ColorHandlerEvent.Item e) {
         e.getItemColors().register(new ChiseledBlockItemColor(),
-                Item.getItemFromBlock(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK),
-                ChiselsAndBits2.getInstance().getItems().MORPHING_BIT);
-
-        //Register all coloured items as having an item color
-        final ModItems i = ChiselsAndBits2.getInstance().getItems();
-        final ColourableItemColor cic = new ColourableItemColor(1);
-        i.runForAllColourableItems((a) -> e.getItemColors().register(cic, a));
+                ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK_ITEM.get(),
+                ChiselsAndBits2.getInstance().getRegister().MORPHING_BIT.get(),
+                ChiselsAndBits2.getInstance().getRegister().);
     }
 
     /**
      * Register block color handlers.
      */
     public void registerBlockColors(final ColorHandlerEvent.Block e) {
-        e.getBlockColors().register(new ChiseledBlockColor(),
-                ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK);
+        e.getBlockColors().register(new ChiseledBlockColor(), ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get());
     }
 
     /**
@@ -130,8 +123,8 @@ public class ClientSide extends ClientSideHelper {
 
         //Chiseled Block
         ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
-        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getRegistryName(), ""), smartModel);
-        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getRegistryName(), "inventory"), smartModel);
+        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get().getRegistryName(), ""), smartModel);
+        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get().getRegistryName(), "inventory"), smartModel);
 
         //Morphing Bit
         MorphingBitSmartModel morphingModel = new MorphingBitSmartModel();

@@ -44,7 +44,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
     private long iteration = -Long.MAX_VALUE + 1; //Make sure it's going to take a long time until we reach -Long.MAX_VALUE.
 
     public ChiseledBlockTileEntity() {
-        super(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK_TILE);
+        super(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK_TILE.get());
     }
 
     public int getPrimaryBlock() {
@@ -169,7 +169,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
         final CompoundNBT comp = new CompoundNBT();
         c.writeChiselData(comp);
 
-        final ItemStack stack = new ItemStack(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK, 1);
+        final ItemStack stack = new ItemStack(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get(), 1);
         stack.setTagInfo(ChiselUtil.NBT_BLOCKENTITYTAG, comp);
         return stack;
     }

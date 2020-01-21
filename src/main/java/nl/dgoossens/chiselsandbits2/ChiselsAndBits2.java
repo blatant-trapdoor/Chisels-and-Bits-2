@@ -27,15 +27,13 @@ public class ChiselsAndBits2 {
 
     private static ChiselsAndBits2 instance;
 
-    private final ModItems ITEMS;
-    private final ModBlocks BLOCKS;
-    private final ModConfiguration CONFIGURATION;
     private final NetworkRouter NETWORK_ROUTER;
     private final ChiselsAndBitsAPI API;
     private final ModStatistics STATISTICS;
     private final ModRecipes RECIPES;
+    private final ModConfiguration CONFIGURATION;
     private final UndoTracker UNDO;
-    private final ModContainers CONTAINERS;
+    private final Registration REGISTER;
     private ClientSide CLIENT;
     private ModKeybindings KEYBINDINGS;
 
@@ -44,13 +42,11 @@ public class ChiselsAndBits2 {
         API = new ChiselsAndBitsAPIImpl();
         CONFIGURATION = new ModConfiguration();
         NETWORK_ROUTER = new NetworkRouter();
-        ITEMS = new ModItems();
-        BLOCKS = new ModBlocks();
         STATISTICS = new ModStatistics();
         RECIPES = new ModRecipes();
         UNDO = new UndoTracker();
-        CONTAINERS = new ModContainers();
         KEYBINDINGS = new ModKeybindings();
+        REGISTER = new Registration();
 
         //Only initialise the client class when on the CLIENT distribution.
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
@@ -82,19 +78,14 @@ public class ChiselsAndBits2 {
         //Register keybindings
         CLIENT.setup();
         KEYBINDINGS.setup();
-        CONTAINERS.registerScreens();
     }
 
     public ChiselsAndBitsAPI getAPI() {
         return API;
     }
 
-    public ModItems getItems() {
-        return ITEMS;
-    }
-
-    public ModBlocks getBlocks() {
-        return BLOCKS;
+    public Registration getRegister() {
+        return REGISTER;
     }
 
     public ClientSide getClient() {
@@ -123,10 +114,6 @@ public class ChiselsAndBits2 {
 
     public UndoTracker getUndoTracker() {
         return UNDO;
-    }
-
-    public ModContainers getContainers() {
-        return CONTAINERS;
     }
 
     /**

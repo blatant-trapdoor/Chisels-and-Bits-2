@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.model.PerspectiveMapWrapper;
+import net.minecraftforge.client.model.data.IDynamicBakedModel;
 import net.minecraftforge.common.model.TRSRTransformation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,7 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
 
-public abstract class BaseBakedModel implements IBakedModel, IForgeBakedModel {
+public abstract class BaseBakedModel implements IDynamicBakedModel, IForgeBakedModel {
     private static final Matrix4f ground;
     private static final Matrix4f gui;
     private static final Matrix4f fixed;

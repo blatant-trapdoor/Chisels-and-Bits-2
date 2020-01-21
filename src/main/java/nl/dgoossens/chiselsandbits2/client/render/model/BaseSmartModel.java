@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.world.World;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
+import net.minecraftforge.client.model.data.IDynamicBakedModel;
 import net.minecraftforge.client.model.data.IModelData;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 
@@ -21,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public abstract class BaseSmartModel implements IBakedModel, IForgeBakedModel {
+public abstract class BaseSmartModel implements IDynamicBakedModel, IForgeBakedModel {
     private final ItemOverrideList overrides;
     private static final IBakedModel NULL_MODEL = new IBakedModel() {
         @Override
@@ -103,15 +104,11 @@ public abstract class BaseSmartModel implements IBakedModel, IForgeBakedModel {
         return ChiselsAndBits2.getInstance().getClient().getMissingIcon();
     }
 
+    @Nonnull
     @Override
-    public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand, @Nonnull final IModelData modelData) {
-        final IBakedModel model = handleBlockState(state, rand, modelData);
-        return model.getQuads(state, side, rand, modelData);
-    }
-
-    @Override
-    public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand) {
-        return Collections.emptyList();
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
+        final IBakedModel model = handleBlockState(state, rand, extraData);
+        return model.getQuads(state, side, rand, extraData);
     }
 
     @Override
