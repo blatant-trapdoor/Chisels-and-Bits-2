@@ -307,7 +307,7 @@ public class ChiselHandler {
 
         //Reduce wrench durability
         player.getHeldItemMainhand().damageItem(1, player, (p) -> p.sendBreakAnimation(Hand.MAIN_HAND));
-        player.getStats().increment(player, Stats.ITEM_USED.get(ChiselsAndBits2.getInstance().getItems().WRENCH), 1);
+        player.getStats().increment(player, Stats.ITEM_USED.get(ChiselsAndBits2.getInstance().getRegister().WRENCH.get()), 1);
         ChiselUtil.playModificationSound(world, pos, true); //Wrench can play sound of the block as it has been set for this world.
     }
 }

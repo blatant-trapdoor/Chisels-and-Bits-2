@@ -38,6 +38,7 @@ import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
+import nl.dgoossens.chiselsandbits2.common.registry.Registration;
 import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 
@@ -73,10 +74,30 @@ public class ClientSide extends ClientSideHelper {
      * Register item color handlers.
      */
     public void registerItemColors(final ColorHandlerEvent.Item e) {
+        Registration m = ChiselsAndBits2.getInstance().getRegister();
+        
+        //Register all items with an item color
         e.getItemColors().register(new ChiseledBlockItemColor(),
-                ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK_ITEM.get(),
-                ChiselsAndBits2.getInstance().getRegister().MORPHING_BIT.get(),
-                ChiselsAndBits2.getInstance().getRegister().);
+                m.CHISELED_BLOCK_ITEM.get(),
+                m.MORPHING_BIT.get());
+
+        e.getItemColors().register(new ColourableItemColor(1),
+                m.WHITE_BIT_BAG.get(),
+                m.ORANGE_BIT_BAG.get(),
+                m.BLACK_BIT_BAG.get(),
+                m.BLUE_BIT_BAG.get(),
+                m.LIGHT_BLUE_BIT_BAG.get(),
+                m.LIGHT_GRAY_BIT_BAG.get(),
+                m.BROWN_BIT_BAG.get(),
+                m.CYAN_BIT_BAG.get(),
+                m.RED_BIT_BAG.get(),
+                m.YELLOW_BIT_BAG.get(),
+                m.PINK_BIT_BAG.get(),
+                m.GRAY_BIT_BAG.get(),
+                m.PURPLE_BIT_BAG.get(),
+                m.LIME_BIT_BAG.get(),
+                m.MAGENTA_BIT_BAG.get(),
+                m.GREEN_BIT_BAG.get());
     }
 
     /**
@@ -123,13 +144,13 @@ public class ClientSide extends ClientSideHelper {
 
         //Chiseled Block
         ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
-        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get().getRegistryName(), ""), smartModel);
-        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get().getRegistryName(), "inventory"), smartModel);
+        event.getModelRegistry().put(new ModelResourceLocation(new ResourceLocation(ChiselsAndBits2.MOD_ID, "chiseled_block"), ""), smartModel);
+        event.getModelRegistry().put(new ModelResourceLocation(new ResourceLocation(ChiselsAndBits2.MOD_ID, "chiseled_block"), "inventory"), smartModel);
 
         //Morphing Bit
         MorphingBitSmartModel morphingModel = new MorphingBitSmartModel();
-        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getItems().MORPHING_BIT.getRegistryName(), ""), morphingModel);
-        event.getModelRegistry().put(new ModelResourceLocation(ChiselsAndBits2.getInstance().getItems().MORPHING_BIT.getRegistryName(), "inventory"), morphingModel);
+        event.getModelRegistry().put(new ModelResourceLocation(new ResourceLocation(ChiselsAndBits2.MOD_ID, "morphing_bit"), ""), morphingModel);
+        event.getModelRegistry().put(new ModelResourceLocation(new ResourceLocation(ChiselsAndBits2.MOD_ID, "morphing_bit"), "inventory"), morphingModel);
     }
 
     /**

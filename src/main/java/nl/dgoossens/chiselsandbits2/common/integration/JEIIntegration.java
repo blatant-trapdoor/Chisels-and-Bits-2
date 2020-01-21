@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.common.registry.Registration;
 
 @JeiPlugin
 public class JEIIntegration implements IModPlugin {
@@ -18,10 +19,8 @@ public class JEIIntegration implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        ModItems m = ChiselsAndBits2.getInstance().getItems();
-        addDescriptions(registration, m.CHISEL, m.PATTERN, m.SAW, m.TAPE_MEASURE, m.WRENCH,
-                m.BIT_BAG, m.BIT_BEAKER, m.BLUEPRINT, m.MORPHING_BIT,
-                m.OAK_PALETTE, m.BIRCH_PALETTE, m.SPRUCE_PALETTE, m.ACACIA_PALETTE, m.JUNGLE_PALETTE, m.DARK_OAK_PALETTE);
+        Registration m = ChiselsAndBits2.getInstance().getRegister();
+        addDescriptions(registration, m.CHISEL.get(), m.TAPE_MEASURE.get(), m.WRENCH.get(), m.BIT_BAG.get(), m.MORPHING_BIT.get());
     }
 
     private void addDescriptions(IRecipeRegistration registration, Item... items) {

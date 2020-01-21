@@ -30,7 +30,6 @@ public class ChiselsAndBits2 {
     private final NetworkRouter NETWORK_ROUTER;
     private final ChiselsAndBitsAPI API;
     private final ModStatistics STATISTICS;
-    private final ModRecipes RECIPES;
     private final ModConfiguration CONFIGURATION;
     private final UndoTracker UNDO;
     private final Registration REGISTER;
@@ -43,7 +42,6 @@ public class ChiselsAndBits2 {
         CONFIGURATION = new ModConfiguration();
         NETWORK_ROUTER = new NetworkRouter();
         STATISTICS = new ModStatistics();
-        RECIPES = new ModRecipes();
         UNDO = new UndoTracker();
         KEYBINDINGS = new ModKeybindings();
         REGISTER = new Registration();
@@ -106,10 +104,6 @@ public class ChiselsAndBits2 {
 
     public ModStatistics getStatistics() {
         return STATISTICS;
-    }
-
-    public ModRecipes getRecipes() {
-        return RECIPES;
     }
 
     public UndoTracker getUndoTracker() {

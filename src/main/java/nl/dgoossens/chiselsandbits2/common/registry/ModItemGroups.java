@@ -12,7 +12,7 @@ public class ModItemGroups {
     public static final ItemGroup CHISELS_AND_BITS2 = new ItemGroup("chiselsandbits2") {
         @Override
         public ItemStack createIcon() {
-            return new ItemStack(ChiselsAndBits2.getInstance().getItems().CHISEL);
+            return new ItemStack(ChiselsAndBits2.getInstance().getRegister().CHISEL.get());
         }
 
         @Override

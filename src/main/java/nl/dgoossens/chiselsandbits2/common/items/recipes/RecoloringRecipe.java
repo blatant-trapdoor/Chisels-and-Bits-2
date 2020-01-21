@@ -9,6 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.DyedItemColour;
+import nl.dgoossens.chiselsandbits2.common.items.BitBagItem;
 
 public class RecoloringRecipe extends SpecialRecipe {
     public RecoloringRecipe(ResourceLocation id) {
@@ -23,7 +24,7 @@ public class RecoloringRecipe extends SpecialRecipe {
         for(int k = 0; k < inv.getSizeInventory(); ++k) {
             ItemStack itemstack = inv.getStackInSlot(k);
             if (!itemstack.isEmpty()) {
-                if (itemstack.getItem() instanceof IColourable) {
+                if (itemstack.getItem() instanceof BitBagItem) {
                     ++i;
                 } else {
                     if (!itemstack.getItem().isIn(net.minecraftforge.common.Tags.Items.DYES)) {
@@ -51,7 +52,7 @@ public class RecoloringRecipe extends SpecialRecipe {
             ItemStack itemstack1 = inv.getStackInSlot(i);
             if (!itemstack1.isEmpty()) {
                 Item item = itemstack1.getItem();
-                if (item instanceof IColourable) {
+                if (item instanceof BitBagItem) {
                     itemstack = itemstack1;
                 } else {
                     net.minecraft.item.DyeColor tmp = net.minecraft.item.DyeColor.getColor(itemstack1);
@@ -60,7 +61,7 @@ public class RecoloringRecipe extends SpecialRecipe {
             }
         }
 
-        ItemStack itemstack2 = itemstack.isEmpty() ? ItemStack.EMPTY : new ItemStack(ChiselsAndBits2.getInstance().getItems().getColouredItem(itemstack.getItem().getClass(), DyedItemColour.fromDye(dyecolor)));
+        ItemStack itemstack2 = itemstack.isEmpty() ? ItemStack.EMPTY : new ItemStack(ChiselsAndBits2.getInstance().getRegister().getBitBag(DyedItemColour.fromDye(dyecolor)).get());
         if (itemstack.hasTag()) {
             itemstack2.setTag(itemstack.getTag().copy());
         }
@@ -75,6 +76,6 @@ public class RecoloringRecipe extends SpecialRecipe {
 
     @Override
     public IRecipeSerializer<?> getSerializer() {
-        return ChiselsAndBits2.getInstance().getRecipes().CRAFTING_SPECIAL_RECOLOR;
+        return ChiselsAndBits2.getInstance().getRegister().CRAFTING_SPECIAL_RECOLOR.get();
     }
 }
