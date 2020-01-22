@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.common.util;
+package nl.dgoossens.chiselsandbits2.client.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IngameGui;

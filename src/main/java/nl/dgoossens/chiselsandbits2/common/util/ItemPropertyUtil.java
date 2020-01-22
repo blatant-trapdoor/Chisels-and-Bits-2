@@ -15,6 +15,7 @@ import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.cache.CacheClearable;
 import nl.dgoossens.chiselsandbits2.api.cache.CacheType;
+import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;

@@ -1,7 +1,7 @@
 package nl.dgoossens.chiselsandbits2.client.render.model.helpers;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import nl.dgoossens.chiselsandbits2.common.util.ModelUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ModelUtil;
 
 public class ModelUVReader extends ModelReader {
     private final float[] quadUVs = new float[]{0, 0, 0, 1, 1, 0, 1, 1};

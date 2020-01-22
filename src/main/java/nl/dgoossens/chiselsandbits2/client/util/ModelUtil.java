@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.common.util;
+package nl.dgoossens.chiselsandbits2.client.util;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -22,6 +22,7 @@ import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelUVAverager;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelVertexRange;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.SimpleGeneratedModel;
+import nl.dgoossens.chiselsandbits2.common.util.BitUtil;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -40,11 +41,12 @@ public class ModelUtil implements CacheClearable {
     }
 
     public static ModelQuadLayer[] getCachedSides(final int state, final Direction side) {
-        return sideCache.get(((long) state) + ((long) side.ordinal()) << 32);
+        return sideCache.get(((long) state) + (((long) side.ordinal()) << 48));
     }
 
     public static ModelQuadLayer[] setCachedSides(final int state, final Direction side, final ModelQuadLayer[] mp) {
-        return sideCache.put(((long) state) + ((long) side.ordinal()) << 32, mp);
+        System.out.println("Id is "+(((long) state) + (((long) side.ordinal()) << 48))+" for state "+state+"and side "+side.ordinal());
+        return sideCache.put(((long) state) + (((long) side.ordinal()) << 48), mp);
     }
 
     public static boolean isOne(final float v) {

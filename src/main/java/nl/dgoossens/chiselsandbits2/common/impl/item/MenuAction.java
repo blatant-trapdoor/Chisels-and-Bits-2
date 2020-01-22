@@ -4,7 +4,7 @@ import net.minecraft.util.Direction;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.common.network.client.CRotateItemPacket;
-import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
 
 public enum MenuAction implements IMenuAction {
     //General

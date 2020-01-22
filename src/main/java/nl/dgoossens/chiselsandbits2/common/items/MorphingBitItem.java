@@ -19,7 +19,7 @@ import nl.dgoossens.chiselsandbits2.api.item.property.SelectedProperty;
 import nl.dgoossens.chiselsandbits2.api.item.property.StateProperty;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.client.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.*;

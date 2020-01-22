@@ -34,7 +34,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.ModelRenderState;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
 import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.util.ModelUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ModelUtil;
 
 import javax.annotation.Nullable;
 import java.util.*;

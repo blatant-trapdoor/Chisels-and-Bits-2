@@ -13,7 +13,7 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
 
 /**
  * A class dedicated to calculating whether or not we can currently place a block and where it gets placed

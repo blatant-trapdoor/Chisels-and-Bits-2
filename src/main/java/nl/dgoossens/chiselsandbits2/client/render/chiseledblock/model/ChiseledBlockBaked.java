@@ -16,13 +16,12 @@ import nl.dgoossens.chiselsandbits2.api.render.ICullTest;
 import nl.dgoossens.chiselsandbits2.api.render.IFaceBuilder;
 import nl.dgoossens.chiselsandbits2.api.render.IStateRef;
 import nl.dgoossens.chiselsandbits2.client.cull.MCCullTest;
-import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledTintColor;
 import nl.dgoossens.chiselsandbits2.client.render.model.BaseBakedModel;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.ModelRenderState;
 import nl.dgoossens.chiselsandbits2.client.render.model.helpers.ModelQuadLayer;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlobStateReference;
-import nl.dgoossens.chiselsandbits2.common.util.ModelUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ModelUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

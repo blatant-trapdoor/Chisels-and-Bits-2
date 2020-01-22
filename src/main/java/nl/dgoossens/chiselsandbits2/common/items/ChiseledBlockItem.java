@@ -24,8 +24,8 @@ import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.network.client.CRotateItemPacket;
 import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;

@@ -3,21 +3,15 @@ package nl.dgoossens.chiselsandbits2.common.items;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
-import nl.dgoossens.chiselsandbits2.api.item.attributes.IRotatableItem;
-import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
-import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.client.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class PatternItem extends TypedItem {
     public PatternItem(Properties builder) {
