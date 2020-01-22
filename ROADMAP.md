@@ -17,8 +17,10 @@ Alpha 5 and 6 (maybe there'll be less or more alphas) will all focus on fixing a
 - ~~Finalising the Worldfixer program which can convert 1.12 worlds to 1.14 C&B2.~~ _(impossible at the moment until Forge changes)_
 - Finalise the way chiseled blocks are stored to disk, currently I use the exact C&B1 method but I want to see if there is room for improvement
 - Finishing proper light level rendering and dynamically updating light level of chiseled blocks to the amount of glowing blocks contained in it
-- Revamping the model generation code as that is still largely copied from C&B1 without having been looked at.
 - Bugfixes, stability improvements and lots of testing
+
+
+- _Revamping the model generation code as that is still largely copied from C&B1 without having been looked at._ **I'm planning on rewriting the entire model code once I switch to 1.15, so the first alpha will be 1.14 and not have this.**
 
 ## CurseForge Releases
 At this point releases will be published to curseforge where I'll start releasing them under the versioning scheme release.update.fix<a|b> where a (alpha) and b (beta) will correspond to how the update is marked on curseforge.

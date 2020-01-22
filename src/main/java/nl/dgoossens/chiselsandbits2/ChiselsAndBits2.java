@@ -54,6 +54,8 @@ public class ChiselsAndBits2 {
         //Register to mod bus
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setupClient);
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> CLIENT::initialise);
+
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, CONFIGURATION.SERVER);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CONFIGURATION.CLIENT);
     }

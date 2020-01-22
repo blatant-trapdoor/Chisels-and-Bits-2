@@ -62,7 +62,12 @@ public class ClientSide extends ClientSideHelper {
      */
     public void setup() {
         ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, new ChiseledBlockTER());
+    }
 
+    /**
+     * Register listeners to mod event bus.
+     */
+    public void initialise() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerItemColors);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerBlockColors);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerIconTextures);
@@ -73,7 +78,7 @@ public class ClientSide extends ClientSideHelper {
     /**
      * Register item color handlers.
      */
-    public void registerItemColors(final ColorHandlerEvent.Item e) {
+    private void registerItemColors(final ColorHandlerEvent.Item e) {
         Registration m = ChiselsAndBits2.getInstance().getRegister();
         
         //Register all items with an item color
@@ -103,14 +108,17 @@ public class ClientSide extends ClientSideHelper {
     /**
      * Register block color handlers.
      */
-    public void registerBlockColors(final ColorHandlerEvent.Block e) {
-        e.getBlockColors().register(new ChiseledBlockColor(), ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get());
+    private void registerBlockColors(final ColorHandlerEvent.Block e) {
+        Registration m = ChiselsAndBits2.getInstance().getRegister();
+
+        e.getBlockColors().register(new ChiseledBlockColor(),
+                m.CHISELED_BLOCK.get());
     }
 
     /**
      * Register custom sprites.
      */
-    public void registerIconTextures(final TextureStitchEvent.Pre e) {
+    private void registerIconTextures(final TextureStitchEvent.Pre e) {
         //Only register to the texture map.
         if(!e.getMap().getBasePath().equals("textures")) return;
 
@@ -131,7 +139,7 @@ public class ClientSide extends ClientSideHelper {
     /**
      * Clear the cached model data whenever textures are stitched.
      */
-    public void clearCaches(final TextureStitchEvent.Post e) {
+    private void clearCaches(final TextureStitchEvent.Post e) {
         GfxRenderState.gfxRefresh++;
         CacheType.DEFAULT.call();
     }
@@ -139,7 +147,7 @@ public class ClientSide extends ClientSideHelper {
     /**
      * Bake all of our custom models.
      */
-    public void bakeModels(final ModelBakeEvent event) {
+    private void bakeModels(final ModelBakeEvent event) {
         CacheType.MODEL.call();
 
         //Chiseled Block

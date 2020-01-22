@@ -31,6 +31,9 @@ public class ItemModels extends ItemModelProvider {
         withExistingParent("bit_bag", "item/generated")
                 .texture("layer0", new ResourceLocation(ChiselsAndBits2.MOD_ID, "item/bit_bag"));
 
+        withExistingParent("chisel", tool)
+                .texture("layer0", new ResourceLocation(ChiselsAndBits2.MOD_ID, "item/chisel"));
+
         withExistingParent("tape_measure", "item/generated")
                 .texture("layer0", new ResourceLocation(ChiselsAndBits2.MOD_ID, "item/tape_measure"));
 
