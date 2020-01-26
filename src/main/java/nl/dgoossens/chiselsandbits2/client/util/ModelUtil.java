@@ -41,12 +41,11 @@ public class ModelUtil implements CacheClearable {
     }
 
     public static ModelQuadLayer[] getCachedSides(final int state, final Direction side) {
-        return sideCache.get(((long) state) + (((long) side.ordinal()) << 48));
+        return sideCache.get(Integer.toUnsignedLong(state) + (((long) side.ordinal()) << 48));
     }
 
     public static ModelQuadLayer[] setCachedSides(final int state, final Direction side, final ModelQuadLayer[] mp) {
-        System.out.println("Id is "+(((long) state) + (((long) side.ordinal()) << 48))+" for state "+state+"and side "+side.ordinal());
-        return sideCache.put(((long) state) + (((long) side.ordinal()) << 48), mp);
+        return sideCache.put(Integer.toUnsignedLong(state) + (((long) side.ordinal()) << 48), mp);
     }
 
     public static boolean isOne(final float v) {
@@ -123,6 +122,7 @@ public class ModelUtil implements CacheClearable {
 
         switch (VoxelType.getType(stateID)) {
             case BLOCKSTATE: {
+                //We get the block model here to take the correct textures for models with different textures for different quads.
                 final IBakedModel model = ModelUtil.solveModel(state, weight, Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModel(state));
                 final int lv = state.getLightValue();
 
