@@ -73,6 +73,7 @@ public class ChiseledBlockTileEntity extends TileEntity {
         voxelBlob = voxel;
         requestModelDataUpdate();
         cachedShape = null;
+        raytraceShape = null;
         collisionShape = null;
         itemCache = null;
         recalculateShape();
