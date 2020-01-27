@@ -158,9 +158,7 @@ public class ChiselUtil {
         if(target.equals(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get()) || placementState == null)
             return true;
 
-        boolean isAir = isBlockReplaceable(world, pos, player, face, true);
-
-        return ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(originalState) || isAir;
+        return ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(originalState) || isBlockReplaceable(world, pos, player, face, false);
     }
 
     /**

@@ -65,6 +65,14 @@ public class VoxelWrapper<T> {
         }
     }
 
+    /**
+     * Check if this voxel wrapper is of the same type as this bit. Ignores blockstate properties and
+     * compares result of {@link #get()}
+     */
+    public boolean equalsBit(int bitType) {
+        return type == VoxelType.getType(bitType) && get().equals(new VoxelWrapper<>(bitType).get());
+    }
+
     @Override
     public boolean equals(Object obj) {
         if(obj instanceof VoxelWrapper) {

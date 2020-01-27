@@ -1,12 +1,13 @@
 package nl.dgoossens.chiselsandbits2.api;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.state.IProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.api.bit.RestrictionAPI;
 import nl.dgoossens.chiselsandbits2.api.block.BitAccess;
 
-import java.util.Optional;
+import java.util.*;
 
 /**
  * The Chisels & Bits API is a way for any mod (including C&B2 itself)
@@ -33,4 +34,26 @@ public interface ChiselsAndBitsAPI {
      * specially marked as chiselable regardless of the block shape or properties.
      */
     RestrictionAPI getRestrictions();
+
+    /**
+     * Ignore a blockstate property from being seen as a unique chiselable type, it will be seen as
+     * its default property. This should be used for questionable block properties, some examples:
+     *  - Leaf decay distance
+     *
+     * A good test to use to figure out if a blockstate should be ignored is as follows:
+     *  If you had a block filled completely with logs on different axis, you wouldn't want the block to turn into a full
+     *  log block with a single axis. So axis should be a property of a chiseled bit.
+     *
+     *  If you had a block filled with leaves with varying distance values, you would want the block to turn into a full
+     *  block regardless of the distance values of the parts of the block. So DISTANCE_1_7 should be ignored.
+     *
+     *  Furthermore, different blockstates values also cause the face to be rendered, so only blockstates that can alter
+     *  the rotation or rendering of the block should go un-ignored ideally.
+     */
+    void addIgnoredBlockState(final IProperty<?> property);
+
+    /**
+     * Get the list of all ignored block states.
+     */
+    Collection<IProperty<?>> getIgnoredBlockStates();
 }

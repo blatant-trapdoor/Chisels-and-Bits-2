@@ -72,6 +72,9 @@ public class ChiselsAndBits2 {
 
         //Setup vanilla restrictions
         getAPI().getRestrictions().restrictBlockStateProperty(BlockStateProperties.SNOWY, false, true); //Make all snowy grass not snowy automatically
+        getAPI().addIgnoredBlockState(BlockStateProperties.DISTANCE_0_7);
+        getAPI().addIgnoredBlockState(BlockStateProperties.DISTANCE_1_7);
+        getAPI().addIgnoredBlockState(BlockStateProperties.PERSISTENT); //Persistence messes with breaking a bit off of a leaf and then replacing it.
     }
 
     private void setupClient(final FMLClientSetupEvent event) {
