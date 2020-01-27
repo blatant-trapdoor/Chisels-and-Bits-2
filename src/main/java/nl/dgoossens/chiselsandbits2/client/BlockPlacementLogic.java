@@ -9,6 +9,7 @@ import nl.dgoossens.chiselsandbits2.api.item.attributes.IVoxelStorer;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.ExtendedVoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
@@ -50,31 +51,24 @@ public class BlockPlacementLogic {
         if(!(item.getItem() instanceof IVoxelStorer)) return false;
         IVoxelStorer it = (IVoxelStorer) item.getItem();
 
+        final ExtendedVoxelBlob evb = new ExtendedVoxelBlob(3, 3, 3, -1, -1, -1);
         final VoxelBlob placedBlob = it.getVoxelBlob(item);
+        evb.insertBlob(0, 0, 0, placedBlob);
         final IntegerBox bounds = placedBlob.getBounds();
         final BlockPos offset = BlockPlacementLogic.getPartialOffset(face, new BlockPos(target.bitX, target.bitY, target.bitZ), bounds);
-        final BitLocation offsetLocation = new BitLocation(target).add(offset.getX(), offset.getY(), offset.getZ());
-        final BlockPos from = offsetLocation.getBlockPos();
-        final BlockPos to = offsetLocation.add(bounds.width(), bounds.height(), bounds.depth()).getBlockPos();
+        evb.shift(offset.getX(), offset.getY(), offset.getZ());
 
-        final int maxX = Math.max(from.getX(), to.getX());
-        final int maxY = Math.max(from.getY(), to.getY());
-        final int maxZ = Math.max(from.getZ(), to.getZ());
-        for (int xOff = Math.min(from.getX(), to.getX()); xOff <= maxX; ++xOff) {
-            for (int yOff = Math.min(from.getY(), to.getY()); yOff <= maxY; ++yOff) {
-                for (int zOff = Math.min(from.getZ(), to.getZ()); zOff <= maxZ; ++zOff) {
-                    final BlockPos pos = new BlockPos(xOff, yOff, zOff);
-                    //If we can't chisel here, don't chisel.
-                    if (world.getServer() != null && world.getServer().isBlockProtected(world, pos, player))
-                        return false;
+        for(BlockPos pos : evb.listBlocks()) {
+            pos = pos.add(target.blockPos);
+            //If we can't chisel here, don't chisel.
+            if (world.getServer() != null && world.getServer().isBlockProtected(world, pos, player))
+                return false;
 
-                    if (!ChiselUtil.canChiselPosition(pos, player, world.getBlockState(pos), face))
-                        return false;
+            if (!ChiselUtil.canChiselPosition(pos, player, world.getBlockState(pos), face))
+                return false;
 
-                    if (!ChiselUtil.isBlockReplaceable(player, world, pos, face, false))
-                        return false;
-                }
-            }
+            if (!ChiselUtil.isBlockReplaceable(player, world, pos, face, false))
+                return false;
         }
         return true;
     }

@@ -21,6 +21,7 @@ import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.chisel.ChiselIterator;
 import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.ExtendedVoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.voxel.VoxelRegionSrc;
@@ -175,60 +176,47 @@ public class ChiselHandler {
 
             if(pkt.offgrid) {
                 //Offgrid mode, place in all blockpositions concerned
-                final BitLocation target = pkt.location;
+                final ExtendedVoxelBlob evb = new ExtendedVoxelBlob(3, 3, 3, -1, -1, -1);
                 final VoxelBlob placedBlob = it.getVoxelBlob(item);
+                evb.insertBlob(0, 0, 0, placedBlob);
                 final IntegerBox bounds = placedBlob.getBounds();
-                final BlockPos offset = BlockPlacementLogic.getPartialOffset(pkt.side, new BlockPos(target.bitX, target.bitY, target.bitZ), bounds);
-                System.out.println("Offset is "+offset);
-                final BitLocation offsetLocation = new BitLocation(target).add(offset.getX(), offset.getY(), offset.getZ());
-                final BlockPos from = offsetLocation.getBlockPos();
-                final BlockPos to = offsetLocation.add(bounds.width(), bounds.height(), bounds.depth()).getBlockPos();
-                System.out.println("Placing from "+from+" to "+to);
+                final BlockPos offset = BlockPlacementLogic.getPartialOffset(pkt.side, new BlockPos(pkt.location.bitX, pkt.location.bitY, pkt.location.bitZ), bounds);
+                evb.shift(offset.getX(), offset.getY(), offset.getZ());
 
-                final int maxX = Math.max(from.getX(), to.getX());
-                final int maxY = Math.max(from.getY(), to.getY());
-                final int maxZ = Math.max(from.getZ(), to.getZ());
-                for (int xOff = Math.min(from.getX(), to.getX()); xOff <= maxX; ++xOff) {
-                    for (int yOff = Math.min(from.getY(), to.getY()); yOff <= maxY; ++yOff) {
-                        for (int zOff = Math.min(from.getZ(), to.getZ()); zOff <= maxZ; ++zOff) {
-                            final BlockPos pos = new BlockPos(xOff, yOff, zOff);
-                            //If we can't chisel here, don't chisel.
-                            if (world.getServer().isBlockProtected(world, pos, player))
-                                continue;
-                            if (!ChiselUtil.canChiselPosition(pos, player, world.getBlockState(pos), pkt.side))
-                                continue;
+                for(BlockPos pos : evb.listBlocks()) {
+                    final VoxelBlob slice = evb.getSubVoxel(pos.getX(), pos.getY(), pos.getZ());
+                    pos = pos.add(pkt.location.blockPos);
+                    //If we can't chisel here, don't chisel.
+                    if (world.getServer().isBlockProtected(world, pos, player))
+                        continue;
+                    if (!ChiselUtil.canChiselPosition(pos, player, world.getBlockState(pos), pkt.side))
+                        continue;
 
-                            final int myX = (xOff - target.blockPos.getX()) * 16 - target.bitX;
-                            final int myY = yOff * 16 - target.bitY - target.blockPos.getY() * 16;
-                            final int myZ = zOff * 16 - target.bitZ - target.blockPos.getZ() * 16;
-                            final VoxelBlob slice = placedBlob.offset(myX, myY, myZ); //Calculate what part of the block needs to go onto this block
+                    //Replace the block with a chiseled block.
+                    ChiselUtil.replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.side);
 
-                            //Replace the block with a chiseled block.
-                            ChiselUtil.replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.side);
+                    final TileEntity te = world.getTileEntity(pos);
+                    if (te instanceof ChiseledBlockTileEntity) {
+                        final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
 
-                            final TileEntity te = world.getTileEntity(pos);
-                            if (te instanceof ChiseledBlockTileEntity) {
-                                final ChiseledBlockTileEntity tec = (ChiseledBlockTileEntity) te;
-
-                                switch(pkt.mode) {
-                                    case CHISELED_BLOCK_FIT:
-                                    case CHISELED_BLOCK_MERGE:
-                                    case CHISELED_BLOCK_OVERLAP:
-                                        final VoxelBlob vb = tec.getVoxelBlob();
-                                        if(pkt.mode.equals(ItemMode.CHISELED_BLOCK_OVERLAP))
-                                            vb.overlap(slice);
-                                        else
-                                            vb.merge(slice);
-                                        tec.completeEditOperation(player, vb, false);
-                                        break;
-                                }
-                                if(!player.isCreative())
-                                    item.setCount(item.getCount() - 1);
-                                ChiselUtil.playModificationSound(world, pos, true); //Placement can play sound normally as block should be set already.
-                            }
+                        switch(pkt.mode) {
+                            case CHISELED_BLOCK_FIT:
+                            case CHISELED_BLOCK_MERGE:
+                            case CHISELED_BLOCK_OVERLAP:
+                                final VoxelBlob vb = tec.getVoxelBlob();
+                                if(pkt.mode.equals(ItemMode.CHISELED_BLOCK_OVERLAP))
+                                    vb.overlap(slice);
+                                else
+                                    vb.merge(slice);
+                                tec.completeEditOperation(player, vb, false);
+                                break;
                         }
                     }
                 }
+
+                if(!player.isCreative())
+                    item.setCount(item.getCount() - 1);
+                ChiselUtil.playModificationSound(world, pkt.location.blockPos, true); //Placement can play sound normally as block should be set already.
                 return;
             }
 

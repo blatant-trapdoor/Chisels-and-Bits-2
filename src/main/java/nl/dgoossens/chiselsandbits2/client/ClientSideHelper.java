@@ -57,6 +57,7 @@ import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * All client side methods are split into two classes:
@@ -476,14 +477,16 @@ public class ClientSideHelper {
 
             if (player.isSneaking() && !ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_GRID)) {
                 final BitLocation bl = new BitLocation(r, true, BitOperation.PLACE);
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl, currentItem));
+                //We don't make this darker if we can't place here because the calculations are far too expensive to do every time.
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, () -> !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl, currentItem));
             } else {
                 //If we can already place where we're looking we don't have to move.
                 //On grid we don't do this.
                 if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
                     offset = offset.offset(face);
 
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, offset, face, BlockPos.ZERO, partialTicks, !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt));
+                final BlockPos finalOffset = offset;
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, offset, face, BlockPos.ZERO, partialTicks, () -> !BlockPlacementLogic.isNormallyPlaceable(player, player.world, finalOffset, face, nbt));
             }
         }
     }
@@ -518,7 +521,7 @@ public class ClientSideHelper {
     /**
      * Shows the ghost of the chiseled block in item at the position offset by the partial in bits.
      */
-    protected void showGhost(ItemStack item, NBTBlobConverter c, World world, BlockPos pos, Direction face, BlockPos partial, float partialTicks, final boolean silhoutte) {
+    protected void showGhost(ItemStack item, NBTBlobConverter c, World world, BlockPos pos, Direction face, BlockPos partial, float partialTicks, final Supplier<Boolean> silhoutte) {
         final PlayerEntity player = Minecraft.getInstance().player;
         IBakedModel model = null;
         if(ghostCache != null && ClientItemPropertyUtil.getGlobalCBM().equals(previousMode) && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial) && world.getBlockState(pos).equals(previousState) && !didTileChange(world.getTileEntity(pos)))
@@ -527,7 +530,7 @@ public class ClientSideHelper {
             previousPosition = pos;
             previousPartial = partial;
             previousItem = item;
-            previousSilhoutte = silhoutte;
+            previousSilhoutte = silhoutte.get();
             previousState = world.getBlockState(pos);
             previousMode = ClientItemPropertyUtil.getGlobalCBM();
 

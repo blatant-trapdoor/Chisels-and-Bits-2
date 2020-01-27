@@ -36,8 +36,8 @@ public final class VoxelBlob implements IVoxelSrc {
 
     public final static VoxelBlob NULL_BLOB = new VoxelBlob();
 
-    private final int[] values = new int[ARRAY_SIZE];
     private int best_buffer_size = 26;
+    final int[] values = new int[ARRAY_SIZE];
     //Every int in the values map is used as follows:
     //  00000000000000000000000000000000
 
@@ -66,10 +66,21 @@ public final class VoxelBlob implements IVoxelSrc {
     }
 
     /**
-     * Creates a voxelblob filled with type.
+     * Creates a VoxelBlob filled with type.
      */
-    public static VoxelBlob full(final BlockState type) {
-        return new VoxelBlob().fill(BitUtil.getBlockId(type));
+    public static VoxelBlob full(final int type) {
+        final VoxelBlob b = new VoxelBlob();
+        Arrays.fill(b.values, type);
+        return b;
+    }
+
+    /**
+     * Gets a VoxelBlob filled with air.
+     */
+    public static VoxelBlob getAirBlob() {
+        final VoxelBlob b = new VoxelBlob();
+        Arrays.fill(b.values, VoxelBlob.AIR_BIT);
+        return b;
     }
 
     /**
