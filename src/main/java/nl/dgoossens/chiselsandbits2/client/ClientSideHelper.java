@@ -482,7 +482,7 @@ public class ClientSideHelper {
             } else {
                 //If we can already place where we're looking we don't have to move.
                 //On grid we don't do this.
-                if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
+                if((!ChiselUtil.isBlockReplaceable(player.world, offset, player, face, false) && ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
                     offset = offset.offset(face);
 
                 final BlockPos finalOffset = offset;

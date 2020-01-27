@@ -20,7 +20,6 @@ import nl.dgoossens.chiselsandbits2.client.cull.DummyEnvironmentWorldReader;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.chisel.ChiselIterator;
-import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.ExtendedVoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -100,7 +99,7 @@ public class ChiselHandler {
                             continue;
 
                         //Replace the block with a chiseled block.
-                        ChiselUtil.replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.side);
+                        ChiselUtil.replaceWithChiseled(world, pos, player, world.getBlockState(pos), pkt.side);
 
                         final TileEntity te = world.getTileEntity(pos);
                         if (te instanceof ChiseledBlockTileEntity) {
@@ -189,11 +188,9 @@ public class ChiselHandler {
                     //If we can't chisel here, don't chisel.
                     if (world.getServer().isBlockProtected(world, pos, player))
                         continue;
-                    if (!ChiselUtil.canChiselPosition(pos, player, world.getBlockState(pos), pkt.side))
-                        continue;
 
                     //Replace the block with a chiseled block.
-                    ChiselUtil.replaceWithChiseled(player, world, pos, world.getBlockState(pos), pkt.side);
+                    ChiselUtil.replaceWithChiseled(world, pos, player, world.getBlockState(pos), pkt.side);
 
                     final TileEntity te = world.getTileEntity(pos);
                     if (te instanceof ChiseledBlockTileEntity) {
@@ -208,6 +205,7 @@ public class ChiselHandler {
                                     vb.overlap(slice);
                                 else
                                     vb.merge(slice);
+
                                 tec.completeEditOperation(player, vb, false);
                                 break;
                         }
@@ -222,7 +220,7 @@ public class ChiselHandler {
 
             //Normal mode, place in this block position
             final BlockPos pos = pkt.pos;
-            ChiselUtil.replaceWithChiseled(player, player.world, pos, world.getBlockState(pos), pkt.side);
+            ChiselUtil.replaceWithChiseled(player.world, pos, player, world.getBlockState(pos), pkt.side);
 
             final TileEntity te = world.getTileEntity(pos);
             if (te instanceof ChiseledBlockTileEntity) {

@@ -25,7 +25,7 @@ public class BlockPlacementLogic {
      * Returns whether or not a block is placeable.
      */
     public static boolean isNormallyPlaceable(final PlayerEntity player, final World world, final BlockPos pos, final Direction face, final NBTBlobConverter nbt) {
-        if(ChiselUtil.isBlockReplaceable(player, world, pos, face, false))
+        if(ChiselUtil.isBlockReplaceable(world, pos, player, face, false))
             return true;
 
         if(ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_FIT)) {
@@ -67,7 +67,7 @@ public class BlockPlacementLogic {
             if (!ChiselUtil.canChiselPosition(pos, player, world.getBlockState(pos), face))
                 return false;
 
-            if (!ChiselUtil.isBlockReplaceable(player, world, pos, face, false))
+            if (!ChiselUtil.isBlockChiselable(world, pos, player, world.getBlockState(pos), face))
                 return false;
         }
         return true;

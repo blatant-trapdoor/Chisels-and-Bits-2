@@ -6,7 +6,6 @@ import net.minecraft.block.SoundType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.util.Direction;
@@ -85,6 +84,7 @@ public class ChiselUtil {
     public static boolean canChiselPosition(final BlockPos pos, final PlayerEntity player, final BlockState state, final Direction face) {
         if (!(player.getHeldItemMainhand().getItem() instanceof IBitModifyItem))
             return false; //A valid item needs to be in the main hand!
+
         if (!player.getEntityWorld().getWorldBorder().contains(pos)) return false;
         if (!player.getEntityWorld().isBlockModifiable(player, pos)) return false;
         if (!player.canPlayerEdit(pos, face, player.getHeldItemMainhand())) return false;
@@ -108,7 +108,7 @@ public class ChiselUtil {
     /**
      * Returns whether a target block is air or can be replaced.
      */
-    public static boolean isBlockReplaceable(final PlayerEntity player, final World world, final BlockPos pos, final Direction face, final boolean destroy) {
+    public static boolean isBlockReplaceable(final World world, final BlockPos pos, final PlayerEntity player, final Direction face, final boolean destroy) {
         boolean isValid = world.isAirBlock(pos);
 
         //We see it as air if we can replace it.
@@ -123,13 +123,13 @@ public class ChiselUtil {
     /**
      * Replaces a block at a position with a new chiseled block tile entity.
      */
-    public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final Direction face) {
+    public static void replaceWithChiseled(final @Nonnull World world, final @Nonnull BlockPos pos, final @Nonnull PlayerEntity player, final BlockState originalState, final Direction face) {
         Block target = originalState.getBlock();
         BlockState placementState = ChiselsAndBits2.getInstance().getAPI().getRestrictions().getPlacementState(originalState);
         if(target.equals(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get()) || placementState == null) return;
 
-        IFluidState fluid = world.getFluidState(pos);
-        boolean isAir = isBlockReplaceable(player, world, pos, face, true);
+        //IFluidState fluid = world.getFluidState(pos);
+        boolean isAir = isBlockReplaceable(world, pos, player, face, true);
 
         if (ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(originalState) || isAir) {
             int blockId = BitUtil.getBlockId(placementState);
@@ -146,6 +146,21 @@ public class ChiselUtil {
                 }
             }
         }
+    }
+
+    /**
+     * Tests if a block can be replaced with a chiseled block. If this method succeeds then {@link #replaceWithChiseled(World, BlockPos, PlayerEntity, BlockState, Direction)} will be able to
+     * create a tile entity, otherwise it won't be able to.
+     */
+    public static boolean isBlockChiselable(final @Nonnull World world, final @Nonnull BlockPos pos, final @Nonnull PlayerEntity player, final BlockState originalState, final Direction face) {
+        Block target = originalState.getBlock();
+        BlockState placementState = ChiselsAndBits2.getInstance().getAPI().getRestrictions().getPlacementState(originalState);
+        if(target.equals(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get()) || placementState == null)
+            return true;
+
+        boolean isAir = isBlockReplaceable(world, pos, player, face, true);
+
+        return ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(originalState) || isAir;
     }
 
     /**

@@ -204,7 +204,7 @@ public class ChiselEvent {
         if (player.isSneaking() && !ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_GRID)) {
             if (!BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl, player.getHeldItemMainhand())) canPlace = false;
         } else {
-            if((!ChiselUtil.isBlockReplaceable(player, player.world, offset, face, false) && ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
+            if((!ChiselUtil.isBlockReplaceable(player.world, offset, player, face, false) && ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
                 offset = offset.offset(face);
 
             if(!BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt))
