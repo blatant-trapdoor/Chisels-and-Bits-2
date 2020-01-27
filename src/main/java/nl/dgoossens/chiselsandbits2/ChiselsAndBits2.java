@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2;
 
+import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -14,6 +15,7 @@ import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.client.UndoTracker;
+import nl.dgoossens.chiselsandbits2.client.gui.BitBagScreen;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapability;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.LegacyBlobSerializer;
@@ -81,6 +83,9 @@ public class ChiselsAndBits2 {
         //Register keybindings
         CLIENT.setup();
         KEYBINDINGS.setup();
+
+        //Register container screens
+        ScreenManager.registerFactory(getRegister().BIT_BAG_CONTAINER.get(), BitBagScreen::new);
     }
 
     public ChiselsAndBitsAPI getAPI() {

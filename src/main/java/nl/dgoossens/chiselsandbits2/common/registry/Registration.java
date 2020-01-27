@@ -76,9 +76,6 @@ public class Registration {
         TILE_ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus());
         CONTAINERS.register(FMLJavaModLoadingContext.get().getModEventBus());
         RECIPES.register(FMLJavaModLoadingContext.get().getModEventBus());
-
-        //Register container screens where applicable
-        ScreenManager.registerFactory(BIT_BAG_CONTAINER.get(), BitBagScreen::new);
     }
 
     /**

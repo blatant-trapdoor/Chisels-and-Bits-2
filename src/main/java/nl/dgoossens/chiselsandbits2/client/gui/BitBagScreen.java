@@ -36,6 +36,7 @@ public class BitBagScreen extends ContainerScreen<BagContainer> {
 
     public BitBagScreen(BagContainer container, PlayerInventory inv, ITextComponent text) {
         super(container, inv, text);
+        updateSize();
     }
 
     @Override
