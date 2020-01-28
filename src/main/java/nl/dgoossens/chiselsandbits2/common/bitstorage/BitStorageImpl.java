@@ -13,9 +13,24 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.*;
 
 public class BitStorageImpl implements BitStorage {
-    //TODO it remains a mystery how we're gonna determine which voxel type a given bit storage is.
-    private VoxelType stored = VoxelType.BLOCKSTATE;
+    private VoxelType stored;
     private HashMap<Integer, Pair<VoxelWrapper, Long>> contents;
+
+    public BitStorageImpl() {
+        this(VoxelType.BLOCKSTATE);
+    }
+    public BitStorageImpl(VoxelType storedType) {
+        this.stored = storedType;
+
+        contents = new HashMap<>();
+        for(int i = 0; i < getMaximumSlots(); i++)
+            contents.put(i, null);
+    }
+
+    private void checkServerside() {
+        if(Thread.currentThread().getThreadGroup() != SidedThreadGroups.SERVER)
+            throw new RuntimeException("Code ran on client-side whilst it has to be ran on server-side!");
+    }
 
     //Gets the amount of slots this bit storage has
     @Override
@@ -50,17 +65,6 @@ public class BitStorageImpl implements BitStorage {
             if(contents.get(i) == null || contents.get(i).getLeft().equals(w))
                 return i;
         return -1;
-    }
-
-    public BitStorageImpl() {
-        contents = new HashMap<>();
-        for(int i = 0; i < getMaximumSlots(); i++)
-            contents.put(i, null);
-    }
-
-    private void checkServerside() {
-        if(Thread.currentThread().getThreadGroup() != SidedThreadGroups.SERVER)
-            throw new RuntimeException("Code ran on client-side whilst it has to be ran on server-side!");
     }
 
     @Override

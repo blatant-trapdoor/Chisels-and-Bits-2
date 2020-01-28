@@ -63,7 +63,7 @@ public class Registration {
     public final RegistryObject<BitBagItem> RED_BIT_BAG = ITEMS.register("red_bit_bag", BitBagItem::new);
     public final RegistryObject<BitBagItem> BLACK_BIT_BAG = ITEMS.register("black_bit_bag", BitBagItem::new);
 
-    //Register morphing bit last because it takes a lot of the space
+    //Register morphing bit last because we want the creative menu to not be bombarded with morphing bit types so people see the other items first
     public final RegistryObject<MorphingBitItem> MORPHING_BIT = ITEMS.register("morphing_bit", () -> new MorphingBitItem(new Item.Properties().maxStackSize(1).group(ModItemGroups.CHISELS_AND_BITS2)));
 
     public final RegistryObject<ContainerType<BagContainer>> BIT_BAG_CONTAINER = CONTAINERS.register("bit_bag", () -> IForgeContainerType.create(BagContainer::new));

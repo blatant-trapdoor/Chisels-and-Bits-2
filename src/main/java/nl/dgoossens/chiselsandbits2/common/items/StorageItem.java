@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.api.item.IItemMenu;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
@@ -25,6 +26,11 @@ public abstract class StorageItem extends PropertyOwner implements IItemScrollWh
 
         PROPERTY_SELECTED = addProperty(new SelectedProperty(() -> VoxelWrapper.forAbstract(VoxelBlob.AIR_BIT)));
     }
+
+    /**
+     * Get the voxel type stored by this storage item.
+     */
+    public abstract VoxelType getVoxelType();
 
     @Override
     public IItemModeType getAssociatedType() {
@@ -52,7 +58,7 @@ public abstract class StorageItem extends PropertyOwner implements IItemScrollWh
 
     @Override
     public ICapabilityProvider initCapabilities(final ItemStack stack, final CompoundNBT nbt) {
-        return new StorageCapabilityProvider();
+        return stack.getItem() instanceof StorageItem ? new StorageCapabilityProvider((StorageItem) stack.getItem()) : new StorageCapabilityProvider(null);
     }
 
     @Override

@@ -18,6 +18,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapabilityProvider;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
@@ -81,5 +82,10 @@ public class BitBeakerItem extends StorageItem {
                 return new ActionResult<>(ActionResultType.FAIL, itemstack);
             }
         }
+    }
+
+    @Override
+    public VoxelType getVoxelType() {
+        return VoxelType.FLUIDSTATE;
     }
 }

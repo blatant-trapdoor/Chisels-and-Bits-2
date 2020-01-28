@@ -11,6 +11,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.client.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
@@ -33,5 +34,10 @@ public class BitBagItem extends StorageItem {
             playerIn.addStat(Stats.ITEM_USED.get(this));
             return new ActionResult<>(ActionResultType.SUCCESS, itemstack);
         } else return super.onItemRightClick(worldIn, playerIn, handIn);
+    }
+
+    @Override
+    public VoxelType getVoxelType() {
+        return VoxelType.BLOCKSTATE;
     }
 }
