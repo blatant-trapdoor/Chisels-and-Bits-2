@@ -467,7 +467,7 @@ public class ClientSideHelper {
             if (!currentItem.hasTag()) return;
 
             RayTraceResult rtr = ChiselUtil.rayTrace(player);
-            if(!(rtr instanceof BlockRayTraceResult)) return;
+            if(!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
             final BlockRayTraceResult r = (BlockRayTraceResult) rtr;
             BlockPos offset = r.getPos();
             Direction face = r.getFace();
