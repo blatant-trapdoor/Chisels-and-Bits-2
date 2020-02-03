@@ -97,7 +97,7 @@ public class ChiselUtil {
     public static RayTraceResult rayTrace(final Entity entity) {
         Vec3d vec3d = entity.getEyePosition(1.0f);
         Vec3d vec3d1 = entity.getLook(1.0f);
-        double d = (double) Minecraft.getInstance().playerController.getBlockReachDistance();
+        double d = Minecraft.getInstance().playerController.getBlockReachDistance();
         Vec3d vec3d2 = vec3d.add(vec3d1.x * d, vec3d1.y * d, vec3d1.z * d);
         ACTIVELY_TRACING = true;
         RayTraceResult r = entity.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity));

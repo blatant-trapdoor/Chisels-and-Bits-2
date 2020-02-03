@@ -58,6 +58,14 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
     }
 
     @Override
+    public void setVoxelBlob(ItemStack item, VoxelBlob vb) {
+        final NBTBlobConverter c = new NBTBlobConverter();
+        CompoundNBT nbt = new CompoundNBT();
+        c.writeChiselData(nbt);
+        item.setTagInfo(ChiselUtil.NBT_BLOCKENTITYTAG, nbt);
+    }
+
+    @Override
     public void rotate(ItemStack stack, Direction.Axis axis, final boolean clockwise) {
         final NBTBlobConverter c = new NBTBlobConverter();
         c.readChiselData(stack.getOrCreateChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());

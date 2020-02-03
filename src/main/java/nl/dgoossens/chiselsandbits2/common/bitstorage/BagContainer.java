@@ -53,7 +53,7 @@ public class BagContainer extends Container {
             this.addSlot(new Slot(player.inventory, i1, 8 + i1 * 18, 161 + i));
 
         //Input slot
-        inputSlot = new ReadonlySlot(fakeInventory, 0, -17, 21);
+        inputSlot = new InsertSlot(fakeInventory, 0, -17, 21, item, this::updateInventoryContents);
         this.addSlot(inputSlot);
     }
 

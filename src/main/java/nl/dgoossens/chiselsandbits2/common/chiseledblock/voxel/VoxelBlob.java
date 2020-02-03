@@ -272,6 +272,31 @@ public final class VoxelBlob implements IVoxelSrc {
     }
 
     /**
+     * Removes all bits of this type from this blob.
+     */
+    public VoxelBlob removeBitType(final int bitType) {
+        for (int x = 0; x < values.length; ++x)
+            if(values[x] == bitType)
+                values[x] = AIR_BIT;
+
+        return this;
+    }
+
+    /**
+     * Removes all bits of this type from this blob.
+     * @param limit Don't remove more than the limit worth of bits.
+     */
+    public VoxelBlob removeBitType(final int bitType, long limit) {
+        for (int x = 0; x < values.length; ++x)
+            if(values[x] == bitType && limit > 0) {
+                limit--;
+                values[x] = AIR_BIT;
+            }
+
+        return this;
+    }
+
+    /**
      * Get the position of the center of the shape.
      */
     public BlockPos getCenter() {
@@ -310,6 +335,16 @@ public final class VoxelBlob implements IVoxelSrc {
         int i = 0;
         for(int v : values)
             if(v == AIR_BIT) i++;
+        return i;
+    }
+
+    /**
+     * Returns the amount of bits that's equal to this bit type in this blob.
+     */
+    public long count(int bitType) {
+        int i = 0;
+        for(int v : values)
+            if(v == bitType) i++;
         return i;
     }
 
