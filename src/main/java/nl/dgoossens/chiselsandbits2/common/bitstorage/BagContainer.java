@@ -66,7 +66,7 @@ public class BagContainer extends Container {
         if(store == null) return;
         for(int i = 0; i < bagInventory.getSizeInventory(); i++) {
             ItemStack s = store.getSlotContent(i).getStack();
-            s.setCount(Math.max(1, (int) (store.get(VoxelWrapper.forBlock(Block.getBlockFromItem(s.getItem()))) / 4096)));
+            s.setCount(Math.max(1, (int) (store.get(VoxelWrapper.forBlock(Block.getBlockFromItem(s.getItem()))) / 4096.0d)));
             bagInventory.setInventorySlotContents(i, s);
         }
     }

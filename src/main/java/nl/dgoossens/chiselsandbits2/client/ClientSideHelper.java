@@ -92,7 +92,7 @@ public class ClientSideHelper {
     protected ItemStack previousItem;
     protected IntegerBox modelBounds;
     protected BlockState previousState;
-    protected boolean previousSilhoutte;
+    protected boolean previousSilhoutte, previousOffGrid;
     protected IItemMode previousMode;
     protected long previousTileIteration = -Long.MAX_VALUE;
 
@@ -482,7 +482,7 @@ public class ClientSideHelper {
             if (player.isSneaking() && !ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_GRID)) {
                 final BitLocation bl = new BitLocation(r, true, BitOperation.PLACE);
                 //We don't make this darker if we can't place here because the calculations are far too expensive to do every time.
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, () -> !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl, currentItem));
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, bl.blockPos, face, new BlockPos(bl.bitX, bl.bitY, bl.bitZ), partialTicks, true, () -> !BlockPlacementLogic.isPlaceableOffgrid(player, player.world, face, bl, currentItem));
             } else {
                 //If we can already place where we're looking we don't have to move.
                 //On grid we don't do this.
@@ -490,7 +490,7 @@ public class ClientSideHelper {
                     offset = offset.offset(face);
 
                 final BlockPos finalOffset = offset;
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, offset, face, BlockPos.ZERO, partialTicks, () -> !BlockPlacementLogic.isNormallyPlaceable(player, player.world, finalOffset, face, nbt, mode));
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, offset, face, BlockPos.ZERO, partialTicks, false, () -> !BlockPlacementLogic.isNormallyPlaceable(player, player.world, finalOffset, face, nbt, mode));
             }
         }
     }
@@ -506,6 +506,7 @@ public class ClientSideHelper {
         previousState = null;
         previousTileIteration = -Long.MAX_VALUE;
         previousSilhoutte = false;
+        previousOffGrid = false;
         previousMode = null;
     }
 
@@ -525,10 +526,10 @@ public class ClientSideHelper {
     /**
      * Shows the ghost of the chiseled block in item at the position offset by the partial in bits.
      */
-    protected void showGhost(ItemStack item, NBTBlobConverter c, World world, BlockPos pos, Direction face, BlockPos partial, float partialTicks, final Supplier<Boolean> silhoutte) {
+    protected void showGhost(ItemStack item, NBTBlobConverter c, World world, BlockPos pos, Direction face, BlockPos partial, float partialTicks, boolean offGrid, final Supplier<Boolean> silhoutte) {
         final PlayerEntity player = Minecraft.getInstance().player;
         IBakedModel model = null;
-        if(ghostCache != null && ClientItemPropertyUtil.getGlobalCBM().equals(previousMode) && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial) && world.getBlockState(pos).equals(previousState) && !didTileChange(world.getTileEntity(pos)))
+        if(ghostCache != null && ClientItemPropertyUtil.getGlobalCBM().equals(previousMode) && item.equals(previousItem) && pos.equals(previousPosition) && partial.equals(previousPartial) && offGrid == previousOffGrid && world.getBlockState(pos).equals(previousState) && !didTileChange(world.getTileEntity(pos)))
             model = ghostCache;
         else {
             previousPosition = pos;
@@ -537,6 +538,7 @@ public class ClientSideHelper {
             previousSilhoutte = silhoutte.get();
             previousState = world.getBlockState(pos);
             previousMode = ClientItemPropertyUtil.getGlobalCBM();
+            previousOffGrid = offGrid;
 
             final TileEntity te = world.getTileEntity(pos);
 
@@ -574,7 +576,8 @@ public class ClientSideHelper {
             GlStateManager.translated(t.getX() * fullScale, t.getY() * fullScale, t.getZ() * fullScale);
         }
 
-        RenderingAssistant.renderGhostModel(model, player.world, partialTicks, pos, previousSilhoutte, previousSilhoutte || ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_OVERLAP || ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_FIT);
+        //Always expand the offgrid, silhouttes and otherwise if overlap or fit. We expand offgrids as otherwise the calculations are too intensive. (expanse isn't really noticable anyways)
+        RenderingAssistant.renderGhostModel(model, player.world, partialTicks, pos, previousSilhoutte, previousOffGrid || previousSilhoutte || ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_OVERLAP || ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_FIT);
         GlStateManager.popMatrix();
     }
 
