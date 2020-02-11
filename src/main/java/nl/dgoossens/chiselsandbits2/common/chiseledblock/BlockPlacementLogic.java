@@ -1,4 +1,4 @@
-package nl.dgoossens.chiselsandbits2.client;
+package nl.dgoossens.chiselsandbits2.common.chiseledblock;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -7,14 +7,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IVoxelStorer;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.NBTBlobConverter;
 import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.ExtendedVoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
 
 /**
  * A class dedicated to calculating whether or not we can currently place a block and where it gets placed
@@ -24,11 +22,11 @@ public class BlockPlacementLogic {
     /**
      * Returns whether or not a block is placeable.
      */
-    public static boolean isNormallyPlaceable(final PlayerEntity player, final World world, final BlockPos pos, final Direction face, final NBTBlobConverter nbt) {
+    public static boolean isNormallyPlaceable(final PlayerEntity player, final World world, final BlockPos pos, final Direction face, final NBTBlobConverter nbt, final ItemMode mode) {
         if(ChiselUtil.isBlockReplaceable(world, pos, player, face, false))
             return true;
 
-        if(ClientItemPropertyUtil.getGlobalCBM().equals(ItemMode.CHISELED_BLOCK_FIT)) {
+        if(mode.equals(ItemMode.CHISELED_BLOCK_FIT)) {
             if(world.getTileEntity(pos) instanceof ChiseledBlockTileEntity) {
                 ChiseledBlockTileEntity cbte = (ChiseledBlockTileEntity) world.getTileEntity(pos);
                 if(cbte != null && !nbt.getVoxelBlob().canMerge(cbte.getVoxelBlob()))
@@ -36,7 +34,7 @@ public class BlockPlacementLogic {
                 return true;
             }
         }
-        switch(ClientItemPropertyUtil.getGlobalCBM()) {
+        switch(mode) {
             case CHISELED_BLOCK_GRID:
                 return false;
             default:

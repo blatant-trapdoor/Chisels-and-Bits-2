@@ -176,6 +176,8 @@
   "general.chiselsandbits2.info.cleared_measurements": "Tape measurements have been cleared",
   "general.chiselsandbits2.info.unlocked_mb": "Unlocked morphing bit; places globally selected bit",
   "general.chiselsandbits2.info.locked_mb": "Locked morphing bit; will place currently selected bit",
+  "general.chiselsandbits2.info.place_mode": "Now in placement mode; bits will be placed next to existing bits",
+  "general.chiselsandbits2.info.swap_mode": "Now in swap mode; bit targeted will be replaced by placed bit",
 
   "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
   "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo...",

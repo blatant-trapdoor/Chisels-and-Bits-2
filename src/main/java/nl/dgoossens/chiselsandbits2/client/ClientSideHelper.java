@@ -41,9 +41,11 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.iterators.chisel.Chisel
 import nl.dgoossens.chiselsandbits2.api.bit.BitLocation;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.IntegerBox;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
+import nl.dgoossens.chiselsandbits2.common.chiseledblock.BlockPlacementLogic;
 import nl.dgoossens.chiselsandbits2.common.impl.voxel.VoxelRegionSrc;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.items.ChiseledBlockItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
 import nl.dgoossens.chiselsandbits2.common.network.client.COpenBitBagPacket;
 import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
@@ -463,12 +465,14 @@ public class ClientSideHelper {
         final PlayerEntity player = Minecraft.getInstance().player;
         final ItemStack currentItem = player.getHeldItemMainhand();
 
-        if(!currentItem.isEmpty() && currentItem.getItem() instanceof BlockItem && ((BlockItem) currentItem.getItem()).getBlock() instanceof ChiseledBlock) {
+        if(!currentItem.isEmpty() && currentItem.getItem() instanceof ChiseledBlockItem) {
             if (!currentItem.hasTag()) return;
 
             RayTraceResult rtr = ChiselUtil.rayTrace(player);
             if(!(rtr instanceof BlockRayTraceResult) || rtr.getType() != RayTraceResult.Type.BLOCK) return;
             final BlockRayTraceResult r = (BlockRayTraceResult) rtr;
+            final ItemMode mode = ClientItemPropertyUtil.getGlobalCBM();
+
             BlockPos offset = r.getPos();
             Direction face = r.getFace();
 
@@ -482,11 +486,11 @@ public class ClientSideHelper {
             } else {
                 //If we can already place where we're looking we don't have to move.
                 //On grid we don't do this.
-                if((!ChiselUtil.isBlockReplaceable(player.world, offset, player, face, false) && ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt)))
+                if((!ChiselUtil.isBlockReplaceable(player.world, offset, player, face, false) && ClientItemPropertyUtil.getGlobalCBM() == ItemMode.CHISELED_BLOCK_GRID) || (!(player.world.getTileEntity(offset) instanceof ChiseledBlockTileEntity) && !BlockPlacementLogic.isNormallyPlaceable(player, player.world, offset, face, nbt, mode)))
                     offset = offset.offset(face);
 
                 final BlockPos finalOffset = offset;
-                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, offset, face, BlockPos.ZERO, partialTicks, () -> !BlockPlacementLogic.isNormallyPlaceable(player, player.world, finalOffset, face, nbt));
+                ChiselsAndBits2.getInstance().getClient().showGhost(currentItem, nbt, player.world, offset, face, BlockPos.ZERO, partialTicks, () -> !BlockPlacementLogic.isNormallyPlaceable(player, player.world, finalOffset, face, nbt, mode));
             }
         }
     }

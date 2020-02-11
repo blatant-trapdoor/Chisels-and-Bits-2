@@ -20,7 +20,7 @@ public enum ItemModeType implements IItemModeType {
     private List<IItemMode> cache;
 
     @Override
-    public IItemMode getDefault() {
+    public ItemMode getDefault() {
         switch(this) {
             case CHISEL: return ItemMode.CHISEL_SINGLE;
             case PATTERN: return ItemMode.PATTERN_REPLACE;

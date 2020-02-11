@@ -17,6 +17,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
@@ -164,8 +165,8 @@ public class ChiselUtil {
     /**
      * Get the chisel iterator from a incoming chisel packet.
      */
-    public static ChiselIterator getIterator(final CChiselBlockPacket pkt, final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {
-        if (pkt.mode == ItemMode.CHISEL_DRAWN_REGION) {
+    public static ChiselIterator getIterator(final IItemMode mode, final CChiselBlockPacket pkt, final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {
+        if (mode == ItemMode.CHISEL_DRAWN_REGION) {
             final BlockPos from = pkt.from.blockPos;
             final BlockPos to = pkt.to.blockPos;
 
@@ -179,6 +180,6 @@ public class ChiselUtil {
 
             return new ChiselTypeIterator(VoxelBlob.DIMENSION, bitX, bitY, bitZ, scaleX, scaleY, scaleZ, pkt.side);
         }
-        return ChiselTypeIterator.create(VoxelBlob.DIMENSION, pkt.from.bitX, pkt.from.bitY, pkt.from.bitZ, vb, pkt.mode, pkt.side, place.equals(PLACE));
+        return ChiselTypeIterator.create(VoxelBlob.DIMENSION, pkt.from.bitX, pkt.from.bitY, pkt.from.bitZ, vb, mode, pkt.side, place.equals(PLACE));
     }
 }
