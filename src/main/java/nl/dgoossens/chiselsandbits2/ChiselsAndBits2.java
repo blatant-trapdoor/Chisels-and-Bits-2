@@ -48,12 +48,12 @@ public class ChiselsAndBits2 {
         NETWORK_ROUTER = new NetworkRouter();
         STATISTICS = new ModStatistics();
         UNDO = new UndoTracker();
-        KEYBINDINGS = new ModKeybindings();
         REGISTER = new Registration();
 
         //Only initialise the client class when on the CLIENT distribution.
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             CLIENT = new ClientSide();
+            KEYBINDINGS = new ModKeybindings();
         });
 
         //Register to mod bus
