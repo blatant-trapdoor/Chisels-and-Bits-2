@@ -11,5 +11,6 @@ public class DataGenerators {
     public static void gatherData(GatherDataEvent e) {
         DataGenerator generator = e.getGenerator();
         generator.addProvider(new Recipes(generator));
+        generator.addProvider(new ItemModels(generator, e.getExistingFileHelper()));
     }
 }

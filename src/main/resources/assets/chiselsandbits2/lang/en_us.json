@@ -136,6 +136,7 @@
   "general.chiselsandbits2.menuaction.undo": "Undo",
   "general.chiselsandbits2.menuaction.redo": "Redo",
   "general.chiselsandbits2.menuaction.roll_x": "Rotate X Axis",
+  "general.chiselsandbits2.menuaction.roll_y": "Rotate Y Axis",
   "general.chiselsandbits2.menuaction.roll_z": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.place": "Place",
   "general.chiselsandbits2.menuaction.swap": "Swap",
@@ -160,6 +161,7 @@
   "general.chiselsandbits2.menuaction.undo.hotkey": "Undo",
   "general.chiselsandbits2.menuaction.redo.hotkey": "Redo",
   "general.chiselsandbits2.menuaction.roll_x.hotkey": "Rotate X Axis",
+  "general.chiselsandbits2.menuaction.roll_y.hotkey": "Rotate Y Axis",
   "general.chiselsandbits2.menuaction.roll_z.hotkey": "Rotate Z Axis",
   "general.chiselsandbits2.menuaction.swap.hotkey": "Switch Placement Mode",
 
@@ -174,6 +176,8 @@
   "general.chiselsandbits2.info.cleared_measurements": "Tape measurements have been cleared",
   "general.chiselsandbits2.info.unlocked_mb": "Unlocked morphing bit; places globally selected bit",
   "general.chiselsandbits2.info.locked_mb": "Locked morphing bit; will place currently selected bit",
+  "general.chiselsandbits2.info.place_mode": "Now in placement mode; bits will be placed next to existing bits",
+  "general.chiselsandbits2.info.swap_mode": "Now in swap mode; bit targeted will be replaced by placed bit",
 
   "general.chiselsandbits2.undo.nothing_to_undo": "Nothing to undo...",
   "general.chiselsandbits2.undo.nothing_to_redo": "Nothing to redo...",
@@ -188,5 +192,6 @@
   "advancements.story.get_bag.description": "Craft a bit bag to store bits in",
 
   "button.chiselsandbits2.trash": "Clear bag contents; hold item to filter",
+  "button.chiselsandbits2.trash.confirm": "Are you sure you want to void all bag contents?",
   "button.chiselsandbits2.input": "Add chiseled blocks to bag"
 }

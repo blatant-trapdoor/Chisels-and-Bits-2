@@ -25,7 +25,7 @@ public class BitAccessImpl implements BitAccess {
         if (te instanceof ChiseledBlockTileEntity)
             blob = ((ChiseledBlockTileEntity) te).getVoxelBlob();
         else {
-            if (!ChiselUtil.isBlockReplaceable(player, world, pos, Direction.UP, false))
+            if (!ChiselUtil.isBlockReplaceable(world, pos, player, Direction.UP, false))
                 return;
             blob = new VoxelBlob();
         }

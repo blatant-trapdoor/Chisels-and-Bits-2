@@ -2,7 +2,7 @@ package nl.dgoossens.chiselsandbits2.common.network.server;
 
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
-import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
 
 import java.util.function.Supplier;
 

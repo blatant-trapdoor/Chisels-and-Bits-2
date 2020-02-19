@@ -19,26 +19,20 @@ public class CChiselBlockPacket {
     public BitLocation to;
     public BitOperation operation;
     public Direction side;
-    public ItemMode mode;
-    public int placedBit;
 
     private CChiselBlockPacket() {}
 
-    public CChiselBlockPacket(final BitOperation operation, final BitLocation from, final BitLocation to, final Direction side, final ItemMode mode, final int placedBit) {
+    public CChiselBlockPacket(final BitOperation operation, final BitLocation from, final BitLocation to, final Direction side) {
         this.operation = operation;
         this.from = BitLocation.min(from, to);
         this.to = BitLocation.max(from, to);
         this.side = side;
-        this.mode = mode;
-        this.placedBit = placedBit;
     }
 
-    public CChiselBlockPacket(final BitOperation operation, final BitLocation location, final Direction side, final ItemMode mode, final int placedBit) {
+    public CChiselBlockPacket(final BitOperation operation, final BitLocation location, final Direction side) {
         this.operation = operation;
         from = to = location;
         this.side = side;
-        this.mode = mode;
-        this.placedBit = placedBit;
     }
 
     public static BitLocation readBitLoc(final PacketBuffer buffer) {
@@ -56,10 +50,8 @@ public class CChiselBlockPacket {
         writeBitLoc(msg.from, buf);
         writeBitLoc(msg.to, buf);
 
-        buf.writeVarInt(msg.placedBit);
         buf.writeEnumValue(msg.operation);
         buf.writeVarInt(msg.side.ordinal());
-        buf.writeVarInt(msg.mode.ordinal());
     }
 
     public static CChiselBlockPacket decode(PacketBuffer buffer) {
@@ -67,10 +59,8 @@ public class CChiselBlockPacket {
         pc.from = readBitLoc(buffer);
         pc.to = readBitLoc(buffer);
 
-        pc.placedBit = buffer.readVarInt();
         pc.operation = buffer.readEnumValue(BitOperation.class);
         pc.side = Direction.values()[buffer.readVarInt()];
-        pc.mode = ItemMode.values()[buffer.readVarInt()];
         return pc;
     }
 

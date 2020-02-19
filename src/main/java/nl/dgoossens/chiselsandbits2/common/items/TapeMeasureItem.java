@@ -17,8 +17,8 @@ import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.api.item.property.ColourProperty;
 import nl.dgoossens.chiselsandbits2.client.gui.ItemModeMenu;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;

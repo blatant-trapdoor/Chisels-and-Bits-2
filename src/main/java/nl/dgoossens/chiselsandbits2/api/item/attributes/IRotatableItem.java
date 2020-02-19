@@ -11,5 +11,5 @@ public interface IRotatableItem {
     /**
      * Rotate the voxel blob stored in this item by 90 degrees on the given axis.
      */
-    void rotate(final ItemStack item, final Direction.Axis axis);
+    void rotate(final ItemStack item, final Direction.Axis axis, final boolean clockwise);
 }

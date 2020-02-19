@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2.common.bitstorage;
 
+import net.minecraft.item.Item;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
@@ -7,6 +8,8 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
+import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
+import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,7 +18,12 @@ public class StorageCapabilityProvider implements ICapabilitySerializable<INBT> 
     @CapabilityInject(BitStorage.class)
     public static final Capability<BitStorage> STORAGE = null;
 
-    private BitStorage instance = new BitStorageImpl();
+    private BitStorage instance;
+
+    public StorageCapabilityProvider(final StorageItem item) {
+        if(item == null) instance = new BitStorageImpl();
+        else instance = new BitStorageImpl(item.getVoxelType());
+    }
 
     @Nonnull
     @Override

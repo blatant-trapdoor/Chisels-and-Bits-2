@@ -1,5 +1,7 @@
 package nl.dgoossens.chiselsandbits2.api.bit;
 
+import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
+
 /**
  * The possible types of a given bit.
  */

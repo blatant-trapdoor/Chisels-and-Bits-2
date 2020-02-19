@@ -1,5 +1,6 @@
 package nl.dgoossens.chiselsandbits2;
 
+import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -14,12 +15,16 @@ import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.ChiselsAndBitsAPI;
 import nl.dgoossens.chiselsandbits2.client.ClientSide;
 import nl.dgoossens.chiselsandbits2.client.UndoTracker;
+import nl.dgoossens.chiselsandbits2.client.gui.BitBagScreen;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.BitStorageImpl;
 import nl.dgoossens.chiselsandbits2.common.bitstorage.StorageCapability;
-import nl.dgoossens.chiselsandbits2.common.chiseledblock.serialization.LegacyBlobSerializer;
 import nl.dgoossens.chiselsandbits2.common.impl.ChiselsAndBitsAPIImpl;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeType;
+import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeWrapper;
 import nl.dgoossens.chiselsandbits2.common.network.NetworkRouter;
 import nl.dgoossens.chiselsandbits2.common.registry.*;
+import nl.dgoossens.chiselsandbits2.common.impl.item.GlobalCBMCapability;
 
 @Mod(ChiselsAndBits2.MOD_ID)
 public class ChiselsAndBits2 {
@@ -27,15 +32,12 @@ public class ChiselsAndBits2 {
 
     private static ChiselsAndBits2 instance;
 
-    private final ModItems ITEMS;
-    private final ModBlocks BLOCKS;
-    private final ModConfiguration CONFIGURATION;
     private final NetworkRouter NETWORK_ROUTER;
     private final ChiselsAndBitsAPI API;
     private final ModStatistics STATISTICS;
-    private final ModRecipes RECIPES;
+    private final ModConfiguration CONFIGURATION;
     private final UndoTracker UNDO;
-    private final ModContainers CONTAINERS;
+    private final Registration REGISTER;
     private ClientSide CLIENT;
     private ModKeybindings KEYBINDINGS;
 
@@ -44,13 +46,10 @@ public class ChiselsAndBits2 {
         API = new ChiselsAndBitsAPIImpl();
         CONFIGURATION = new ModConfiguration();
         NETWORK_ROUTER = new NetworkRouter();
-        ITEMS = new ModItems();
-        BLOCKS = new ModBlocks();
         STATISTICS = new ModStatistics();
-        RECIPES = new ModRecipes();
         UNDO = new UndoTracker();
-        CONTAINERS = new ModContainers();
         KEYBINDINGS = new ModKeybindings();
+        REGISTER = new Registration();
 
         //Only initialise the client class when on the CLIENT distribution.
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
@@ -60,6 +59,8 @@ public class ChiselsAndBits2 {
         //Register to mod bus
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setupClient);
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> CLIENT::initialise);
+
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, CONFIGURATION.SERVER);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CONFIGURATION.CLIENT);
     }
@@ -72,29 +73,31 @@ public class ChiselsAndBits2 {
     private void setup(final FMLCommonSetupEvent event) {
         //Register things
         CapabilityManager.INSTANCE.register(BitStorage.class, new StorageCapability(), BitStorageImpl::new);
+        CapabilityManager.INSTANCE.register(ItemModeWrapper.class, new GlobalCBMCapability(), ItemModeWrapper::new);
         NETWORK_ROUTER.init();
 
         //Setup vanilla restrictions
         getAPI().getRestrictions().restrictBlockStateProperty(BlockStateProperties.SNOWY, false, true); //Make all snowy grass not snowy automatically
+        getAPI().addIgnoredBlockState(BlockStateProperties.DISTANCE_0_7);
+        getAPI().addIgnoredBlockState(BlockStateProperties.DISTANCE_1_7);
+        getAPI().addIgnoredBlockState(BlockStateProperties.PERSISTENT); //Persistence messes with breaking a bit off of a leaf and then replacing it.
     }
 
     private void setupClient(final FMLClientSetupEvent event) {
         //Register keybindings
         CLIENT.setup();
         KEYBINDINGS.setup();
-        CONTAINERS.registerScreens();
+
+        //Register container screens
+        ScreenManager.registerFactory(getRegister().BIT_BAG_CONTAINER.get(), BitBagScreen::new);
     }
 
     public ChiselsAndBitsAPI getAPI() {
         return API;
     }
 
-    public ModItems getItems() {
-        return ITEMS;
-    }
-
-    public ModBlocks getBlocks() {
-        return BLOCKS;
+    public Registration getRegister() {
+        return REGISTER;
     }
 
     public ClientSide getClient() {
@@ -117,16 +120,8 @@ public class ChiselsAndBits2 {
         return STATISTICS;
     }
 
-    public ModRecipes getRecipes() {
-        return RECIPES;
-    }
-
     public UndoTracker getUndoTracker() {
         return UNDO;
-    }
-
-    public ModContainers getContainers() {
-        return CONTAINERS;
     }
 
     /**

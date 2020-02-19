@@ -8,7 +8,7 @@ import net.minecraft.world.World;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.item.IItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeType;
-import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.client.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.List;

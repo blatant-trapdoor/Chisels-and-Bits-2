@@ -34,7 +34,7 @@ public class MCCullTest extends DummyEnvironmentWorldReader implements ICullTest
             case AIR:
                 return true;
             case COLOURED:
-                return false;
+                return false; //TODO add compat for transparent coloured bits
             case BLOCKSTATE: {
                 final Pair<BlockState, BlockState> p = Pair.of(
                         BitUtil.getBlockState(myId),

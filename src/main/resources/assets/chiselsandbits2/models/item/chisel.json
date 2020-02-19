@@ -1,6 +1,0 @@
-{
-  "parent": "chiselsandbits2:item/tool",
-  "textures": {
-    "layer0": "chiselsandbits2:item/chisel"
-  }
-}

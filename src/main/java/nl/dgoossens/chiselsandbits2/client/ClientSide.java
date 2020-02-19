@@ -5,10 +5,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -20,22 +20,26 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
+import nl.dgoossens.chiselsandbits2.api.cache.CacheType;
 import nl.dgoossens.chiselsandbits2.api.item.*;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.api.item.IMenuAction;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IItemScrollWheel;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.model.ChiseledBlockSmartModel;
+import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ter.GfxRenderState;
 import nl.dgoossens.chiselsandbits2.client.render.color.ColourableItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledBlockColor;
 import nl.dgoossens.chiselsandbits2.client.render.color.ChiseledBlockItemColor;
 import nl.dgoossens.chiselsandbits2.client.render.chiseledblock.ter.ChiseledBlockTER;
+import nl.dgoossens.chiselsandbits2.client.render.morphingbit.MorphingBitSmartModel;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.ChiselMimicItem;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
+import nl.dgoossens.chiselsandbits2.common.registry.Registration;
 import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.registry.ModItems;
 import nl.dgoossens.chiselsandbits2.common.registry.ModKeybindings;
 
 import java.lang.reflect.Field;
@@ -58,35 +62,63 @@ public class ClientSide extends ClientSideHelper {
      */
     public void setup() {
         ClientRegistry.bindTileEntitySpecialRenderer(ChiseledBlockTileEntity.class, new ChiseledBlockTER());
-        Minecraft.getInstance().getBlockColors().register(new ChiseledBlockColor(),
-                ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK);
-
-        Minecraft.getInstance().getItemColors().register(new ChiseledBlockItemColor(),
-                Item.getItemFromBlock(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK),
-                ChiselsAndBits2.getInstance().getItems().MORPHING_BIT);
-
-        //Register all coloured items as having an item color
-        final ModItems i = ChiselsAndBits2.getInstance().getItems();
-        final ColourableItemColor cic = new ColourableItemColor(1);
-        i.runForAllColourableItems((a) -> Minecraft.getInstance().getItemColors().register(cic, a));
-
-        //We've got both normal and mod event bus events.
-        FMLJavaModLoadingContext.get().getModEventBus().register(getClass());
     }
 
     /**
-     * Call the clean method.
+     * Register listeners to mod event bus.
      */
-    @SubscribeEvent
-    public static void cleanupOnQuit(final ClientPlayerNetworkEvent.LoggedOutEvent e) {
-        ChiselsAndBits2.getInstance().getClient().clean();
+    public void initialise() {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerItemColors);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerBlockColors);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerIconTextures);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clearCaches);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::bakeModels);
+    }
+
+    /**
+     * Register item color handlers.
+     */
+    private void registerItemColors(final ColorHandlerEvent.Item e) {
+        Registration m = ChiselsAndBits2.getInstance().getRegister();
+        
+        //Register all items with an item color
+        e.getItemColors().register(new ChiseledBlockItemColor(),
+                m.CHISELED_BLOCK_ITEM.get(),
+                m.MORPHING_BIT.get());
+
+        e.getItemColors().register(new ColourableItemColor(1),
+                m.WHITE_BIT_BAG.get(),
+                m.ORANGE_BIT_BAG.get(),
+                m.BLACK_BIT_BAG.get(),
+                m.BLUE_BIT_BAG.get(),
+                m.LIGHT_BLUE_BIT_BAG.get(),
+                m.LIGHT_GRAY_BIT_BAG.get(),
+                m.BROWN_BIT_BAG.get(),
+                m.CYAN_BIT_BAG.get(),
+                m.RED_BIT_BAG.get(),
+                m.YELLOW_BIT_BAG.get(),
+                m.PINK_BIT_BAG.get(),
+                m.GRAY_BIT_BAG.get(),
+                m.PURPLE_BIT_BAG.get(),
+                m.LIME_BIT_BAG.get(),
+                m.MAGENTA_BIT_BAG.get(),
+                m.GREEN_BIT_BAG.get());
+    }
+
+    /**
+     * Register block color handlers.
+     */
+    private void registerBlockColors(final ColorHandlerEvent.Block e) {
+        Registration m = ChiselsAndBits2.getInstance().getRegister();
+
+        e.getBlockColors().register(new ChiseledBlockColor(),
+                m.CHISELED_BLOCK.get());
     }
 
     /**
      * Register custom sprites.
      */
-    @SubscribeEvent
-    public static void registerIconTextures(final TextureStitchEvent.Pre e) {
+    private void registerIconTextures(final TextureStitchEvent.Pre e) {
         //Only register to the texture map.
         if(!e.getMap().getBasePath().equals("textures")) return;
 
@@ -102,6 +134,39 @@ public class ClientSide extends ClientSideHelper {
             modeIconLocations.put(itemMode, itemMode.getIconResourceLocation());
             e.addSprite(modeIconLocations.get(itemMode));
         }
+    }
+
+    /**
+     * Clear the cached model data whenever textures are stitched.
+     */
+    private void clearCaches(final TextureStitchEvent.Post e) {
+        GfxRenderState.gfxRefresh++;
+        CacheType.DEFAULT.call();
+    }
+
+    /**
+     * Bake all of our custom models.
+     */
+    private void bakeModels(final ModelBakeEvent event) {
+        CacheType.MODEL.call();
+
+        //Chiseled Block
+        ChiseledBlockSmartModel smartModel = new ChiseledBlockSmartModel();
+        event.getModelRegistry().put(new ModelResourceLocation(new ResourceLocation(ChiselsAndBits2.MOD_ID, "chiseled_block"), ""), smartModel);
+        event.getModelRegistry().put(new ModelResourceLocation(new ResourceLocation(ChiselsAndBits2.MOD_ID, "chiseled_block"), "inventory"), smartModel);
+
+        //Morphing Bit
+        MorphingBitSmartModel morphingModel = new MorphingBitSmartModel();
+        event.getModelRegistry().put(new ModelResourceLocation(new ResourceLocation(ChiselsAndBits2.MOD_ID, "morphing_bit"), ""), morphingModel);
+        event.getModelRegistry().put(new ModelResourceLocation(new ResourceLocation(ChiselsAndBits2.MOD_ID, "morphing_bit"), "inventory"), morphingModel);
+    }
+
+    /**
+     * Call the clean method.
+     */
+    @SubscribeEvent
+    public static void cleanupOnQuit(final ClientPlayerNetworkEvent.LoggedOutEvent e) {
+        ChiselsAndBits2.getInstance().getClient().clean();
     }
 
     /**

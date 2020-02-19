@@ -103,7 +103,7 @@ minecraft {
             property 'forge.logging.console.level', 'info'
             property 'fml.earlyprogresswindow', 'false'
             ideaModule "${project.name}.main"
-            args '--mod', 'chiselsandbits2', '--all', '--output', file('src/main/generated/')
+            args '--mod', 'chiselsandbits2', '--all', '--output', file('src/main/generated/'), '--existing', file('src/main/resources')
 
             mods {
                 chiselsandbits2 {
@@ -112,6 +112,11 @@ minecraft {
             }
         }
     }
+}
+
+sourceSets.main.resources {
+    srcDir 'src/main/generated'
+    srcDir 'src/main/resources'
 }
 
 dependencies {

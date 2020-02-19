@@ -13,6 +13,6 @@ public class ColourableItemColor implements IItemColor {
     @Override
     public int getColor(ItemStack stack, int tint) {
         if (tint != layer) return -1;
-        return ChiselsAndBits2.getInstance().getItems().getColourableColour(stack);
+        return ChiselsAndBits2.getInstance().getRegister().getColoredItemColor(stack);
     }
 }

@@ -1,17 +1,17 @@
 # Chisels & Bits 2
-A successor to AlgorithmX2's original Chisels & Bits for Minecraft 1.8 - 1.12. A Minecraft mod about chiseling, sculpting and designing custom blocks made of various materials, liquids or colours.
+A successor to [AlgorithmX2's original Chisels & Bits](https://github.com/AlgorithmX2/Chisels-and-Bits) that had releases for Minecraft 1.8 through 1.12. A Minecraft mod about chiseling, sculpting and designing custom blocks made of various materials, fluids or colours.
 
 Download
 --------------
-You can download beta or release builds of Chisels & Bits 2 on Curseforge:
-_link not yet available_
+You can download beta or release builds of [~~Chisels & Bits 2 on Curseforge!~~](https://www.curseforge.com/minecraft/mc-mods/chisels-bits-2)
+_link won't work until the first build has been released on curseforge_
 
-Alternatively, alpha/snapshot builds are available through [GitHub releases](https://github.com/Aeltumn/Chisels-and-Bits-2/releases).
+Alternatively, alpha/snapshot builds are available on the [GitHub releases page](https://github.com/Aeltumn/Chisels-and-Bits-2/releases).
 
 Differences from the original mod
 --------------
-Chisels & Bits 2 is a successor to [the original mod from AlgorithmX2](https://github.com/AlgorithmX2/Chisels-and-Bits) and some changes were made. [You can read up on those changes here.](DIFFERENCES.md)
-You can also take a look at [the roadmap](ROADMAP.md) where you can read up on what features are going to be worked on next.
+Chisels & Bits 2 was remade almost completely and all features in the mod were reevaluated and often reimplemented slightly differently. [You can read up on the original planned changes here.](DIFFERENCES.md)
+You can also take a look at [the roadmap](ROADMAP.md) where you can read up on what features are going to be worked on next and what needs to be done.
 
 Contributing
 --------------

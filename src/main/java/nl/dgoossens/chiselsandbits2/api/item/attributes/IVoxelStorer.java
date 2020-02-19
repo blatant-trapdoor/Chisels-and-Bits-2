@@ -11,4 +11,9 @@ public interface IVoxelStorer {
      * Get the voxel blob stored by this voxel storer.
      */
     VoxelBlob getVoxelBlob(ItemStack item);
+
+    /**
+     * Set the voxel blob of this voxel storer.
+     */
+    void setVoxelBlob(ItemStack item, VoxelBlob vb);
 }

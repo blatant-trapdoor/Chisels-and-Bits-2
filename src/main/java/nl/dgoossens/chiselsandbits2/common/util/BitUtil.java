@@ -5,11 +5,14 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
+import net.minecraft.state.IProperty;
+import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelType;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlock;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 
 import java.awt.*;
+import java.util.*;
 
 /**
  * A util that converts bit ids to BlockStates, FluidStates and colours.
@@ -49,8 +52,15 @@ public class BitUtil {
     /**
      * Get a blockstate's id.
      */
-    public static int getBlockId(final BlockState state) {
+    public static <T extends Comparable<T>, V extends T> int getBlockId(BlockState state) {
         if(state.getBlock() instanceof ChiseledBlock) return VoxelBlob.AIR_BIT; //Avoid infinite recursion.
+        //Remove ignored block states
+        for(final IProperty<?> property : ChiselsAndBits2.getInstance().getAPI().getIgnoredBlockStates()) {
+            final IProperty<T> prop = (IProperty<T>) property;
+            if (state.has(prop))
+                state = state.with(prop, prop.getAllowedValues().iterator().next());
+        }
+
         //Writing the identifier as these long numbers seems useless but it's necessary to keep java from screwing with them.
         return 0b11000000000000000000000000000000 + Math.max(0, Block.BLOCK_STATE_IDS.get(state));
     }

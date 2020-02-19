@@ -7,6 +7,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketBuffer;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.bit.BitStorage;
 import nl.dgoossens.chiselsandbits2.api.bit.VoxelWrapper;
@@ -18,7 +19,7 @@ public class BagContainer extends Container {
     private int slotCount;
     private Slot inputSlot;
 
-    public BagContainer(int id, PlayerInventory playerInventory) {
+    public BagContainer(int id, PlayerInventory playerInventory, PacketBuffer data) {
         this(id, playerInventory.player, new Inventory(Math.min( //Take occupied + 1 up to maximum. So you always have a slot to put it into the bag.
                 playerInventory.player.getHeldItemMainhand().getCapability(StorageCapabilityProvider.STORAGE).map(BitStorage::getMaximumSlots).orElse(0),
                 playerInventory.player.getHeldItemMainhand().getCapability(StorageCapabilityProvider.STORAGE).map(BitStorage::getOccupiedSlotCount).orElse(0) + 1
@@ -26,7 +27,7 @@ public class BagContainer extends Container {
     }
 
     public BagContainer(int id, PlayerEntity player, Inventory bagInventory, ItemStack item) {
-        super(ChiselsAndBits2.getInstance().getContainers().BIT_BAG, id);
+        super(ChiselsAndBits2.getInstance().getRegister().BIT_BAG_CONTAINER.get(), id);
         this.bagInventory = bagInventory;
         this.item = item;
         this.slotCount = bagInventory.getSizeInventory();
@@ -39,23 +40,20 @@ public class BagContainer extends Container {
         int i = (numRows - 4) * 18;
 
         for(int j = 0; j < numRows; ++j) {
-            for(int k = 0; k < ((slotCount - j * 9) >= 9 ? 9 : slotCount % 9); ++k) {
-                this.addSlot(new Slot(bagInventory, k + j * 9, 8 + k * 18, 18 + j * 18));
-            }
+            for(int k = 0; k < ((slotCount - j * 9) >= 9 ? 9 : slotCount % 9); ++k)
+                this.addSlot(new ReadonlySlot(bagInventory, k + j * 9, 8 + k * 18, 18 + j * 18));
         }
 
         for(int l = 0; l < 3; ++l) {
-            for(int j1 = 0; j1 < 9; ++j1) {
+            for(int j1 = 0; j1 < 9; ++j1)
                 this.addSlot(new Slot(player.inventory, j1 + l * 9 + 9, 8 + j1 * 18, 103 + l * 18 + i));
-            }
         }
 
-        for(int i1 = 0; i1 < 9; ++i1) {
+        for(int i1 = 0; i1 < 9; ++i1)
             this.addSlot(new Slot(player.inventory, i1, 8 + i1 * 18, 161 + i));
-        }
 
         //Input slot
-        inputSlot = new Slot(fakeInventory, 0, -17, 21);
+        inputSlot = new InsertSlot(fakeInventory, 0, -17, 21, item, this::updateInventoryContents);
         this.addSlot(inputSlot);
     }
 
@@ -68,7 +66,7 @@ public class BagContainer extends Container {
         if(store == null) return;
         for(int i = 0; i < bagInventory.getSizeInventory(); i++) {
             ItemStack s = store.getSlotContent(i).getStack();
-            s.setCount(Math.max(1, (int) (store.get(VoxelWrapper.forBlock(Block.getBlockFromItem(s.getItem()))) / 4096)));
+            s.setCount(Math.max(1, (int) (store.get(VoxelWrapper.forBlock(Block.getBlockFromItem(s.getItem()))) / 4096.0d)));
             bagInventory.setInventorySlotContents(i, s);
         }
     }

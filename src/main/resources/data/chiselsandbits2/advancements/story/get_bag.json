@@ -28,8 +28,8 @@
     }
   },
   "requirements": [
-    [
-      "bag"
-    ]
+      [
+        "bag"
+      ]
   ]
 }

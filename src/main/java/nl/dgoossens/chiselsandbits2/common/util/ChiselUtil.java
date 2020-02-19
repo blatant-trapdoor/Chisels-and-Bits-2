@@ -6,7 +6,6 @@ import net.minecraft.block.SoundType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.util.Direction;
@@ -18,6 +17,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import nl.dgoossens.chiselsandbits2.ChiselsAndBits2;
 import nl.dgoossens.chiselsandbits2.api.block.BitOperation;
 import nl.dgoossens.chiselsandbits2.api.block.IVoxelSrc;
+import nl.dgoossens.chiselsandbits2.api.item.IItemMode;
 import nl.dgoossens.chiselsandbits2.api.item.attributes.IBitModifyItem;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.blocks.ChiseledBlockTileEntity;
@@ -85,6 +85,7 @@ public class ChiselUtil {
     public static boolean canChiselPosition(final BlockPos pos, final PlayerEntity player, final BlockState state, final Direction face) {
         if (!(player.getHeldItemMainhand().getItem() instanceof IBitModifyItem))
             return false; //A valid item needs to be in the main hand!
+
         if (!player.getEntityWorld().getWorldBorder().contains(pos)) return false;
         if (!player.getEntityWorld().isBlockModifiable(player, pos)) return false;
         if (!player.canPlayerEdit(pos, face, player.getHeldItemMainhand())) return false;
@@ -97,7 +98,7 @@ public class ChiselUtil {
     public static RayTraceResult rayTrace(final Entity entity) {
         Vec3d vec3d = entity.getEyePosition(1.0f);
         Vec3d vec3d1 = entity.getLook(1.0f);
-        double d = (double) Minecraft.getInstance().playerController.getBlockReachDistance();
+        double d = Minecraft.getInstance().playerController.getBlockReachDistance();
         Vec3d vec3d2 = vec3d.add(vec3d1.x * d, vec3d1.y * d, vec3d1.z * d);
         ACTIVELY_TRACING = true;
         RayTraceResult r = entity.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity));
@@ -108,7 +109,7 @@ public class ChiselUtil {
     /**
      * Returns whether a target block is air or can be replaced.
      */
-    public static boolean isBlockReplaceable(final PlayerEntity player, final World world, final BlockPos pos, final Direction face, final boolean destroy) {
+    public static boolean isBlockReplaceable(final World world, final BlockPos pos, final PlayerEntity player, final Direction face, final boolean destroy) {
         boolean isValid = world.isAirBlock(pos);
 
         //We see it as air if we can replace it.
@@ -123,17 +124,17 @@ public class ChiselUtil {
     /**
      * Replaces a block at a position with a new chiseled block tile entity.
      */
-    public static void replaceWithChiseled(final @Nonnull PlayerEntity player, final @Nonnull World world, final @Nonnull BlockPos pos, final BlockState originalState, final Direction face) {
+    public static void replaceWithChiseled(final @Nonnull World world, final @Nonnull BlockPos pos, final @Nonnull PlayerEntity player, final BlockState originalState, final Direction face) {
         Block target = originalState.getBlock();
         BlockState placementState = ChiselsAndBits2.getInstance().getAPI().getRestrictions().getPlacementState(originalState);
-        if(target.equals(ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK) || placementState == null) return;
+        if(target.equals(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get()) || placementState == null) return;
 
-        IFluidState fluid = world.getFluidState(pos);
-        boolean isAir = isBlockReplaceable(player, world, pos, face, true);
+        //IFluidState fluid = world.getFluidState(pos);
+        boolean isAir = isBlockReplaceable(world, pos, player, face, true);
 
         if (ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(originalState) || isAir) {
             int blockId = BitUtil.getBlockId(placementState);
-            world.setBlockState(pos, ChiselsAndBits2.getInstance().getBlocks().CHISELED_BLOCK.getDefaultState(), 3);
+            world.setBlockState(pos, ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get().getDefaultState(), 3);
             final ChiseledBlockTileEntity te = (ChiseledBlockTileEntity) world.getTileEntity(pos);
             if (te != null) {
                 if (!isAir) te.fillWith(blockId);
@@ -149,10 +150,23 @@ public class ChiselUtil {
     }
 
     /**
+     * Tests if a block can be replaced with a chiseled block. If this method succeeds then {@link #replaceWithChiseled(World, BlockPos, PlayerEntity, BlockState, Direction)} will be able to
+     * create a tile entity, otherwise it won't be able to.
+     */
+    public static boolean isBlockChiselable(final @Nonnull World world, final @Nonnull BlockPos pos, final @Nonnull PlayerEntity player, final BlockState originalState, final Direction face) {
+        Block target = originalState.getBlock();
+        BlockState placementState = ChiselsAndBits2.getInstance().getAPI().getRestrictions().getPlacementState(originalState);
+        if(target.equals(ChiselsAndBits2.getInstance().getRegister().CHISELED_BLOCK.get()) || placementState == null)
+            return true;
+
+        return ChiselsAndBits2.getInstance().getAPI().getRestrictions().canChiselBlock(originalState) || isBlockReplaceable(world, pos, player, face, false);
+    }
+
+    /**
      * Get the chisel iterator from a incoming chisel packet.
      */
-    public static ChiselIterator getIterator(final CChiselBlockPacket pkt, final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {
-        if (pkt.mode == ItemMode.CHISEL_DRAWN_REGION) {
+    public static ChiselIterator getIterator(final IItemMode mode, final CChiselBlockPacket pkt, final IVoxelSrc vb, final BlockPos pos, final BitOperation place) {
+        if (mode == ItemMode.CHISEL_DRAWN_REGION) {
             final BlockPos from = pkt.from.blockPos;
             final BlockPos to = pkt.to.blockPos;
 
@@ -166,6 +180,6 @@ public class ChiselUtil {
 
             return new ChiselTypeIterator(VoxelBlob.DIMENSION, bitX, bitY, bitZ, scaleX, scaleY, scaleZ, pkt.side);
         }
-        return ChiselTypeIterator.create(VoxelBlob.DIMENSION, pkt.from.bitX, pkt.from.bitY, pkt.from.bitZ, vb, pkt.mode, pkt.side, place.equals(PLACE));
+        return ChiselTypeIterator.create(VoxelBlob.DIMENSION, pkt.from.bitX, pkt.from.bitY, pkt.from.bitZ, vb, mode, pkt.side, place.equals(PLACE));
     }
 }

@@ -36,8 +36,8 @@ public final class VoxelBlob implements IVoxelSrc {
 
     public final static VoxelBlob NULL_BLOB = new VoxelBlob();
 
-    private final int[] values = new int[ARRAY_SIZE];
     private int best_buffer_size = 26;
+    final int[] values = new int[ARRAY_SIZE];
     //Every int in the values map is used as follows:
     //  00000000000000000000000000000000
 
@@ -66,10 +66,21 @@ public final class VoxelBlob implements IVoxelSrc {
     }
 
     /**
-     * Creates a voxelblob filled with type.
+     * Creates a VoxelBlob filled with type.
      */
-    public static VoxelBlob full(final BlockState type) {
-        return new VoxelBlob().fill(BitUtil.getBlockId(type));
+    public static VoxelBlob full(final int type) {
+        final VoxelBlob b = new VoxelBlob();
+        Arrays.fill(b.values, type);
+        return b;
+    }
+
+    /**
+     * Gets a VoxelBlob filled with air.
+     */
+    public static VoxelBlob getAirBlob() {
+        final VoxelBlob b = new VoxelBlob();
+        Arrays.fill(b.values, VoxelBlob.AIR_BIT);
+        return b;
     }
 
     /**
@@ -261,6 +272,31 @@ public final class VoxelBlob implements IVoxelSrc {
     }
 
     /**
+     * Removes all bits of this type from this blob.
+     */
+    public VoxelBlob removeBitType(final int bitType) {
+        for (int x = 0; x < values.length; ++x)
+            if(values[x] == bitType)
+                values[x] = AIR_BIT;
+
+        return this;
+    }
+
+    /**
+     * Removes all bits of this type from this blob.
+     * @param limit Don't remove more than the limit worth of bits.
+     */
+    public VoxelBlob removeBitType(final int bitType, long limit) {
+        for (int x = 0; x < values.length; ++x)
+            if(values[x] == bitType && limit > 0) {
+                limit--;
+                values[x] = AIR_BIT;
+            }
+
+        return this;
+    }
+
+    /**
      * Get the position of the center of the shape.
      */
     public BlockPos getCenter() {
@@ -299,6 +335,16 @@ public final class VoxelBlob implements IVoxelSrc {
         int i = 0;
         for(int v : values)
             if(v == AIR_BIT) i++;
+        return i;
+    }
+
+    /**
+     * Returns the amount of bits that's equal to this bit type in this blob.
+     */
+    public long count(int bitType) {
+        int i = 0;
+        for(int v : values)
+            if(v == bitType) i++;
         return i;
     }
 

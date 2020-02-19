@@ -22,9 +22,10 @@ import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelBlob;
 import nl.dgoossens.chiselsandbits2.common.chiseledblock.voxel.VoxelVersions;
 import nl.dgoossens.chiselsandbits2.common.impl.item.ItemModeType;
 import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
+import nl.dgoossens.chiselsandbits2.common.network.client.CRotateItemPacket;
 import nl.dgoossens.chiselsandbits2.common.util.ChiselUtil;
-import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
-import nl.dgoossens.chiselsandbits2.common.util.ItemTooltipWriter;
+import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ItemTooltipWriter;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -57,12 +58,20 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
     }
 
     @Override
-    public void rotate(ItemStack stack, Direction.Axis axis) {
+    public void setVoxelBlob(ItemStack item, VoxelBlob vb) {
+        final NBTBlobConverter c = new NBTBlobConverter();
+        CompoundNBT nbt = new CompoundNBT();
+        c.writeChiselData(nbt);
+        item.setTagInfo(ChiselUtil.NBT_BLOCKENTITYTAG, nbt);
+    }
+
+    @Override
+    public void rotate(ItemStack stack, Direction.Axis axis, final boolean clockwise) {
         final NBTBlobConverter c = new NBTBlobConverter();
         c.readChiselData(stack.getOrCreateChildTag(ChiselUtil.NBT_BLOCKENTITYTAG), VoxelVersions.getDefault());
 
         final VoxelBlob vb = c.getVoxelBlob();
-        c.setBlob(vb.spin(axis));
+        c.setBlob(clockwise ? vb.spin(axis) : vb.spinCCW(axis));
 
         final CompoundNBT nbt = new CompoundNBT();
         c.writeChiselData(nbt);
@@ -83,12 +92,12 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
     @Override
     public Set<ItemModeMenu.MenuButton> getMenuButtons(final ItemStack item) {
         Set<ItemModeMenu.MenuButton> ret = new HashSet<>();
-        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_X, -ItemModeMenu.TEXT_DISTANCE - 18, -20, Direction.WEST));
-        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_Z, -ItemModeMenu.TEXT_DISTANCE - 18, 4, Direction.WEST));
+        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_X, -ItemModeMenu.TEXT_DISTANCE - 18, -30, Direction.WEST));
+        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_Y, -ItemModeMenu.TEXT_DISTANCE - 18, -8, Direction.WEST));
+        ret.add(new ItemModeMenu.MenuButton(MenuAction.ROLL_Z, -ItemModeMenu.TEXT_DISTANCE - 18, 14, Direction.WEST));
         return ret;
     }
 
-    //--- COPIED FROM TypedItem.class ---
     /**
      * Display the mode in the highlight tip. (and color for tape measure)
      */
@@ -98,11 +107,11 @@ public class ChiseledBlockItem extends BlockItem implements IItemScrollWheel, II
         return displayName + " - " + im.getLocalizedName();
     }
 
-    /**
-     * Scrolling on the chisel scrolls through the possible modes, alternative to the menu.
-     */
     @Override
     public boolean scroll(final PlayerEntity player, final ItemStack stack, final double dwheel) {
-        return TypedItem.scroll(player, stack, dwheel, ClientItemPropertyUtil.getGlobalCBM(), getAssociatedType());
+        // For now scrolling on the chiseled block rotates around the Y axis.
+        // return TypedItem.scroll(player, stack, dwheel, ClientItemPropertyUtil.getGlobalCBM(), getAssociatedType());
+        ChiselsAndBits2.getInstance().getNetworkRouter().sendToServer(new CRotateItemPacket(Direction.Axis.Y, dwheel >= 0));
+        return true;
     }
 }

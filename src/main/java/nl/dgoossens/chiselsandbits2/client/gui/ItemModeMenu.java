@@ -31,7 +31,7 @@ import nl.dgoossens.chiselsandbits2.common.impl.item.ItemMode;
 import nl.dgoossens.chiselsandbits2.common.impl.item.MenuAction;
 import nl.dgoossens.chiselsandbits2.common.items.ChiseledBlockItem;
 import nl.dgoossens.chiselsandbits2.common.items.TypedItem;
-import nl.dgoossens.chiselsandbits2.common.util.ClientItemPropertyUtil;
+import nl.dgoossens.chiselsandbits2.client.util.ClientItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.util.ItemPropertyUtil;
 import nl.dgoossens.chiselsandbits2.common.items.StorageItem;
 import org.lwjgl.opengl.GL11;
@@ -88,7 +88,7 @@ public class ItemModeMenu extends RadialMenu {
 
         //Update information
         final ItemStack item = getMinecraft().player.getHeldItemMainhand();
-        if(cachedStack == null || !item.equals(cachedStack, true) || (item.getItem() instanceof ChiseledBlockItem && !ClientItemPropertyUtil.getGlobalCBM().equals(cachedMode))) {
+        if(cachedStack == null || !item.equals(cachedStack, false) || (item.getItem() instanceof ChiseledBlockItem && !ClientItemPropertyUtil.getGlobalCBM().equals(cachedMode))) {
             cachedStack = getMinecraft().player.getHeldItemMainhand().copy();
             modes = getShownModes();
             buttons = getShownButtons();
