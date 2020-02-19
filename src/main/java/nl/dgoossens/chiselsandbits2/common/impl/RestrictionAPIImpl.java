@@ -68,7 +68,8 @@ public class RestrictionAPIImpl implements RestrictionAPI {
             return;
         }
         if (blk.hasTileEntity(block)) return;
-        if (blk.getRenderLayer() == BlockRenderLayer.TRANSLUCENT) return; //TODO No translucent blocks.
+        if (blk.getRenderLayer() != BlockRenderLayer.SOLID) return; //TODO Re-enable non-solid blocks
+        if (!blk.getDefaultState().isSolid()) return; //TODO re-enable non-solid blocks
         //Can't be a rotatable block without being allowed to be fully rotated.
         if (blk.getDefaultState().has(BlockStateProperties.HORIZONTAL_FACING)) return;
         if (blk.getDefaultState().has(BlockStateProperties.FACING_EXCEPT_UP)) return;
